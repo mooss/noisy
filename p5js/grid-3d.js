@@ -4,7 +4,8 @@ let grid = [];
 
 function setup() {
     createCanvas(800, 600, WEBGL);
-    noStroke();
+    stroke('teal');
+    strokeWeight(5);
     randGrid();
 }
 
@@ -12,7 +13,7 @@ function draw() {
     background(0);
     orbitControl(); // Rotate the scene with the mouse.
     ambientLight(100);
-    directionalLight(255, 255, 255, -1, -1, -1); // Directional light from the top-leff.
+    directionalLight(255, 255, 255, 1, 1, -1); // Directional light from the top-leff.
     translate(-gridSize * cellSize / 2, -gridSize * cellSize / 2, 0); // Center the grid.
 
     // Draw the grid.
