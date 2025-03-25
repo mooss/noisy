@@ -17,7 +17,11 @@ function unconcat() {
 }
 
 function refreshed() {
-  comment=$(concat-comment "$filename")
+  local -r filename="$1"
+  local -r comment=$(concat-comment "$filename")
+
+  unconcat "$filename"
+
   echo "$comment"
   echo "// Everything after this point was generated with \`$INVOCATION\`."
   echo
@@ -31,12 +35,12 @@ function refreshed() {
 
 # Consumes stdin and *then* writes it to $1 (prevents preemptive write).
 function sponge() {
-  content=$(cat)
+  local -r content=$(cat)
   echo "$content" > "$1"
 }
 
 for filename in "$@"; do
-  if ! concat-comment "$filename" 2>/dev/null; then
+  if ! concat-comment "$filename" >/dev/null 2>&1; then
     echo "Nothing to do in $filename".
     continue
   fi
