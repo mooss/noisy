@@ -26,18 +26,14 @@ function setup() {
 }
 
 function draw() {
+    strokeColor = colorand();
     for (let column = 0; column < ncolumns; column++) {
         for (let row = 0; row < nrows; row++) {
             fill(currentCells[column][row]);
-            stroke(0);
+            // stroke(strokeColor);
             rect(column * cellSize, row * cellSize, cellSize, cellSize);
         }
     }
-}
-
-// Return a random color.
-function colorand() {
-    return color(random(255), random(255), random(255));
 }
 
 // Reset board when mouse is pressed.
@@ -57,6 +53,10 @@ function rainboard() {
     }
 }
 
+//:CONCAT lib.js
+// Everything after this point was generated with `./refresh.bash grid.js`.
+
+//lib.js
 // Color spectrum: white -> red -> green -> blue -> black.
 const wrainbowb = [
     [255, 255, 255], // white
@@ -95,4 +95,9 @@ function interpolate(colors, value) {
     const b = Math.floor(color1[2] + (color2[2] - color1[2]) * ratio);
 
 	return color(r, g, b);
+}
+
+// Return a random color.
+function colorand() {
+    return color(random(255), random(255), random(255));
 }
