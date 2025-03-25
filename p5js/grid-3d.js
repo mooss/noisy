@@ -2,14 +2,15 @@ let gridSize = 20; // Number of cells in each direction
 let cellSize = 30; // Size of each cell
 let grid = [];
 let maxH = 100;
+let camDist = gridSize * cellSize;
 
 function setup() {
-    createCanvas(800, 600, WEBGL);
-    stroke('teal');
+    createCanvas(windowWidth, windowHeight, WEBGL);
+    stroke('black');
     strokeWeight(5);
     randomSeed(4815162342);
     randGrid();
-    camera(0, 500, 500,
+    camera(0, camDist, camDist,
            0, 0, 0,
            0, 1, 0);
 }
@@ -18,7 +19,7 @@ function draw() {
     background(0);
     orbitControl(); // Rotate the scene with the mouse.
     ambientLight(100);
-    directionalLight(255, 255, 255, 1, 1, -1); // Directional light from the top-leff.
+    directionalLight(255, 255, 255, 1, 1, -1); // Directional light from the top-left.
     translate(-gridSize * cellSize / 2, -gridSize * cellSize / 2, 0); // Center the grid.
 
     // Draw the grid.
