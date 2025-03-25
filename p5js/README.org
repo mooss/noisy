@@ -1,0 +1,16 @@
+* Install =p5-server= locally
+
+#+begin_src bash
+npm install p5-server
+#+end_src
+
+* Run the server
+
+#+begin_src bash
+./node_modules/p5-server/dist/bin/p5-server.js serve file.js
+#+end_src
+
+* Documentation
+
+The =library= command can apparently print documentation.
+Otherwise the reference lives at https://p5js.org/reference/#Color.
