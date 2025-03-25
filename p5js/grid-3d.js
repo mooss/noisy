@@ -6,7 +6,11 @@ function setup() {
     createCanvas(800, 600, WEBGL);
     stroke('teal');
     strokeWeight(5);
+    randomSeed(4815162342);
     randGrid();
+    camera(0, 500, 500,
+           0, 0, 0,
+           0, 1, 0);
 }
 
 function draw() {
