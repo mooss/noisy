@@ -17,8 +17,6 @@ function unconcat() {
 }
 
 function refreshed() {
-  unconcat "$1"
-
   comment=$(concat-comment "$filename")
   echo "$comment"
   echo "// Everything after this point was generated with \`$INVOCATION\`."
@@ -38,6 +36,11 @@ function sponge() {
 }
 
 for filename in "$@"; do
+  if ! concat-comment "$filename" 2>/dev/null; then
+    echo "Nothing to do in $filename".
+    continue
+  fi
+
   before=$(wc -l "$filename")
   refreshed "$filename" | sponge "$filename"
   after=$(wc -l "$filename")
