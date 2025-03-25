@@ -26,11 +26,9 @@ function setup() {
 }
 
 function draw() {
-    strokeColor = colorand();
     for (let column = 0; column < ncolumns; column++) {
         for (let row = 0; row < nrows; row++) {
             fill(currentCells[column][row]);
-            // stroke(strokeColor);
             rect(column * cellSize, row * cellSize, cellSize, cellSize);
         }
     }

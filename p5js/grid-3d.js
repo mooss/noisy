@@ -1,15 +1,17 @@
-let gridSize = 20; // Number of cells in each direction
+let gridSize = 100; // Number of cells in each direction
 let cellSize = 30; // Size of each cell
 let grid = [];
-let maxH = 100;
+let maxH = 500;
 let camDist = gridSize * cellSize;
+let noiseScale = .1; // Scale for noise coordinates
 
 function setup() {
     createCanvas(windowWidth, windowHeight, WEBGL);
     stroke('black');
     strokeWeight(5);
     randomSeed(4815162342);
-    randGrid();
+    noiseSeed(4815162342);
+    noiseGrid();
     camera(0, camDist, camDist,
            0, 0, 0,
            0, 1, 0);
@@ -37,9 +39,16 @@ function draw() {
     }
 }
 
+function bigrand() { return random(9999999999); }
+
 function keyPressed() {
-    if (key === 'r') { // Regenerate the grid.
+    if (key === 'r') { // Regenerate the grid with random heights
+        randomSeed(bigrand());
         randGrid();
+    }
+    if (key === 'n') { // Regenerate the grid with noise
+        noiseSeed(bigrand());
+        noiseGrid();
     }
 }
 
@@ -49,6 +58,16 @@ function randGrid() {
         grid[i] = [];
         for (let j = 0; j < gridSize; j++) {
             grid[i][j] = random(0, maxH);
+        }
+    }
+}
+
+// Initialize the grid using Perlin noise.
+function noiseGrid() {
+    for (let i = 0; i < gridSize; i++) {
+        grid[i] = [];
+        for (let j = 0; j < gridSize; j++) {
+            grid[i][j] = noise(i * noiseScale, j * noiseScale) * maxH;
         }
     }
 }
