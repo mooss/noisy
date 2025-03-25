@@ -23,7 +23,7 @@ function refreshed() {
   unconcat "$filename"
 
   echo "$comment"
-  echo "// Everything after this point was generated with \`$INVOCATION\`."
+  echo "// Everything after this point was generated with \`$0 $filename\`."
   echo
 
   for dep in $(echo "$comment" | concat-list); do

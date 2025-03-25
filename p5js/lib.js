@@ -1,4 +1,4 @@
-// Color spectrum: white -> red -> green -> blue -> black.
+// Color spectrum: white -> rainbow -> black.
 const wrainbowb = [
     [255, 255, 255], // white
     [255, 0, 0],     // red
@@ -19,6 +19,13 @@ function clamp(x, min_, max_) {
 
 // Interpolate the value (expected to be between 0 and 1) in the given color spectrum.
 function interpolate(colors, value) {
+    if (colors.length == 0) {
+        return [255, 255, 255];
+    }
+    if (colors.length == 1) {
+        return colors[0];
+    }
+
 	value = clamp(value, 0, 1);
 
     // Find the position on the spectrum.
