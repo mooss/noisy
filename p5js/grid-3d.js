@@ -1,9 +1,10 @@
-let gridSize = 100; // Number of cells in each direction
-let cellSize = 30; // Size of each cell
+let gridPower = 6;
+let gridSize = 2**gridPower+1; // Needs to be 2^n + 1 for midpoint displacement.
+let cellSize = 15; // Size of each cell.
 let grid = [];
-let maxH = 500;
+let maxH = gridSize*2.5;
 let camDist = gridSize * cellSize;
-let noiseScale = .1; // Scale for noise coordinates
+let noiseScale = .1; // Scale for noise coordinates.
 
 function setup() {
     createCanvas(windowWidth, windowHeight, WEBGL);
@@ -42,13 +43,17 @@ function draw() {
 function bigrand() { return random(9999999999); }
 
 function keyPressed() {
-    if (key === 'r') { // Regenerate the grid with random heights
+    if (key === 'r') { // Random heights.
         randomSeed(bigrand());
         randGrid();
     }
-    if (key === 'n') { // Regenerate the grid with noise
+    if (key === 'n') { // Perlin noise.
         noiseSeed(bigrand());
         noiseGrid();
+    }
+    if (key === 'm') { // Midpoint displacement.
+        randomSeed(bigrand());
+        midpointGrid();
     }
 }
 
@@ -70,6 +75,87 @@ function noiseGrid() {
             grid[i][j] = noise(i * noiseScale, j * noiseScale) * maxH;
         }
     }
+}
+
+// Initialize the grid using midpoint displacement algorithm (diamond-square).
+function midpointGrid() {
+    // Initialize empty grid
+    for (let i = 0; i < gridSize; i++) {
+        grid[i] = [];
+        for (let j = 0; j < gridSize; j++) {
+            grid[i][j] = 0;
+        }
+    }
+
+    let roughness = 0.6; // Scaling factor for each additional subdivision.
+    let range = 1;
+    let step = gridSize - 1;
+
+    // Initialize the four corners.
+    grid[0][0] = random(0, range);
+    grid[0][gridSize-1] = random(0, range);
+    grid[gridSize-1][0] = random(0, range);
+    grid[gridSize-1][gridSize-1] = random(0, range);
+
+    // Keeping track of min and max heights to then normalize to the intended height range.
+    let max_ = max(grid[0][0], grid[0][gridSize-1], grid[gridSize-1][0], grid[gridSize-1][gridSize-1]);
+    let min_ = min(grid[0][0], grid[0][gridSize-1], grid[gridSize-1][0], grid[gridSize-1][gridSize-1]);
+
+    // Diamond-square proper.
+    while (step > 1) {
+        let halfStep = step / 2;
+
+        // Diamond step, average the four diagonal neighbours of a new point and nudge it a little
+        // bit by a random value.
+        for (let x = halfStep; x < gridSize - 1; x += step) {
+            for (let y = halfStep; y < gridSize - 1; y += step) {
+                let avg = (grid[x-halfStep][y-halfStep] +
+                           grid[x-halfStep][y+halfStep] +
+                           grid[x+halfStep][y-halfStep] +
+                           grid[x+halfStep][y+halfStep]) / 4; // Average.
+                grid[x][y] = avg + random(-range, range); // Nudge.
+                if (grid[x][y] > max_) { max_ = grid[x][y]; }
+                if (grid[x][y] < min_) { min_ = grid[x][y]; }
+            }
+        }
+
+        // Square step, average the four (or three) linear neighbours and nudge it a little bit by a
+        // random value.
+        for (let x = 0; x < gridSize; x += halfStep) {
+            for (let y = (x % step === 0) ? halfStep : 0; y < gridSize; y += step) {
+                let count = 0;
+                let sum = 0;
+
+                // Points in this step can be on the edge of the grid and therefore only have three
+                // valid neighbours so the coordinates must be carefully checked.
+                if (x >= halfStep) { sum += grid[x-halfStep][y]; count++; }
+                if (x + halfStep < gridSize) { sum += grid[x+halfStep][y]; count++; }
+                if (y >= halfStep) { sum += grid[x][y-halfStep]; count++; }
+                if (y + halfStep < gridSize) { sum += grid[x][y+halfStep]; count++; }
+
+                grid[x][y] = sum / count + random(-range, range); // Average and nudge.
+
+                if (grid[x][y] > max_) { max_ = grid[x][y]; }
+                if (grid[x][y] < min_) { min_ = grid[x][y]; }
+            }
+        }
+
+        // Reduce the random range for the next iteration.
+        range *= roughness;
+        step = halfStep;
+    }
+
+    // Normalize all values between 0 and maxH.
+    normalize = rangeMaper(min_, max_, 0, maxH);
+    for (let i = 0; i < gridSize; i++) {
+        for (let j = 0; j < gridSize; j++) {
+            grid[i][j] = normalize(grid[i][j]);
+        }
+    }
+}
+
+function rangeMaper(fromMin, fromMax, toMin, toMax) {
+    return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin)
 }
 
 //:CONCAT lib.js
