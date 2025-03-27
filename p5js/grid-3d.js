@@ -11,11 +11,11 @@ let terrain; // Terrain, defined as a matrix of heights.
 const terrainPalette = [
     [100, 200, 50], // Bright green (grass).
     [100, 200, 50], // Bright green (grass).
-    [75, 100, 25], // Darker green (forest).
-    [75, 100, 25], // Darker green (forest).
-    [100, 64, 23], // Brown (hills).
-    [255, 255, 255], // White (mountains).
-    [255, 255, 255], // White (mountains).
+    [75, 125, 25], // Darker green (forest).
+    [75, 125, 25], // Darker green (forest).
+    [100, 100, 100], // Grey (mountains).
+    [255, 255, 255], // White (mountains tops).
+    [255, 255, 255], // White (mountains tops).
 ];
 const cyberPuke = [[255, 0, 255], [0, 255, 255]]; // Garish magenta -> cyan palette.
 
@@ -33,6 +33,9 @@ function setup() {
            0, 0, 0,
            0, 1, 0);
 }
+
+///////////////
+// Rendering //
 
 function draw() {
     background(0);
@@ -73,6 +76,48 @@ function draw() {
     }
 }
 
+// Hexagonal prism centered at the origin.
+function hexprism(width, h) {
+    let r = width / Math.sqrt(3); // Radius (center to vertex).
+    let halfH = h / 2;
+
+    // Compute 2d hexagon vertices by rotating around the center.
+    let vertices = [];
+    for (let i = 0; i < 6; i++) {
+        let angle = PI / 3 * i; // Angle for pointy top.
+        vertices.push({ x: r * cos(angle), y: r * sin(angle) });
+    }
+
+    // Top face.
+    beginShape();
+    for (let v of vertices) {
+        vertex(v.x, v.y, halfH);
+    }
+    endShape(CLOSE);
+
+    // Bottom face.
+    beginShape();
+    for (let v of vertices) {
+        vertex(v.x, v.y, -halfH);
+    }
+    endShape(CLOSE);
+
+    // Draw side faces
+    beginShape();
+    for (let i = 0; i < 6; i++) {
+        let v1 = vertices[i];
+        let v2 = vertices[(i + 1) % 6];
+        vertex(v1.x, v1.y, -halfH); // Bottom-left.
+        vertex(v2.x, v2.y, -halfH); // Bottom-right.
+        vertex(v2.x, v2.y, halfH);  // Top-right.
+        vertex(v1.x, v1.y, halfH);  // Top-left.
+    }
+    endShape(CLOSE);
+}
+
+////////////////////
+// Input handling //
+
 function bigrand() { return random(9999999999); }
 
 function keyPressed() {
@@ -92,6 +137,9 @@ function keyPressed() {
         useHexagons = !useHexagons;
     }
 }
+
+////////////////////////
+// Terrain generation //
 
 // Grid class to encapsulate grid data and generation methods.
 class Grid {
@@ -195,50 +243,12 @@ class Grid {
     }
 }
 
-
 function rangeMapper(fromMin, fromMax, toMin, toMax) {
     return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin);
 }
 
-// Hexagonal prism centered at the origin.
-function hexprism(width, h) {
-    let r = width / Math.sqrt(3); // Radius (center to vertex).
-    let halfH = h / 2;
-
-    // Compute 2d hexagon vertices by rotating around the center.
-    let vertices = [];
-    for (let i = 0; i < 6; i++) {
-        let angle = PI / 3 * i; // Angle for pointy top.
-        vertices.push({ x: r * cos(angle), y: r * sin(angle) });
-    }
-
-    // Top face.
-    beginShape();
-    for (let v of vertices) {
-        vertex(v.x, v.y, halfH);
-    }
-    endShape(CLOSE);
-
-    // Bottom face.
-    beginShape();
-    for (let v of vertices) {
-        vertex(v.x, v.y, -halfH);
-    }
-    endShape(CLOSE);
-
-    // Draw side faces
-    beginShape();
-    for (let i = 0; i < 6; i++) {
-        let v1 = vertices[i];
-        let v2 = vertices[(i + 1) % 6];
-        vertex(v1.x, v1.y, -halfH); // Bottom-left.
-        vertex(v2.x, v2.y, -halfH); // Bottom-right.
-        vertex(v2.x, v2.y, halfH);  // Top-right.
-        vertex(v1.x, v1.y, halfH);  // Top-left.
-    }
-    endShape(CLOSE);
-}
-
+///////////////
+// Libraries //
 
 //:CONCAT lib.js
 // Everything after this point was generated with `./refresh.bash grid-3d.js`.
