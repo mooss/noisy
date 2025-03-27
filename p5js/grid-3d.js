@@ -265,7 +265,7 @@ function interpolate(colors, value) {
 
     // Find the position on the spectrum.
     const nsegments = colors.length-1;
-    const segment = clamp(Math.floor(value * nsegments), 0, color.length);
+    const segment = clamp(Math.floor(value * nsegments), 0, nsegments-1);
     const ratio = value * nsegments - segment;
 
     // Get the two colors to interpolate between.
