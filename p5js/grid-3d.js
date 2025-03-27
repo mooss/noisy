@@ -2,17 +2,18 @@ let gridPower = 6;
 let gridSize = 2**gridPower+1; // Needs to be 2^n + 1 for midpoint displacement.
 let cellSize = 15; // Size of each cell.
 let grid = [];
-let maxH = gridSize*2.5;
-let camDist = gridSize * cellSize;
+let maxH = gridSize*cellSize/3;
+let camDist = gridSize * cellSize + 50;
 let noiseScale = .1; // Scale for noise coordinates.
+let useHexagons = false; // Toggle between squares and hexagons.
 
 function setup() {
     createCanvas(windowWidth, windowHeight, WEBGL);
-    stroke('black');
-    strokeWeight(5);
+    stroke('white');
+    strokeWeight(1);
     randomSeed(4815162342);
     noiseSeed(4815162342);
-    noiseGrid();
+    midpointGrid();
     camera(0, camDist, camDist,
            0, 0, 0,
            0, 1, 0);
@@ -21,20 +22,37 @@ function setup() {
 function draw() {
     background(0);
     orbitControl(); // Rotate the scene with the mouse.
-    ambientLight(100);
+    ambientLight(128);
     directionalLight(255, 255, 255, 1, 1, -1); // Directional light from the top-left.
-    translate(-gridSize * cellSize / 2, -gridSize * cellSize / 2, 0); // Center the grid.
+
+    // Center the grid for both hexagons and squares.
+    let ySpacingFactor = useHexagons ? (3 * Math.sqrt(3)) / 4 : 1; // Width and height differ for hexagons.
+    let totalGridHeight = (gridSize - 1) * cellSize * ySpacingFactor;
+    let totalGridWidth = (gridSize - 1) * cellSize + (useHexagons ? cellSize / 2 : 0);
+    translate(-totalGridWidth / 2, -totalGridHeight / 2, 0);
 
     // Draw the grid.
     for (let i = 0; i < gridSize; i++) {
         for (let j = 0; j < gridSize; j++) {
-            push();
-            // Interpolate color between magenta and cyan using the height.
             let height = grid[i][j];
+
+            push();
+
+            // Interpolate color between magenta and cyan using the height.
             fill(interpolate([[255, 0, 255], [0, 255, 255]], height/maxH));
 
-            translate(i * cellSize, j * cellSize, height / 2); // Position the cell.
-            box(cellSize, cellSize, height); // Draw the cell as a box.
+            // Position the cell.
+            let yOffset = (useHexagons && i % 2 !== 0) ? cellSize / 2 : 0;
+            let yPos = j * cellSize * ySpacingFactor + yOffset;
+            let xPos = i * cellSize;
+            translate(xPos, yPos, height / 2);
+
+            if (useHexagons) {
+                hexprism(cellSize, height);
+            } else {
+                box(cellSize, cellSize, height);
+            }
+
             pop();
         }
     }
@@ -54,6 +72,9 @@ function keyPressed() {
     if (key === 'm') { // Midpoint displacement.
         randomSeed(bigrand());
         midpointGrid();
+    }
+    if (key === 'h') { // Toggle hexagons.
+        useHexagons = !useHexagons;
     }
 }
 
@@ -157,6 +178,46 @@ function midpointGrid() {
 function rangeMaper(fromMin, fromMax, toMin, toMax) {
     return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin)
 }
+
+// Hexagonal prism centered at the origin.
+function hexprism(width, h) {
+    let r = width / Math.sqrt(3); // Radius (center to vertex).
+    let halfH = h / 2;
+
+    // Compute 2d hexagon vertices by rotating around the center.
+    let vertices = [];
+    for (let i = 0; i < 6; i++) {
+        let angle = PI / 3 * i; // Angle for pointy top.
+        vertices.push({ x: r * cos(angle), y: r * sin(angle) });
+    }
+
+    // Top face.
+    beginShape();
+    for (let v of vertices) {
+        vertex(v.x, v.y, halfH);
+    }
+    endShape(CLOSE);
+
+    // Bottom face.
+    beginShape();
+    for (let v of vertices) {
+        vertex(v.x, v.y, -halfH);
+    }
+    endShape(CLOSE);
+
+    // Draw side faces
+    beginShape();
+    for (let i = 0; i < 6; i++) {
+        let v1 = vertices[i];
+        let v2 = vertices[(i + 1) % 6];
+        vertex(v1.x, v1.y, -halfH); // Bottom-left.
+        vertex(v2.x, v2.y, -halfH); // Bottom-right.
+        vertex(v2.x, v2.y, halfH);  // Top-right.
+        vertex(v1.x, v1.y, halfH);  // Top-left.
+    }
+    endShape(CLOSE);
+}
+
 
 //:CONCAT lib.js
 // Everything after this point was generated with `./refresh.bash grid-3d.js`.
