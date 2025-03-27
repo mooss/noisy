@@ -8,6 +8,17 @@ let useHexagons = false; // Toggle between squares and hexagons.
 
 let terrain; // Terrain, defined as a matrix of heights.
 
+const terrainPalette = [
+    [100, 200, 50], // Bright green (grass).
+    [100, 200, 50], // Bright green (grass).
+    [75, 100, 25], // Darker green (forest).
+    [75, 100, 25], // Darker green (forest).
+    [100, 64, 23], // Brown (hills).
+    [255, 255, 255], // White (mountains).
+    [255, 255, 255], // White (mountains).
+];
+const cyberPuke = [[255, 0, 255], [0, 255, 255]]; // Garish magenta -> cyan palette.
+
 function setup() {
     createCanvas(windowWidth, windowHeight, WEBGL);
     stroke('white');
@@ -42,8 +53,8 @@ function draw() {
 
             push();
 
-            // Interpolate color between magenta and cyan using the height.
-            fill(interpolate([[255, 0, 255], [0, 255, 255]], height / terrain.maxH));
+            // Color of the cell.
+            fill(interpolate(terrainPalette, height / terrain.maxH));
 
             // Position the cell.
             let yOffset = (useHexagons && i % 2 !== 0) ? cellSize / 2 : 0;
