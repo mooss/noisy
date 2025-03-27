@@ -1,11 +1,12 @@
 let gridPower = 6;
-let gridSize = 2**gridPower+1; // Needs to be 2^n + 1 for midpoint displacement.
+let gridSize = 2**gridPower + 1; // Needs to be 2^n + 1 for midpoint displacement.
 let cellSize = 15; // Size of each cell.
-let grid = [];
-let maxH = gridSize*cellSize/3;
+let maxH = gridSize * cellSize / 3;
 let camDist = gridSize * cellSize + 50;
 let noiseScale = .1; // Scale for noise coordinates.
 let useHexagons = false; // Toggle between squares and hexagons.
+
+let terrain; // Terrain, defined as a matrix of heights.
 
 function setup() {
     createCanvas(windowWidth, windowHeight, WEBGL);
@@ -13,7 +14,10 @@ function setup() {
     strokeWeight(1);
     randomSeed(4815162342);
     noiseSeed(4815162342);
-    midpointGrid();
+
+    terrain = new Grid(gridSize, maxH);
+    terrain.midpoint(); // Generate initial terrain.
+
     camera(0, camDist, camDist,
            0, 0, 0,
            0, 1, 0);
@@ -32,14 +36,14 @@ function draw() {
     translate(-totalGridWidth / 2, -totalGridHeight / 2, 0);
 
     // Draw the grid.
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-            let height = grid[i][j];
+    for (let i = 0; i < terrain.size; i++) {
+        for (let j = 0; j < terrain.size; j++) {
+            let height = terrain.data[i][j];
 
             push();
 
             // Interpolate color between magenta and cyan using the height.
-            fill(interpolate([[255, 0, 255], [0, 255, 255]], height/maxH));
+            fill(interpolate([[255, 0, 255], [0, 255, 255]], height / terrain.maxH));
 
             // Position the cell.
             let yOffset = (useHexagons && i % 2 !== 0) ? cellSize / 2 : 0;
@@ -63,120 +67,126 @@ function bigrand() { return random(9999999999); }
 function keyPressed() {
     if (key === 'r') { // Random heights.
         randomSeed(bigrand());
-        randGrid();
+        terrain.rand();
     }
     if (key === 'n') { // Perlin noise.
         noiseSeed(bigrand());
-        noiseGrid();
+        terrain.noise();
     }
     if (key === 'm') { // Midpoint displacement.
         randomSeed(bigrand());
-        midpointGrid();
+        terrain.midpoint();
     }
     if (key === 'h') { // Toggle hexagons.
         useHexagons = !useHexagons;
     }
 }
 
-// Initialize the grid with random heights.
-function randGrid() {
-    for (let i = 0; i < gridSize; i++) {
-        grid[i] = [];
-        for (let j = 0; j < gridSize; j++) {
-            grid[i][j] = random(0, maxH);
-        }
-    }
-}
-
-// Initialize the grid using Perlin noise.
-function noiseGrid() {
-    for (let i = 0; i < gridSize; i++) {
-        grid[i] = [];
-        for (let j = 0; j < gridSize; j++) {
-            grid[i][j] = noise(i * noiseScale, j * noiseScale) * maxH;
-        }
-    }
-}
-
-// Initialize the grid using midpoint displacement algorithm (diamond-square).
-function midpointGrid() {
-    // Initialize empty grid
-    for (let i = 0; i < gridSize; i++) {
-        grid[i] = [];
-        for (let j = 0; j < gridSize; j++) {
-            grid[i][j] = 0;
+// Grid class to encapsulate grid data and generation methods.
+class Grid {
+    constructor(size, maxH) {
+        this.size = size;
+        this.maxH = maxH;
+        this.data = [];
+        for (let i = 0; i < this.size; i++) {
+            this.data[i] = new Array(this.size).fill(0);
         }
     }
 
-    let roughness = 0.6; // Scaling factor for each additional subdivision.
-    let range = 1;
-    let step = gridSize - 1;
-
-    // Initialize the four corners.
-    grid[0][0] = random(0, range);
-    grid[0][gridSize-1] = random(0, range);
-    grid[gridSize-1][0] = random(0, range);
-    grid[gridSize-1][gridSize-1] = random(0, range);
-
-    // Keeping track of min and max heights to then normalize to the intended height range.
-    let max_ = max(grid[0][0], grid[0][gridSize-1], grid[gridSize-1][0], grid[gridSize-1][gridSize-1]);
-    let min_ = min(grid[0][0], grid[0][gridSize-1], grid[gridSize-1][0], grid[gridSize-1][gridSize-1]);
-
-    // Diamond-square proper.
-    while (step > 1) {
-        let halfStep = step / 2;
-
-        // Diamond step, average the four diagonal neighbours of a new point and nudge it a little
-        // bit by a random value.
-        for (let x = halfStep; x < gridSize - 1; x += step) {
-            for (let y = halfStep; y < gridSize - 1; y += step) {
-                let avg = (grid[x-halfStep][y-halfStep] +
-                           grid[x-halfStep][y+halfStep] +
-                           grid[x+halfStep][y-halfStep] +
-                           grid[x+halfStep][y+halfStep]) / 4; // Average.
-                grid[x][y] = avg + random(-range, range); // Nudge.
-                if (grid[x][y] > max_) { max_ = grid[x][y]; }
-                if (grid[x][y] < min_) { min_ = grid[x][y]; }
+    // Random heights.
+    rand() {
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                this.data[i][j] = random(0, this.maxH);
             }
         }
-
-        // Square step, average the four (or three) linear neighbours and nudge it a little bit by a
-        // random value.
-        for (let x = 0; x < gridSize; x += halfStep) {
-            for (let y = (x % step === 0) ? halfStep : 0; y < gridSize; y += step) {
-                let count = 0;
-                let sum = 0;
-
-                // Points in this step can be on the edge of the grid and therefore only have three
-                // valid neighbours so the coordinates must be carefully checked.
-                if (x >= halfStep) { sum += grid[x-halfStep][y]; count++; }
-                if (x + halfStep < gridSize) { sum += grid[x+halfStep][y]; count++; }
-                if (y >= halfStep) { sum += grid[x][y-halfStep]; count++; }
-                if (y + halfStep < gridSize) { sum += grid[x][y+halfStep]; count++; }
-
-                grid[x][y] = sum / count + random(-range, range); // Average and nudge.
-
-                if (grid[x][y] > max_) { max_ = grid[x][y]; }
-                if (grid[x][y] < min_) { min_ = grid[x][y]; }
-            }
-        }
-
-        // Reduce the random range for the next iteration.
-        range *= roughness;
-        step = halfStep;
     }
 
-    // Normalize all values between 0 and maxH.
-    normalize = rangeMaper(min_, max_, 0, maxH);
-    for (let i = 0; i < gridSize; i++) {
-        for (let j = 0; j < gridSize; j++) {
-            grid[i][j] = normalize(grid[i][j]);
+    // Perlin noise.
+    noise() {
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                this.data[i][j] = noise(i * noiseScale, j * noiseScale) * this.maxH;
+            }
+        }
+    }
+
+    // Midpoint displacement (diamond-square).
+    midpoint() {
+        let roughness = 0.6; // Scaling factor for each additional subdivision.
+        let range = 1;
+        let step = this.size - 1;
+
+        // Initialize the four corners.
+        this.data[0][0] = random(0, range);
+        this.data[0][this.size - 1] = random(0, range);
+        this.data[this.size - 1][0] = random(0, range);
+        this.data[this.size - 1][this.size - 1] = random(0, range);
+
+        // Keeping track of min and max heights to then normalize to the intended height range.
+        let max_ = max(this.data[0][0], this.data[0][this.size - 1], this.data[this.size - 1][0], this.data[this.size - 1][this.size - 1]);
+        let min_ = min(this.data[0][0], this.data[0][this.size - 1], this.data[this.size - 1][0], this.data[this.size - 1][this.size - 1]);
+
+        // Diamond-square proper.
+        while (step > 1) {
+            let halfStep = step / 2;
+
+            // Diamond step, average the four diagonal neighbours of a new point and nudge it a
+            // little bit by a random value.
+            for (let x = halfStep; x < this.size - 1; x += step) {
+                for (let y = halfStep; y < this.size - 1; y += step) {
+                    let avg = (this.data[x - halfStep][y - halfStep] +
+                               this.data[x - halfStep][y + halfStep] +
+                               this.data[x + halfStep][y - halfStep] +
+                               this.data[x + halfStep][y + halfStep]) / 4; // Average.
+                    this.data[x][y] = avg + random(-range, range); // Nudge.
+
+                    if (this.data[x][y] > max_) { max_ = this.data[x][y]; }
+                    if (this.data[x][y] < min_) { min_ = this.data[x][y]; }
+                }
+            }
+
+            // Square step, average the four (or three) linear neighbours and nudge it a little bit
+            // by a random value.
+            for (let x = 0; x < this.size; x += halfStep) {
+                for (let y = (x % step === 0) ? halfStep : 0; y < this.size; y += step) {
+                    let count = 0;
+                    let sum = 0;
+
+
+                    // Points in this step can be on the edge of the grid and therefore only have
+                    // three valid neighbours so the coordinates must be carefully checked.
+                    if (x >= halfStep) { sum += this.data[x - halfStep][y]; count++; }
+                    if (x + halfStep < this.size) { sum += this.data[x + halfStep][y]; count++; }
+                    if (y >= halfStep) { sum += this.data[x][y - halfStep]; count++; }
+                    if (y + halfStep < this.size) { sum += this.data[x][y + halfStep]; count++; }
+
+                    this.data[x][y] = sum / count + random(-range, range); // Average and nudge.
+
+                    if (this.data[x][y] > max_) { max_ = this.data[x][y]; }
+                    if (this.data[x][y] < min_) { min_ = this.data[x][y]; }
+                }
+            }
+
+
+            // Reduce the random range for the next iteration.
+            range *= roughness;
+            step = halfStep;
+        }
+
+        // Normalize all values between 0 and maxH.
+        let normalize = rangeMapper(min_, max_, 0, this.maxH);
+        for (let i = 0; i < this.size; i++) {
+            for (let j = 0; j < this.size; j++) {
+                this.data[i][j] = normalize(this.data[i][j]);
+            }
         }
     }
 }
 
-function rangeMaper(fromMin, fromMax, toMin, toMax) {
-    return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin)
+
+function rangeMapper(fromMin, fromMax, toMin, toMax) {
+    return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin);
 }
 
 // Hexagonal prism centered at the origin.
