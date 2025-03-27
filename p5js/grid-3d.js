@@ -172,73 +172,80 @@ class Grid {
 
     // Midpoint displacement (diamond-square).
     midpoint() {
-        let roughness = 0.6; // Scaling factor for each additional subdivision.
-        let range = 1;
-        let step = this.size - 1;
+        midpointDisplacement(this.data);
+    }
+}
 
-        // Initialize the four corners.
-        this.data[0][0] = random(0, range);
-        this.data[0][this.size - 1] = random(0, range);
-        this.data[this.size - 1][0] = random(0, range);
-        this.data[this.size - 1][this.size - 1] = random(0, range);
+function midpointDisplacement(grid) {
+    const roughness = 0.6; // Scaling factor for each additional subdivision.
+    let range = 1;
+    const size = grid.length;
 
-        // Keeping track of min and max heights to then normalize to the intended height range.
-        let max_ = max(this.data[0][0], this.data[0][this.size - 1], this.data[this.size - 1][0], this.data[this.size - 1][this.size - 1]);
-        let min_ = min(this.data[0][0], this.data[0][this.size - 1], this.data[this.size - 1][0], this.data[this.size - 1][this.size - 1]);
+    // Offset used to iterate through the grid.
+    // Power of two. Starts big and is divided by two each iteration (adding level of details).
+    let step = size - 1;
 
-        // Diamond-square proper.
-        while (step > 1) {
-            let halfStep = step / 2;
+    // Initialize the four corners.
+    grid[0][0] = random(0, range);
+    grid[0][size - 1] = random(0, range);
+    grid[size - 1][0] = random(0, range);
+    grid[size - 1][size - 1] = random(0, range);
 
-            // Diamond step, average the four diagonal neighbours of a new point and nudge it a
-            // little bit by a random value.
-            for (let x = halfStep; x < this.size - 1; x += step) {
-                for (let y = halfStep; y < this.size - 1; y += step) {
-                    let avg = (this.data[x - halfStep][y - halfStep] +
-                               this.data[x - halfStep][y + halfStep] +
-                               this.data[x + halfStep][y - halfStep] +
-                               this.data[x + halfStep][y + halfStep]) / 4; // Average.
-                    this.data[x][y] = avg + random(-range, range); // Nudge.
+    // Keeping track of min and max heights to then normalize to the intended height range.
+    let max_ = max(grid[0][0], grid[0][size - 1], grid[size - 1][0], grid[size - 1][size - 1]);
+    let min_ = min(grid[0][0], grid[0][size - 1], grid[size - 1][0], grid[size - 1][size - 1]);
 
-                    if (this.data[x][y] > max_) { max_ = this.data[x][y]; }
-                    if (this.data[x][y] < min_) { min_ = this.data[x][y]; }
-                }
+    // Diamond-square proper.
+    while (step > 1) {
+        let halfStep = step / 2;
+
+        // Diamond step, average the four diagonal neighbours of a new point and nudge it a
+        // little bit by a random value.
+        for (let x = halfStep; x < size - 1; x += step) {
+            for (let y = halfStep; y < size - 1; y += step) {
+                let avg = (grid[x - halfStep][y - halfStep] +
+                           grid[x - halfStep][y + halfStep] +
+                           grid[x + halfStep][y - halfStep] +
+                           grid[x + halfStep][y + halfStep]) / 4; // Average.
+                grid[x][y] = avg + random(-range, range); // Nudge.
+
+                if (grid[x][y] > max_) { max_ = grid[x][y]; }
+                if (grid[x][y] < min_) { min_ = grid[x][y]; }
             }
-
-            // Square step, average the four (or three) linear neighbours and nudge it a little bit
-            // by a random value.
-            for (let x = 0; x < this.size; x += halfStep) {
-                for (let y = (x % step === 0) ? halfStep : 0; y < this.size; y += step) {
-                    let count = 0;
-                    let sum = 0;
-
-
-                    // Points in this step can be on the edge of the grid and therefore only have
-                    // three valid neighbours so the coordinates must be carefully checked.
-                    if (x >= halfStep) { sum += this.data[x - halfStep][y]; count++; }
-                    if (x + halfStep < this.size) { sum += this.data[x + halfStep][y]; count++; }
-                    if (y >= halfStep) { sum += this.data[x][y - halfStep]; count++; }
-                    if (y + halfStep < this.size) { sum += this.data[x][y + halfStep]; count++; }
-
-                    this.data[x][y] = sum / count + random(-range, range); // Average and nudge.
-
-                    if (this.data[x][y] > max_) { max_ = this.data[x][y]; }
-                    if (this.data[x][y] < min_) { min_ = this.data[x][y]; }
-                }
-            }
-
-
-            // Reduce the random range for the next iteration.
-            range *= roughness;
-            step = halfStep;
         }
 
-        // Normalize all values between 0 and maxH.
-        let normalize = rangeMapper(min_, max_, 0, this.maxH);
-        for (let i = 0; i < this.size; i++) {
-            for (let j = 0; j < this.size; j++) {
-                this.data[i][j] = normalize(this.data[i][j]);
+        // Square step, average the four (or three) linear neighbours and nudge it a little bit
+        // by a random value.
+        for (let x = 0; x < size; x += halfStep) {
+            for (let y = (x % step === 0) ? halfStep : 0; y < size; y += step) {
+                let count = 0;
+                let sum = 0;
+
+                // Points in this step can be on the edge of the grid and therefore only have
+                // three valid neighbours so the coordinates must be carefully checked.
+                if (x >= halfStep) { sum += grid[x - halfStep][y]; count++; }
+                if (x + halfStep < size) { sum += grid[x + halfStep][y]; count++; }
+                if (y >= halfStep) { sum += grid[x][y - halfStep]; count++; }
+                if (y + halfStep < size) { sum += grid[x][y + halfStep]; count++; }
+
+                grid[x][y] = sum / count + random(-range, range); // Average and nudge.
+
+                if (grid[x][y] > max_) { max_ = grid[x][y]; }
+                if (grid[x][y] < min_) { min_ = grid[x][y]; }
             }
+        }
+
+
+        // Reduce the random range for the next iteration.
+        range *= roughness;
+        step = halfStep;
+    }
+
+    // Normalize all values between 0 and maxH.
+    let normalize = rangeMapper(min_, max_, 0, maxH);
+    for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+            grid[i][j] = normalize(grid[i][j]);
         }
     }
 }
