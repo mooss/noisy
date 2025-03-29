@@ -148,8 +148,8 @@ function midpointDisplacement(grid, maxH) {
         step = halfStep;
     }
 
-    // Normalize all values between 0 and maxH.
-    let normalize = rangeMapper(min_, max_, 0, maxH);
+    // Normalize all values between 1 and maxH.
+    let normalize = rangeMapper(min_, max_, 1, maxH);
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
             grid[i][j] = normalize(grid[i][j]);
