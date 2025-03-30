@@ -1,3 +1,5 @@
+import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
+
 ///////////////////////////
 // Generation parameters //
 
@@ -6,6 +8,7 @@ let gridSize = 2**gridPower + 1; // Needs to be 2^n + 1 for midpoint displacemen
 let cellSize = 15; // Size of each cell.
 let maxH = gridSize * cellSize / 3; // Maximum height of terrain.
 let useHexagons = false; // Toggle between squares and hexagons.
+let useSurface = false; // Toggle between 3D surface and individual cells
 let noiseScale = 0.1; // Scale for noise coordinates (if using noise).
 let rngSeed = 4815162342;
 
@@ -57,19 +60,19 @@ class Grid {
     rand() {
         for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
-                this.data[i][j] = Math.random() * this.maxH;
+                this.data[i][j] = rng(1, maxH);
             }
         }
     }
 
-    // Perlin noise (placeholder).
+    // Simplex noise.
     noise() {
-        console.warn("Noise generation requires a Perlin noise library. Using random values instead.");
-        // Example using Math.random() as a placeholder:
-         for (let i = 0; i < this.size; i++) {
+        const noiseGen = createNoise2D(createLCG(rngSeed));
+        for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
-                 // Replace with actual noise function if available
-                this.data[i][j] = Math.random() * this.maxH;
+                let noiseValue = noiseGen(i * noiseScale, j * noiseScale);
+                let normalizedValue = (noiseValue + 1) / 2;
+                this.data[i][j] = normalizedValue * this.maxH;
             }
         }
     }
@@ -90,10 +93,10 @@ function midpointDisplacement(grid, maxH) {
     let step = size - 1;
 
     // Initialize the four corners.
-    grid[0][0] = random(0, range);
-    grid[0][size - 1] = random(0, range);
-    grid[size - 1][0] = random(0, range);
-    grid[size - 1][size - 1] = random(0, range);
+    grid[0][0] = rng(0, range);
+    grid[0][size - 1] = rng(0, range);
+    grid[size - 1][0] = rng(0, range);
+    grid[size - 1][size - 1] = rng(0, range);
 
     // Keeping track of min and max heights to then normalize to the intended height range.
     let max_ = -Infinity, min_ = Infinity;
@@ -119,7 +122,7 @@ function midpointDisplacement(grid, maxH) {
                            grid[x + halfStep][y - halfStep] +
                            grid[x + halfStep][y + halfStep]) / 4; // Average.
 
-                grid[x][y] = avg + random(-range, range); // Nudge.
+                grid[x][y] = avg + rng(-range, range); // Nudge.
                 minmax(grid[x][y]);
             }
         }
@@ -138,7 +141,7 @@ function midpointDisplacement(grid, maxH) {
                 if (y >= halfStep) { sum += grid[x][y - halfStep]; count++; }
                 if (y + halfStep < size) { sum += grid[x][y + halfStep]; count++; }
 
-                grid[x][y] = sum / count + random(-range, range); // Average and nudge.
+                grid[x][y] = sum / count + rng(-range, range); // Average and nudge.
                 minmax(grid[x][y]);
             }
         }
@@ -161,8 +164,7 @@ function rangeMapper(fromMin, fromMax, toMin, toMax) {
     return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin);
 }
 
-// createLCG returns a linear congruential generator that generates pseudorandom values between 0
-// and 1.
+// Returns a linear congruential generator that generates pseudorandom values between 0 and 1.
 // This is a hack to get deterministic PRNG since Math.random cannot be seeded.
 function createLCG(seed) {
     const a = 1664525;
@@ -176,10 +178,13 @@ function createLCG(seed) {
     };
 }
 
-const random = function() {
-    const generator = createLCG(rngSeed);
-    return (min, max) => generator() * (max - min) + min;
-}()
+let rng;
+const reseed = function() {
+    let generator = createLCG(rngSeed);
+    rng = (min, max) => generator() * (max - min) + min;
+    ++rngSeed;
+}
+reseed();
 
 // Interpolate between colors in a palette. Value expected between 0 and 1.
 function interpolateColors(colors, value) {
@@ -286,6 +291,45 @@ function createGridMeshes() {
         terrainMeshes.remove(terrainMeshes.children[0]);
     }
 
+    if (useSurface) {
+        const geometry = new THREE.PlaneGeometry(
+            gridSize * cellSize, 
+            gridSize * cellSize, 
+            gridSize - 1, 
+            gridSize - 1
+        );
+        
+        const positionAttribute = geometry.getAttribute('position');
+        const colors = [];
+        
+        // Set heights and colors.
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                // Height.
+                const vertexIndex = i * gridSize + j;
+                const height = terrainGrid.data[i][j];
+                positionAttribute.setZ(vertexIndex, height);
+                
+                // Color.
+                const color = interpolateColors(palettes[currentPalette], height / maxH);
+                colors.push(color.r, color.g, color.b);
+            }
+        }
+        
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        geometry.attributes.position.needsUpdate = true;
+        geometry.computeVertexNormals();
+        
+        const material = new THREE.MeshStandardMaterial({ 
+            vertexColors: true,
+            side: THREE.DoubleSide
+        });
+        
+        const surfaceMesh = new THREE.Mesh(geometry, material);
+        terrainMeshes.add(surfaceMesh);
+        return;
+    }
+
     const ySpacingFactor = useHexagons ? Math.sqrt(3) / 2 : 1;
     const hexRadius = cellSize / Math.sqrt(3);
     const hexWidth = cellSize; // Distance between parallel sides.
@@ -311,7 +355,7 @@ function createGridMeshes() {
             const xOffset = (useHexagons && j % 2 !== 0) ? hexWidth / 2 : 0;
             const xPos = startX + i * cellSize + xOffset;
             const yPos = startY + j * cellSize * ySpacingFactor;
-            let zPos = height / 2; // Center geometry vertically
+            let zPos = height / 2; // Center squares vertically.
 
             if (useHexagons) {
                 geometry = createHexagonGeometry(hexRadius, height);
@@ -348,6 +392,7 @@ function onKeyPress(event) {
             needsUpdate = true;
             break;
         case 'n':
+            reseed();
             terrainGrid.noise();
             needsUpdate = true;
             break;
@@ -355,8 +400,15 @@ function onKeyPress(event) {
             terrainGrid.midpoint();
             needsUpdate = true;
             break;
-        case 'h':
-            useHexagons = !useHexagons;
+        case 's':
+            if (useHexagons) {
+                useSurface = true;
+                useHexagons = false;
+            } else if (useSurface) {
+                useSurface = false;
+            } else {
+                useHexagons = true;
+            }
             needsUpdate = true;
             break;
         case 'c':
