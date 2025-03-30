@@ -8,8 +8,8 @@ let gridSize = 2**gridPower + 1; // Needs to be 2^n + 1 for midpoint displacemen
 let cellSize = 15; // Size of each cell.
 let maxH = gridSize * cellSize / 3; // Maximum height of terrain.
 let useHexagons = false; // Toggle between squares and hexagons.
-let useSurface = false; // Toggle between 3D surface and individual cells
-let noiseScale = 0.1; // Scale for noise coordinates (if using noise).
+let useSurface = false; // Toggle between 3D surface and individual cells.
+let noiseScale = 0.1; // Scale for noise coordinates.
 let rngSeed = 4815162342;
 
 let rgb = (r, g, b) => new THREE.Color(r/255, g/255, b/255);
@@ -249,7 +249,7 @@ function init() {
 
     // Event Listeners.
     window.addEventListener('resize', onWindowResize, false);
-    window.addEventListener('keydown', onKeyPress, false);
+    setupUIListeners(); // Add listeners for the controls.
 }
 
 function animate() {
@@ -385,40 +385,58 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-function onKeyPress(event) {
-    let needsUpdate = false;
-    switch (event.key.toLowerCase()) {
-        case 'r':
-            terrainGrid.rand();
-            needsUpdate = true;
-            break;
-        case 'n':
-            reseed();
-            terrainGrid.noise();
-            needsUpdate = true;
-            break;
-        case 'm':
-            terrainGrid.midpoint();
-            needsUpdate = true;
-            break;
-        case 's':
-            if (useHexagons) {
-                useSurface = true;
+function setupUIListeners() {
+    ////////////////////////
+    // Terrain generation //
+    document.getElementById('btn-random').addEventListener('click', () => {
+        terrainGrid.rand();
+        createGridMeshes();
+    });
+
+    document.getElementById('btn-noise').addEventListener('click', () => {
+        reseed(); // Because noise is deterministic, we need a new seed.
+        terrainGrid.noise();
+        createGridMeshes();
+    });
+
+    document.getElementById('btn-midpoint').addEventListener('click', () => {
+        terrainGrid.midpoint();
+        createGridMeshes();
+    });
+
+    ////////////
+    // Shapes //
+    document.querySelectorAll('input[name="shape"]').forEach(radio => {
+        radio.addEventListener('change', (event) => {
+            const shape = event.target.value;
+            if (shape === 'squares') {
                 useHexagons = false;
-            } else if (useSurface) {
                 useSurface = false;
-            } else {
+            } else if (shape === 'hexagons') {
                 useHexagons = true;
+                useSurface = false;
+            } else if (shape === 'surface') {
+                useHexagons = false;
+                useSurface = true;
             }
-            needsUpdate = true;
-            break;
-        case 'c':
-            currentPalette = (currentPalette + 1) % palettes.length;
-            needsUpdate = true;
-            break;
+            createGridMeshes();
+        });
+    });
+
+    // Set initial radio button state based on default variables.
+    if (useSurface) {
+        document.getElementById('shape-surface').checked = true;
+    } else if (useHexagons) {
+        document.getElementById('shape-hexagons').checked = true;
+    } else {
+        document.getElementById('shape-squares').checked = true;
     }
 
-    if (needsUpdate) {
-        createGridMeshes(); // Recreate the visuals.
-    }
+
+    ////////////
+    // Colors //
+    document.getElementById('btn-palette').addEventListener('click', () => {
+        currentPalette = (currentPalette + 1) % palettes.length;
+        createGridMeshes();
+    });
 }

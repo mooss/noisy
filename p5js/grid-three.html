@@ -4,11 +4,67 @@
         <meta charset="utf-8">
         <title>Terrain generation grid</title>
         <style>
-         body { margin: 0; overflow: hidden; }
+         body { margin: 0; overflow: hidden; font-family: sans-serif; }
          canvas { display: block; }
+
+         /* Control panel */
+         #controls {
+             position: absolute;
+             top: 10px;
+             left: 10px;
+             background: rgba(0, 0, 0, 0.7);
+             color: white;
+             padding: 15px;
+             border-radius: 5px;
+             display: flex;
+             flex-direction: column;
+             gap: 10px;
+         }
+         #controls div {
+             display: flex;
+             flex-direction: column; /* Stack elements vertically. */
+             gap: 5px; /* Spacing within a control group. */
+         }
+         #controls label {
+             margin-bottom: 2px;
+             font-weight: bold;
+         }
+         #controls button, #controls input {
+             padding: 5px;
+             cursor: pointer;
+         }
+         #controls .radio-group label {
+             margin-right: 10px;
+             font-weight: normal;
+         }
+         #controls .radio-group input[type="radio"] {
+             margin-right: 5px;
+         }
         </style>
     </head>
     <body>
+        <!-- Control panel -->
+        <div id="controls">
+            <div>
+                <label>Generate:</label>
+                <button id="btn-random">Random</button>
+                <button id="btn-noise">Noise</button>
+                <button id="btn-midpoint">Midpoint</button>
+            </div>
+            <div>
+                <label>Shape:</label>
+                <div class="radio-group">
+                    <label><input type="radio" id="shape-squares" name="shape" value="squares" checked> Squares</label>
+                    <label><input type="radio" id="shape-hexagons" name="shape" value="hexagons"> Hexagons</label>
+                    <label><input type="radio" id="shape-surface" name="shape" value="surface"> Surface</label>
+                </div>
+            </div>
+            <div>
+                <label>Palette:</label>
+                <button id="btn-palette">Cycle Palette</button>
+            </div>
+        </div>
+
         <!-- Libraries -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
