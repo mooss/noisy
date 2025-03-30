@@ -326,6 +326,7 @@ function createGridMeshes() {
         });
         
         const surfaceMesh = new THREE.Mesh(geometry, material);
+        surfaceMesh.rotation.z = Math.PI / 2;
         terrainMeshes.add(surfaceMesh);
         return;
     }
