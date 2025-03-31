@@ -90,6 +90,13 @@ class Grid {
     midpoint() {
         midpointDisplacement(this.data, this.maxH);
     }
+
+    // Average of midpoint displacement and simplex noise.
+    midnoise() {
+        this.midpoint();
+        const spx = this.simplex();
+        this.apply((x, y) => this.data[x][y] * .7 + spx(x, y) * .3);
+    }
 }
 
 function midpointDisplacement(grid, maxH) {
@@ -410,6 +417,11 @@ function setupUIListeners() {
 
     document.getElementById('btn-midpoint').addEventListener('click', () => {
         terrainGrid.midpoint();
+        createGridMeshes();
+    });
+
+    document.getElementById('btn-midnoise').addEventListener('click', () => {
+        terrainGrid.midnoise();
         createGridMeshes();
     });
 
