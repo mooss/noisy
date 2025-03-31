@@ -78,6 +78,7 @@ class Grid {
 
     // Random heights.
     rand() {
+        reseed();
         this.apply(() => rng(1, maxH));
     }
 
@@ -88,14 +89,16 @@ class Grid {
 
     // Midpoint displacement (diamond-square).
     midpoint() {
+        reseed();
         midpointDisplacement(this.data, this.maxH);
     }
 
     // Average of midpoint displacement and simplex noise.
     midnoise() {
+        reseed();
         this.midpoint();
         const spx = this.simplex();
-        this.apply((x, y) => this.data[x][y] * .7 + spx(x, y) * .3);
+        this.apply((x, y) => this.data[x][y] * .8 + spx(x, y) * .2);
     }
 }
 
@@ -195,10 +198,11 @@ function createLCG(seed) {
 }
 
 let rng;
+let currentGenerationMethod = 'midpoint';
+
 const reseed = function() {
     let generator = createLCG(rngSeed);
     rng = (min, max) => generator() * (max - min) + min;
-    ++rngSeed;
 }
 reseed();
 
@@ -405,23 +409,32 @@ function setupUIListeners() {
     ////////////////////////
     // Terrain generation //
     document.getElementById('btn-random').addEventListener('click', () => {
+        currentGenerationMethod = 'rand';
         terrainGrid.rand();
         createGridMeshes();
     });
 
     document.getElementById('btn-noise').addEventListener('click', () => {
-        reseed(); // Because noise is deterministic, we need a new seed.
+        currentGenerationMethod = 'noise';
         terrainGrid.noise();
         createGridMeshes();
     });
 
     document.getElementById('btn-midpoint').addEventListener('click', () => {
+        currentGenerationMethod = 'midpoint';
         terrainGrid.midpoint();
         createGridMeshes();
     });
 
     document.getElementById('btn-midnoise').addEventListener('click', () => {
+        currentGenerationMethod = 'midnoise';
         terrainGrid.midnoise();
+        createGridMeshes();
+    });
+
+    document.getElementById('btn-new-seed').addEventListener('click', () => {
+        rngSeed++;
+        terrainGrid[currentGenerationMethod]();
         createGridMeshes();
     });
 
