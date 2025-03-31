@@ -3,17 +3,34 @@ import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/si
 ///////////////////////////
 // Generation parameters //
 
+// The grid size needs to be 2^n + 1 for midpoint displacement.
 let gridPower = 5;
-let gridSize = 2**gridPower + 1; // Needs to be 2^n + 1 for midpoint displacement.
-let cellSize = 15; // Size of each cell.
-let maxH = gridSize * cellSize / 3; // Maximum height of terrain.
-let updateMaxHeight = () => { maxH = gridSize * cellSize / 3; };
-let useHexagons = false; // Toggle between squares and hexagons.
-let useSurface = false; // Toggle between 3D surface and individual cells.
-let noiseScale = 0.1; // Scale for noise coordinates.
+let gridSize = 2**gridPower + 1;
+
+// Cell size must decrease when the gridSize increases to keep the same total size.
+const getCellSize = () => 256 / (gridSize);
+
+// Maximum height of terrain.
+let maxH = gridSize * getCellSize() / 3;
+let updateMaxHeight = () => { maxH = gridSize * getCellSize() / 3; };
+
+// Toggle between squares and hexagons.
+let useHexagons = false;
+
+// Toggle between 3D surface and individual cells.
+let useSurface = false;
+
+// Scale for simplex noise coordinates.
+let noiseScale = 0.1;
+
+// Initial seed to allow for deterministic generation.
 let rngSeed = 4815162342;
 
-let rgb = (r, g, b) => new THREE.Color(r/255, g/255, b/255);
+////////////////////
+// Color palettes //
+
+const rgb = (r, g, b) => new THREE.Color(r/255, g/255, b/255);
+
 const terrainPalette = [
     rgb(100, 200, 50),  // Light green.
     rgb(100, 200, 50),  // Light green.
@@ -229,7 +246,7 @@ function interpolateColors(colors, value) {
 
 let scene, camera, renderer, controls, terrainMeshes;
 
-const camDist = gridSize * cellSize *1.2 + 50;
+const camDist = gridSize * getCellSize() * 1.2 + 50;
 
 function init() {
     // Scene.
@@ -314,8 +331,8 @@ function createGridMeshes() {
 
     if (useSurface) {
         const geometry = new THREE.PlaneGeometry(
-            gridSize * cellSize, 
-            gridSize * cellSize, 
+            gridSize * getCellSize(),
+            gridSize * getCellSize(),
             gridSize - 1, 
             gridSize - 1
         );
@@ -353,12 +370,12 @@ function createGridMeshes() {
     }
 
     const ySpacingFactor = useHexagons ? Math.sqrt(3) / 2 : 1;
-    const hexRadius = cellSize / Math.sqrt(3);
-    const hexWidth = cellSize; // Distance between parallel sides.
+    const hexRadius = getCellSize() / Math.sqrt(3);
+    const hexWidth = getCellSize(); // Distance between parallel sides.
 
     // Calculate total grid dimensions for centering.
-    let totalGridWidth = (gridSize - 1) * cellSize + (useHexagons ? hexWidth / 2 : 0);
-    let totalGridHeight = (gridSize - 1) * cellSize * ySpacingFactor;
+    let totalGridWidth = (gridSize - 1) * getCellSize() + (useHexagons ? hexWidth / 2 : 0);
+    let totalGridHeight = (gridSize - 1) * getCellSize() * ySpacingFactor;
 
     const startX = -totalGridWidth / 2;
     const startY = -totalGridHeight / 2;
@@ -375,8 +392,8 @@ function createGridMeshes() {
             const cellColor = interpolateColors(palettes[currentPalette], height / terrainGrid.maxH);
 
             const xOffset = (useHexagons && j % 2 !== 0) ? hexWidth / 2 : 0;
-            const xPos = startX + i * cellSize + xOffset;
-            const yPos = startY + j * cellSize * ySpacingFactor;
+            const xPos = startX + i * getCellSize() + xOffset;
+            const yPos = startY + j * getCellSize() * ySpacingFactor;
             let zPos = height / 2; // Center squares vertically.
 
             if (useHexagons) {
@@ -386,7 +403,7 @@ function createGridMeshes() {
                 mesh.rotation.z = Math.PI / 2; // Rotate for a flat top orientation.
                 zPos = 0; // Hexagon prisms are already centered vertically.
             } else {
-                geometry = new THREE.BoxGeometry(cellSize, cellSize, height);
+                geometry = new THREE.BoxGeometry(getCellSize(), getCellSize(), height);
                 mesh = new THREE.Mesh(geometry, material.clone());
                 mesh.material.color.set(cellColor);
             }
