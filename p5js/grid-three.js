@@ -11,8 +11,9 @@ let gridSize = 2**gridPower + 1;
 const getCellSize = () => 256 / (gridSize);
 
 // Maximum height of terrain.
-let maxH = gridSize * getCellSize() / 3;
-let updateMaxHeight = () => { maxH = gridSize * getCellSize() / 3; };
+let maxH;
+const updateMaxHeight = () => { maxH = gridSize * getCellSize() / 3; };
+updateMaxHeight();
 
 // Toggle between squares and hexagons.
 let useHexagons = false;
@@ -21,7 +22,9 @@ let useHexagons = false;
 let useSurface = false;
 
 // Scale for simplex noise coordinates.
-let noiseScale = 0.1;
+let noiseScale;
+const updateNoiseScale = () => { noiseScale = 1 / gridSize; };
+updateNoiseScale();
 
 // Initial seed to allow for deterministic generation.
 let rngSeed = 4815162342;
@@ -438,6 +441,7 @@ function setupUIListeners() {
         gridSize = 2**gridPower + 1;
         gridSizeValue.textContent = gridSize;
         updateMaxHeight();
+        updateNoiseScale();
 
         // Regenerate with new size.
         terrainGrid = new Grid(gridSize, maxH);
