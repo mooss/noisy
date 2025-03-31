@@ -56,25 +56,34 @@ class Grid {
         }
     }
 
-    // Random heights.
-    rand() {
+    ///////////////
+    // Utilities //
+
+    // Returns a function that gives the simplex value at the given coordinates.
+    simplex() {
+        const noiseGen = createNoise2D(createLCG(rngSeed));
+        return (x, y) => ((noiseGen(x * noiseScale, y * noiseScale) + 1) / 2) * this.maxH;
+    }
+
+    apply(fun) {
         for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
-                this.data[i][j] = rng(1, maxH);
+                this.data[i][j] = fun(i, j);
             }
         }
     }
 
+    ///////////////////////
+    // Height generation //
+
+    // Random heights.
+    rand() {
+        this.apply(() => rng(1, maxH));
+    }
+
     // Simplex noise.
     noise() {
-        const noiseGen = createNoise2D(createLCG(rngSeed));
-        for (let i = 0; i < this.size; i++) {
-            for (let j = 0; j < this.size; j++) {
-                let noiseValue = noiseGen(i * noiseScale, j * noiseScale);
-                let normalizedValue = (noiseValue + 1) / 2;
-                this.data[i][j] = normalizedValue * this.maxH;
-            }
-        }
+        this.apply(this.simplex());
     }
 
     // Midpoint displacement (diamond-square).
