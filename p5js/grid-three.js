@@ -3,10 +3,11 @@ import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/si
 ///////////////////////////
 // Generation parameters //
 
-let gridPower = 6;
+let gridPower = 5;
 let gridSize = 2**gridPower + 1; // Needs to be 2^n + 1 for midpoint displacement.
 let cellSize = 15; // Size of each cell.
 let maxH = gridSize * cellSize / 3; // Maximum height of terrain.
+let updateMaxHeight = () => { maxH = gridSize * cellSize / 3; };
 let useHexagons = false; // Toggle between squares and hexagons.
 let useSurface = false; // Toggle between 3D surface and individual cells.
 let noiseScale = 0.1; // Scale for noise coordinates.
@@ -406,6 +407,27 @@ function onWindowResize() {
 }
 
 function setupUIListeners() {
+    ///////////////
+    // Grid size //
+    const gridSizeSlider = document.getElementById('grid-size-slider');
+    const gridSizeValue = document.getElementById('grid-size-value');
+
+    // Initial values.
+    gridSizeValue.textContent = gridSize;
+    gridSizeSlider.value = gridPower;
+
+    gridSizeSlider.addEventListener('input', () => {
+        gridPower = parseInt(gridSizeSlider.value);
+        gridSize = 2**gridPower + 1;
+        gridSizeValue.textContent = gridSize;
+        updateMaxHeight();
+
+        // Regenerate with new size.
+        terrainGrid = new Grid(gridSize, maxH);
+        terrainGrid[currentGenerationMethod]();
+        createGridMeshes();
+    });
+
     ////////////////////////
     // Terrain generation //
     document.getElementById('btn-random').addEventListener('click', () => {
@@ -434,6 +456,7 @@ function setupUIListeners() {
 
     document.getElementById('btn-new-seed').addEventListener('click', () => {
         rngSeed++;
+        terrainGrid = new Grid(gridSize, maxH);
         terrainGrid[currentGenerationMethod]();
         createGridMeshes();
     });
