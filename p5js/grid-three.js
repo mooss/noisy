@@ -239,7 +239,7 @@ function init() {
     const ambientLight = new THREE.AmbientLight(0x808080); // Soft white light.
     scene.add(ambientLight);
     const directionalLight = new THREE.DirectionalLight(0xffffff, .8);
-    directionalLight.position.set(1, 1, -1).normalize();
+    directionalLight.position.set(1, 1, 1).normalize();
     scene.add(directionalLight);
 
     // Mouse controls.
