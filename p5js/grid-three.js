@@ -1,7 +1,7 @@
 import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
 
-///////////////////////////
-// Generation parameters //
+//////////////////////////////
+// Configuration & Settings //
 
 // The grid size needs to be 2^n + 1 for midpoint displacement.
 let gridPower = 5;
@@ -15,6 +15,9 @@ let useSurface = false;
 
 // Initial seed to allow for deterministic generation.
 let rngSeed = 23;
+
+// Terrain generation method.
+let currentGenerationMethod = 'midpoint';
 
 ////////////////////
 // Color palettes //
@@ -47,12 +50,12 @@ const cyberPuke = [
 let palettes = [terrainPalette, continentalPalette, cyberPuke];
 let currentPalette = 0;
 
-////////////////////////
-// Terrain generation //
+///////////////////////////////
+// Grid & Terrain Generation //
 
 let terrainGrid;
 
-// Grid class to encapsulate grid data and generation methods.
+// Handles terrain data storage and generation algorithms.
 class Grid {
     constructor(size, seed) {
         // Grid layout.
@@ -200,11 +203,10 @@ function midpointDisplacement(grid, maxH, rng) {
     }
 }
 
-function rangeMapper(fromMin, fromMax, toMin, toMax) {
-    return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin);
-}
+///////////////////////
+// Utility Functions //
 
-// Returns a linear congruential generator that generates pseudorandom values between 0 and 1.
+// Linear congruential generator that generates pseudorandom values between 0 and 1.
 // This is a hack to get deterministic PRNG since Math.random cannot be seeded.
 function createLCG(seed) {
     const a = 1664525;
@@ -218,15 +220,17 @@ function createLCG(seed) {
     };
 }
 
+// Creates a function mapping function between number ranges.
+function rangeMapper(fromMin, fromMax, toMin, toMax) {
+    return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin);
+}
+
 function mkRng(seed) {
     let generator = createLCG(seed);
     return (min, max) => generator() * (max - min) + min;
 }
 
-let rng;
-let currentGenerationMethod = 'midpoint';
-
-// Interpolate between colors in a palette. Value expected between 0 and 1.
+// Interpolates between colors in a palette (0-1 normalized value).
 function interpolateColors(colors, value) {
     if (colors.length === 0) return rgb(255, 255, 255);
     if (colors.length === 1) return colors[0].clone();
@@ -242,11 +246,12 @@ function interpolateColors(colors, value) {
     return color1.clone().lerp(color2, ratio);
 }
 
-//////////////////////////////////
-// Three.js setup and rendering //
+/////////////////////////////////////////
+// Three.js Initialization & Rendering //
 
 let scene, camera, renderer, controls, terrainMeshes;
 
+// Core Three.js scene setup.
 function init() {
     // Scene.
     scene = new THREE.Scene();
@@ -254,7 +259,7 @@ function init() {
 
     // Heightmap.
     terrainGrid = new Grid(gridSize, rngSeed);
-    terrainGrid.midpoint();
+    terrainGrid[currentGenerationMethod]();
 
     // Camera. Mediocre, needs to be improved.
     const aspect = window.innerWidth / window.innerHeight;
@@ -299,8 +304,8 @@ function animate() {
 init();
 animate();
 
-////////////
-// Meshes //
+//////////////////////////////
+// Geometry & Mesh Creation //
 
 function createHexagonGeometry(radius, height) {
     const shape = new THREE.Shape();
@@ -414,8 +419,8 @@ function createGridMeshes() {
     }
 }
 
-////////////
-// Events //
+////////////////////////////////////
+// UI Management & Event Handlers //
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
