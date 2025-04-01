@@ -7,24 +7,11 @@ import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/si
 let gridPower = 5;
 let gridSize = 2**gridPower + 1;
 
-// Cell size must decrease when the gridSize increases to keep the same total size.
-const getCellSize = () => 256 / (gridSize);
-
-// Maximum height of terrain.
-let maxH;
-const updateMaxHeight = () => { maxH = gridSize * getCellSize() / 3; };
-updateMaxHeight();
-
 // Toggle between squares and hexagons.
 let useHexagons = false;
 
 // Toggle between 3D surface and individual cells.
 let useSurface = false;
-
-// Scale for simplex noise coordinates.
-let noiseScale;
-const updateNoiseScale = () => { noiseScale = 1 / gridSize; };
-updateNoiseScale();
 
 // Initial seed to allow for deterministic generation.
 let rngSeed = 4815162342;
@@ -67,9 +54,11 @@ let terrainGrid;
 
 // Grid class to encapsulate grid data and generation methods.
 class Grid {
-    constructor(size, maxH) {
+    constructor(size) {
         this.size = size;
-        this.maxH = maxH;
+        this.cellSize = 256 / size;
+        this.maxH = size * this.cellSize / 3;
+        this.noiseScale = 1 / size;
         this.data = [];
 
         for (let i = 0; i < this.size; i++) {
@@ -83,7 +72,7 @@ class Grid {
     // Returns a function that gives the simplex value at the given coordinates.
     simplex() {
         const noiseGen = createNoise2D(createLCG(rngSeed));
-        return (x, y) => ((noiseGen(x * noiseScale, y * noiseScale) + 1) / 2) * this.maxH;
+        return (x, y) => ((noiseGen(x * this.noiseScale, y * this.noiseScale) + 1) / 2) * this.maxH;
     }
 
     apply(fun) {
@@ -100,7 +89,7 @@ class Grid {
     // Random heights.
     rand() {
         reseed();
-        this.apply(() => rng(1, maxH));
+        this.apply(() => rng(1, this.maxH));
     }
 
     // Simplex noise.
@@ -249,15 +238,18 @@ function interpolateColors(colors, value) {
 
 let scene, camera, renderer, controls, terrainMeshes;
 
-const camDist = gridSize * getCellSize() * 1.2 + 50;
-
 function init() {
     // Scene.
     scene = new THREE.Scene();
     scene.background = rgb(0, 0, 0);
 
+    // Heightmap.
+    terrainGrid = new Grid(gridSize);
+    terrainGrid.midpoint();
+
     // Camera. Mediocre, needs to be improved.
     const aspect = window.innerWidth / window.innerHeight;
+    const camDist = terrainGrid.size * terrainGrid.cellSize * 1.2 + 50;
     camera = new THREE.PerspectiveCamera(60, aspect, 0.1, camDist * 2);
     camera.position.set(0, -camDist * 0.7, camDist * 0.7);
     camera.lookAt(scene.position);
@@ -278,10 +270,6 @@ function init() {
     controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; // Smooths camera movement.
     controls.dampingFactor = 0.1;
-
-    // Heightmap.
-    terrainGrid = new Grid(gridSize, maxH);
-    terrainGrid.midpoint();
 
     // Meshes (from heightmap to geometry).
     terrainMeshes = new THREE.Group();
@@ -334,25 +322,25 @@ function createGridMeshes() {
 
     if (useSurface) {
         const geometry = new THREE.PlaneGeometry(
-            gridSize * getCellSize(),
-            gridSize * getCellSize(),
-            gridSize - 1, 
-            gridSize - 1
+            terrainGrid.size * terrainGrid.cellSize,
+            terrainGrid.size * terrainGrid.cellSize,
+            terrainGrid.size - 1,
+            terrainGrid.size - 1
         );
         
         const positionAttribute = geometry.getAttribute('position');
         const colors = [];
         
         // Set heights and colors.
-        for (let i = 0; i < gridSize; i++) {
-            for (let j = 0; j < gridSize; j++) {
+        for (let i = 0; i < terrainGrid.size; i++) {
+            for (let j = 0; j < terrainGrid.size; j++) {
                 // Height.
-                const vertexIndex = i * gridSize + j;
+                const vertexIndex = i * terrainGrid.size + j;
                 const height = terrainGrid.data[i][j];
                 positionAttribute.setZ(vertexIndex, height);
-                
+
                 // Color.
-                const color = interpolateColors(palettes[currentPalette], height / maxH);
+                const color = interpolateColors(palettes[currentPalette], height / terrainGrid.maxH);
                 colors.push(color.r, color.g, color.b);
             }
         }
@@ -373,12 +361,12 @@ function createGridMeshes() {
     }
 
     const ySpacingFactor = useHexagons ? Math.sqrt(3) / 2 : 1;
-    const hexRadius = getCellSize() / Math.sqrt(3);
-    const hexWidth = getCellSize(); // Distance between parallel sides.
+    const hexRadius = terrainGrid.cellSize / Math.sqrt(3);
+    const hexWidth = terrainGrid.cellSize; // Distance between parallel sides.
 
     // Calculate total grid dimensions for centering.
-    let totalGridWidth = (gridSize - 1) * getCellSize() + (useHexagons ? hexWidth / 2 : 0);
-    let totalGridHeight = (gridSize - 1) * getCellSize() * ySpacingFactor;
+    let totalGridWidth = (terrainGrid.size - 1) * terrainGrid.cellSize + (useHexagons ? hexWidth / 2 : 0);
+    let totalGridHeight = (terrainGrid.size - 1) * terrainGrid.cellSize * ySpacingFactor;
 
     const startX = -totalGridWidth / 2;
     const startY = -totalGridHeight / 2;
@@ -395,8 +383,8 @@ function createGridMeshes() {
             const cellColor = interpolateColors(palettes[currentPalette], height / terrainGrid.maxH);
 
             const xOffset = (useHexagons && j % 2 !== 0) ? hexWidth / 2 : 0;
-            const xPos = startX + i * getCellSize() + xOffset;
-            const yPos = startY + j * getCellSize() * ySpacingFactor;
+            const xPos = startX + i * terrainGrid.cellSize + xOffset;
+            const yPos = startY + j * terrainGrid.cellSize * ySpacingFactor;
             let zPos = height / 2; // Center squares vertically.
 
             if (useHexagons) {
@@ -406,7 +394,7 @@ function createGridMeshes() {
                 mesh.rotation.z = Math.PI / 2; // Rotate for a flat top orientation.
                 zPos = 0; // Hexagon prisms are already centered vertically.
             } else {
-                geometry = new THREE.BoxGeometry(getCellSize(), getCellSize(), height);
+                geometry = new THREE.BoxGeometry(terrainGrid.cellSize, terrainGrid.cellSize, height);
                 mesh = new THREE.Mesh(geometry, material.clone());
                 mesh.material.color.set(cellColor);
             }
@@ -440,11 +428,9 @@ function setupUIListeners() {
         gridPower = parseInt(gridSizeSlider.value);
         gridSize = 2**gridPower + 1;
         gridSizeValue.textContent = gridSize;
-        updateMaxHeight();
-        updateNoiseScale();
 
         // Regenerate with new size.
-        terrainGrid = new Grid(gridSize, maxH);
+        terrainGrid = new Grid(gridSize);
         terrainGrid[currentGenerationMethod]();
         createGridMeshes();
     });
@@ -477,7 +463,7 @@ function setupUIListeners() {
 
     document.getElementById('btn-new-seed').addEventListener('click', () => {
         rngSeed++;
-        terrainGrid = new Grid(gridSize, maxH);
+        terrainGrid = new Grid(gridSize);
         terrainGrid[currentGenerationMethod]();
         createGridMeshes();
     });
