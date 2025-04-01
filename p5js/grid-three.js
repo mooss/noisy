@@ -14,7 +14,7 @@ let useHexagons = false;
 let useSurface = false;
 
 // Initial seed to allow for deterministic generation.
-let rngSeed = 4815162342;
+let rngSeed = 23;
 
 ////////////////////
 // Color palettes //
@@ -57,7 +57,7 @@ class Grid {
     constructor(size) {
         this.size = size;
         this.cellSize = 256 / size;
-        this.maxH = size * this.cellSize / 3;
+        this.maxH = size * this.cellSize / 5;
         this.noiseScale = 1 / size;
         this.data = [];
 
