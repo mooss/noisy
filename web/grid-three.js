@@ -6,24 +6,36 @@ import { palettes } from './palettes.js';
 //////////////////////////////
 // Configuration & Settings //
 
-// The grid size needs to be 2^n + 1 for midpoint displacement.
-let gridPower = 5;
-let gridSize = 2**gridPower + 1;
+/**
+ * Central configuration object for terrain generation and visualization.
+ *
+ * Properties:
+ * - gridPower:   Exponent for grid size calculation (2^n + 1).
+ * - gridSize:    Calculated grid size based on gridPower.
+ * - useHexagons: Toggle between square and hexagonal cells.
+ * - useSurface:  Toggle between 3D surface and individual cells.
+ * - rngSeed:     Initial seed for deterministic generation.
+ * - method:      Active terrain generation algorithm.
+ * - palette:     Index of active color palette.
+ */
+const config = {
+    // Grid configuration.
+    gridPower: 5,
+    get gridSize() {
+        return 2**this.gridPower + 1;
+    },
 
-// Toggle between squares and hexagons.
-let useHexagons = false;
+    // Visualization options.
+    useHexagons: false,
+    useSurface: false,
 
-// Toggle between 3D surface and individual cells.
-let useSurface = false;
+    // Generation settings.
+    rngSeed: 23,
+    method: 'midpoint',
 
-// Initial seed to allow for deterministic generation.
-let rngSeed = 23;
-
-// Terrain generation method.
-let currentGenerationMethod = 'midpoint';
-
-// Current palette index
-let currentPalette = 0;
+    // Color settings.
+    palette: 0
+};
 
 /////////////////////////////////////////
 // Three.js Initialization & Rendering //
@@ -33,8 +45,8 @@ let terrainGrid, scene, camera, renderer, controls, terrainMeshes;
 // Core Three.js scene setup.
 function init() {
     // Heightmap.
-    terrainGrid = new Grid(gridSize, rngSeed);
-    terrainGrid[currentGenerationMethod]();
+    terrainGrid = new Grid(config.gridSize, config.rngSeed);
+    terrainGrid[config.method]();
 
     // Setup Three.js scene.
     const sceneSetup = setupScene(terrainGrid);
@@ -43,20 +55,20 @@ function init() {
     renderer = sceneSetup.renderer;
     controls = sceneSetup.controls;
     terrainMeshes = sceneSetup.terrainMeshes;
-    createGridMeshes(terrainGrid, terrainMeshes, useHexagons, useSurface, palettes, currentPalette);
+    createGridMeshes(terrainGrid, terrainMeshes, config.useHexagons, config.useSurface, palettes, config.palette);
 
     // Setup UI event listeners.
     setupUIListeners(
         terrainGrid,
         terrainMeshes,
-        gridSize,
-        gridPower,
-        rngSeed,
-        useHexagons,
-        useSurface,
+        config.gridSize,
+        config.gridPower,
+        config.rngSeed,
+        config.useHexagons,
+        config.useSurface,
         palettes,
-        currentPalette,
-        currentGenerationMethod
+        config.palette,
+        config.method
     );
 }
 
