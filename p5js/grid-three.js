@@ -54,27 +54,38 @@ let terrainGrid;
 
 // Grid class to encapsulate grid data and generation methods.
 class Grid {
-    constructor(size) {
+    constructor(size, seed) {
+        // Grid layout.
         this.size = size;
-        this.cellSize = 256 / size;
-        this.maxH = size * this.cellSize / 5;
-        this.noiseScale = 1 / size;
+        this.cellSize = 256 / this.size;
         this.data = [];
 
         for (let i = 0; i < this.size; i++) {
             this.data[i] = new Array(this.size).fill(0);
         }
+
+        // Generation.
+        this.seed = seed;
+        this.reseed();
+        this.noiseScale = 1 / this.size;
+        this.noiseGen = createNoise2D(createLCG(this.seed));
+        this.maxH = this.size * this.cellSize / 5;
     }
 
     ///////////////
     // Utilities //
 
-    // Returns a function that gives the simplex value at the given coordinates.
-    simplex() {
-        const noiseGen = createNoise2D(createLCG(rngSeed));
-        return (x, y) => ((noiseGen(x * this.noiseScale, y * this.noiseScale) + 1) / 2) * this.maxH;
+    // Returns the simplex value at the given coordinates.
+    simplex(x, y) {
+        return ((this.noiseGen(x * this.noiseScale, y * this.noiseScale) + 1) / 2) * this.maxH;
     }
 
+    // Resets the random number generator.
+    reseed() {
+        this.rng = mkRng(this.seed);
+    }
+
+    // Apply the given function on every cell.
     apply(fun) {
         for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
@@ -88,34 +99,34 @@ class Grid {
 
     // Random heights.
     rand() {
-        reseed();
-        this.apply(() => rng(1, this.maxH));
+        this.reseed();
+        this.apply(() => this.rng(1, this.maxH));
     }
 
     // Simplex noise.
     noise() {
-        this.apply(this.simplex());
+        // Bind is required because of some insane JS schenanigan.
+        this.apply(this.simplex.bind(this));
     }
 
     // Midpoint displacement (diamond-square).
     midpoint() {
-        reseed();
-        midpointDisplacement(this.data, this.maxH);
+        this.reseed();
+        midpointDisplacement(this.data, this.maxH, this.rng);
     }
 
     // Average of midpoint displacement and simplex noise.
     midnoise() {
-        reseed();
+        this.reseed();
         this.midpoint();
-        const spx = this.simplex();
-        this.apply((x, y) => this.data[x][y] * .8 + spx(x, y) * .2);
+        this.apply((x, y) => this.data[x][y] * .8 + this.simplex(x, y) * .2);
     }
 }
 
-function midpointDisplacement(grid, maxH) {
+function midpointDisplacement(grid, maxH, rng) {
     const roughness = 0.6; // Scaling factor for each additional subdivision.
-    let range = 1;
     const size = grid.length;
+    let range = 1;
 
     // Offset used to iterate through the grid.
     // Power of two. Starts big and is divided by two each iteration (adding level of details).
@@ -134,16 +145,16 @@ function midpointDisplacement(grid, maxH) {
         if (val < min_) min_ = val;
     };
     minmax(grid[0][0]);
-    minmax(grid[0][grid.length - 1]);
-    minmax(grid[grid.length - 1][0]);
-    minmax(grid[grid.length - 1][grid.length - 1]);
+    minmax(grid[0][size - 1]);
+    minmax(grid[size - 1][0]);
+    minmax(grid[size - 1][size - 1]);
 
     // Diamond-square proper.
     while (step > 1) {
         let halfStep = step / 2;
 
-        // Diamond step, average the four diagonal neighbours of a new point and nudge it a
-        // little bit by a random value.
+        // Diamond step, average the four diagonal neighbours of a new point and nudge it a little
+        // bit by a random value.
         for (let x = halfStep; x < size - 1; x += step) {
             for (let y = halfStep; y < size - 1; y += step) {
                 let avg = (grid[x - halfStep][y - halfStep] +
@@ -156,15 +167,15 @@ function midpointDisplacement(grid, maxH) {
             }
         }
 
-        // Square step, average the four (or three) linear neighbours and nudge it a little bit
-        // by a random value.
+        // Square step, average the four (or three) linear neighbours and nudge it a little bit by a
+        // random value.
         for (let x = 0; x < size; x += halfStep) {
             for (let y = (x % step === 0) ? halfStep : 0; y < size; y += step) {
                 let count = 0;
                 let sum = 0;
 
-                // Points in this step can be on the edge of the grid and therefore only have
-                // three valid neighbours so the coordinates must be carefully checked.
+                // Points in this step can be on the edge of the grid and therefore only have three
+                // valid neighbours so the coordinates must be carefully checked.
                 if (x >= halfStep) { sum += grid[x - halfStep][y]; count++; }
                 if (x + halfStep < size) { sum += grid[x + halfStep][y]; count++; }
                 if (y >= halfStep) { sum += grid[x][y - halfStep]; count++; }
@@ -207,14 +218,13 @@ function createLCG(seed) {
     };
 }
 
+function mkRng(seed) {
+    let generator = createLCG(seed);
+    return (min, max) => generator() * (max - min) + min;
+}
+
 let rng;
 let currentGenerationMethod = 'midpoint';
-
-const reseed = function() {
-    let generator = createLCG(rngSeed);
-    rng = (min, max) => generator() * (max - min) + min;
-}
-reseed();
 
 // Interpolate between colors in a palette. Value expected between 0 and 1.
 function interpolateColors(colors, value) {
@@ -225,10 +235,9 @@ function interpolateColors(colors, value) {
 
     const nsegments = colors.length - 1;
     const segment = Math.min(Math.floor(value * nsegments), nsegments - 1);
-    const ratio = value * nsegments - segment;
-
     const color1 = colors[segment];
     const color2 = colors[segment + 1];
+    const ratio = value * nsegments - segment;
 
     return color1.clone().lerp(color2, ratio);
 }
@@ -244,7 +253,7 @@ function init() {
     scene.background = rgb(0, 0, 0);
 
     // Heightmap.
-    terrainGrid = new Grid(gridSize);
+    terrainGrid = new Grid(gridSize, rngSeed);
     terrainGrid.midpoint();
 
     // Camera. Mediocre, needs to be improved.
@@ -430,7 +439,7 @@ function setupUIListeners() {
         gridSizeValue.textContent = gridSize;
 
         // Regenerate with new size.
-        terrainGrid = new Grid(gridSize);
+        terrainGrid = new Grid(gridSize, rngSeed);
         terrainGrid[currentGenerationMethod]();
         createGridMeshes();
     });
@@ -463,7 +472,7 @@ function setupUIListeners() {
 
     document.getElementById('btn-new-seed').addEventListener('click', () => {
         rngSeed++;
-        terrainGrid = new Grid(gridSize);
+        terrainGrid = new Grid(gridSize, rngSeed);
         terrainGrid[currentGenerationMethod]();
         createGridMeshes();
     });
