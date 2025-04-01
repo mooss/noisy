@@ -99,6 +99,7 @@ export function midpointDisplacement(grid, maxH, rng) {
     minmax(grid[size - 1][size - 1]);
 
     // Diamond-square proper.
+    range /= 2;
     while (step > 1) {
         let halfStep = step / 2;
 
