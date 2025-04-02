@@ -8,7 +8,7 @@ export class Grid {
     #cellSize;
     #seed;
     #rng;
-    #noiseScale;
+    #fundamental;
     #noiseGen;
     #maxH;
     #data;
@@ -26,7 +26,7 @@ export class Grid {
         // Generation.
         this.seed = seed;
         this.reseed();
-        this.#noiseScale = 1 / this.#size;
+        this.#fundamental = 1 / this.#size;
         this.#noiseGen = createNoise2D(createLCG(this.#seed));
         this.#maxH = this.#size * this.#cellSize / 5;
     }
@@ -59,9 +59,26 @@ export class Grid {
     ///////////////
     // Utilities //
 
-    // Returns the simplex value at the given coordinates.
+    // Returns the fractal simplex noise value at the given coordinates.
     simplex(x, y) {
-        return ((this.#noiseGen(x * this.#noiseScale, y * this.#noiseScale) + 1) / 2) * this.#maxH;
+        const octaves = 4;       // Number of noise layers.
+        const persistence = 0.5; // Amplitude reduction per octave.
+        const lacunarity = 2;    // Frequency increase per octave.
+
+        let total = 0;
+        let frequency = this.#fundamental; // Start with base frequency.
+        let amplitude = 1;
+
+        for (let i = 0; i < octaves; i++) {
+            let noise = this.#noiseGen(x * frequency, y * frequency);
+            total += noise * amplitude;
+
+            // Update amplitude and frequency for the next octave.
+            amplitude *= persistence;
+            frequency *= lacunarity;
+        }
+
+        return total;
     }
 
     // Resets the random number generator.
@@ -71,9 +88,13 @@ export class Grid {
 
     // Apply the given function on every cell.
     apply(fun) {
-        for (let i = 0; i < this.#size; i++) {
-            for (let j = 0; j < this.#size; j++) {
-                this.#data[i][j] = fun(i, j);
+        this.range((x, y) => this.#data[x][y] = fun(x, y));
+    }
+
+    range(fun) {
+        for (let x = 0; x < this.#size; x++) {
+            for (let y = 0; y < this.#size; y++) {
+                fun(x, y);
             }
         }
     }
@@ -91,23 +112,45 @@ export class Grid {
     noise() {
         // Bind is required because of some insane JS schenanigan.
         this.apply(this.simplex.bind(this));
+        this.normalize();
     }
 
-    // Midpoint displacement (diamond-square).
+    // Normalized midpoint displacement.
     midpoint() {
         this.reseed();
-        midpointDisplacement(this.#data, this.#maxH, this.#rng);
+        this.normalize(...midpointDisplacement(this.#data, this.#rng));
     }
 
-    // Average of midpoint displacement and simplex noise.
+    // Interpolation of midpoint displacement and simplex noise.
     midnoise() {
+        // Compute midpoint and noise.
         this.reseed();
         this.midpoint();
-        this.apply((x, y) => this.#data[x][y] * .8 + this.simplex(x, y) * .2);
+        const mid = structuredClone(this.#data);
+        this.noise();
+
+        // Interpolate and normalize (the grid will no longer be between .1 and maxH).
+        this.apply((x, y) => mid[x][y] * .7 + this.#data[x][y] *.3);
+        this.normalize();
+    }
+
+    // Normalize all heights between 0.1 and maxH.
+    normalize(min, max) {
+        if (min === undefined) { // Compute min and max manually.
+            min = Infinity, max = -Infinity;
+            this.range((x, y) => {
+                const h = this.#data[x][y];
+                if (h < min) min = h;
+                if (h > max) max = h;
+            });
+        }
+
+        const norm = rangeMapper(min, max, .1, this.maxH);
+        this.apply((x, y) => norm(this.#data[x][y]));
     }
 }
 
-export function midpointDisplacement(grid, maxH, rng) {
+export function midpointDisplacement(grid, rng) {
     const roughness = 0.6; // Scaling factor for each additional subdivision.
     const size = grid.length;
     let range = 1;
@@ -176,11 +219,5 @@ export function midpointDisplacement(grid, maxH, rng) {
         step = halfStep;
     }
 
-    // Normalize all values between 1 and maxH.
-    let normalize = rangeMapper(min_, max_, 1, maxH);
-    for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
-            grid[i][j] = normalize(grid[i][j]);
-        }
-    }
+    return [min_, max_];
 }
