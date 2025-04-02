@@ -21,7 +21,7 @@
              display: flex;
              flex-direction: column;
              gap: 10px;
-             min-width: 180px; /* Prevent resizing based on grid size label */
+             min-width: 100px; /* Prevent resizing based on grid size label */
          }
          #controls div {
              display: flex;
@@ -62,7 +62,7 @@
          }
 
          #toggle-terrain-panel {
-             background-color: #444;
+             background-color: dimgray;
              color: white;
              border: none;
              padding: 8px;
@@ -71,6 +71,7 @@
              border-radius: 3px;
              margin-bottom: 5px; /* Space below toggle */
              font-weight: bold;
+             transition: all 0.3s ease;
          }
 
          #terrain-content {
@@ -88,9 +89,61 @@
              gap: 5px;
          }
 
-         #terrain-content button {
-             padding: 5px;
+         /* Button styles */
+         button {
+             background-color: limegreen;
+             border: none;
+             color: white;
+             padding: 8px 16px;
+             display: inline-block;
+             font-size: 14px;
+             border-radius: 4px;
              cursor: pointer;
+             transition: all 0.3s ease;
+             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+         }
+
+         button:hover {
+             background-color: forestgreen;
+             transform: translateY(-1px);
+             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+         }
+
+         button:active {
+             transform: translateY(0);
+             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+         }
+
+         #btn-new-seed {
+             background-color: dodgerblue;
+         }
+
+         #btn-new-seed:hover {
+             background-color: royalblue;
+         }
+
+         #btn-palette {
+             background-color: darkorchid;
+         }
+
+         #btn-palette:hover {
+             background-color: mediumorchid;
+         }
+
+         #toggle-terrain-panel {
+             background-color: orange;
+         }
+
+         #toggle-terrain-panel:hover {
+             background-color: darkorange;
+         }
+
+         #terrain-content button {
+             background-color: slategray;
+         }
+
+         #terrain-content button:hover {
+             background-color: darkslategray;
          }
         </style>
     </head>
@@ -114,7 +167,7 @@
                 <button id="btn-palette">Cycle Palette</button>
             </div>
             <div>
-                <label>Grid Size (2^n + 1): <span id="grid-size-value">33</span></label>
+                <label>Grid Size: <span id="grid-size-value">33</span></label>
                 <input type="range" id="grid-size-slider" min="1" max="7" value="5" step="1">
             </div>
         </div>
