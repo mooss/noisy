@@ -1,6 +1,6 @@
 import { Grid } from './terrain.js';
-import { setupScene, createGridMeshes } from './renderer.js';
-import { setupUIListeners } from './ui.js';
+import { TerrainRenderer } from './renderer.js';
+import { UI } from './ui.js';
 import { palettes } from './palettes.js';
 
 //////////////////////////////
@@ -17,6 +17,8 @@ import { palettes } from './palettes.js';
  * - rngSeed:     Initial seed for deterministic generation.
  * - method:      Active terrain generation algorithm.
  * - palette:     Index of active color palette.
+ *
+ * Passed around to different modules.
  */
 const config = {
     // Grid configuration.
@@ -34,49 +36,34 @@ const config = {
     method: 'midpoint',
 
     // Color settings.
-    palette: 0
+    palette: 0,
 };
 
-/////////////////////////////////////////
-// Three.js Initialization & Rendering //
+///////////////////
+// Main Function //
 
-let terrainGrid, scene, camera, renderer, controls, terrainMeshes;
+function main() {
+    // 1. Create the Terrain Grid Data Structure.
+    // The UI class will create new Grid instances when size/seed changes.
+    let terrainGrid = new Grid(config.gridSize, config.rngSeed);
+    terrainGrid[config.method](); // Perform initial generation.
 
-// Core Three.js scene setup.
-function init() {
-    // Heightmap.
-    terrainGrid = new Grid(config.gridSize, config.rngSeed);
-    terrainGrid[config.method]();
+    // 2. Create the Renderer (handles THREE.js scene, camera, meshes).
+    // It performs the initial scene setup and mesh creation in its constructor.
+    const terrainRenderer = new TerrainRenderer(terrainGrid, config, palettes);
 
-    // Setup Three.js scene.
-    const sceneSetup = setupScene(terrainGrid);
-    scene = sceneSetup.scene;
-    camera = sceneSetup.camera;
-    renderer = sceneSetup.renderer;
-    controls = sceneSetup.controls;
-    terrainMeshes = sceneSetup.terrainMeshes;
-    createGridMeshes(terrainGrid, terrainMeshes, config.useHexagons, config.useSurface, palettes, config.palette);
+    // 3. Create the UI Handler.
+    // It sets up listeners and interacts with config, terrainGrid, and terrainRenderer.
+    // Pass the initial terrainGrid; UI will manage updates/replacements.
+    const ui = new UI(config, terrainGrid, terrainRenderer, palettes);
 
-    // Setup UI event listeners.
-    setupUIListeners(
-        terrainGrid,
-        terrainMeshes,
-        config.gridSize,
-        config.gridPower,
-        config.rngSeed,
-        config.useHexagons,
-        config.useSurface,
-        palettes,
-        config.palette,
-        config.method
-    );
+    // 4. Animation Loop
+    function animate() {
+        requestAnimationFrame(animate);
+        terrainRenderer.controls.update(); // Required because of damping.
+        terrainRenderer.renderer.render(terrainRenderer.scene, terrainRenderer.camera);
+    }
+    animate();
 }
 
-function animate() {
-    requestAnimationFrame(animate);
-    controls.update(); // Required because of damping.
-    renderer.render(scene, camera);
-}
-
-init();
-animate();
+main();
