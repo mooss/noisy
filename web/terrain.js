@@ -3,22 +3,57 @@ import { createLCG, rangeMapper, mkRng } from './utils.js';
 
 // Handles terrain data storage and generation algorithms.
 export class Grid {
+    // Private fields for internal state.
+    #size;
+    #cellSize;
+    #seed;
+    #rng;
+    #noiseScale;
+    #noiseGen;
+    #maxH;
+    #data;
+
     constructor(size, seed) {
         // Grid layout.
-        this.size = size;
-        this.cellSize = 256 / this.size;
-        this.data = [];
+        this.#size = size;
+        this.#cellSize = 256 / this.#size;
+        this.#data = [];
 
-        for (let i = 0; i < this.size; i++) {
-            this.data[i] = new Array(this.size).fill(0);
+        for (let i = 0; i < this.#size; i++) {
+            this.#data[i] = new Array(this.#size).fill(0);
         }
 
         // Generation.
         this.seed = seed;
         this.reseed();
-        this.noiseScale = 1 / this.size;
-        this.noiseGen = createNoise2D(createLCG(this.seed));
-        this.maxH = this.size * this.cellSize / 5;
+        this.#noiseScale = 1 / this.#size;
+        this.#noiseGen = createNoise2D(createLCG(this.#seed));
+        this.#maxH = this.#size * this.#cellSize / 5;
+    }
+
+    ///////////////
+    // Accessors //
+
+    get size() {
+        return this.#size;
+    }
+
+    get cellSize() {
+        return this.#cellSize;
+    }
+
+    get maxH() {
+        return this.#maxH;
+    }
+
+    get data() {
+        return this.#data;
+    }
+
+    set seed(newSeed) {
+        this.#seed = newSeed;
+        this.reseed();
+        this.#noiseGen = createNoise2D(createLCG(this.#seed));
     }
 
     ///////////////
@@ -26,19 +61,19 @@ export class Grid {
 
     // Returns the simplex value at the given coordinates.
     simplex(x, y) {
-        return ((this.noiseGen(x * this.noiseScale, y * this.noiseScale) + 1) / 2) * this.maxH;
+        return ((this.#noiseGen(x * this.#noiseScale, y * this.#noiseScale) + 1) / 2) * this.#maxH;
     }
 
     // Resets the random number generator.
     reseed() {
-        this.rng = mkRng(this.seed);
+        this.#rng = mkRng(this.#seed);
     }
 
     // Apply the given function on every cell.
     apply(fun) {
-        for (let i = 0; i < this.size; i++) {
-            for (let j = 0; j < this.size; j++) {
-                this.data[i][j] = fun(i, j);
+        for (let i = 0; i < this.#size; i++) {
+            for (let j = 0; j < this.#size; j++) {
+                this.#data[i][j] = fun(i, j);
             }
         }
     }
@@ -49,7 +84,7 @@ export class Grid {
     // Random heights.
     rand() {
         this.reseed();
-        this.apply(() => this.rng(1, this.maxH));
+        this.apply(() => this.#rng(1, this.#maxH));
     }
 
     // Simplex noise.
@@ -61,14 +96,14 @@ export class Grid {
     // Midpoint displacement (diamond-square).
     midpoint() {
         this.reseed();
-        midpointDisplacement(this.data, this.maxH, this.rng);
+        midpointDisplacement(this.#data, this.#maxH, this.#rng);
     }
 
     // Average of midpoint displacement and simplex noise.
     midnoise() {
         this.reseed();
         this.midpoint();
-        this.apply((x, y) => this.data[x][y] * .8 + this.simplex(x, y) * .2);
+        this.apply((x, y) => this.#data[x][y] * .8 + this.simplex(x, y) * .2);
     }
 }
 
