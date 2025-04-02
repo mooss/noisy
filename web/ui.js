@@ -27,17 +27,16 @@ export class UI {
 
     // Sets the initial state of UI elements based on config.
     #setupInitialState() {
-        // Grid size
+        // Grid size.
         this.#gridSizeValue.textContent = this.#config.gridSize;
         this.#gridSizeSlider.value = this.#config.gridPower;
 
-        // Shape
-        if (this.#config.useSurface) {
-            document.getElementById('shape-surface').checked = true;
-        } else if (this.#config.useHexagons) {
-            document.getElementById('shape-hexagons').checked = true;
+        // Check the radio button corresponding to the initial renderStyle.
+        const initialShapeRadio = document.querySelector(`input[name="shape"][value="${this.#config.renderStyle}"]`);
+        if (initialShapeRadio) {
+            initialShapeRadio.checked = true;
         } else {
-            document.getElementById('shape-squares').checked = true;
+            document.getElementById('shape-quadPrism').checked = true; // Default to quad prism.
         }
     }
 
@@ -102,9 +101,8 @@ export class UI {
 
     // Handles changes to the shape radio buttons.
     #handleShapeChange(event) {
-        const shape = event.target.value;
-        this.#config.useHexagons = (shape === 'hexagons');
-        this.#config.useSurface = (shape === 'surface');
+        const newStyle = event.target.value;
+        this.#config.renderStyle = newStyle;
         this.#terrainRenderer.createGridMeshes(); // Redraw with new shape setting
     }
 

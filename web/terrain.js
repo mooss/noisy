@@ -124,7 +124,7 @@ export function midpointDisplacement(grid, maxH, rng) {
 
     // Keeping track of min and max heights to then normalize to the intended height range.
     let max_ = -Infinity, min_ = Infinity;
-    const minmax = (val) => {
+    const minmax = val => {
         if (val > max_) max_ = val;
         if (val < min_) min_ = val;
     };

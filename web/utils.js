@@ -6,7 +6,7 @@ export function createLCG(seed) {
     const m = Math.pow(2, 32);
     let currentSeed = seed;
 
-    return function() {
+    return () => {
         currentSeed = (a * currentSeed + c) % m;
         return currentSeed / m;
     };

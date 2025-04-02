@@ -165,7 +165,7 @@ export class TerrainRenderer {
     }
 
     // Creates individual hexagonal prism meshes.
-    #createHexPrismMeshes() {
+    #createHexagonPrismMeshes() {
         const { palette: currentPalette } = this.#config;
         const { size, cellSize, maxH, data } = this.#terrainGrid;
 
@@ -206,23 +206,13 @@ export class TerrainRenderer {
         }
     }
 
-    // Creates individual cell meshes (delegates based on config).
-    #createCellMeshes() {
-        if (this.#config.useHexagons) {
-            this.#createHexPrismMeshes();
-        } else {
-            this.#createSquarePrismMeshes();
-        }
-    }
-
     // Creates or updates the terrain meshes based on current grid data and config.
     createGridMeshes() {
         this.#clearMeshes();
-
-        if (this.#config.useSurface) {
-            this.#createSurfaceMesh();
-        } else {
-            this.#createCellMeshes();
+        switch (this.#config.renderStyle) {
+            case 'hexPrism':  this.#createHexagonPrismMeshes(); break;
+            case 'quadPrism': this.#createSquarePrismMeshes(); break;
+            case 'surface':   this.#createSurfaceMesh(); break;
         }
     }
 

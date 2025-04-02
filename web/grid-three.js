@@ -28,8 +28,7 @@ const config = {
     },
 
     // Visualization options.
-    useHexagons: false,
-    useSurface: false,
+    renderStyle: 'quadPrism', // 'quadPrism', 'hexPrism', 'surface'.
 
     // Generation settings.
     rngSeed: 23,
