@@ -60,10 +60,11 @@ export class Grid {
     // Utilities //
 
     // Returns the fractal simplex noise value at the given coordinates.
-    simplex(x, y) {
-        const octaves = 4;       // Number of noise layers.
+    // Takes config object to access parameters like octaves.
+    simplex(x, y, config) {
+        const octaves = config.noiseOctaves; // Number of octaves to layer.
         const persistence = 0.5; // Amplitude reduction per octave.
-        const lacunarity = 2;    // Frequency increase per octave.
+        const lacunarity = 2; // Frequency increase per octave.
 
         let total = 0;
         let frequency = this.#fundamental; // Start with base frequency.
@@ -109,9 +110,9 @@ export class Grid {
     }
 
     // Simplex noise.
-    noise() {
+    noise(config) { // Accept config object.
         // Bind is required because of some insane JS schenanigan.
-        this.apply(this.simplex.bind(this));
+        this.apply((x, y) => this.simplex(x, y, config));
         this.normalize();
     }
 

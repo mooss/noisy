@@ -33,6 +33,7 @@ const config = {
     // Generation settings.
     rngSeed: 23,
     method: 'midpoint',
+    noiseOctaves: 4, // Parameter for Simplex Noise.
 
     // Color settings.
     palette: 0,

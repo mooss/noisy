@@ -9,6 +9,7 @@
 
          /*****************************/
          /* Control panel on the left */
+         /*****************************/
 
          #controls {
              position: absolute;
@@ -46,6 +47,10 @@
 
          /******************************/
          /* Terrain panel on the right */
+         /******************************/
+
+         /*********************/
+         /* Collapsible panel */
 
          #terrain-panel {
              position: absolute;
@@ -82,14 +87,54 @@
              display: none; /* Hide content when collapsed */
          }
 
-         /* Style the terrain div inside the content area */
-         #terrain-content > div {
-             display: flex;
-             flex-direction: column;
-             gap: 5px;
+         /*******************************/
+         /* Terrain algorithm selection */
+
+         #terrain-method-select {
+             width: 100%; /* Make dropdown fill container width */
+             padding: 5px;
+             margin-bottom: 10px; /* Space below dropdown */
+             background-color: slategray;
+             color: white;
+             border: none;
+             border-radius: 3px;
+             font-size: 13px;
+             outline: none;
          }
 
+         /********************************/
+         /* Terrain algorithm parameters */
+
+         /* Parameters area */
+         #terrain-params {
+             border-top: 1px solid #555; /* Separator line */
+             padding-top: 10px;
+         }
+
+         /* Individual parameter sections */
+         .param-section {
+             display: none; /* Hide by default */
+             flex-direction: column;
+             gap: 8px;
+         }
+
+         .param-section.active {
+             display: flex; /* Show active section */
+         }
+
+         .param-section label {
+             font-size: 13px;
+             font-weight: bold;
+         }
+
+         .param-section input[type="range"] {
+             width: 100%;
+         }
+
+         /*****************/
          /* Button styles */
+         /*****************/
+
          button {
              background-color: limegreen;
              border: none;
@@ -174,15 +219,30 @@
 
         <!-- Terrain panel (right side) -->
         <div id="terrain-panel">
-             <button id="toggle-terrain-panel">Terrain</button>
-             <div id="terrain-content">
-                 <div>
-                     <button id="btn-random">Random</button>
-                     <button id="btn-noise">Noise</button>
-                     <button id="btn-midpoint">Midpoint</button>
-                     <button id="btn-midnoise">Midnoise</button>
-                 </div>
-             </div>
+            <button id="toggle-terrain-panel">Terrain</button>
+            <div id="terrain-content">
+                <!-- Dropdown for generation algorithms -->
+                <select id="terrain-method-select">
+                    <option value="rand">Random</option>
+                    <option value="noise">Noise</option>
+                    <option value="midpoint">Midpoint</option>
+                    <option value="midnoise">Midnoise</option>
+                </select>
+                <!-- Area for parameters -->
+                <div id="terrain-params">
+                    <!-- Noise Parameters -->
+                    <div id="noise-params" class="param-section" data-method="noise">
+                        <label>Octaves: <span id="noise-octaves-value">4</span></label>
+                        <input type="range" id="noise-octaves-slider" min="1" max="8" value="4" step="1">
+                    </div>
+                    <div id="midpoint-params" class="param-section" data-method="midpoint">
+                        <!-- Parameters for Midpoint -->
+                    </div>
+                    <div id="midnoise-params" class="param-section" data-method="midnoise">
+                        <!-- Parameters for Midnoise -->
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Libraries -->

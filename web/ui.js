@@ -14,6 +14,10 @@ export class UI {
     // Right panel DOM elements.
     #toggleTerrainPanelButton;
     #terrainPanel;
+    #terrainMethodSelect;
+    #terrainParamsContainer;
+    #noiseOctavesSlider;
+    #noiseOctavesValue;
 
     constructor(config, terrainGrid, terrainRenderer, palettes) {
         this.#config = config;
@@ -29,6 +33,10 @@ export class UI {
         // Right panel.
         this.#toggleTerrainPanelButton = document.getElementById('toggle-terrain-panel');
         this.#terrainPanel = document.getElementById('terrain-panel');
+        this.#terrainMethodSelect = document.getElementById('terrain-method-select');
+        this.#terrainParamsContainer = document.getElementById('terrain-params');
+        this.#noiseOctavesSlider = document.getElementById('noise-octaves-slider');
+        this.#noiseOctavesValue = document.getElementById('noise-octaves-value');
 
         this.#setupInitialState();
         this.#setupListeners();
@@ -47,6 +55,14 @@ export class UI {
         } else {
             document.getElementById('shape-quadPrism').checked = true; // Default to quad prism.
         }
+
+        // Terrain algorithm.
+        this.#terrainMethodSelect.value = this.#config.method;
+        this.#updateActiveParams(this.#config.method);
+
+        // Noise parameters.
+        this.#noiseOctavesValue.textContent = this.#config.noiseOctaves;
+        this.#noiseOctavesSlider.value = this.#config.noiseOctaves;
     }
 
     // Attaches event listeners to UI elements.
@@ -54,21 +70,21 @@ export class UI {
         // Grid size slider.
         this.#gridSizeSlider.addEventListener('input', this.#handleGridSizeChange.bind(this));
 
-        // Tettain generation buttons.
-        document.getElementById('btn-random').addEventListener('click', () => this.#handleTerrainGeneration('rand'));
-        document.getElementById('btn-noise').addEventListener('click', () => this.#handleTerrainGeneration('noise'));
-        document.getElementById('btn-midpoint').addEventListener('click', () => this.#handleTerrainGeneration('midpoint'));
-        document.getElementById('btn-midnoise').addEventListener('click', () => this.#handleTerrainGeneration('midnoise'));
+        // Terrain algorithm dropdown.
+        this.#terrainMethodSelect.addEventListener('change', this.#handleTerrainMethodChange.bind(this));
 
         // New seed button.
         document.getElementById('btn-new-seed').addEventListener('click', this.#handleNewSeed.bind(this));
+
+        // Noise parameters.
+        this.#noiseOctavesSlider.addEventListener('input', this.#handleOctavesChange.bind(this));
 
         // Shape radio buttons.
         this.#shapeRadios.forEach(radio => {
             radio.addEventListener('change', this.#handleShapeChange.bind(this));
         });
 
-        // Palette cycle button.
+        // Cycle palette button.
         document.getElementById('btn-palette').addEventListener('click', this.#handlePaletteChange.bind(this));
 
         // Terrain panel toggle button.
@@ -85,17 +101,34 @@ export class UI {
 
         // Update the terrain with the new size.
         this.#terrainGrid = new Grid(this.#config.gridSize, this.#config.rngSeed);
-        this.#terrainGrid[this.#config.method]();
+        this.#terrainGrid[this.#config.method](this.#config);
 
         // Render the new terrain.
         this.#terrainRenderer.setTerrainGrid(this.#terrainGrid);
         this.#terrainRenderer.createGridMeshes();
     }
 
-    // Handles clicks on terrain generation buttons.
-    #handleTerrainGeneration(method) {
-        this.#config.method = method;
-        this.#terrainGrid[method]();
+    // Shows/hides parameter sections based on the active method.
+    #updateActiveParams(activeMethod) {
+        this.#terrainParamsContainer.querySelectorAll('.param-section').forEach(section => {
+            if (section.dataset.method === activeMethod) {
+                section.classList.add('active');
+            } else {
+                section.classList.remove('active');
+            }
+        });
+    }
+
+    // Handles changes in the terrain algorithms dropdown.
+    #handleTerrainMethodChange(event) {
+        const newMethod = event.target.value;
+        if (newMethod === this.#config.method) return;
+
+        this.#config.method = newMethod;
+        this.#updateActiveParams(newMethod);
+
+        // Generate terrain with the new method and current config.
+        this.#terrainGrid[newMethod](this.#config);
         this.#terrainRenderer.createGridMeshes();
     }
 
@@ -104,7 +137,16 @@ export class UI {
         this.#config.rngSeed++;
         // Update the seed on the existing grid instance and regenerate.
         this.#terrainGrid.seed = this.#config.rngSeed;
-        this.#terrainGrid[this.#config.method]();
+        this.#terrainGrid[this.#config.method](this.#config);
+        this.#terrainRenderer.createGridMeshes();
+    }
+
+    // Handles changes to the noise octaves slider.
+    #handleOctavesChange() {
+        const newOctaves = parseInt(this.#noiseOctavesSlider.value);
+        this.#config.noiseOctaves = newOctaves;
+        this.#noiseOctavesValue.textContent = newOctaves;
+        this.#terrainGrid.noise(this.#config);
         this.#terrainRenderer.createGridMeshes();
     }
 
