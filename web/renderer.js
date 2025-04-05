@@ -56,11 +56,20 @@ export class TerrainRenderer {
         this.#scene.add(this.#terrainMeshes);
     }
 
-    // Clears existing terrain meshes from the scene.
+    // Clears existing terrain meshes from the scene and disposes their resources.
     #clearMeshes() {
         while (this.#terrainMeshes.children.length > 0) {
             const mesh = this.#terrainMeshes.children[0];
             this.#terrainMeshes.remove(mesh);
+
+            // Dispose geometry and material to free memory.
+            if (mesh.geometry) {
+                mesh.geometry.dispose();
+            }
+
+            if (mesh.material) {
+                mesh.material.dispose();
+            }
         }
     }
 
