@@ -18,6 +18,10 @@ export class UI {
     #terrainParamsContainer;
     #noiseOctavesSlider;
     #noiseOctavesValue;
+    #noisePersistenceSlider;
+    #noisePersistenceValue;
+    #noiseLacunaritySlider;
+    #noiseLacunarityValue;
 
     constructor(config, terrainGrid, terrainRenderer, palettes) {
         this.#config = config;
@@ -37,6 +41,10 @@ export class UI {
         this.#terrainParamsContainer = document.getElementById('terrain-params');
         this.#noiseOctavesSlider = document.getElementById('noise-octaves-slider');
         this.#noiseOctavesValue = document.getElementById('noise-octaves-value');
+        this.#noisePersistenceSlider = document.getElementById('noise-persistence-slider');
+        this.#noisePersistenceValue = document.getElementById('noise-persistence-value');
+        this.#noiseLacunaritySlider = document.getElementById('noise-lacunarity-slider');
+        this.#noiseLacunarityValue = document.getElementById('noise-lacunarity-value');
 
         this.#setupInitialState();
         this.#setupListeners();
@@ -62,6 +70,10 @@ export class UI {
         // Noise parameters.
         this.#noiseOctavesValue.textContent = this.#config.noiseOctaves;
         this.#noiseOctavesSlider.value = this.#config.noiseOctaves;
+        this.#noisePersistenceValue.textContent = this.#config.noisePersistence.toFixed(2);
+        this.#noisePersistenceSlider.value = this.#config.noisePersistence;
+        this.#noiseLacunarityValue.textContent = this.#config.noiseLacunarity.toFixed(1);
+        this.#noiseLacunaritySlider.value = this.#config.noiseLacunarity;
     }
 
     // Attaches event listeners to UI elements.
@@ -79,6 +91,8 @@ export class UI {
 
         // Noise parameters.
         this.#noiseOctavesSlider.addEventListener('input', this.#handleOctavesChange.bind(this));
+        this.#noisePersistenceSlider.addEventListener('input', this.#handlePersistenceChange.bind(this));
+        this.#noiseLacunaritySlider.addEventListener('input', this.#handleLacunarityChange.bind(this));
 
         // Shape radio buttons.
         this.#shapeRadios.forEach(radio => {
@@ -159,6 +173,30 @@ export class UI {
         this.#noiseOctavesValue.textContent = newOctaves;
         this.#terrainGrid.noise(this.#config);
         this.#terrainRenderer.createGridMeshes();
+    }
+
+    // Handles changes to the noise persistence slider.
+    #handlePersistenceChange() {
+        const newPersistence = parseFloat(this.#noisePersistenceSlider.value);
+        this.#config.noisePersistence = newPersistence;
+        this.#noisePersistenceValue.textContent = newPersistence.toFixed(2);
+        // Regenerate only if the current method is noise.
+        if (this.#config.method === 'noise') {
+            this.#terrainGrid.noise(this.#config);
+            this.#terrainRenderer.createGridMeshes();
+        }
+    }
+
+    // Handles changes to the noise lacunarity slider.
+    #handleLacunarityChange() {
+        const newLacunarity = parseFloat(this.#noiseLacunaritySlider.value);
+        this.#config.noiseLacunarity = newLacunarity;
+        this.#noiseLacunarityValue.textContent = newLacunarity.toFixed(1);
+        // Regenerate only if the current method is noise.
+        if (this.#config.method === 'noise') {
+            this.#terrainGrid.noise(this.#config);
+            this.#terrainRenderer.createGridMeshes();
+        }
     }
 
     // Handles changes to the shape radio buttons.
