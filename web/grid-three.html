@@ -66,27 +66,6 @@
              width: 100px; /* Must be adjusted manually */
          }
 
-         #toggle-terrain-panel {
-             background-color: dimgray;
-             color: white;
-             border: none;
-             padding: 8px;
-             cursor: pointer;
-             text-align: center;
-             border-radius: 3px;
-             margin-bottom: 5px; /* Space below toggle */
-             font-weight: bold;
-             transition: all 0.3s ease;
-         }
-
-         #terrain-content {
-             display: block; /* Initially visible */
-         }
-
-         #terrain-panel.collapsed #terrain-content {
-             display: none; /* Hide content when collapsed */
-         }
-
          /*******************************/
          /* Terrain algorithm selection */
 
@@ -200,14 +179,6 @@
              background-color: mediumorchid;
          }
 
-         #toggle-terrain-panel {
-             background-color: orange;
-         }
-
-         #toggle-terrain-panel:hover {
-             background-color: darkorange;
-         }
-
          #terrain-content button {
              background-color: slategray;
          }
@@ -244,7 +215,6 @@
 
         <!-- Terrain panel (right side) -->
         <div id="terrain-panel">
-            <button id="toggle-terrain-panel">Terrain</button>
             <div id="terrain-content">
                 <!-- Buttons for generation algorithms -->
                 <div id="terrain-method-buttons">

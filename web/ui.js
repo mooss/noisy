@@ -12,7 +12,6 @@ export class UI {
     #shapeRadios;
 
     // Right panel DOM elements.
-    #toggleTerrainPanelButton;
     #terrainPanel;
     #terrainMethodButtonsContainer; // Container for method buttons
     #methodButtons; // Collection of method buttons
@@ -32,7 +31,6 @@ export class UI {
         this.#shapeRadios = document.querySelectorAll('input[name="shape"]');
 
         // Right panel.
-        this.#toggleTerrainPanelButton = document.getElementById('toggle-terrain-panel');
         this.#terrainPanel = document.getElementById('terrain-panel');
         this.#terrainMethodButtonsContainer = document.getElementById('terrain-method-buttons');
         this.#methodButtons = this.#terrainMethodButtonsContainer.querySelectorAll('button');
@@ -90,8 +88,6 @@ export class UI {
         // Cycle palette button.
         document.getElementById('btn-palette').addEventListener('click', this.#handlePaletteChange.bind(this));
 
-        // Terrain panel toggle button.
-        this.#toggleTerrainPanelButton.addEventListener('click', this.#handleToggleTerrainPanel.bind(this));
     }
 
     ////////////////////
@@ -176,10 +172,5 @@ export class UI {
     #handlePaletteChange() {
         this.#config.palette = (this.#config.palette + 1) % this.#palettes.length;
         this.#terrainRenderer.createGridMeshes();
-    }
-
-    // Handles toggling the visibility of the terrain panel content.
-    #handleToggleTerrainPanel() {
-        this.#terrainPanel.classList.toggle('collapsed');
     }
 }
