@@ -107,8 +107,13 @@
 
          /* Parameters area */
          #terrain-params {
-             border-top: 1px solid #555; /* Separator line */
+             border-top: none; /* Separator line hidden by default */
              padding-top: 10px;
+         }
+
+         /* Show separator when parameters exist */
+         #terrain-params:has(.param-section.active:not(:empty)) {
+             border-top: 1px solid #555;
          }
 
          /* Individual parameter sections */
@@ -235,12 +240,10 @@
                         <label>Octaves: <span id="noise-octaves-value">4</span></label>
                         <input type="range" id="noise-octaves-slider" min="1" max="8" value="4" step="1">
                     </div>
-                    <div id="midpoint-params" class="param-section" data-method="midpoint">
-                        <!-- Parameters for Midpoint -->
-                    </div>
-                    <div id="midnoise-params" class="param-section" data-method="midnoise">
-                        <!-- Parameters for Midnoise -->
-                    </div>
+                    <!-- <div id="midpoint-params" class="param-section" data-method="midpoint">
+                         </div>
+                         <div id="midnoise-params" class="param-section" data-method="midnoise">
+                         </div> -->
                 </div>
             </div>
         </div>
