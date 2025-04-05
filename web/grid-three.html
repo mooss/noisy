@@ -90,16 +90,36 @@
          /*******************************/
          /* Terrain algorithm selection */
 
-         #terrain-method-select {
-             width: 100%; /* Make dropdown fill container width */
+         #terrain-method-buttons {
+             display: flex;
+             flex-direction: column;
+             gap: 5px;
+             margin-bottom: 10px;
+         }
+
+         #terrain-method-buttons button {
+             width: 100%; /* Make buttons fill container width */
              padding: 5px;
-             margin-bottom: 10px; /* Space below dropdown */
              background-color: slategray;
              color: white;
              border: none;
              border-radius: 3px;
              font-size: 13px;
              outline: none;
+             background-color: slategray; /* Default button color */
+             color: white;
+             border: none;
+             cursor: pointer;
+             transition: background-color 0.2s ease;
+         }
+
+         #terrain-method-buttons button:hover {
+             background-color: darkslategray;
+         }
+
+         #terrain-method-buttons button.active-method {
+             background-color: steelblue; /* Highlight active method */
+             font-weight: bold;
          }
 
          /********************************/
@@ -226,13 +246,13 @@
         <div id="terrain-panel">
             <button id="toggle-terrain-panel">Terrain</button>
             <div id="terrain-content">
-                <!-- Dropdown for generation algorithms -->
-                <select id="terrain-method-select">
-                    <option value="rand">Random</option>
-                    <option value="noise">Noise</option>
-                    <option value="midpoint">Midpoint</option>
-                    <option value="midnoise">Midnoise</option>
-                </select>
+                <!-- Buttons for generation algorithms -->
+                <div id="terrain-method-buttons">
+                    <button data-method="rand">Random</button>
+                    <button data-method="noise">Noise</button>
+                    <button data-method="midpoint">Midpoint</button>
+                    <button data-method="midnoise">Midnoise</button>
+                </div>
                 <!-- Area for parameters -->
                 <div id="terrain-params">
                     <!-- Noise Parameters -->

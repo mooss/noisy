@@ -14,7 +14,8 @@ export class UI {
     // Right panel DOM elements.
     #toggleTerrainPanelButton;
     #terrainPanel;
-    #terrainMethodSelect;
+    #terrainMethodButtonsContainer; // Container for method buttons
+    #methodButtons; // Collection of method buttons
     #terrainParamsContainer;
     #noiseOctavesSlider;
     #noiseOctavesValue;
@@ -33,7 +34,8 @@ export class UI {
         // Right panel.
         this.#toggleTerrainPanelButton = document.getElementById('toggle-terrain-panel');
         this.#terrainPanel = document.getElementById('terrain-panel');
-        this.#terrainMethodSelect = document.getElementById('terrain-method-select');
+        this.#terrainMethodButtonsContainer = document.getElementById('terrain-method-buttons');
+        this.#methodButtons = this.#terrainMethodButtonsContainer.querySelectorAll('button');
         this.#terrainParamsContainer = document.getElementById('terrain-params');
         this.#noiseOctavesSlider = document.getElementById('noise-octaves-slider');
         this.#noiseOctavesValue = document.getElementById('noise-octaves-value');
@@ -56,8 +58,7 @@ export class UI {
             document.getElementById('shape-quadPrism').checked = true; // Default to quad prism.
         }
 
-        // Terrain algorithm.
-        this.#terrainMethodSelect.value = this.#config.method;
+        // Terrain algorithm (set active button and params).
         this.#updateActiveParams(this.#config.method);
 
         // Noise parameters.
@@ -70,8 +71,10 @@ export class UI {
         // Grid size slider.
         this.#gridSizeSlider.addEventListener('input', this.#handleGridSizeChange.bind(this));
 
-        // Terrain algorithm dropdown.
-        this.#terrainMethodSelect.addEventListener('change', this.#handleTerrainMethodChange.bind(this));
+        // Terrain algorithm buttons.
+        this.#methodButtons.forEach(button => {
+            button.addEventListener('click', this.#handleTerrainMethodButtonClick.bind(this));
+        });
 
         // New seed button.
         document.getElementById('btn-new-seed').addEventListener('click', this.#handleNewSeed.bind(this));
@@ -108,8 +111,9 @@ export class UI {
         this.#terrainRenderer.createGridMeshes();
     }
 
-    // Shows/hides parameter sections based on the active method.
+    // Shows/hides parameter sections and updates button styles based on the active method.
     #updateActiveParams(activeMethod) {
+        // Update parameter sections visibility.
         this.#terrainParamsContainer.querySelectorAll('.param-section').forEach(section => {
             if (section.dataset.method === activeMethod) {
                 section.classList.add('active');
@@ -117,15 +121,26 @@ export class UI {
                 section.classList.remove('active');
             }
         });
+
+        // Update button active states.
+        this.#methodButtons.forEach(button => {
+            if (button.dataset.method === activeMethod) {
+                button.classList.add('active-method');
+            } else {
+                button.classList.remove('active-method');
+            }
+        });
     }
 
-    // Handles changes in the terrain algorithms dropdown.
-    #handleTerrainMethodChange(event) {
-        const newMethod = event.target.value;
-        if (newMethod === this.#config.method) return;
+    // Handles clicks on the terrain algorithm buttons.
+    #handleTerrainMethodButtonClick(event) {
+        const button = event.target;
+        const newMethod = button.dataset.method;
+
+        if (newMethod === this.#config.method) return; // Do nothing if clicking the already active method.
 
         this.#config.method = newMethod;
-        this.#updateActiveParams(newMethod);
+        this.#updateActiveParams(newMethod); // Update params visibility and button styles.
 
         // Generate terrain with the new method and current config.
         this.#terrainGrid[newMethod](this.#config);
