@@ -7,21 +7,14 @@ export class UI {
     #palettes;
 
     // Left panel DOM elements.
-    #gridSizeSlider;
-    #gridSizeValue;
+    #gridSizeValue; // Size of the grid (2^n + 1).
     #shapeRadios;
 
     // Right panel DOM elements.
     #terrainPanel;
-    #terrainMethodButtonsContainer; // Container for method buttons
-    #methodButtons; // Collection of method buttons
+    #terrainMethodButtonsContainer;
+    #methodButtons;
     #terrainParamsContainer;
-    #noiseOctavesSlider;
-    #noiseOctavesValue;
-    #noisePersistenceSlider;
-    #noisePersistenceValue;
-    #noiseLacunaritySlider;
-    #noiseLacunarityValue;
 
     constructor(config, terrainGrid, terrainRenderer, palettes) {
         this.#config = config;
@@ -30,7 +23,6 @@ export class UI {
         this.#palettes = palettes;
 
         // Left panel.
-        this.#gridSizeSlider = document.getElementById('grid-size-slider');
         this.#gridSizeValue = document.getElementById('grid-size-value');
         this.#shapeRadios = document.querySelectorAll('input[name="shape"]');
 
@@ -39,47 +31,94 @@ export class UI {
         this.#terrainMethodButtonsContainer = document.getElementById('terrain-method-buttons');
         this.#methodButtons = this.#terrainMethodButtonsContainer.querySelectorAll('button');
         this.#terrainParamsContainer = document.getElementById('terrain-params');
-        this.#noiseOctavesSlider = document.getElementById('noise-octaves-slider');
-        this.#noiseOctavesValue = document.getElementById('noise-octaves-value');
-        this.#noisePersistenceSlider = document.getElementById('noise-persistence-slider');
-        this.#noisePersistenceValue = document.getElementById('noise-persistence-value');
-        this.#noiseLacunaritySlider = document.getElementById('noise-lacunarity-slider');
-        this.#noiseLacunarityValue = document.getElementById('noise-lacunarity-value');
 
         this.#setupInitialState();
         this.#setupListeners();
     }
 
+    // Generic slider setup helper.
+    #setupSlider(sliderId, valueId, configKey, options) {
+        const slider = document.getElementById(sliderId);
+        const valueElement = document.getElementById(valueId);
+        const { isInteger = false, valueFormat = (v) => v, onUpdate = () => {} } = options;
+
+        if (!slider || !valueElement) {
+            console.error(`Slider or value element not found for ${sliderId}/${valueId}`);
+            return;
+        }
+
+        // Set initial state.
+        const initialValue = this.#config[configKey];
+        slider.value = initialValue;
+        valueElement.textContent = valueFormat(initialValue);
+
+        // Attach listener.
+        slider.addEventListener('input', () => {
+            const rawValue = slider.value;
+            const newValue = isInteger ? parseInt(rawValue) : parseFloat(rawValue);
+
+            this.#config[configKey] = newValue;
+            valueElement.textContent = valueFormat(newValue);
+            onUpdate(newValue); // Execute the callback.
+        });
+    }
+
     // Sets the initial state of UI elements based on config.
     #setupInitialState() {
-        // Grid size.
-        this.#gridSizeValue.textContent = this.#config.gridSize;
-        this.#gridSizeSlider.value = this.#config.gridPower;
+        this.#updateActiveParams(this.#config.method);
 
-        // Check the radio button corresponding to the initial renderStyle.
+        /////////////
+        // Sliders //
+        this.#setupSlider('grid-size-slider', 'grid-size-value', 'gridPower', {
+            isInteger: true,
+            valueFormat: () => this.#config.gridSize, // Display calculated size
+            onUpdate: () => {
+                // Special handling for grid size: recreate grid and renderer connection.
+                this.#gridSizeValue.textContent = this.#config.gridSize; // Update calculated display.
+                this.#terrainGrid = new Grid(this.#config.gridSize, this.#config.rngSeed);
+                this.#terrainGrid[this.#config.method](this.#config);
+                this.#terrainRenderer.setTerrainGrid(this.#terrainGrid);
+                this.#terrainRenderer.createGridMeshes();
+            }
+        });
+
+        this.#setupSlider('noise-octaves-slider', 'noise-octaves-value', 'noiseOctaves', {
+            isInteger: true,
+            onUpdate: () => this.#regenerateNoiseIfNeeded()
+        });
+
+        this.#setupSlider('noise-persistence-slider', 'noise-persistence-value', 'noisePersistence', {
+            valueFormat: (v) => v.toFixed(2),
+            onUpdate: () => this.#regenerateNoiseIfNeeded()
+        });
+
+        this.#setupSlider('noise-lacunarity-slider', 'noise-lacunarity-value', 'noiseLacunarity', {
+            valueFormat: (v) => v.toFixed(1),
+            onUpdate: () => this.#regenerateNoiseIfNeeded()
+        });
+
+
+        ///////////////////
+        // Radio buttons //
         const initialShapeRadio = document.querySelector(`input[name="shape"][value="${this.#config.renderStyle}"]`);
         if (initialShapeRadio) {
             initialShapeRadio.checked = true;
         } else {
             document.getElementById('shape-quadPrism').checked = true; // Default to quad prism.
         }
+    }
 
-        // Terrain algorithm (set active button and params).
-        this.#updateActiveParams(this.#config.method);
-
-        // Noise parameters.
-        this.#noiseOctavesValue.textContent = this.#config.noiseOctaves;
-        this.#noiseOctavesSlider.value = this.#config.noiseOctaves;
-        this.#noisePersistenceValue.textContent = this.#config.noisePersistence.toFixed(2);
-        this.#noisePersistenceSlider.value = this.#config.noisePersistence;
-        this.#noiseLacunarityValue.textContent = this.#config.noiseLacunarity.toFixed(1);
-        this.#noiseLacunaritySlider.value = this.#config.noiseLacunarity;
+    // Helper to regenerate terrain only if noise method is active.
+    #regenerateNoiseIfNeeded() {
+        if (this.#config.method === 'noise') {
+            this.#terrainGrid.noise(this.#config);
+            this.#terrainRenderer.createGridMeshes();
+        }
     }
 
     // Attaches event listeners to UI elements.
     #setupListeners() {
-        // Grid size slider.
-        this.#gridSizeSlider.addEventListener('input', this.#handleGridSizeChange.bind(this));
+        // Grid size slider listener is attached in #setupSlider.
 
         // Terrain algorithm buttons.
         this.#methodButtons.forEach(button => {
@@ -89,10 +128,7 @@ export class UI {
         // New seed button.
         document.getElementById('btn-new-seed').addEventListener('click', this.#handleNewSeed.bind(this));
 
-        // Noise parameters.
-        this.#noiseOctavesSlider.addEventListener('input', this.#handleOctavesChange.bind(this));
-        this.#noisePersistenceSlider.addEventListener('input', this.#handlePersistenceChange.bind(this));
-        this.#noiseLacunaritySlider.addEventListener('input', this.#handleLacunarityChange.bind(this));
+        // Noise parameter listeners are attached in #setupSlider.
 
         // Shape radio buttons.
         this.#shapeRadios.forEach(radio => {
@@ -107,19 +143,7 @@ export class UI {
     ////////////////////
     // Event handlers //
 
-    // Handles changes to the grid size slider.
-    #handleGridSizeChange() {
-        this.#config.gridPower = parseInt(this.#gridSizeSlider.value);
-        this.#gridSizeValue.textContent = this.#config.gridSize;
-
-        // Update the terrain with the new size.
-        this.#terrainGrid = new Grid(this.#config.gridSize, this.#config.rngSeed);
-        this.#terrainGrid[this.#config.method](this.#config);
-
-        // Render the new terrain.
-        this.#terrainRenderer.setTerrainGrid(this.#terrainGrid);
-        this.#terrainRenderer.createGridMeshes();
-    }
+    // Grid size change is now handled by the onUpdate callback in #setupSlider.
 
     // Shows/hides parameter sections and updates button styles based on the active method.
     #updateActiveParams(activeMethod) {
@@ -164,39 +188,6 @@ export class UI {
         this.#terrainGrid.seed = this.#config.rngSeed;
         this.#terrainGrid[this.#config.method](this.#config);
         this.#terrainRenderer.createGridMeshes();
-    }
-
-    // Handles changes to the noise octaves slider.
-    #handleOctavesChange() {
-        const newOctaves = parseInt(this.#noiseOctavesSlider.value);
-        this.#config.noiseOctaves = newOctaves;
-        this.#noiseOctavesValue.textContent = newOctaves;
-        this.#terrainGrid.noise(this.#config);
-        this.#terrainRenderer.createGridMeshes();
-    }
-
-    // Handles changes to the noise persistence slider.
-    #handlePersistenceChange() {
-        const newPersistence = parseFloat(this.#noisePersistenceSlider.value);
-        this.#config.noisePersistence = newPersistence;
-        this.#noisePersistenceValue.textContent = newPersistence.toFixed(2);
-        // Regenerate only if the current method is noise.
-        if (this.#config.method === 'noise') {
-            this.#terrainGrid.noise(this.#config);
-            this.#terrainRenderer.createGridMeshes();
-        }
-    }
-
-    // Handles changes to the noise lacunarity slider.
-    #handleLacunarityChange() {
-        const newLacunarity = parseFloat(this.#noiseLacunaritySlider.value);
-        this.#config.noiseLacunarity = newLacunarity;
-        this.#noiseLacunarityValue.textContent = newLacunarity.toFixed(1);
-        // Regenerate only if the current method is noise.
-        if (this.#config.method === 'noise') {
-            this.#terrainGrid.noise(this.#config);
-            this.#terrainRenderer.createGridMeshes();
-        }
     }
 
     // Handles changes to the shape radio buttons.
