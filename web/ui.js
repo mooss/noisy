@@ -153,11 +153,7 @@ export class UI {
     #updateActiveParams(activeTerrainAlgo) {
         // Update parameter sections visibility.
         this.#terrainParamsContainer.querySelectorAll('.param-section').forEach(section => {
-            // Check primary terrain algo and secondary if defined.
-            const primaryAlgo = section.dataset.terrainAlgo;
-            const secondaryAlgo = section.dataset.terrainAlgoAlso; // Check for secondary association.
-
-            if (primaryAlgo === activeTerrainAlgo || secondaryAlgo === activeTerrainAlgo) {
+            if (section.dataset.terrainAlgos.split(' ').includes(activeTerrainAlgo)) {
                 section.classList.add('active');
             } else {
                 section.classList.remove('active');
