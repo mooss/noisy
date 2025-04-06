@@ -16,6 +16,7 @@ export class Grid {
     #noiseOctaves;
     #noisePersistence;
     #noiseLacunarity;
+    #midnoiseRatio;
 
     constructor(config) {
         this.setConfig(config);
@@ -39,6 +40,7 @@ export class Grid {
         this.#noiseOctaves = config.noiseOctaves;
         this.#noisePersistence = config.noisePersistence;
         this.#noiseLacunarity = config.noiseLacunarity;
+        this.#midnoiseRatio = config.midnoiseRatio;
         this.seed = config.rngSeed;
     }
 
@@ -136,7 +138,9 @@ export class Grid {
         this.noise();
 
         // Interpolate and normalize (the grid will no longer be between .1 and maxH).
-        this.apply((x, y) => mid[x][y] * .7 + this.#data[x][y] *.3);
+        const midRatio = this.#midnoiseRatio;
+        const noiseRatio = 1.0 - midRatio;
+        this.apply((x, y) => mid[x][y] * midRatio + this.#data[x][y] * noiseRatio);
         this.normalize();
     }
 

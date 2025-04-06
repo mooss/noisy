@@ -36,6 +36,7 @@ const config = {
     noiseOctaves: 4,       // Simplex Noise octaves to layer.
     noisePersistence: 0.5, // Amplitude reduction per octave.
     noiseLacunarity: 2.0,  // Frequency increase per octave.
+    midnoiseRatio: 0.7,    // Midpoint vs Noise ratio (0=noise, 1=midpoint).
 
     // Color settings.
     palette: 0,

@@ -88,17 +88,22 @@ export class UI {
 
         this.#setupSlider('noise-octaves-slider', 'noise-octaves-value', 'noiseOctaves', {
             isInteger: true,
-            onUpdate: () => this.#regenerateNoiseIfNeeded()
+            onUpdate: () => this.#regenerateNoise()
         });
 
         this.#setupSlider('noise-persistence-slider', 'noise-persistence-value', 'noisePersistence', {
             valueFormat: (v) => v.toFixed(2),
-            onUpdate: () => this.#regenerateNoiseIfNeeded()
+            onUpdate: () => this.#regenerateNoise()
         });
 
         this.#setupSlider('noise-lacunarity-slider', 'noise-lacunarity-value', 'noiseLacunarity', {
             valueFormat: (v) => v.toFixed(1),
-            onUpdate: () => this.#regenerateNoiseIfNeeded()
+            onUpdate: () => this.#regenerateNoise()
+        });
+
+        this.#setupSlider('midnoise-ratio-slider', 'midnoise-ratio-value', 'midnoiseRatio', {
+            valueFormat: (v) => v.toFixed(2),
+            onUpdate: () => this.#regenerateNoise()
         });
 
 
@@ -112,13 +117,11 @@ export class UI {
         }
     }
 
-    // Helper to regenerate terrain only if the active terrain algorithm uses noise.
-    #regenerateNoiseIfNeeded() {
-        if (this.#config.terrainAlgo === 'noise' || this.#config.terrainAlgo === 'midnoise') {
-            this.#terrainGrid.setConfig(this.#config);
-            this.#terrainGrid[this.#config.terrainAlgo]();
-            this.#terrainRenderer.createGridMeshes();
-        }
+    // Helper to regenerate terrain only if the active terrain algorithm uses noise parameters.
+    #regenerateNoise() {
+        this.#terrainGrid.setConfig(this.#config);
+        this.#terrainGrid[this.#config.terrainAlgo]();
+        this.#terrainRenderer.createGridMeshes();
     }
 
     // Attaches event listeners to UI elements.

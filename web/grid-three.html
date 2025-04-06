@@ -237,7 +237,9 @@
                     <div id="midpoint-params" class="param-section" data-terrain-algos="midpoint">
                     </div>
                     <div id="midnoise-params" class="param-section" data-terrain-algos="midnoise">
-                        <!-- Inherits Noise parameters -->
+                        <!-- Inherits Noise parameters via data-terrain-algos -->
+                        <label>Midpoint Ratio: <span id="midnoise-ratio-value">0.7</span></label>
+                        <input type="range" id="midnoise-ratio-slider" min="0.0" max="1.0" value="0.7" step="0.05">
                     </div>
                 </div>
             </div>
