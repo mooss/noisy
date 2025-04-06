@@ -13,7 +13,13 @@ export class Grid {
     #maxH;
     #data;
 
-    constructor(size, seed) {
+    #noiseOctaves;
+    #noisePersistence;
+    #noiseLacunarity;
+
+    constructor(size, seed, config) {
+        this.setConfig(config);
+
         // Grid layout.
         this.#size = size;
         this.#cellSize = 256 / this.#size;
@@ -29,6 +35,13 @@ export class Grid {
         this.#fundamental = 1 / this.#size;
         this.#noiseGen = createNoise2D(createLCG(this.#seed));
         this.#maxH = this.#size * this.#cellSize / 5;
+    }
+
+    // Updates the stored noise generation parameters.
+    setConfig(config) {
+        this.#noiseOctaves = config.noiseOctaves;
+        this.#noisePersistence = config.noisePersistence;
+        this.#noiseLacunarity = config.noiseLacunarity;
     }
 
     ///////////////
@@ -60,23 +73,18 @@ export class Grid {
     // Utilities //
 
     // Returns the fractal simplex noise value at the given coordinates.
-    // Takes config object to access parameters octaves, persistence, and lacunarity.
-    simplex(x, y, config) {
-        const octaves = config.noiseOctaves;
-        const persistence = config.noisePersistence;
-        const lacunarity = config.noiseLacunarity;
-
+    simplex(x, y) {
         let total = 0;
-        let frequency = this.#fundamental; // Start with base frequency.
+        let frequency = this.#fundamental;
         let amplitude = 1;
 
-        for (let i = 0; i < octaves; i++) {
+        for (let i = 0; i < this.#noiseOctaves; i++) {
             let noise = this.#noiseGen(x * frequency, y * frequency);
             total += noise * amplitude;
 
             // Update amplitude and frequency for the next octave.
-            amplitude *= persistence;
-            frequency *= lacunarity;
+            amplitude *= this.#noisePersistence;
+            frequency *= this.#noiseLacunarity;
         }
 
         return total;
@@ -110,9 +118,8 @@ export class Grid {
     }
 
     // Simplex noise.
-    noise(config) { // Accept config object.
-        // Bind is required because of some insane JS schenanigan.
-        this.apply((x, y) => this.simplex(x, y, config));
+    noise() {
+        this.apply((x, y) => this.simplex(x, y));
         this.normalize();
     }
 

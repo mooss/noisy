@@ -73,10 +73,14 @@ export class UI {
             isInteger: true,
             valueFormat: () => this.#config.gridSize, // Display calculated size
             onUpdate: () => {
-                // Special handling for grid size: recreate grid and renderer connection.
-                this.#gridSizeValue.textContent = this.#config.gridSize; // Update calculated display.
-                this.#terrainGrid = new Grid(this.#config.gridSize, this.#config.rngSeed);
-                this.#terrainGrid[this.#config.terrainAlgo](this.#config);
+                // Update calculated display.
+                this.#gridSizeValue.textContent = this.#config.gridSize;
+
+                // Compute heights.
+                this.#terrainGrid = new Grid(this.#config.gridSize, this.#config.rngSeed, this.#config);
+                this.#terrainGrid[this.#config.terrainAlgo]();
+
+                // Render terrain.
                 this.#terrainRenderer.setTerrainGrid(this.#terrainGrid);
                 this.#terrainRenderer.createGridMeshes();
             }
@@ -108,10 +112,11 @@ export class UI {
         }
     }
 
-    // Helper to regenerate terrain only if the active terrain algorithm is noise.
+    // Helper to regenerate terrain only if the active terrain algorithm uses noise.
     #regenerateNoiseIfNeeded() {
-        if (this.#config.terrainAlgo === 'noise') {
-            this.#terrainGrid.noise(this.#config);
+        if (this.#config.terrainAlgo === 'noise' || this.#config.terrainAlgo === 'midnoise') {
+            this.#terrainGrid.setConfig(this.#config);
+            this.#terrainGrid[this.#config.terrainAlgo]();
             this.#terrainRenderer.createGridMeshes();
         }
     }
@@ -148,7 +153,11 @@ export class UI {
     #updateActiveParams(activeTerrainAlgo) {
         // Update parameter sections visibility.
         this.#terrainParamsContainer.querySelectorAll('.param-section').forEach(section => {
-            if (section.dataset.terrainAlgo === activeTerrainAlgo) {
+            // Check primary terrain algo and secondary if defined.
+            const primaryAlgo = section.dataset.terrainAlgo;
+            const secondaryAlgo = section.dataset.terrainAlgoAlso; // Check for secondary association.
+
+            if (primaryAlgo === activeTerrainAlgo || secondaryAlgo === activeTerrainAlgo) {
                 section.classList.add('active');
             } else {
                 section.classList.remove('active');
@@ -177,16 +186,21 @@ export class UI {
         this.#updateActiveParams(newTerrainAlgo); // Update params visibility and button styles.
 
         // Generate terrain with the new terrain algorithm.
-        this.#terrainGrid[newTerrainAlgo](this.#config);
+        this.#terrainGrid.setConfig(this.#config);
+        this.#terrainGrid[newTerrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
     }
 
     // Handles click on the "New Seed" button.
     #handleNewSeed() {
         this.#config.rngSeed++;
-        // Update the seed on the existing grid instance and regenerate.
+
+        // Update the parameters on the existing grid instance.
         this.#terrainGrid.seed = this.#config.rngSeed;
-        this.#terrainGrid[this.#config.terrainAlgo](this.#config);
+        this.#terrainGrid.setConfig(this.#config);
+
+        // Regenerate using the current algorithm.
+        this.#terrainGrid[this.#config.terrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
     }
 
