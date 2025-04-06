@@ -12,8 +12,8 @@ export class UI {
 
     // Right panel DOM elements.
     #terrainPanel;
-    #terrainMethodButtonsContainer;
-    #methodButtons;
+    #terrainButtonsContainer;
+    #terrainButtons;
     #terrainParamsContainer;
 
     constructor(config, terrainGrid, terrainRenderer, palettes) {
@@ -28,8 +28,8 @@ export class UI {
 
         // Right panel.
         this.#terrainPanel = document.getElementById('terrain-panel');
-        this.#terrainMethodButtonsContainer = document.getElementById('terrain-method-buttons');
-        this.#methodButtons = this.#terrainMethodButtonsContainer.querySelectorAll('button');
+        this.#terrainButtonsContainer = document.getElementById('terrain-buttons');
+        this.#terrainButtons = this.#terrainButtonsContainer.querySelectorAll('button');
         this.#terrainParamsContainer = document.getElementById('terrain-params');
 
         this.#setupInitialState();
@@ -65,7 +65,7 @@ export class UI {
 
     // Sets the initial state of UI elements based on config.
     #setupInitialState() {
-        this.#updateActiveParams(this.#config.method);
+        this.#updateActiveParams(this.#config.terrainAlgo);
 
         /////////////
         // Sliders //
@@ -76,7 +76,7 @@ export class UI {
                 // Special handling for grid size: recreate grid and renderer connection.
                 this.#gridSizeValue.textContent = this.#config.gridSize; // Update calculated display.
                 this.#terrainGrid = new Grid(this.#config.gridSize, this.#config.rngSeed);
-                this.#terrainGrid[this.#config.method](this.#config);
+                this.#terrainGrid[this.#config.terrainAlgo](this.#config);
                 this.#terrainRenderer.setTerrainGrid(this.#terrainGrid);
                 this.#terrainRenderer.createGridMeshes();
             }
@@ -108,9 +108,9 @@ export class UI {
         }
     }
 
-    // Helper to regenerate terrain only if noise method is active.
+    // Helper to regenerate terrain only if the active terrain algorithm is noise.
     #regenerateNoiseIfNeeded() {
-        if (this.#config.method === 'noise') {
+        if (this.#config.terrainAlgo === 'noise') {
             this.#terrainGrid.noise(this.#config);
             this.#terrainRenderer.createGridMeshes();
         }
@@ -121,8 +121,8 @@ export class UI {
         // Grid size slider listener is attached in #setupSlider.
 
         // Terrain algorithm buttons.
-        this.#methodButtons.forEach(button => {
-            button.addEventListener('click', this.#handleTerrainMethodButtonClick.bind(this));
+        this.#terrainButtons.forEach(button => {
+            button.addEventListener('click', this.#handleTerrainButtonClick.bind(this));
         });
 
         // New seed button.
@@ -143,13 +143,12 @@ export class UI {
     ////////////////////
     // Event handlers //
 
-    // Grid size change is now handled by the onUpdate callback in #setupSlider.
-
-    // Shows/hides parameter sections and updates button styles based on the active method.
-    #updateActiveParams(activeMethod) {
+    // Shows/hides parameter sections and updates button styles based on the current terrain
+    // algorithm.
+    #updateActiveParams(activeTerrainAlgo) {
         // Update parameter sections visibility.
         this.#terrainParamsContainer.querySelectorAll('.param-section').forEach(section => {
-            if (section.dataset.method === activeMethod) {
+            if (section.dataset.terrainAlgo === activeTerrainAlgo) {
                 section.classList.add('active');
             } else {
                 section.classList.remove('active');
@@ -157,27 +156,28 @@ export class UI {
         });
 
         // Update button active states.
-        this.#methodButtons.forEach(button => {
-            if (button.dataset.method === activeMethod) {
-                button.classList.add('active-method');
+        this.#terrainButtons.forEach(button => {
+            if (button.dataset.terrainAlgo === activeTerrainAlgo) {
+                button.classList.add('active-terrain-algo');
             } else {
-                button.classList.remove('active-method');
+                button.classList.remove('active-terrain-algo');
             }
         });
     }
 
     // Handles clicks on the terrain algorithm buttons.
-    #handleTerrainMethodButtonClick(event) {
+    #handleTerrainButtonClick(event) {
         const button = event.target;
-        const newMethod = button.dataset.method;
+        const newTerrainAlgo = button.dataset.terrainAlgo;
 
-        if (newMethod === this.#config.method) return; // Do nothing if clicking the already active method.
+        // Do nothing if clicking the current terrain algorithm.
+        if (newTerrainAlgo === this.#config.terrainAlgo) return;
 
-        this.#config.method = newMethod;
-        this.#updateActiveParams(newMethod); // Update params visibility and button styles.
+        this.#config.terrainAlgo = newTerrainAlgo;
+        this.#updateActiveParams(newTerrainAlgo); // Update params visibility and button styles.
 
-        // Generate terrain with the new method and current config.
-        this.#terrainGrid[newMethod](this.#config);
+        // Generate terrain with the new terrain algorithm.
+        this.#terrainGrid[newTerrainAlgo](this.#config);
         this.#terrainRenderer.createGridMeshes();
     }
 
@@ -186,7 +186,7 @@ export class UI {
         this.#config.rngSeed++;
         // Update the seed on the existing grid instance and regenerate.
         this.#terrainGrid.seed = this.#config.rngSeed;
-        this.#terrainGrid[this.#config.method](this.#config);
+        this.#terrainGrid[this.#config.terrainAlgo](this.#config);
         this.#terrainRenderer.createGridMeshes();
     }
 

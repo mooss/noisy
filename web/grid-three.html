@@ -69,14 +69,14 @@
          /*******************************/
          /* Terrain algorithm selection */
 
-         #terrain-method-buttons {
+         #terrain-buttons {
              display: flex;
              flex-direction: column;
              gap: 5px;
              margin-bottom: 10px;
          }
 
-         #terrain-method-buttons button {
+         #terrain-buttons button {
              width: 100%; /* Make buttons fill container width */
              padding: 5px;
              background-color: slategray;
@@ -92,12 +92,12 @@
              transition: background-color 0.2s ease;
          }
 
-         #terrain-method-buttons button:hover {
+         #terrain-buttons button:hover {
              background-color: darkslategray;
          }
 
-         #terrain-method-buttons button.active-method {
-             background-color: steelblue; /* Highlight active method */
+         #terrain-buttons button.active-terrain-algo {
+             background-color: steelblue; /* Highlight active terrain algorithm */
              font-weight: bold;
          }
 
@@ -217,16 +217,16 @@
         <div id="terrain-panel">
             <div id="terrain-content">
                 <!-- Buttons for generation algorithms -->
-                <div id="terrain-method-buttons">
-                    <button data-method="rand">Random</button>
-                    <button data-method="noise">Noise</button>
-                    <button data-method="midpoint">Midpoint</button>
-                    <button data-method="midnoise">Midnoise</button>
+                <div id="terrain-buttons">
+                    <button data-terrain-algo="rand">Random</button>
+                    <button data-terrain-algo="noise">Noise</button>
+                    <button data-terrain-algo="midpoint">Midpoint</button>
+                    <button data-terrain-algo="midnoise">Midnoise</button>
                 </div>
                 <!-- Area for parameters -->
                 <div id="terrain-params">
                     <!-- Noise Parameters -->
-                    <div id="noise-params" class="param-section" data-method="noise">
+                    <div id="noise-params" class="param-section" data-terrain-algo="noise">
                         <label>Octaves: <span id="noise-octaves-value">4</span></label>
                         <input type="range" id="noise-octaves-slider" min="1" max="8" value="4" step="1">
                         <label>Persistence: <span id="noise-persistence-value">0.5</span></label>
@@ -234,9 +234,9 @@
                         <label>Lacunarity: <span id="noise-lacunarity-value">2.0</span></label>
                         <input type="range" id="noise-lacunarity-slider" min="1.1" max="4.0" value="2.0" step="0.1">
                     </div>
-                    <!-- <div id="midpoint-params" class="param-section" data-method="midpoint">
+                    <!-- <div id="midpoint-params" class="param-section" terrain-algorithm="midpoint">
                          </div>
-                         <div id="midnoise-params" class="param-section" data-method="midnoise">
+                         <div id="midnoise-params" class="param-section" terrain-algorithm="midnoise">
                          </div> -->
                 </div>
             </div>

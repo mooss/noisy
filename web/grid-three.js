@@ -15,7 +15,7 @@ import { palettes } from './palettes.js';
  * - useHexagons: Toggle between square and hexagonal cells.
  * - useSurface:  Toggle between 3D surface and individual cells.
  * - rngSeed:     Initial seed for deterministic generation.
- * - method:      Active terrain generation algorithm.
+ * - terrainAlgo: Active terrain generation algorithm.
  * - palette:     Index of active color palette.
  *
  * Passed around to different modules.
@@ -32,7 +32,7 @@ const config = {
 
     // Generation settings.
     rngSeed: 23,
-    method: 'midpoint',
+    terrainAlgo: 'midpoint',
     noiseOctaves: 4,       // Simplex Noise octaves to layer.
     noisePersistence: 0.5, // Amplitude reduction per octave.
     noiseLacunarity: 2.0,  // Frequency increase per octave.
@@ -48,7 +48,7 @@ function main() {
     // 1. Create the Terrain Grid Data Structure.
     // The UI class will create new Grid instances when size/seed changes.
     let terrainGrid = new Grid(config.gridSize, config.rngSeed);
-    terrainGrid[config.method](); // Perform initial generation.
+    terrainGrid[config.terrainAlgo](); // Perform initial generation.
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).
     // It performs the initial scene setup and mesh creation in its constructor.
