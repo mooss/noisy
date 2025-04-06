@@ -33,10 +33,12 @@ const config = {
     // Generation settings.
     rngSeed: 23,
     terrainAlgo: 'noise',
-    noiseOctaves: 4,       // Simplex Noise octaves to layer.
-    noisePersistence: 0.5, // Amplitude reduction per octave.
-    noiseLacunarity: 2.0,  // Frequency increase per octave.
-    midnoiseRatio: 0.7,    // Midpoint vs Noise ratio (0=noise, 1=midpoint).
+    noiseOctaves: 4,        // Simplex Noise octaves to layer.
+    noisePersistence: 0.5,  // Amplitude reduction per octave.
+    noiseLacunarity: 2.0,   // Frequency increase per octave.
+    noiseFundamental: 1.0,  // Base frequency for noise.
+    midpointRoughness: 0.6, // Roughness factor for midpoint displacement.
+    midnoiseRatio: 0.7,     // Midpoint vs Noise ratio (0=noise, 1=midpoint).
 
     // Color settings.
     palette: 0,

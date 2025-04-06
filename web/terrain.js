@@ -8,7 +8,6 @@ export class Grid {
     #cellSize;
     #seed;
     #rng;
-    #fundamental;
     #noiseGen;
     #maxH;
     #data;
@@ -16,6 +15,8 @@ export class Grid {
     #noiseOctaves;
     #noisePersistence;
     #noiseLacunarity;
+    #noiseFundamental;
+    #midpointRoughness;
     #midnoiseRatio;
 
     constructor(config) {
@@ -31,15 +32,16 @@ export class Grid {
         }
 
         // Generation.
-        this.#fundamental = 1 / this.#size;
         this.#maxH = this.#size * this.#cellSize / 5;
     }
 
-    // Updates the stored noise generation parameters.
+    // Updates the stored generation parameters.
     setConfig(config) {
         this.#noiseOctaves = config.noiseOctaves;
         this.#noisePersistence = config.noisePersistence;
         this.#noiseLacunarity = config.noiseLacunarity;
+        this.#noiseFundamental = config.noiseFundamental;
+        this.#midpointRoughness = config.midpointRoughness;
         this.#midnoiseRatio = config.midnoiseRatio;
         this.seed = config.rngSeed;
     }
@@ -75,7 +77,7 @@ export class Grid {
     // Returns the fractal simplex noise value at the given coordinates.
     simplex(x, y) {
         let total = 0;
-        let frequency = this.#fundamental;
+        let frequency = this.#noiseFundamental / this.#size;
         let amplitude = 1;
 
         for (let i = 0; i < this.#noiseOctaves; i++) {
@@ -126,7 +128,7 @@ export class Grid {
     // Normalized midpoint displacement.
     midpoint() {
         this.reseed();
-        this.normalize(...midpointDisplacement(this.#data, this.#rng));
+        this.normalize(...midpointDisplacement(this.#data, this.#rng, this.#midpointRoughness));
     }
 
     // Interpolation of midpoint displacement and simplex noise.
@@ -160,8 +162,7 @@ export class Grid {
     }
 }
 
-export function midpointDisplacement(grid, rng) {
-    const roughness = 0.6; // Scaling factor for each additional subdivision.
+export function midpointDisplacement(grid, rng, roughness) {
     const size = grid.length;
     let range = 1;
 
@@ -187,7 +188,7 @@ export function midpointDisplacement(grid, rng) {
     minmax(grid[size - 1][size - 1]);
 
     // Diamond-square proper.
-    range /= 2;
+    range *= roughness;
     while (step > 1) {
         let halfStep = step / 2;
 
