@@ -32,7 +32,7 @@ const config = {
 
     // Generation settings.
     rngSeed: 23,
-    terrainAlgo: 'midpoint',
+    terrainAlgo: 'noise',
     noiseOctaves: 4,       // Simplex Noise octaves to layer.
     noisePersistence: 0.5, // Amplitude reduction per octave.
     noiseLacunarity: 2.0,  // Frequency increase per octave.
@@ -60,7 +60,7 @@ function main() {
     // Pass the initial terrainGrid; UI will manage updates/replacements.
     const ui = new UI(config, terrainGrid, terrainRenderer, palettes);
 
-    // 4. Animation Loop
+    // 4. Animation Loop.
     function animate() {
         requestAnimationFrame(animate);
         terrainRenderer.controls.update(); // Required because of damping.
