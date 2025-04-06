@@ -47,7 +47,7 @@ const config = {
 function main() {
     // 1. Create the Terrain Grid Data Structure.
     // The UI class will create new Grid instances when size changes.
-    let terrainGrid = new Grid(config.gridSize, config.rngSeed, config);
+    let terrainGrid = new Grid(config);
     terrainGrid[config.terrainAlgo](); // Perform initial generation.
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).

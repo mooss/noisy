@@ -77,7 +77,7 @@ export class UI {
                 this.#gridSizeValue.textContent = this.#config.gridSize;
 
                 // Compute heights.
-                this.#terrainGrid = new Grid(this.#config.gridSize, this.#config.rngSeed, this.#config);
+                this.#terrainGrid = new Grid(this.#config);
                 this.#terrainGrid[this.#config.terrainAlgo]();
 
                 // Render terrain.
@@ -196,7 +196,6 @@ export class UI {
         this.#config.rngSeed++;
 
         // Update the parameters on the existing grid instance.
-        this.#terrainGrid.seed = this.#config.rngSeed;
         this.#terrainGrid.setConfig(this.#config);
 
         // Regenerate using the current algorithm.

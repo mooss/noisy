@@ -17,11 +17,11 @@ export class Grid {
     #noisePersistence;
     #noiseLacunarity;
 
-    constructor(size, seed, config) {
+    constructor(config) {
         this.setConfig(config);
 
         // Grid layout.
-        this.#size = size;
+        this.#size = config.gridSize;
         this.#cellSize = 256 / this.#size;
         this.#data = [];
 
@@ -30,10 +30,7 @@ export class Grid {
         }
 
         // Generation.
-        this.seed = seed;
-        this.reseed();
         this.#fundamental = 1 / this.#size;
-        this.#noiseGen = createNoise2D(createLCG(this.#seed));
         this.#maxH = this.#size * this.#cellSize / 5;
     }
 
@@ -42,6 +39,7 @@ export class Grid {
         this.#noiseOctaves = config.noiseOctaves;
         this.#noisePersistence = config.noisePersistence;
         this.#noiseLacunarity = config.noiseLacunarity;
+        this.seed = config.rngSeed;
     }
 
     ///////////////
