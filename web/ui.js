@@ -116,7 +116,6 @@ export class UI {
             onUpdate: () => this.#regenerateNoise()
         });
 
-
         ///////////////////
         // Radio buttons //
         const initialShapeRadio = document.querySelector(`input[name="shape"][value="${this.#config.renderStyle}"]`);

@@ -220,13 +220,14 @@
                 <div id="terrain-buttons">
                     <button data-terrain-algo="rand">Random</button>
                     <button data-terrain-algo="noise">Noise</button>
+                    <button data-terrain-algo="ridge">Ridge</button>
                     <button data-terrain-algo="midpoint">Midpoint</button>
                     <button data-terrain-algo="midnoise">Midnoise</button>
                 </div>
                 <!-- Area for parameters -->
                 <div id="terrain-params">
-                    <!-- Noise Parameters (used by Noise and Midnoise) -->
-                    <div id="noise-params" class="param-section" data-terrain-algos="noise midnoise">
+                    <!-- Noise Parameters (used by Noise, Ridge and Midnoise) -->
+                    <div id="noise-params" class="param-section" data-terrain-algos="noise ridge midnoise">
                         <label>Octaves: <span id="noise-octaves-value">4</span></label>
                         <input type="range" id="noise-octaves-slider" min="1" max="8" value="4" step="1">
                         <label>Persistence: <span id="noise-persistence-value">0.5</span></label>

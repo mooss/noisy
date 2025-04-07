@@ -32,7 +32,7 @@ const config = {
 
     // Generation settings.
     rngSeed: 23,
-    terrainAlgo: 'noise',
+    terrainAlgo: 'ridge',
     noiseOctaves: 4,        // Simplex Noise octaves to layer.
     noisePersistence: 0.5,  // Amplitude reduction per octave.
     noiseLacunarity: 2.0,   // Frequency increase per octave.

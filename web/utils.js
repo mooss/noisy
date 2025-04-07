@@ -12,15 +12,19 @@ export function createLCG(seed) {
     };
 }
 
+// Returns a function that will return a random number between given minimum and maximum values.
+export function mkRng(seed) {
+    let generator = createLCG(seed);
+    return (min, max) => generator() * (max - min) + min;
+}
+
 // Creates a function mapping between number ranges.
 export function rangeMapper(fromMin, fromMax, toMin, toMax) {
     return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin);
 }
 
-// Returns a function that will return a random number between given minimum and maximum values.
-export function mkRng(seed) {
-    let generator = createLCG(seed);
-    return (min, max) => generator() * (max - min) + min;
+export function clamp(x, min, max) {
+    return Math.min(Math.max(x, min), max);
 }
 
 // Interpolates between colors in a palette (0-1 normalized value).

@@ -1,5 +1,5 @@
 import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
-import { createLCG, rangeMapper, mkRng } from './utils.js';
+import { createLCG, mkRng, rangeMapper, clamp } from './utils.js';
 
 // Handles terrain data storage and generation algorithms.
 export class Grid {
@@ -145,6 +145,42 @@ export class Grid {
         this.apply((x, y) => mid[x][y] * midRatio + this.#data[x][y] * noiseRatio);
         this.normalize();
     }
+
+    // Ridge noise using simplex noise as a base.
+    ridge() {
+        this.apply((x, y) => {
+            let total = 0;
+            let frequency = this.#noiseFundamental / this.#size;
+            let amplitude = 1;
+            let weight = 1.0;
+            let signal;
+
+            for (let i = 0; i < this.#noiseOctaves; i++) {
+                signal = this.#noiseGen(x * frequency, y * frequency);
+
+                // Taking the absolute value maps [-1, 1] -> [0, 1] and makes the negative values
+                // positive, thus transforming the smooth transition from positive to negative
+                // values into a sharp "rebound".
+                //
+                // However, this rebound occurs at the bottom level ; inverting the elevation with
+                // `1 - abs(noise)` makes it occur at the top, thus creating ridges.
+                signal = 1.0 - Math.abs(signal);
+
+                // The signal can be squared to emphasize ridges.
+                signal *= signal;
+
+                // Add the contribution of this octave to the result.
+                total += signal * amplitude;
+
+                // Update amplitude and frequency for the next octave.
+                amplitude *= this.#noisePersistence;
+                frequency *= this.#noiseLacunarity;
+            }
+            return total;
+        });
+        this.normalize();
+    }
+
 
     // Normalize all heights between 0.1 and maxH.
     normalize(min, max) {
