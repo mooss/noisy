@@ -193,7 +193,7 @@
         <div id="controls">
             <div>
                 <label>Seed</label>
-                <button id="btn-new-seed">New Seed</button>
+                <button id="btn-new-seed">New seed</button>
             </div>
             <div>
                 <label>Shape:</label>
@@ -205,10 +205,10 @@
             </div>
             <div>
                 <label>Palette:</label>
-                <button id="btn-palette">Cycle Palette</button>
+                <button id="btn-palette">Cycle palette</button>
             </div>
             <div>
-                <label>Grid Size: <span id="grid-size-value">33</span></label>
+                <label>Grid size: <span id="grid-size-value">33</span></label>
                 <input type="range" id="grid-size-slider" min="1" max="7" value="5" step="1">
             </div>
         </div>
@@ -237,13 +237,16 @@
                         <label>Fundamental: <span id="noise-fundamental-value">1.0</span></label>
                         <input type="range" id="noise-fundamental-slider" min="0.1" max="5.0" value="1.0" step="0.1">
                     </div>
+                    <div id="ridge-params" class="param-section" data-terrain-algos="ridge">
+                        <label><input type="checkbox" id="ridge-square-checkbox" checked> Square signal</label>
+                    </div>
                     <div id="midpoint-params" class="param-section" data-terrain-algos="midpoint midnoise">
                         <label>Roughness: <span id="midpoint-roughness-value">0.6</span></label>
                         <input type="range" id="midpoint-roughness-slider" min="0.4" max="0.8" value="0.6" step="0.02">
                     </div>
                     <div id="midnoise-params" class="param-section" data-terrain-algos="midnoise">
                         <!-- Inherits Noise parameters via data-terrain-algos -->
-                        <label>Midpoint Ratio: <span id="midnoise-ratio-value">0.7</span></label>
+                        <label>Midpoint ratio: <span id="midnoise-ratio-value">0.7</span></label>
                         <input type="range" id="midnoise-ratio-slider" min="0.0" max="1.0" value="0.7" step="0.05">
                     </div>
                 </div>

@@ -147,6 +147,12 @@ export class UI {
 
         // Noise parameter listeners are attached in #setupSlider.
 
+        // Ridge square signal checkbox.
+        document.getElementById('ridge-square-checkbox').addEventListener('change', (e) => {
+            this.#config.ridgeSquareSignal = e.target.checked;
+            this.#regenerateNoise();
+        });
+
         // Shape radio buttons.
         this.#shapeRadios.forEach(radio => {
             radio.addEventListener('change', this.#handleShapeChange.bind(this));

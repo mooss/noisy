@@ -18,8 +18,10 @@ export class Grid {
     #noiseFundamental;
     #midpointRoughness;
     #midnoiseRatio;
+    #config;
 
     constructor(config) {
+        this.#config = config;
         this.setConfig(config);
 
         // Grid layout.
@@ -166,8 +168,10 @@ export class Grid {
                 // `1 - abs(noise)` makes it occur at the top, thus creating ridges.
                 signal = 1.0 - Math.abs(signal);
 
-                // The signal can be squared to emphasize ridges.
-                signal *= signal;
+                // Squaring the signal will emphasize ridges.
+                if (this.#config.ridgeSquareSignal) {
+                    signal *= signal;
+                }
 
                 // Add the contribution of this octave to the result.
                 total += signal * amplitude;
