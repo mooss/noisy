@@ -163,12 +163,15 @@ export class Grid {
                 // Taking the absolute value maps [-1, 1] -> [0, 1] and makes the negative values
                 // positive, thus transforming the smooth transition from positive to negative
                 // values into a sharp "rebound".
-                //
-                // However, this rebound occurs at the bottom level ; inverting the elevation with
-                // `1 - abs(noise)` makes it occur at the top, thus creating ridges.
-                signal = 1.0 - Math.abs(signal);
+                signal = Math.abs(signal);
 
-                // Squaring the signal will emphasize ridges.
+                // Inverting the elevation with `1 - signal` makes the rebound occur at the top,
+                // creating ridges instead of valleys.
+                if (this.#config.ridgeInvertSignal) {
+                    signal = 1.0 - signal;
+                }
+
+                // Squaring the signal will emphasize ridges/valleys.
                 if (this.#config.ridgeSquareSignal) {
                     signal *= signal;
                 }

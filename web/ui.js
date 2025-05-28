@@ -117,6 +117,11 @@ export class UI {
         });
 
         ///////////////////
+        // Checkboxes    //
+        document.getElementById('ridge-invert-checkbox').checked = this.#config.ridgeInvertSignal;
+        document.getElementById('ridge-square-checkbox').checked = this.#config.ridgeSquareSignal;
+
+        ///////////////////
         // Radio buttons //
         const initialShapeRadio = document.querySelector(`input[name="shape"][value="${this.#config.renderStyle}"]`);
         if (initialShapeRadio) {
@@ -147,7 +152,11 @@ export class UI {
 
         // Noise parameter listeners are attached in #setupSlider.
 
-        // Ridge square signal checkbox.
+        // Ridge parameter checkboxes.
+        document.getElementById('ridge-invert-checkbox').addEventListener('change', (e) => {
+            this.#config.ridgeInvertSignal = e.target.checked;
+            this.#regenerateNoise();
+        });
         document.getElementById('ridge-square-checkbox').addEventListener('change', (e) => {
             this.#config.ridgeSquareSignal = e.target.checked;
             this.#regenerateNoise();
