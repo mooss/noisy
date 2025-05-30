@@ -17,7 +17,6 @@ export class Grid {
     #noiseLacunarity;
     #noiseFundamental;
     #midpointRoughness;
-    #midnoiseRatio;
     #config;
 
     constructor(config) {
@@ -44,7 +43,6 @@ export class Grid {
         this.#noiseLacunarity = config.noiseLacunarity;
         this.#noiseFundamental = config.noiseFundamental;
         this.#midpointRoughness = config.midpointRoughness;
-        this.#midnoiseRatio = config.midnoiseRatio;
         this.seed = config.rngSeed;
     }
 
@@ -133,20 +131,6 @@ export class Grid {
         this.normalize(...midpointDisplacement(this.#data, this.#rng, this.#midpointRoughness));
     }
 
-    // Interpolation of midpoint displacement and simplex noise.
-    midnoise() {
-        // Compute midpoint and noise.
-        this.reseed();
-        this.midpoint();
-        const mid = structuredClone(this.#data);
-        this.noise();
-
-        // Interpolate and normalize (the grid will no longer be between .1 and maxH).
-        const midRatio = this.#midnoiseRatio;
-        const noiseRatio = 1.0 - midRatio;
-        this.apply((x, y) => mid[x][y] * midRatio + this.#data[x][y] * noiseRatio);
-        this.normalize();
-    }
 
     // Ridge noise using simplex noise as a base.
     ridge() {

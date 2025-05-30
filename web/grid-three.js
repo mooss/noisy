@@ -40,7 +40,6 @@ const config = {
     noiseLacunarity: 1.5,    // Frequency increase per octave.
     noiseFundamental: 1.1,   // Base frequency for noise.
     midpointRoughness: 0.6,  // Roughness factor for midpoint displacement.
-    midnoiseRatio: 0.7,      // Midpoint vs Noise ratio (0=noise, 1=midpoint).
 
     // Color settings.
     palette: 0,

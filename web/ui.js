@@ -111,10 +111,6 @@ export class UI {
             onUpdate: () => this.#regenerateNoise() // Regenerate handles midpoint too
         });
 
-        this.#setupSlider('midnoise-ratio-slider', 'midnoise-ratio-value', 'midnoiseRatio', {
-            valueFormat: (v) => v.toFixed(2),
-            onUpdate: () => this.#regenerateNoise()
-        });
 
         ///////////////////
         // Checkboxes    //

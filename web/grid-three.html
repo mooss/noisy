@@ -222,12 +222,11 @@
                     <button data-terrain-algo="noise">Noise</button>
                     <button data-terrain-algo="ridge">Ridge</button>
                     <button data-terrain-algo="midpoint">Midpoint</button>
-                    <button data-terrain-algo="midnoise">Midnoise</button>
                 </div>
                 <!-- Area for parameters -->
                 <div id="terrain-params">
-                    <!-- Noise Parameters (used by Noise, Ridge and Midnoise) -->
-                    <div id="noise-params" class="param-section" data-terrain-algos="noise ridge midnoise">
+                    <!-- Noise Parameters (used by Noise, Ridge) -->
+                    <div id="noise-params" class="param-section" data-terrain-algos="noise ridge">
                         <label>Octaves: <span id="noise-octaves-value">4</span></label>
                         <input type="range" id="noise-octaves-slider" min="1" max="8" value="4" step="1">
                         <label>Persistence: <span id="noise-persistence-value">0.5</span></label>
@@ -241,14 +240,9 @@
                         <label><input type="checkbox" id="ridge-invert-checkbox" checked> Invert signal</label>
                         <label><input type="checkbox" id="ridge-square-checkbox" checked> Square signal</label>
                     </div>
-                    <div id="midpoint-params" class="param-section" data-terrain-algos="midpoint midnoise">
+                    <div id="midpoint-params" class="param-section" data-terrain-algos="midpoint">
                         <label>Roughness: <span id="midpoint-roughness-value">0.6</span></label>
                         <input type="range" id="midpoint-roughness-slider" min="0.4" max="0.8" value="0.6" step="0.02">
-                    </div>
-                    <div id="midnoise-params" class="param-section" data-terrain-algos="midnoise">
-                        <!-- Inherits Noise parameters via data-terrain-algos -->
-                        <label>Midpoint ratio: <span id="midnoise-ratio-value">0.7</span></label>
-                        <input type="range" id="midnoise-ratio-slider" min="0.0" max="1.0" value="0.7" step="0.05">
                     </div>
                 </div>
             </div>
