@@ -43,6 +43,9 @@ const config = {
 
     // Color settings.
     palette: 0,
+
+    // Rendering flag.
+    needsRender: true, // Render the first frame.
 };
 
 ///////////////////
@@ -85,8 +88,12 @@ function main() {
             lastTime = currentTime;
         }
 
-        terrainRenderer.controls.update(); // Required because of damping.
-        terrainRenderer.renderer.render(terrainRenderer.scene, terrainRenderer.camera);
+        // Only render if something has changed or controls are active.
+        const controlsUpdated = terrainRenderer.controls.update(); // Required because of damping.
+        if (config.needsRender || controlsUpdated) {
+            terrainRenderer.renderer.render(terrainRenderer.scene, terrainRenderer.camera);
+            config.needsRender = false; // Reset flag after rendering.
+        }
     }
     animate();
 }

@@ -60,6 +60,7 @@ export class UI {
             this.#config[configKey] = newValue;
             valueElement.textContent = valueFormat(newValue);
             onUpdate(newValue); // Execute the callback.
+            this.#config.needsRender = true;
         });
     }
 
@@ -132,6 +133,7 @@ export class UI {
         this.#terrainGrid.setConfig(this.#config);
         this.#terrainGrid[this.#config.terrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
+        this.#config.needsRender = true;
     }
 
     // Attaches event listeners to UI elements.
@@ -191,6 +193,7 @@ export class UI {
                 button.classList.remove('active-terrain-algo');
             }
         });
+        this.#config.needsRender = true;
     }
 
     // Handles clicks on the terrain algorithm buttons.
@@ -208,6 +211,7 @@ export class UI {
         this.#terrainGrid.setConfig(this.#config);
         this.#terrainGrid[newTerrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
+        this.#config.needsRender = true;
     }
 
     // Handles click on the "New Seed" button.
@@ -220,6 +224,7 @@ export class UI {
         // Regenerate using the current algorithm.
         this.#terrainGrid[this.#config.terrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
+        this.#config.needsRender = true;
     }
 
     // Handles changes to the shape radio buttons.
@@ -227,11 +232,13 @@ export class UI {
         const newStyle = event.target.value;
         this.#config.renderStyle = newStyle;
         this.#terrainRenderer.createGridMeshes();
+        this.#config.needsRender = true;
     }
 
     // Handles click on the "Cycle Palette" button.
     #handlePaletteChange() {
         this.#config.palette = (this.#config.palette + 1) % this.#palettes.length;
         this.#terrainRenderer.createGridMeshes();
+        this.#config.needsRender = true;
     }
 }

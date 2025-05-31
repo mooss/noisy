@@ -50,6 +50,9 @@ export class TerrainRenderer {
         this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
         this.#controls.enableDamping = true; // Smooths camera movement.
         this.#controls.dampingFactor = 0.1;
+		this.#controls.addEventListener('change', () => {
+			this.#config.needsRender = true; // Render when controls are changed (for instance on zoom).
+		});
 
         // Meshes group.
         this.#terrainMeshes = new THREE.Group();
@@ -290,6 +293,7 @@ export class TerrainRenderer {
             case 'quadPrism': this.#createSquarePrismMeshes(); break;
             case 'surface':   this.#createSurfaceMesh(); break;
         }
+        this.#config.needsRender = true;
     }
 
     // Handles window resize events.
@@ -297,6 +301,7 @@ export class TerrainRenderer {
         this.#camera.aspect = window.innerWidth / window.innerHeight;
         this.#camera.updateProjectionMatrix();
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
+        this.#config.needsRender = true;
     }
 
     // Public accessors for core components needed by the main loop.
