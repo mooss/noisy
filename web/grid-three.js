@@ -63,9 +63,28 @@ function main() {
     // Pass the initial terrainGrid; UI will manage updates/replacements.
     const ui = new UI(config, terrainGrid, terrainRenderer, palettes);
 
-    // 4. Animation Loop.
+    // 4. FPS Counter.
+    const fpsCounter = document.getElementById('fps-counter');
+    let lastTime = performance.now();
+    let frameCount = 0;
+
+    // 5. Animation Loop.
     function animate() {
         requestAnimationFrame(animate);
+
+        // FPS calculation
+        const currentTime = performance.now();
+        frameCount++;
+        const deltaTime = currentTime - lastTime;
+
+		// Update FPS display every 100 millisecond.
+        if (deltaTime >= 100) {
+            const fps = (frameCount / (deltaTime / 1000)).toFixed(1);
+            fpsCounter.textContent = `FPS: ${fps}`;
+            frameCount = 0;
+            lastTime = currentTime;
+        }
+
         terrainRenderer.controls.update(); // Required because of damping.
         terrainRenderer.renderer.render(terrainRenderer.scene, terrainRenderer.camera);
     }

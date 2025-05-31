@@ -186,6 +186,20 @@
          #terrain-content button:hover {
              background-color: darkslategray;
          }
+
+         /***************/
+         /* FPS Counter */
+         /***************/
+         #fps-counter {
+             position: absolute;
+             bottom: 10px;
+             left: 10px;
+             background: rgba(0, 0, 0, 0.7);
+             color: white;
+             padding: 5px 10px;
+             border-radius: 3px;
+             font-size: 14px;
+         }
         </style>
     </head>
     <body>
@@ -247,6 +261,9 @@
                 </div>
             </div>
         </div>
+
+        <!-- FPS Counter Display -->
+        <div id="fps-counter">FPS: --</div>
 
         <!-- Libraries -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
