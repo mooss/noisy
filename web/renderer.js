@@ -50,9 +50,9 @@ export class TerrainRenderer {
         this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
         this.#controls.enableDamping = true; // Smooths camera movement.
         this.#controls.dampingFactor = 0.1;
-		this.#controls.addEventListener('change', () => {
-			this.#config.needsRender = true; // Render when controls are changed (for instance on zoom).
-		});
+        this.#controls.addEventListener('change', () => {
+            this.#config.needsRender = true; // Render when controls are changed (for instance on zoom).
+        });
 
         // Meshes group.
         this.#terrainMeshes = new THREE.Group();
@@ -143,146 +143,76 @@ export class TerrainRenderer {
 
     // Creates the mesh for the box geometry (square prism).
     #createSquarePrismMeshes() {
-        const { palette: currentPalette } = this.#config;
-        const { size, cellSize, maxH, data } = this.#terrainGrid;
-
-        // Calculate total grid dimensions for centering.
-        const totalGridWidth = (size - 1) * cellSize;
-        const totalGridHeight = (size - 1) * cellSize;
-        const startX = -totalGridWidth / 2;
-        const startY = -totalGridHeight / 2;
-
-        // Property containers that will hold every box.
-        const positions = [];
-        const normals = [];
-        const colors = [];
-        const indices = [];
-        let indexOffset = 0;
-
-        // Shared box used to instantiate every cell.
-        const boxGeometry = new THREE.BoxGeometry(cellSize, cellSize, 1);
-        boxGeometry.translate(0, 0, 0.5); // Center along Z.
-
-        for (let i = 0; i < size; i++) {
-            for (let j = 0; j < size; j++) {
-                const height = data[i][j];
-                const xPos = startX + i * cellSize;
-                const yPos = startY + j * cellSize;
-
-                const cellColor = interpolateColors(this.#palettes[currentPalette], height / maxH);
-
-                const matrix = new THREE.Matrix4()
-                    .makeScale(1, 1, height)
-                    .setPosition(xPos, yPos, 0);
-
-                const positionAttribute = boxGeometry.getAttribute('position');
-                const normalAttribute = boxGeometry.getAttribute('normal');
-
-                for (let v = 0; v < positionAttribute.count; v++) {
-                    const vertex = new THREE.Vector3()
-                        .fromBufferAttribute(positionAttribute, v)
-                        .applyMatrix4(matrix);
-
-                    positions.push(vertex.x, vertex.y, vertex.z);
-                    normals.push(...normalAttribute.array.slice(v * 3, v * 3 + 3));
-                    colors.push(cellColor.r, cellColor.g, cellColor.b);
-                }
-
-                const indexAttribute = boxGeometry.getIndex();
-                for (let idx = 0; idx < indexAttribute.count; idx++) {
-                    indices.push(indexAttribute.array[idx] + indexOffset);
-                }
-                indexOffset += positionAttribute.count;
-            }
-        }
-
-        // Merge all boxes into one.
-        const mergedGeometry = new THREE.BufferGeometry();
-        mergedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        mergedGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-        mergedGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-        mergedGeometry.setIndex(indices);
-
-        const material = new THREE.MeshStandardMaterial({
-            vertexColors: true
-        });
-
-        const mesh = new THREE.Mesh(mergedGeometry, material);
-        this.#terrainMeshes.add(mesh);
+        this.#createPrismMeshes('square');
     }
 
-    // Creates the mesh for the hexagonal prism geometry.
+    // Creates the mesh for the hexagonal prism geometry
     #createHexagonPrismMeshes() {
+        this.#createPrismMeshes('hexagon');
+    }
+
+    #createPrismMeshes(type) {
         const { palette: currentPalette } = this.#config;
         const { size, cellSize, maxH, data } = this.#terrainGrid;
 
-        const ySpacingFactor = Math.sqrt(3) / 2;
+        const isHex = type === 'hexagon';
+        const ySpacingFactor = isHex ? Math.sqrt(3) / 2 : 1;
         const hexRadius = cellSize / Math.sqrt(3);
-        const hexWidth = cellSize; // Distance between parallel sides.
+        const hexWidth = cellSize;
 
-        // Calculate total grid dimensions for centering.
-        const totalGridWidth = (size - 1) * cellSize + hexWidth / 2;
+        const totalGridWidth = (size - 1) * cellSize + (isHex ? hexWidth / 2 : 0);
         const totalGridHeight = (size - 1) * cellSize * ySpacingFactor;
         const startX = -totalGridWidth / 2;
         const startY = -totalGridHeight / 2;
 
-        // Property containers that will hold every hex.
-        const positions = [];
-        const normals = [];
-        const colors = [];
-        const indices = [];
+        const positions = [], normals = [], colors = [], indices = [];
         let indexOffset = 0;
 
-        // Shared hex used to instantiate every cell.
-        const hexGeometry = this.#createHexagonGeometry(hexRadius, 1);
-        hexGeometry.rotateZ(Math.PI / 2); // Pointy-top orientation.
+        const baseGeometry = isHex
+              ? this.#createHexagonGeometry(hexRadius, 1).rotateZ(Math.PI / 2)
+              : new THREE.BoxGeometry(cellSize, cellSize, 1).translate(0, 0, 0.5);
+
+        const posAttr = baseGeometry.getAttribute('position');
+        const normAttr = baseGeometry.getAttribute('normal');
+        const idxAttr = baseGeometry.getIndex();
 
         for (let i = 0; i < size; i++) {
             for (let j = 0; j < size; j++) {
                 const height = data[i][j];
-                const xOffset = (j % 2 !== 0) ? hexWidth / 2 : 0;
+                const xOffset = isHex && (j % 2 !== 0) ? hexWidth / 2 : 0;
                 const xPos = startX + i * cellSize + xOffset;
                 const yPos = startY + j * cellSize * ySpacingFactor;
-                
+
                 const color = interpolateColors(this.#palettes[currentPalette], height / maxH);
+                const matrix = new THREE.Matrix4().makeScale(1, 1, height).setPosition(xPos, yPos, 0);
 
-                const matrix = new THREE.Matrix4()
-                      .makeScale(1, 1, height)
-                      .setPosition(xPos, yPos, 0);
-
-                const positionAttribute = hexGeometry.getAttribute('position');
-                const normalAttribute = hexGeometry.getAttribute('normal');
-                
-                for (let v = 0; v < positionAttribute.count; v++) {
-                    const vertex = new THREE.Vector3()
-                          .fromBufferAttribute(positionAttribute, v)
-                          .applyMatrix4(matrix);
-                    
+                for (let v = 0; v < posAttr.count; v++) {
+                    const vertex = new THREE.Vector3().fromBufferAttribute(posAttr, v).applyMatrix4(matrix);
                     positions.push(vertex.x, vertex.y, vertex.z);
-                    normals.push(...normalAttribute.array.slice(v * 3, v * 3 + 3));
+                    normals.push(...normAttr.array.slice(v * 3, v * 3 + 3));
                     colors.push(color.r, color.g, color.b);
                 }
 
-                for (let v = 0; v < positionAttribute.count; v++) {
-                    indices.push(indexOffset + v);
-				}
-				indexOffset += positionAttribute.count;
+                if (idxAttr) { // Hexagons don't have an index.
+                    for (let idx = 0; idx < idxAttr.count; idx++) {
+                        indices.push(idxAttr.array[idx] + indexOffset);
+                    }
+                } else {
+                    for (let v = 0; v < posAttr.count; v++) {
+                        indices.push(indexOffset + v);
+                    }
+                }
+                indexOffset += posAttr.count;
             }
         }
 
-        // Merge all hexaboxes into one.
         const mergedGeometry = new THREE.BufferGeometry();
         mergedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
         mergedGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
         mergedGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
         mergedGeometry.setIndex(indices);
 
-        const material = new THREE.MeshStandardMaterial({
-            vertexColors: true
-        });
-
-        const mesh = new THREE.Mesh(mergedGeometry, material);
-        this.#terrainMeshes.add(mesh);
+        this.#terrainMeshes.add(new THREE.Mesh(mergedGeometry, new THREE.MeshStandardMaterial({ vertexColors: true })));
     }
 
     // Creates or updates the terrain meshes based on current grid data and config.
