@@ -11,12 +11,6 @@ export class Grid {
     #noiseGen;
     #maxH;
     #data;
-
-    #noiseOctaves;
-    #noisePersistence;
-    #noiseLacunarity;
-    #noiseFundamental;
-    #midpointRoughness;
     #config;
 
     constructor(config) {
@@ -38,11 +32,7 @@ export class Grid {
 
     // Updates the stored generation parameters.
     setConfig(config) {
-        this.#noiseOctaves = config.noiseOctaves;
-        this.#noisePersistence = config.noisePersistence;
-        this.#noiseLacunarity = config.noiseLacunarity;
-        this.#noiseFundamental = config.noiseFundamental;
-        this.#midpointRoughness = config.midpointRoughness;
+        this.#config = config;
         this.seed = config.rngSeed;
     }
 
@@ -77,16 +67,16 @@ export class Grid {
     // Returns the fractal simplex noise value at the given coordinates.
     simplex(x, y) {
         let total = 0;
-        let frequency = this.#noiseFundamental / this.#size;
+        let frequency = this.#config.noiseFundamental / this.#size;
         let amplitude = 1;
 
-        for (let i = 0; i < this.#noiseOctaves; i++) {
+        for (let i = 0; i < this.#config.noiseOctaves; i++) {
             let noise = this.#noiseGen(x * frequency, y * frequency);
             total += noise * amplitude;
 
             // Update amplitude and frequency for the next octave.
-            amplitude *= this.#noisePersistence;
-            frequency *= this.#noiseLacunarity;
+            amplitude *= this.#config.noisePersistence;
+            frequency *= this.#config.noiseLacunarity;
         }
 
         return total;
@@ -128,7 +118,7 @@ export class Grid {
     // Normalized midpoint displacement.
     midpoint() {
         this.reseed();
-        this.normalize(...midpointDisplacement(this.#data, this.#rng, this.#midpointRoughness));
+        this.normalize(...midpointDisplacement(this.#data, this.#rng, this.#config.midpointRoughness));
     }
 
 
@@ -136,12 +126,11 @@ export class Grid {
     ridge() {
         this.apply((x, y) => {
             let total = 0;
-            let frequency = this.#noiseFundamental / this.#size;
+            let frequency = this.#config.noiseFundamental / this.#size;
             let amplitude = 1;
-            let weight = 1.0;
             let signal;
 
-            for (let i = 0; i < this.#noiseOctaves; i++) {
+            for (let i = 0; i < this.#config.noiseOctaves; i++) {
                 signal = this.#noiseGen(x * frequency, y * frequency);
 
                 // Taking the absolute value maps [-1, 1] -> [0, 1] and makes the negative values
@@ -164,8 +153,8 @@ export class Grid {
                 total += signal * amplitude;
 
                 // Update amplitude and frequency for the next octave.
-                amplitude *= this.#noisePersistence;
-                frequency *= this.#noiseLacunarity;
+                amplitude *= this.#config.noisePersistence;
+                frequency *= this.#config.noiseLacunarity;
             }
             return total;
         });
