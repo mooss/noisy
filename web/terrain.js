@@ -1,6 +1,8 @@
 import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
 import { createLCG, mkRng, rangeMapper, clamp } from './utils.js';
 
+const simplexShift = 100; // Shift coordinates to avoid the maximum appearing at [0, 0].
+
 function warpedNoise(noise, warpx, warpy, strength) {
 	return (x, y) => {
 		return noise(
@@ -123,7 +125,7 @@ export class Grid {
 
     // Simplex noise.
     noise() {
-        this.apply((x, y) => this.simplex(x, y));
+        this.apply((x, y) => this.simplex(x+simplexShift, y+simplexShift));
         this.normalize();
     }
 
@@ -137,6 +139,7 @@ export class Grid {
     // Ridge noise using simplex noise as a base.
     ridge() {
         this.apply((x, y) => {
+			x+=simplexShift; y+=simplexShift;
             let total = 0;
             let frequency = this.#config.noiseFundamental / this.#size;
             let amplitude = 1;
