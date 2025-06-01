@@ -6,46 +6,31 @@ import { palettes } from './palettes.js';
 //////////////////////////////
 // Configuration & Settings //
 
-/**
- * Central configuration object for terrain generation and visualization.
- *
- * Properties:
- * - gridPower:   Exponent for grid size calculation (2^n + 1).
- * - gridSize:    Calculated grid size based on gridPower.
- * - useHexagons: Toggle between square and hexagonal cells.
- * - useSurface:  Toggle between 3D surface and individual cells.
- * - rngSeed:     Initial seed for deterministic generation.
- * - terrainAlgo: Active terrain generation algorithm.
- * - palette:     Index of active color palette.
- *
- * Passed around to different modules.
- */
 const config = {
     // Grid configuration.
-    gridPower: 5,
+    gridPower: 5, // Power of the grid (one side is )
     get gridSize() {
         return 2**this.gridPower + 1;
     },
 
     // Visualization options.
-    renderStyle: 'quadPrism', // 'quadPrism', 'hexPrism', 'surface'.
+    renderStyle: 'quadPrism', // How the terrain is rendered (quadPrism, hexPrism, surface).
+    palette: 0,               // Index of the color palette to use.
 
     // Generation settings.
-    rngSeed: 23,
-    terrainAlgo: 'ridge',
-    ridgeInvertSignal: true, // Invert signal for ridges (1 - abs(noise)) vs valleys (abs(noise)).
+    rngSeed: 23,              // Seed for deterministic terrain generation.
+    terrainAlgo: 'ridge',     // Terrain creation algorithm (ridge, rand, noise, midpoint).
+    ridgeInvertSignal: true,  // Invert signal for ridges (1 - abs(noise)) vs valleys (abs(noise)).
     ridgeSquareSignal: false, // Square the signal to sharpen ridges/valleys.
-    noiseOctaves: 6,         // Simplex Noise octaves to layer.
+    noiseOctaves: 6,          // Simplex Noise octaves to layer.
     noisePersistence: 0.65,   // Amplitude reduction per octave.
-    noiseLacunarity: 1.5,    // Frequency increase per octave.
-    noiseFundamental: 1.1,   // Base frequency for noise.
-    midpointRoughness: 0.6,  // Roughness factor for midpoint displacement.
+    noiseLacunarity: 1.5,     // Frequency increase per octave.
+    noiseFundamental: 1.1,    // Base frequency for noise.
+	noiseWarpingStrength: 0,  // Warping strength for noise coordinates.
+    midpointRoughness: 0.6,   // Roughness factor for midpoint displacement.
 
-    // Color settings.
-    palette: 0,
-
-    // Rendering flag.
-    needsRender: true, // Render the first frame.
+    // Render settings.
+    needsRender: true,        // Whether the frame should be rendered.
 };
 
 ///////////////////
