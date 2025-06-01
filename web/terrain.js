@@ -1,6 +1,15 @@
 import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
 import { createLCG, mkRng, rangeMapper, clamp } from './utils.js';
 
+function warpedNoise(noise, warpx, warpy, strength) {
+	return (x, y) => {
+		return noise(
+			x + warpx(x, y) * strength,
+			y + warpy(x, y) * strength,
+		)
+	}
+}
+
 // Handles terrain data storage and generation algorithms.
 export class Grid {
     // Private fields for internal state.
@@ -58,7 +67,10 @@ export class Grid {
     set seed(newSeed) {
         this.#seed = newSeed;
         this.reseed();
-        this.#noiseGen = createNoise2D(createLCG(this.#seed));
+		const noise = createNoise2D(createLCG(this.#seed));
+		const warpx = createNoise2D(createLCG(this.#seed + 1));
+		const warpy = createNoise2D(createLCG(this.#seed + 2));
+        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.noiseWarpingStrength);
     }
 
     ///////////////

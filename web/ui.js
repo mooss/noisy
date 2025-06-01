@@ -107,6 +107,11 @@ export class UI {
             onUpdate: () => this.#regenerateNoise()
         });
 
+        this.#setupSlider('noise-warping-strength-slider', 'noise-warping-strength-value', 'noiseWarpingStrength', {
+            valueFormat: (v) => v.toFixed(2),
+            onUpdate: () => this.#regenerateNoise()
+        });
+
         this.#setupSlider('midpoint-roughness-slider', 'midpoint-roughness-value', 'midpointRoughness', {
             valueFormat: (v) => v.toFixed(2),
             onUpdate: () => this.#regenerateNoise() // Regenerate handles midpoint too
