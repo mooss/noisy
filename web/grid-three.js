@@ -3,9 +3,6 @@ import { TerrainRenderer } from './renderer.js';
 import { UI } from './ui.js';
 import { palettes } from './palettes.js';
 
-//////////////////////////////
-// Configuration & Settings //
-
 const config = {
     // Grid configuration.
     gridPower: 5, // Power of the grid (one side is )
@@ -33,14 +30,22 @@ const config = {
     needsRender: true,        // Whether the frame should be rendered.
 };
 
-///////////////////
-// Main Function //
+const terrainGenerationAlgorithms = {
+    'ridge': (grid) => grid.ridge(),
+    'rand': (grid) => grid.rand(),
+    'noise': (grid) => grid.noise(),
+    'midpoint': (grid) => grid.midpoint(),
+};
 
-function main() {
+function initializeApplication(config, palettes) {
     // 1. Create the Terrain Grid Data Structure.
     // The UI class will create new Grid instances when size changes.
-    let terrainGrid = new Grid(config);
-    terrainGrid[config.terrainAlgo](); // Perform initial generation.
+    const terrainGrid = new Grid(config);
+    if (terrainGenerationAlgorithms[config.terrainAlgo]) {
+        terrainGenerationAlgorithms[config.terrainAlgo](terrainGrid); // Perform initial generation.
+    } else {
+        console.warn(`Unknown terrain algorithm: ${config.terrainAlgo}. No initial generation performed.`);
+    }
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).
     // It performs the initial scene setup and mesh creation in its constructor.
@@ -49,38 +54,50 @@ function main() {
     // 3. Create the UI Handler.
     // It sets up listeners and interacts with config, terrainGrid, and terrainRenderer.
     // Pass the initial terrainGrid; UI will manage updates/replacements.
-    const ui = new UI(config, terrainGrid, terrainRenderer, palettes);
+	// The UI being an object is only a convenience to setup everything, is doesn't need to be persisted.
+    new UI(config, terrainGrid, terrainRenderer, palettes);
 
-    // 4. FPS Counter.
+    return terrainRenderer;
+}
+
+function setupFpsCounter() {
     const fpsCounter = document.getElementById('fps-counter');
     let lastTime = performance.now();
     let frameCount = 0;
+    return { fpsCounter, lastTime, frameCount };
+}
 
-    // 5. Animation Loop.
+function startAnimationLoop(config, terrainRenderer, fpsState) {
     function animate() {
         requestAnimationFrame(animate);
 
-        // FPS calculation
+        // FPS calculation.
         const currentTime = performance.now();
-        frameCount++;
-        const deltaTime = currentTime - lastTime;
+        fpsState.frameCount++;
+        const deltaTime = currentTime - fpsState.lastTime;
 
 		// Update FPS display every 100 millisecond.
         if (deltaTime >= 100) {
-            const fps = (frameCount / (deltaTime / 1000)).toFixed(1);
-            fpsCounter.textContent = `FPS: ${fps}`;
-            frameCount = 0;
-            lastTime = currentTime;
+            const fps = (fpsState.frameCount / (deltaTime / 1000)).toFixed(1);
+            fpsState.fpsCounter.textContent = `FPS: ${fps}`;
+            fpsState.frameCount = 0;
+            fpsState.lastTime = currentTime;
         }
 
         // Only render if something has changed or controls are active.
         const controlsUpdated = terrainRenderer.controls.update(); // Required because of damping.
         if (config.needsRender || controlsUpdated) {
             terrainRenderer.renderer.render(terrainRenderer.scene, terrainRenderer.camera);
-            config.needsRender = false; // Reset flag after rendering.
+            config.needsRender = false;
         }
     }
     animate();
+}
+
+function main() {
+    const terrainRenderer = initializeApplication(config, palettes);
+    const fpsState = setupFpsCounter();
+    startAnimationLoop(config, terrainRenderer, fpsState);
 }
 
 main();

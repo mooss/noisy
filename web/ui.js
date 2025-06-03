@@ -11,7 +11,6 @@ export class UI {
     #shapeRadios;
 
     // Right panel DOM elements.
-    #terrainPanel;
     #terrainButtonsContainer;
     #terrainButtons;
     #terrainParamsContainer;
@@ -27,7 +26,6 @@ export class UI {
         this.#shapeRadios = document.querySelectorAll('input[name="shape"]');
 
         // Right panel.
-        this.#terrainPanel = document.getElementById('terrain-panel');
         this.#terrainButtonsContainer = document.getElementById('terrain-buttons');
         this.#terrainButtons = this.#terrainButtonsContainer.querySelectorAll('button');
         this.#terrainParamsContainer = document.getElementById('terrain-params');
