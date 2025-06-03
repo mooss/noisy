@@ -1,10 +1,10 @@
 import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
 import { createLCG, mkRng, rangeMapper, clamp } from './utils.js';
 
-const simplexShift = 100; // Shift coordinates to avoid the maximum appearing at [0, 0].
-
-function warpedNoise(noise, warpx, warpy, strength) {
-	return (x, y) => {
+function warpedNoise(noise, warpx, warpy, strength, simshift) {
+	return (x, y, frequency) => {
+		x = x * frequency + simshift;
+		y = y * frequency + simshift;
 		return noise(
 			x + warpx(x, y) * strength,
 			y + warpy(x, y) * strength,
@@ -72,7 +72,7 @@ export class Grid {
 		const noise = createNoise2D(createLCG(this.#seed));
 		const warpx = createNoise2D(createLCG(this.#seed + 1));
 		const warpy = createNoise2D(createLCG(this.#seed + 2));
-        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.noiseWarpingStrength);
+        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.noiseWarpingStrength, 256);
     }
 
     ///////////////
@@ -85,7 +85,7 @@ export class Grid {
         let amplitude = 1;
 
         for (let i = 0; i < this.#config.noiseOctaves; i++) {
-            let noise = this.#noiseGen(x * frequency, y * frequency);
+            let noise = this.#noiseGen(x, y, frequency);
             total += noise * amplitude;
 
             // Update amplitude and frequency for the next octave.
@@ -125,7 +125,7 @@ export class Grid {
 
     // Simplex noise.
     noise() {
-        this.apply((x, y) => this.simplex(x+simplexShift, y+simplexShift));
+        this.apply((x, y) => this.simplex(x, y));
         this.normalize();
     }
 
@@ -139,14 +139,13 @@ export class Grid {
     // Ridge noise using simplex noise as a base.
     ridge() {
         this.apply((x, y) => {
-			x+=simplexShift; y+=simplexShift;
             let total = 0;
             let frequency = this.#config.noiseFundamental / this.#size;
             let amplitude = 1;
             let signal;
 
             for (let i = 0; i < this.#config.noiseOctaves; i++) {
-                signal = this.#noiseGen(x * frequency, y * frequency);
+                signal = this.#noiseGen(x, y, frequency);
 
                 // Taking the absolute value maps [-1, 1] -> [0, 1] and makes the negative values
                 // positive, thus transforming the smooth transition from positive to negative
@@ -193,7 +192,7 @@ export class Grid {
     }
 }
 
-export function midpointDisplacement(grid, rng, roughness) {
+function midpointDisplacement(grid, rng, roughness) {
     const size = grid.length;
     let range = 1;
 
