@@ -60,29 +60,35 @@ function initializeApplication(config, palettes) {
     return terrainRenderer;
 }
 
-function setupFpsCounter() {
-    const fpsCounter = document.getElementById('fps-counter');
-    let lastTime = performance.now();
-    let frameCount = 0;
-    return { fpsCounter, lastTime, frameCount };
+class FpsCounter {
+    constructor(elementId) {
+        this.element = document.getElementById(elementId);
+        this.previous = performance.now();
+        this.frames = 0;
+        this.updateIntervalMs = 100; // Update FPS display every 100 milliseconds.
+    }
+
+    update() {
+        const current = performance.now();
+        this.frames++;
+        const delta = current - this.previous;
+
+        if (delta >= this.updateIntervalMs) {
+            const fps = (this.frames / (delta / 1000)).toFixed(1);
+            if (this.element) {
+                this.element.textContent = `FPS: ${fps}`;
+            }
+            this.frames = 0;
+            this.previous = current;
+        }
+    }
 }
 
-function startAnimationLoop(config, terrainRenderer, fpsState) {
+function startAnimationLoop(config, terrainRenderer, fpsCounter) {
     function animate() {
         requestAnimationFrame(animate);
 
-        // FPS calculation.
-        const currentTime = performance.now();
-        fpsState.frameCount++;
-        const deltaTime = currentTime - fpsState.lastTime;
-
-		// Update FPS display every 100 millisecond.
-        if (deltaTime >= 100) {
-            const fps = (fpsState.frameCount / (deltaTime / 1000)).toFixed(1);
-            fpsState.fpsCounter.textContent = `FPS: ${fps}`;
-            fpsState.frameCount = 0;
-            fpsState.lastTime = currentTime;
-        }
+        fpsCounter.update();
 
         // Only render if something has changed or controls are active.
         const controlsUpdated = terrainRenderer.controls.update(); // Required because of damping.
@@ -96,8 +102,8 @@ function startAnimationLoop(config, terrainRenderer, fpsState) {
 
 function main() {
     const terrainRenderer = initializeApplication(config, palettes);
-    const fpsState = setupFpsCounter();
-    startAnimationLoop(config, terrainRenderer, fpsState);
+    const fpsCounter = new FpsCounter('fps-counter');
+    startAnimationLoop(config, terrainRenderer, fpsCounter);
 }
 
 main();
