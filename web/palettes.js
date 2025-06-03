@@ -31,4 +31,28 @@ const blackWhite = [
     rgb(255, 255, 255), // White.
 ];
 
-export const palettes = [realisticTerrainPalette, continentalPalette, cyberPuke, blackWhite];
+const fantasyPalette = [
+    rgb(50, 50, 150),   // Deep magical water.
+    rgb(100, 100, 200), // Enchanted shallow water.
+    rgb(200, 150, 100), // Sunken ruins/ancient sands.
+    rgb(0, 120, 0),     // Lush enchanted forests.
+    rgb(150, 0, 150),   // Mystic bogs/cursed lands.
+    rgb(100, 50, 0),    // Dragon's mountains/volcanic rock.
+    rgb(255, 255, 255), // Cloud kingdom/celestial plains.
+];
+
+const sunsetPalette = [
+    rgb(253, 94, 83),   // Coral.
+    rgb(252, 186, 3),   // Gold.
+    rgb(129, 3, 252),   // Purple.
+    rgb(3, 248, 252)    // Teal.
+];
+
+export const palettes = [
+    realisticTerrainPalette,
+    continentalPalette,
+    cyberPuke,
+    blackWhite,
+    fantasyPalette,
+    sunsetPalette,
+];
