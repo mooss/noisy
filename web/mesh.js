@@ -1,6 +1,11 @@
 import { interpolateColors } from './utils.js';
 
-// Private helper for creating hexagon geometry.
+/**
+ * Creates a hexagonal extruded prism.
+ * @param {number} radius - The radius of the hexagon.
+ * @param {number} height - The height of the extrusion.
+ * @returns {THREE.ExtrudeGeometry} The generated geometry.
+ */
 function _createHexagonGeometry(radius, height) {
     const shape = new THREE.Shape();
     const sides = 6;
@@ -22,7 +27,12 @@ function _createHexagonGeometry(radius, height) {
     });
 }
 
-// Creates the mesh for a continuous surface representation.
+/**
+ * Creates a surface mesh from terrain grid data with vertex coloring.
+ * @param {Object} terrainGrid - Terrain properties.
+ * @param {Array} palette - Color palette for height-based interpolation.
+ * @returns {THREE.Mesh} The generated surface mesh.
+ */
 export function createSurfaceMesh(terrainGrid, palette) {
     const { size, cellSize, maxH, data } = terrainGrid;
 
@@ -36,15 +46,13 @@ export function createSurfaceMesh(terrainGrid, palette) {
     const positionAttribute = geometry.getAttribute('position');
     const colors = [];
 
-    // Set heights and colors.
+    // Set height and colors of each cell.
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
-            // Height.
             const vertexIndex = i * size + j;
             const height = data[i][j];
             positionAttribute.setZ(vertexIndex, height);
 
-            // Color.
             const color = interpolateColors(palette, height / maxH);
             colors.push(color.r, color.g, color.b);
         }
@@ -64,7 +72,13 @@ export function createSurfaceMesh(terrainGrid, palette) {
     return surfaceMesh;
 }
 
-// Creates the mesh for the prism geometry (square or hexagon).
+/**
+ * Creates prism meshes (hexagonal or square) from terrain grid data.
+ * @param {string} type - 'hexagon' or any other value for square
+ * @param {Object} terrainGrid - Contains size, cellSize, maxH and data properties
+ * @param {Array} palette - Color palette for height-based interpolation
+ * @returns {THREE.Mesh} The generated prism mesh
+ */
 export function createPrismMeshes(type, terrainGrid, palette) {
     const { size, cellSize, maxH, data } = terrainGrid;
 
