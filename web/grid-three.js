@@ -19,6 +19,7 @@ const config = {
     terrainAlgo: 'ridge',     // Terrain creation algorithm (ridge, rand, noise, midpoint).
     ridgeInvertSignal: true,  // Invert signal for ridges (1 - abs(noise)) vs valleys (abs(noise)).
     ridgeSquareSignal: false, // Square the signal to sharpen ridges/valleys.
+    ridgeStyle: 'octavian',   // Style of ridge generation (octavian, melodic).
     noiseOctaves: 6,          // Simplex Noise octaves to layer.
     noisePersistence: 0.65,   // Amplitude reduction per octave.
     noiseLacunarity: 1.5,     // Frequency increase per octave.

@@ -138,6 +138,15 @@ export class Grid {
 
     // Ridge noise using simplex noise as a base.
     ridge() {
+        if (this.#config.ridgeStyle === 'octavian') {
+            this.octavianRidge();
+        } else {
+            this.melodicRidge();
+        }
+    }
+
+    // Ridge noise where the ridge transformation is applied to each octave.
+    octavianRidge() {
         this.apply((x, y) => {
             let total = 0;
             let frequency = this.#config.noiseFundamental / this.#size;
@@ -145,23 +154,7 @@ export class Grid {
             let signal;
 
             for (let i = 0; i < this.#config.noiseOctaves; i++) {
-                signal = this.#noiseGen(x, y, frequency);
-
-                // Taking the absolute value maps [-1, 1] -> [0, 1] and makes the negative values
-                // positive, thus transforming the smooth transition from positive to negative
-                // values into a sharp "rebound".
-                signal = Math.abs(signal);
-
-                // Inverting the elevation with `1 - signal` makes the rebound occur at the top,
-                // creating ridges instead of valleys.
-                if (this.#config.ridgeInvertSignal) {
-                    signal = 1.0 - signal;
-                }
-
-                // Squaring the signal will emphasize ridges/valleys.
-                if (this.#config.ridgeSquareSignal) {
-                    signal *= signal;
-                }
+                signal = this.toRidge(this.#noiseGen(x, y, frequency));
 
                 // Add the contribution of this octave to the result.
                 total += signal * amplitude;
@@ -175,6 +168,31 @@ export class Grid {
         this.normalize();
     }
 
+    // Ridge noise where the ridge transformation is applied to the already layered octaves.
+    melodicRidge() {
+        this.apply((x, y) => this.toRidge(this.simplex(x, y)));
+        this.normalize();
+    }
+
+    toRidge(signal) {
+        // Taking the absolute value maps [-1, 1] -> [0, 1] and makes the negative values
+        // positive, thus transforming the smooth transition from positive to negative
+        // values into a sharp "rebound".
+        signal = Math.abs(signal);
+
+        // Inverting the elevation with `1 - signal` makes the rebound occur at the top,
+        // creating ridges instead of valleys.
+        if (this.#config.ridgeInvertSignal) {
+            signal = 1.0 - signal;
+        }
+
+        // Squaring the signal will emphasize ridges/valleys.
+        if (this.#config.ridgeSquareSignal) {
+            signal *= signal;
+        }
+
+        return signal;
+    }
 
     // Normalize all heights between 0.1 and maxH.
     normalize(min, max) {

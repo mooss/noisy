@@ -255,6 +255,11 @@
                     <div id="ridge-params" class="param-section" data-terrain-algos="ridge">
                         <label><input type="checkbox" id="ridge-invert-checkbox" checked> Invert signal</label>
                         <label><input type="checkbox" id="ridge-square-checkbox" checked> Square signal</label>
+                        <label>Ridge Style:</label>
+                        <div class="radio-group">
+                            <label><input type="radio" id="ridge-style-octavian" name="ridge-style" value="octavian" checked> Octavian</label>
+                            <label><input type="radio" id="ridge-style-melodic" name="ridge-style" value="melodic"> Melodic</label>
+                        </div>
                     </div>
                     <div id="midpoint-params" class="param-section" data-terrain-algos="midpoint">
                         <label>Roughness: <span id="midpoint-roughness-value">0.6</span></label>

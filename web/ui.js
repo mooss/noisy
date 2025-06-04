@@ -14,6 +14,7 @@ export class UI {
     #terrainButtonsContainer;
     #terrainButtons;
     #terrainParamsContainer;
+    #ridgeStyleRadios;
 
     constructor(config, terrainGrid, terrainRenderer, palettes) {
         this.#config = config;
@@ -29,6 +30,7 @@ export class UI {
         this.#terrainButtonsContainer = document.getElementById('terrain-buttons');
         this.#terrainButtons = this.#terrainButtonsContainer.querySelectorAll('button');
         this.#terrainParamsContainer = document.getElementById('terrain-params');
+        this.#ridgeStyleRadios = document.querySelectorAll('input[name="ridge-style"]');
 
         this.#setupInitialState();
         this.#setupListeners();
@@ -129,6 +131,13 @@ export class UI {
         } else {
             document.getElementById('shape-quadPrism').checked = true; // Default to quad prism.
         }
+
+        const initialRidgeStyleRadio = document.querySelector(`input[name="ridge-style"][value="${this.#config.ridgeStyle}"]`);
+        if (initialRidgeStyleRadio) {
+            initialRidgeStyleRadio.checked = true;
+        } else {
+            document.getElementById('ridge-style-octavian').checked = true; // Default to octavian.
+        }
     }
 
     // Helper to regenerate terrain only if the active terrain algorithm uses noise parameters.
@@ -161,6 +170,14 @@ export class UI {
         document.getElementById('ridge-square-checkbox').addEventListener('change', (e) => {
             this.#config.ridgeSquareSignal = e.target.checked;
             this.#regenerateNoise();
+        });
+
+        // Ridge style radio buttons.
+        this.#ridgeStyleRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.#config.ridgeStyle = e.target.value;
+                this.#regenerateNoise();
+            });
         });
 
         // Shape radio buttons.
