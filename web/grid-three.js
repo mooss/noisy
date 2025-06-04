@@ -30,22 +30,11 @@ const config = {
     needsRender: true,        // Whether the frame should be rendered.
 };
 
-const terrainGenerationAlgorithms = {
-    'ridge': (grid) => grid.ridge(),
-    'rand': (grid) => grid.rand(),
-    'noise': (grid) => grid.noise(),
-    'midpoint': (grid) => grid.midpoint(),
-};
-
 function initializeApplication(config, palettes) {
     // 1. Create the Terrain Grid Data Structure.
     // The UI class will create new Grid instances when size changes.
     const terrainGrid = new Grid(config);
-    if (terrainGenerationAlgorithms[config.terrainAlgo]) {
-        terrainGenerationAlgorithms[config.terrainAlgo](terrainGrid); // Perform initial generation.
-    } else {
-        console.warn(`Unknown terrain algorithm: ${config.terrainAlgo}. No initial generation performed.`);
-    }
+    terrainGrid[config.terrainAlgo](); // Perform initial generation.
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).
     // It performs the initial scene setup and mesh creation in its constructor.
