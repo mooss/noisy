@@ -31,11 +31,7 @@ export class Grid {
         // Grid layout.
         this.#size = config.gridSize;
         this.#cellSize = 256 / this.#size;
-        this.#data = [];
-
-        for (let i = 0; i < this.#size; i++) {
-            this.#data[i] = new Array(this.#size).fill(0);
-        }
+        this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
 
         // Generation.
         this.#maxH = this.#size * this.#cellSize / 5;
@@ -85,8 +81,8 @@ export class Grid {
         let amplitude = 1;
 
         for (let i = 0; i < this.#config.noiseOctaves; i++) {
-            let noise = this.#noiseGen(x, y, frequency);
-            total += noise * amplitude;
+            let octave = this.#noiseGen(x, y, frequency);
+            total += octave * amplitude;
 
             // Update amplitude and frequency for the next octave.
             amplitude *= this.#config.noisePersistence;
@@ -203,6 +199,11 @@ export class Grid {
                 if (h < min) min = h;
                 if (h > max) max = h;
             });
+        }
+
+        if (min === max) { // Avoid potential division by zero.
+            this.apply((x, y) => this.#data[x][y] = this.maxH);
+            return;
         }
 
         const norm = rangeMapper(min, max, .1, this.maxH);
