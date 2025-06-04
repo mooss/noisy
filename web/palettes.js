@@ -1,13 +1,14 @@
 function rgb(r, g, b) { return new THREE.Color(r/255, g/255, b/255); };
 
-const realisticTerrainPalette = [
-    rgb(0, 50, 100),    // Deep water.
-    rgb(0, 100, 150),   // Shallow water.
-    rgb(210, 180, 140), // Sand/beach.
-    rgb(34, 139, 34),   // Grassland.
-    rgb(0, 100, 0),     // Forest.
-    rgb(139, 137, 137), // Rock/stone.
-    rgb(255, 250, 250), // Snow.
+const brightTerrainPalette = [
+    rgb(0, 50, 100),    // Ocean (Deep water).
+    rgb(0, 100, 150),   // Ocean (Shallow water).
+    rgb(0, 191, 255),   // Ocean (Deep Sky Blue).
+    rgb(210, 180, 140), // Continental (Sand/beach).
+    rgb(34, 139, 34),   // Continental (Grassland).
+    rgb(0, 100, 0),     // Continental (Forest).
+    rgb(139, 137, 137), // Continental (Rock/stone).
+    rgb(255, 250, 250), // Continental (Snow).
 ];
 
 // Interesting for the underside which can be used to seed continents.
@@ -49,7 +50,7 @@ const sunsetPalette = [
 ];
 
 export const palettes = [
-    realisticTerrainPalette,
+    brightTerrainPalette,
     continentalPalette,
     cyberPuke,
     blackWhite,
