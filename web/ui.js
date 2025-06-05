@@ -173,6 +173,8 @@ export class UI {
 
         // Seed controls.
         this.#seedInput.addEventListener('change', this.#handleSeedInputChange.bind(this));
+        this.#seedInput.addEventListener('wheel', this.#handleSeedWheelChange.bind(this));
+
 
         // Noise parameter listeners are attached in #setupSlider.
 
@@ -255,6 +257,15 @@ export class UI {
             this.#config.rngSeed = newSeed;
             this.#regenerateTerrain();
         }
+    }
+
+    // Handles mouse wheel events on the seed input field.
+    #handleSeedWheelChange(event) {
+        event.preventDefault(); // Prevent page scrolling.
+        const delta = Math.sign(event.deltaY); // -1 for scroll up, 1 for scroll down.
+        this.#config.rngSeed -= delta; // Decrement for scroll up, increment for scroll down.
+        this.#seedInput.value = this.#config.rngSeed; // Update the input field.
+        this.#regenerateTerrain();
     }
 
     // Handles changes to the shape radio buttons.
