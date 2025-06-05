@@ -87,34 +87,44 @@ export class UI {
             }
         });
 
+        this.#setupSlider('height-multiplier-slider', 'height-multiplier-value', 'heightMultiplier', {
+            valueFormat: (v) => v.toFixed(2),
+            onUpdate: () => {
+                // Recompute the maxH on the existing grid instance.
+                this.#terrainGrid.setConfig(this.#config);
+                // Re-render the terrain with the new height. No need to regenerate data.
+                this.#regenerateTerrain();
+            }
+        });
+
         this.#setupSlider('noise-octaves-slider', 'noise-octaves-value', 'noiseOctaves', {
             isInteger: true,
-            onUpdate: () => this.#regenerateNoise()
+            onUpdate: () => this.#regenerateTerrain()
         });
 
         this.#setupSlider('noise-persistence-slider', 'noise-persistence-value', 'noisePersistence', {
             valueFormat: (v) => v.toFixed(2),
-            onUpdate: () => this.#regenerateNoise()
+            onUpdate: () => this.#regenerateTerrain()
         });
 
         this.#setupSlider('noise-lacunarity-slider', 'noise-lacunarity-value', 'noiseLacunarity', {
             valueFormat: (v) => v.toFixed(1),
-            onUpdate: () => this.#regenerateNoise()
+            onUpdate: () => this.#regenerateTerrain()
         });
 
         this.#setupSlider('noise-fundamental-slider', 'noise-fundamental-value', 'noiseFundamental', {
             valueFormat: (v) => v.toFixed(1),
-            onUpdate: () => this.#regenerateNoise()
+            onUpdate: () => this.#regenerateTerrain()
         });
 
         this.#setupSlider('noise-warping-strength-slider', 'noise-warping-strength-value', 'noiseWarpingStrength', {
             valueFormat: (v) => v.toFixed(2),
-            onUpdate: () => this.#regenerateNoise()
+            onUpdate: () => this.#regenerateTerrain()
         });
 
         this.#setupSlider('midpoint-roughness-slider', 'midpoint-roughness-value', 'midpointRoughness', {
             valueFormat: (v) => v.toFixed(2),
-            onUpdate: () => this.#regenerateNoise() // Regenerate handles midpoint too
+            onUpdate: () => this.#regenerateTerrain()
         });
 
 
@@ -140,8 +150,7 @@ export class UI {
         }
     }
 
-    // Helper to regenerate terrain only if the active terrain algorithm uses noise parameters.
-    #regenerateNoise() {
+    #regenerateTerrain() {
         this.#terrainGrid.setConfig(this.#config);
         this.#terrainGrid[this.#config.terrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
@@ -165,18 +174,18 @@ export class UI {
         // Ridge parameter checkboxes.
         document.getElementById('ridge-invert-checkbox').addEventListener('change', (e) => {
             this.#config.ridgeInvertSignal = e.target.checked;
-            this.#regenerateNoise();
+            this.#regenerateTerrain();
         });
         document.getElementById('ridge-square-checkbox').addEventListener('change', (e) => {
             this.#config.ridgeSquareSignal = e.target.checked;
-            this.#regenerateNoise();
+            this.#regenerateTerrain();
         });
 
         // Ridge style radio buttons.
         this.#ridgeStyleRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
                 this.#config.ridgeStyle = e.target.value;
-                this.#regenerateNoise();
+                this.#regenerateTerrain();
             });
         });
 

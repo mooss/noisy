@@ -12,6 +12,12 @@ function warpedNoise(noise, warpx, warpy, strength, simshift) {
 	}
 }
 
+// Base dimension of a grid.
+const GRID_UNIT = 256;
+
+// x and y coordinates shift to hide simplex artifact at the origin.
+const SIM_SHIFT = 1024;
+
 // Handles terrain data storage and generation algorithms.
 export class Grid {
     // Private fields for internal state.
@@ -30,17 +36,15 @@ export class Grid {
 
         // Grid layout.
         this.#size = config.gridSize;
-        this.#cellSize = 256 / this.#size;
+        this.#cellSize = GRID_UNIT / this.#size;
         this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
-
-        // Generation.
-        this.#maxH = this.#size * this.#cellSize / 5;
     }
 
     // Updates the stored generation parameters.
     setConfig(config) {
         this.#config = config;
         this.seed = config.rngSeed;
+        this.#maxH = (GRID_UNIT / 5) * this.#config.heightMultiplier;
     }
 
     ///////////////
@@ -68,7 +72,7 @@ export class Grid {
 		const noise = createNoise2D(createLCG(this.#seed));
 		const warpx = createNoise2D(createLCG(this.#seed + 1));
 		const warpy = createNoise2D(createLCG(this.#seed + 2));
-        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.noiseWarpingStrength, 256);
+        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.noiseWarpingStrength, SIM_SHIFT);
     }
 
     ///////////////
@@ -147,10 +151,9 @@ export class Grid {
             let total = 0;
             let frequency = this.#config.noiseFundamental / this.#size;
             let amplitude = 1;
-            let signal;
 
             for (let i = 0; i < this.#config.noiseOctaves; i++) {
-                signal = this.toRidge(this.#noiseGen(x, y, frequency));
+                let signal = this.toRidge(this.#noiseGen(x, y, frequency));
 
                 // Add the contribution of this octave to the result.
                 total += signal * amplitude;

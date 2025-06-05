@@ -13,6 +13,7 @@ const config = {
     // Visualization options.
     renderStyle: 'quadPrism', // How the terrain is rendered (quadPrism, hexPrism, surface).
     palette: 0,               // Index of the color palette to use.
+    heightMultiplier: 1.0,    // Multiplier for the terrain height.
 
     // Generation settings.
     rngSeed: 23,              // Seed for deterministic terrain generation.
