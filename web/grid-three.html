@@ -163,12 +163,9 @@
              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
          }
 
-         #btn-new-seed {
-             background-color: dodgerblue;
-         }
-
-         #btn-new-seed:hover {
-             background-color: royalblue;
+         #seed-input {
+             width: 100%;
+             text-align: center;
          }
 
          #btn-palette {
@@ -206,8 +203,10 @@
         <!-- Control panel -->
         <div id="controls">
             <div>
-                <label>Seed</label>
-                <button id="btn-new-seed">New seed</button>
+                <label>Seed:</label>
+                <div>
+                    <input type="number" id="seed-input" value="23">
+                </div>
             </div>
             <div>
                 <label>Shape:</label>

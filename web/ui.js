@@ -9,6 +9,7 @@ export class UI {
     // Left panel DOM elements.
     #gridSizeValue; // Size of the grid (2^n + 1).
     #shapeRadios;
+    #seedInput;
 
     // Right panel DOM elements.
     #terrainButtonsContainer;
@@ -25,6 +26,7 @@ export class UI {
         // Left panel.
         this.#gridSizeValue = document.getElementById('grid-size-value');
         this.#shapeRadios = document.querySelectorAll('input[name="shape"]');
+        this.#seedInput = document.getElementById('seed-input');
 
         // Right panel.
         this.#terrainButtonsContainer = document.getElementById('terrain-buttons');
@@ -128,8 +130,8 @@ export class UI {
         });
 
 
-        ///////////////////
-        // Checkboxes    //
+        ////////////////
+        // Checkboxes //
         document.getElementById('ridge-invert-checkbox').checked = this.#config.ridgeInvertSignal;
         document.getElementById('ridge-square-checkbox').checked = this.#config.ridgeSquareSignal;
 
@@ -148,6 +150,9 @@ export class UI {
         } else {
             document.getElementById('ridge-style-octavian').checked = true; // Default to octavian.
         }
+
+        // Seed input.
+        this.#seedInput.value = this.#config.rngSeed;
     }
 
     #regenerateTerrain() {
@@ -166,8 +171,8 @@ export class UI {
             button.addEventListener('click', this.#handleTerrainButtonClick.bind(this));
         });
 
-        // New seed button.
-        document.getElementById('btn-new-seed').addEventListener('click', this.#handleNewSeed.bind(this));
+        // Seed controls.
+        this.#seedInput.addEventListener('change', this.#handleSeedInputChange.bind(this));
 
         // Noise parameter listeners are attached in #setupSlider.
 
@@ -240,20 +245,16 @@ export class UI {
         this.#terrainGrid.setConfig(this.#config);
         this.#terrainGrid[newTerrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
-        this.#config.needsRender = true;
+        this.#config.needsRender = true; // TODO: put in common with terrain size slider.
     }
 
-    // Handles click on the "New Seed" button.
-    #handleNewSeed() {
-        this.#config.rngSeed++;
-
-        // Update the parameters on the existing grid instance.
-        this.#terrainGrid.setConfig(this.#config);
-
-        // Regenerate using the current algorithm.
-        this.#terrainGrid[this.#config.terrainAlgo]();
-        this.#terrainRenderer.createGridMeshes();
-        this.#config.needsRender = true;
+    // Handles changes to the seed input field.
+    #handleSeedInputChange(event) {
+        const newSeed = parseInt(event.target.value);
+        if (!isNaN(newSeed)) {
+            this.#config.rngSeed = newSeed;
+            this.#regenerateTerrain();
+        }
     }
 
     // Handles changes to the shape radio buttons.
