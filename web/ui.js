@@ -1,4 +1,4 @@
-import { rangeMapper } from './utils.js';
+import { nestedValue, rangeMapper } from './utils.js';
 
 export class UI {
     #config;
@@ -58,16 +58,17 @@ export class UI {
         }
 
         // Set initial state.
-        const initialValue = this.#config[configKey];
-        slider.value = initialValue;
-        valueElement.textContent = valueFormat(initialValue);
+        const value = nestedValue(this.#config, configKey);
+        slider.value = value.get();
+        valueElement.textContent = valueFormat(value.get());
 
         // Attach listener.
         slider.addEventListener('input', () => {
             const rawValue = slider.value;
             const newValue = isInteger ? parseInt(rawValue) : parseFloat(rawValue);
 
-            this.#config[configKey] = newValue;
+            value.set(newValue);
+
             valueElement.textContent = valueFormat(newValue);
             onUpdate(newValue); // Execute the callback.
             this.#config.needsRender = true;
@@ -76,7 +77,7 @@ export class UI {
 
     // Sets the initial state of UI elements based on config.
     #setupInitialState() {
-        this.#updateActiveParams(this.#config.terrainAlgo);
+        this.#updateActiveParams(this.#config.gen.terrainAlgo);
 
         /////////////
         // Sliders //
@@ -113,32 +114,32 @@ export class UI {
             }
         });
 
-        this.#setupSlider('noise-octaves-slider', 'noise-octaves-value', 'noiseOctaves', {
+        this.#setupSlider('noise-octaves-slider', 'noise-octaves-value', 'gen.noise.octaves', {
             isInteger: true,
             onUpdate: () => this.#regenerateTerrain()
         });
 
-        this.#setupSlider('noise-persistence-slider', 'noise-persistence-value', 'noisePersistence', {
+        this.#setupSlider('noise-persistence-slider', 'noise-persistence-value', 'gen.noise.persistence', {
             valueFormat: (v) => v.toFixed(2),
             onUpdate: () => this.#regenerateTerrain()
         });
 
-        this.#setupSlider('noise-lacunarity-slider', 'noise-lacunarity-value', 'noiseLacunarity', {
+        this.#setupSlider('noise-lacunarity-slider', 'noise-lacunarity-value', 'gen.noise.lacunarity', {
             valueFormat: (v) => v.toFixed(1),
             onUpdate: () => this.#regenerateTerrain()
         });
 
-        this.#setupSlider('noise-fundamental-slider', 'noise-fundamental-value', 'noiseFundamental', {
+        this.#setupSlider('noise-fundamental-slider', 'noise-fundamental-value', 'gen.noise.fundamental', {
             valueFormat: (v) => v.toFixed(1),
             onUpdate: () => this.#regenerateTerrain()
         });
 
-        this.#setupSlider('noise-warping-strength-slider', 'noise-warping-strength-value', 'noiseWarpingStrength', {
+        this.#setupSlider('noise-warping-strength-slider', 'noise-warping-strength-value', 'gen.noise.warpingStrength', {
             valueFormat: (v) => v.toFixed(2),
             onUpdate: () => this.#regenerateTerrain()
         });
 
-        this.#setupSlider('midpoint-roughness-slider', 'midpoint-roughness-value', 'midpointRoughness', {
+        this.#setupSlider('midpoint-roughness-slider', 'midpoint-roughness-value', 'gen.midpointRoughness', {
             valueFormat: (v) => v.toFixed(2),
             onUpdate: () => this.#regenerateTerrain()
         });
@@ -146,8 +147,8 @@ export class UI {
 
         ////////////////
         // Checkboxes //
-        document.getElementById('ridge-invert-checkbox').checked = this.#config.ridgeInvertSignal;
-        document.getElementById('ridge-square-checkbox').checked = this.#config.ridgeSquareSignal;
+        document.getElementById('ridge-invert-checkbox').checked = this.#config.gen.noise.ridge.invertSignal;
+        document.getElementById('ridge-square-checkbox').checked = this.#config.gen.noise.ridge.squareSignal;
 
         ///////////////////
         // Radio buttons //
@@ -158,7 +159,7 @@ export class UI {
             document.getElementById('shape-quadPrism').checked = true; // Default to quad prism.
         }
 
-        const initialRidgeStyleRadio = document.querySelector(`input[name="ridge-style"][value="${this.#config.ridgeStyle}"]`);
+        const initialRidgeStyleRadio = document.querySelector(`input[name="ridge-style"][value="${this.#config.gen.noise.ridge.style}"]`);
         if (initialRidgeStyleRadio) {
             initialRidgeStyleRadio.checked = true;
         } else {
@@ -166,13 +167,13 @@ export class UI {
         }
 
         // Seed input.
-        this.#seedInput.value = this.#config.rngSeed;
+        this.#seedInput.value = this.#config.gen.seed;
 
     }
 
     #regenerateTerrain() {
         this.#terrainGrid.reset(this.#config);
-        this.#terrainGrid[this.#config.terrainAlgo]();
+        this.#terrainGrid[this.#config.gen.terrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
         this.#terrainRenderer.updateAvatarPosition();
         this.#config.needsRender = true;
@@ -195,18 +196,18 @@ export class UI {
 
         // Ridge parameter checkboxes.
         document.getElementById('ridge-invert-checkbox').addEventListener('change', (e) => {
-            this.#config.ridgeInvertSignal = e.target.checked;
+            this.#config.gen.noise.ridge.invertSignal = e.target.checked;
             this.#regenerateTerrain();
         });
         document.getElementById('ridge-square-checkbox').addEventListener('change', (e) => {
-            this.#config.ridgeSquareSignal = e.target.checked;
+            this.#config.gen.noise.ridge.squareSignal = e.target.checked;
             this.#regenerateTerrain();
         });
 
         // Ridge style radio buttons.
         this.#ridgeStyleRadios.forEach(radio => {
             radio.addEventListener('change', (e) => {
-                this.#config.ridgeStyle = e.target.value;
+                this.#config.gen.noise.ridge.style = e.target.value;
                 this.#regenerateTerrain();
             });
         });
@@ -293,9 +294,9 @@ export class UI {
         const newTerrainAlgo = button.dataset.terrainAlgo;
 
         // Do nothing if clicking the current terrain algorithm.
-        if (newTerrainAlgo === this.#config.terrainAlgo) return;
+        if (newTerrainAlgo === this.#config.gen.terrainAlgo) return;
 
-        this.#config.terrainAlgo = newTerrainAlgo;
+        this.#config.gen.terrainAlgo = newTerrainAlgo;
         this.#updateActiveParams(newTerrainAlgo); // Update params visibility and button styles.
         this.#regenerateTerrain();
     }
@@ -304,7 +305,7 @@ export class UI {
     #handleSeedInputChange(event) {
         const newSeed = parseInt(event.target.value);
         if (!isNaN(newSeed)) {
-            this.#config.rngSeed = newSeed;
+            this.#config.gen.seed = newSeed;
             this.#regenerateTerrain();
         }
     }
@@ -313,8 +314,8 @@ export class UI {
     #handleSeedWheelChange(event) {
         event.preventDefault(); // Prevent page scrolling.
         const delta = Math.sign(event.deltaY); // -1 for scroll up, 1 for scroll down.
-        this.#config.rngSeed -= delta; // Decrement for scroll up, increment for scroll down.
-        this.#seedInput.value = this.#config.rngSeed; // Update the input field.
+        this.#config.gen.seed -= delta; // Decrement for scroll up, increment for scroll down.
+        this.#seedInput.value = this.#config.gen.seed; // Update the input field.
         this.#regenerateTerrain();
     }
 

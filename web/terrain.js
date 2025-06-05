@@ -53,7 +53,7 @@ export class Grid {
 		const noise = createNoise2D(createLCG(this.seed));
 		const warpx = createNoise2D(createLCG(this.seed + 1));
 		const warpy = createNoise2D(createLCG(this.seed + 2));
-        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.noiseWarpingStrength, SIM_SHIFT);
+        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.gen.noise.warpingStrength, SIM_SHIFT);
     }
 
     // Resets the random number generator.
@@ -77,7 +77,7 @@ export class Grid {
     }
 
     get seed() {
-        return this.#config.rngSeed;
+        return this.#config.gen.seed;
     }
 
     get size() {
@@ -90,16 +90,16 @@ export class Grid {
     // Returns the fractal simplex noise value at the given coordinates.
     simplex(x, y) {
         let total = 0;
-        let frequency = this.#config.noiseFundamental / this.#size;
+        let frequency = this.#config.gen.noise.fundamental / this.#size;
         let amplitude = 1;
 
-        for (let i = 0; i < this.#config.noiseOctaves; i++) {
+        for (let i = 0; i < this.#config.gen.noise.octaves; i++) {
             let octave = this.#noiseGen(x, y, frequency);
             total += octave * amplitude;
 
             // Update amplitude and frequency for the next octave.
-            amplitude *= this.#config.noisePersistence;
-            frequency *= this.#config.noiseLacunarity;
+            amplitude *= this.#config.gen.noise.persistence;
+            frequency *= this.#config.gen.noise.lacunarity;
         }
 
         return total;
@@ -144,13 +144,13 @@ export class Grid {
     // Normalized midpoint displacement.
     midpoint() {
         this.#reseed();
-        this.normalize(...midpointDisplacement(this.#data, this.#rng, this.#config.midpointRoughness));
+        this.normalize(...midpointDisplacement(this.#data, this.#rng, this.#config.gen.midpointRoughness));
     }
 
 
     // Ridge noise using simplex noise as a base.
     ridge() {
-        if (this.#config.ridgeStyle === 'octavian') {
+        if (this.#config.gen.noise.ridge.style === 'octavian') {
             this.octavianRidge();
         } else {
             this.melodicRidge();
@@ -161,18 +161,18 @@ export class Grid {
     octavianRidge() {
         this.apply((x, y) => {
             let total = 0;
-            let frequency = this.#config.noiseFundamental / this.#size;
+            let frequency = this.#config.gen.noise.fundamental / this.#size;
             let amplitude = 1;
 
-            for (let i = 0; i < this.#config.noiseOctaves; i++) {
+            for (let i = 0; i < this.#config.gen.noise.octaves; i++) {
                 let signal = this.toRidge(this.#noiseGen(x, y, frequency));
 
                 // Add the contribution of this octave to the result.
                 total += signal * amplitude;
 
                 // Update amplitude and frequency for the next octave.
-                amplitude *= this.#config.noisePersistence;
-                frequency *= this.#config.noiseLacunarity;
+                amplitude *= this.#config.gen.noise.persistence;
+                frequency *= this.#config.gen.noise.lacunarity;
             }
             return total;
         });
@@ -193,12 +193,12 @@ export class Grid {
 
         // Inverting the elevation with `1 - signal` makes the rebound occur at the top,
         // creating ridges instead of valleys.
-        if (this.#config.ridgeInvertSignal) {
+        if (this.#config.gen.noise.ridge.invertSignal) {
             signal = 1.0 - signal;
         }
 
         // Squaring the signal will emphasize ridges/valleys.
-        if (this.#config.ridgeSquareSignal) {
+        if (this.#config.gen.noise.ridge.squareSignal) {
             signal *= signal;
         }
 

@@ -16,34 +16,40 @@ const config = {
     heightMultiplier: 1.0,    // Multiplier for the terrain height.
 
     // Generation settings.
-    rngSeed: 23,              // Seed for deterministic terrain generation.
-    terrainAlgo: 'ridge',     // Terrain creation algorithm (ridge, rand, noise, midpoint).
-    ridgeInvertSignal: true,  // Invert signal for ridges (1 - abs(noise)) vs valleys (abs(noise)).
-    ridgeSquareSignal: false, // Square the signal to sharpen ridges/valleys.
-    ridgeStyle: 'octavian',   // Style of ridge generation (octavian, melodic).
-    noiseOctaves: 6,          // Simplex Noise octaves to layer.
-    noisePersistence: 0.65,   // Amplitude reduction per octave.
-    noiseLacunarity: 1.5,     // Frequency increase per octave.
-    noiseFundamental: 1.1,    // Base frequency for noise.
-	noiseWarpingStrength: 0,  // Warping strength for noise coordinates.
-    midpointRoughness: 0.6,   // Roughness factor for midpoint displacement.
+    gen: {
+        seed: 23,               // Seed for deterministic terrain generation.
+        terrainAlgo: 'ridge',   // Terrain creation algorithm (ridge, rand, noise, midpoint).
+        midpointRoughness: 0.6, // Roughness factor for midpoint displacement.
+        noise: {
+            octaves: 6,         // Simplex Noise octaves to layer.
+            persistence: 0.65,  // Amplitude reduction per octave.
+            lacunarity: 1.5,    // Frequency increase per octave.
+            fundamental: 1.1,   // Base frequency for noise.
+            warpingStrength: 0, // Warping strength for noise coordinates.
+            ridge: {
+                invertSignal: true,  // Invert signal for ridges (1 - abs(noise)) vs valleys (abs(noise)).
+                squareSignal: false, // Square the signal to sharpen ridges/valleys.
+                style: 'octavian',   // Style of ridge generation (octavian, melodic).
+            },
+        },
+    },
 
     // Player avatar.
     avatar: {
         x: undefined,
         y: undefined,
-        size: .5,           // Avatar sphere radius (cell size multiplier).
+        size: .5,         // Avatar sphere radius (cell size multiplier).
         heightOffset: .5, // How high above the terrain the avatar floats (cell size multiplier).
     },
 
     // Render settings.
-    needsRender: true,        // Whether the frame should be rendered.
+    needsRender: true, // Whether the frame should be updated.
 };
 
 function initializeApplication(config, palettes) {
     // 1. Create the Terrain Grid Data Structure.
     const terrainGrid = new Grid(config);
-    terrainGrid[config.terrainAlgo](); // Perform initial generation.
+    terrainGrid[config.gen.terrainAlgo](); // Perform initial generation.
     config.avatar.x = config.avatar.y = Math.floor(terrainGrid.size / 2); // Place avatar in the middle.
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).

@@ -42,3 +42,21 @@ export function interpolateColors(colors, value) {
 
     return color1.clone().lerp(color2, ratio);
 }
+
+// Attempts to fetch the value of a nested dot-separated key in dict.
+export function nestedValue(dict, key) {
+    const parts = key.split('.');
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (dict === undefined || dict === null || typeof dict !== 'object' || Array.isArray(dict)) {
+            throw new Error(`Cannot access property '${parts[i]}' of undefined, null, or non-object. Path: '${parts.slice(0, i).join('.')}'`);
+        }
+        dict = dict[parts[i]];
+    }
+
+    return {
+        dict: dict,
+        key: parts[parts.length-1],
+        get() { return this.dict[this.key]; },
+        set(value) { this.dict[this.key] = value; }
+    };
+}
