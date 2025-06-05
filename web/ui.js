@@ -96,6 +96,7 @@ export class UI {
                 this.#config.avatar.x = Math.round(conv(this.#config.avatar.x));
                 this.#config.avatar.y = Math.round(conv(this.#config.avatar.y));
                 this.#terrainRenderer.updateAvatarPosition();
+                this.#terrainRenderer.updateAvatarScale(); // The avatar scales with grid size.
                 this.#updateAvatarStatus();
             }
         });

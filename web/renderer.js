@@ -68,6 +68,7 @@ export class TerrainRenderer {
         this.avatarMesh = new THREE.Mesh(geometry, material);
         this.#scene.add(this.avatarMesh);
         this.updateAvatarPosition();
+        this.updateAvatarScale();
     }
 
     updateAvatarPosition() {
@@ -77,10 +78,15 @@ export class TerrainRenderer {
         const halfGridWorldSize = totalGridWorldSize / 2;
         const worldX = (this.#config.avatar.x * cellSize) - halfGridWorldSize + (cellSize / 2);
         const worldY = (this.#config.avatar.y * cellSize) - halfGridWorldSize + (cellSize / 2);
-        const worldZ = height + this.#config.avatar.heightOffset;
+        const worldZ = height + this.#config.avatar.heightOffset * cellSize;
 
         this.avatarMesh.position.set(worldX, worldY, worldZ);
         this.#config.needsRender = true;
+    }
+
+    updateAvatarScale() {
+        const scale = this.#config.avatar.size * this.#terrainGrid.cellSize;
+        this.avatarMesh.scale.set(scale, scale, scale);
     }
 
     // Clears existing terrain meshes from the scene and disposes their resources.

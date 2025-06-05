@@ -32,8 +32,8 @@ const config = {
     avatar: {
         x: undefined,
         y: undefined,
-        size: 1,           // Avatar sphere radius.
-        heightOffset: 1.5, // How high above the terrain the avatar floats.
+        size: .5,           // Avatar sphere radius (cell size multiplier).
+        heightOffset: .5, // How high above the terrain the avatar floats (cell size multiplier).
     },
 
     // Render settings.
@@ -44,7 +44,7 @@ function initializeApplication(config, palettes) {
     // 1. Create the Terrain Grid Data Structure.
     const terrainGrid = new Grid(config);
     terrainGrid[config.terrainAlgo](); // Perform initial generation.
-    config.avatar.x = config.avatar.y = Math.round(terrainGrid.size / 2); // Place avatar in the middle.
+    config.avatar.x = config.avatar.y = Math.floor(terrainGrid.size / 2); // Place avatar in the middle.
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).
     // It performs the initial scene setup and mesh creation in its constructor.
