@@ -114,6 +114,14 @@ export class Grid {
         }
     }
 
+    // Returns the height at a specific grid coordinate.
+    getHeightAt(x, y) {
+        if (x >= 0 && x < this.#size && y >= 0 && y < this.#size) {
+            return this.#data[x][y];
+        }
+        return undefined;
+    }
+
     ///////////////////////
     // Height generation //
 

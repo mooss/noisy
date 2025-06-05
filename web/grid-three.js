@@ -25,8 +25,16 @@ const config = {
     noisePersistence: 0.65,   // Amplitude reduction per octave.
     noiseLacunarity: 1.5,     // Frequency increase per octave.
     noiseFundamental: 1.1,    // Base frequency for noise.
-	noiseWarpingStrength: 0.0,  // Warping strength for noise coordinates.
+	noiseWarpingStrength: 0,  // Warping strength for noise coordinates.
     midpointRoughness: 0.6,   // Roughness factor for midpoint displacement.
+
+    // Player avatar.
+    avatar: {
+        x: 0,
+        y: 0,
+        size: 1,           // Avatar sphere radius.
+        heightOffset: 1.5, // How high above the terrain the avatar floats.
+    },
 
     // Render settings.
     needsRender: true,        // Whether the frame should be rendered.

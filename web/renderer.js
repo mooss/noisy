@@ -6,6 +6,7 @@ export class TerrainRenderer {
     #renderer;
     #controls;
     #terrainMeshes;
+    avatarMesh;
     #terrainGrid;
     #config;
     #palettes;
@@ -15,7 +16,8 @@ export class TerrainRenderer {
         this.#config = config;
         this.#palettes = palettes;
         this.#setupScene();
-        this.createGridMeshes(); // Initial mesh creation.
+        this.createGridMeshes();
+        this.#createAvatarMesh();
 
         // Handle window resize.
         window.addEventListener('resize', this.#onWindowResize.bind(this), false);
@@ -59,8 +61,30 @@ export class TerrainRenderer {
         this.#scene.add(this.#terrainMeshes);
     }
 
+    #createAvatarMesh() {
+        const avatar = this.#config.avatar;
+        const geometry = new THREE.SphereGeometry(avatar.size, 32, 32);
+        const material = new THREE.MeshStandardMaterial({ color: 0xff0000 }); // Red sphere.
+        this.avatarMesh = new THREE.Mesh(geometry, material);
+        this.#scene.add(this.avatarMesh);
+        this.updateAvatarPosition();
+    }
+
+    updateAvatarPosition() {
+        const height = this.#terrainGrid.getHeightAt(this.#config.avatar.x, this.#config.avatar.y);
+        const { cellSize, size } = this.#terrainGrid;
+        const totalGridWorldSize = size * cellSize;
+        const halfGridWorldSize = totalGridWorldSize / 2;
+        const worldX = (this.#config.avatar.x * cellSize) - halfGridWorldSize + (cellSize / 2);
+        const worldY = (this.#config.avatar.y * cellSize) - halfGridWorldSize + (cellSize / 2);
+        const worldZ = height + this.#config.avatar.heightOffset;
+
+        this.avatarMesh.position.set(worldX, worldY, worldZ);
+        this.#config.needsRender = true;
+    }
+
     // Clears existing terrain meshes from the scene and disposes their resources.
-    #clearMeshes() {
+    clearTerrainMeshes() {
         while (this.#terrainMeshes.children.length > 0) {
             const mesh = this.#terrainMeshes.children[0];
             this.#terrainMeshes.remove(mesh);
@@ -78,7 +102,7 @@ export class TerrainRenderer {
 
     // Creates or updates the terrain meshes based on current grid data and config.
     createGridMeshes() {
-        this.#clearMeshes();
+        this.clearTerrainMeshes();
 		const palette = this.#palettes[this.#config.palette];
         let mesh;
         switch (this.#config.renderStyle) {

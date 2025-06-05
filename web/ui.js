@@ -17,6 +17,9 @@ export class UI {
     #terrainParamsContainer;
     #ridgeStyleRadios;
 
+    // Avatar status.
+    #avatarStatusElement;
+
     constructor(config, terrainGrid, terrainRenderer, palettes) {
         this.#config = config;
         this.#terrainGrid = terrainGrid; // Initial grid reference.
@@ -34,8 +37,13 @@ export class UI {
         this.#terrainParamsContainer = document.getElementById('terrain-params');
         this.#ridgeStyleRadios = document.querySelectorAll('input[name="ridge-style"]');
 
+        // Avatar status.
+        this.#avatarStatusElement = document.getElementById('avatar-status');
+        this.#updateAvatarStatus()
+
         this.#setupInitialState();
         this.#setupListeners();
+        this.#setupKeyboard();
     }
 
     // Generic slider setup helper.
@@ -86,6 +94,12 @@ export class UI {
                 // Render terrain.
                 this.#terrainRenderer.setTerrainGrid(this.#terrainGrid);
                 this.#terrainRenderer.createGridMeshes();
+
+                // Reset avatar position to (0,0) and update.
+                this.#config.avatar.x = 0;
+                this.#config.avatar.y = 0;
+                this.#terrainRenderer.updateAvatarPosition();
+                this.#updateAvatarStatus();
             }
         });
 
@@ -96,6 +110,8 @@ export class UI {
                 this.#terrainGrid.setConfig(this.#config);
                 // Re-render the terrain with the new height. No need to regenerate data.
                 this.#regenerateTerrain();
+                // Update avatar height.
+                this.#terrainRenderer.updateAvatarPosition();
             }
         });
 
@@ -153,12 +169,14 @@ export class UI {
 
         // Seed input.
         this.#seedInput.value = this.#config.rngSeed;
+
     }
 
     #regenerateTerrain() {
         this.#terrainGrid.setConfig(this.#config);
         this.#terrainGrid[this.#config.terrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
+        this.#terrainRenderer.updateAvatarPosition();
         this.#config.needsRender = true;
     }
 
@@ -174,7 +192,6 @@ export class UI {
         // Seed controls.
         this.#seedInput.addEventListener('change', this.#handleSeedInputChange.bind(this));
         this.#seedInput.addEventListener('wheel', this.#handleSeedWheelChange.bind(this));
-
 
         // Noise parameter listeners are attached in #setupSlider.
 
@@ -203,7 +220,47 @@ export class UI {
 
         // Cycle palette button.
         document.getElementById('btn-palette').addEventListener('click', this.#handlePaletteChange.bind(this));
+    }
 
+    #setupKeyboard() {
+        document.addEventListener('keydown', (event) => {
+            let moved = false;
+            const avatar = this.#config.avatar;
+            const gridSize = this.#config.gridSize;
+
+            switch (event.code) {
+            case 'KeyW': // Up.
+                if (avatar.y < gridSize - 1) {
+                    avatar.y++;
+                    moved = true;
+                }
+                break;
+            case 'KeyS': // Down.
+                if (avatar.y > 0) {
+                    avatar.y--;
+                    moved = true;
+                }
+                break;
+            case 'KeyA': // Left.
+                if (avatar.x > 0) {
+                    avatar.x--;
+                    moved = true;
+                }
+                break;
+            case 'KeyD': // Right.
+                if (avatar.x < gridSize - 1) {
+                    avatar.x++;
+                    moved = true;
+                }
+                break;
+            }
+
+            if (moved) {
+                this.#terrainRenderer.updateAvatarPosition();
+                this.#updateAvatarStatus();
+                this.#config.needsRender = true;
+            }
+        });
     }
 
     ////////////////////
@@ -242,12 +299,7 @@ export class UI {
 
         this.#config.terrainAlgo = newTerrainAlgo;
         this.#updateActiveParams(newTerrainAlgo); // Update params visibility and button styles.
-
-        // Generate terrain with the new terrain algorithm.
-        this.#terrainGrid.setConfig(this.#config);
-        this.#terrainGrid[newTerrainAlgo]();
-        this.#terrainRenderer.createGridMeshes();
-        this.#config.needsRender = true; // TODO: put in common with terrain size slider.
+        this.#regenerateTerrain();
     }
 
     // Handles changes to the seed input field.
@@ -281,5 +333,12 @@ export class UI {
         this.#config.palette = (this.#config.palette + 1) % this.#palettes.length;
         this.#terrainRenderer.createGridMeshes();
         this.#config.needsRender = true;
+    }
+
+    // Updates the avatar's position display.
+    #updateAvatarStatus() {
+        if (this.#avatarStatusElement) {
+            this.#avatarStatusElement.textContent = `Avatar: (${this.#config.avatar.x}, ${this.#config.avatar.y})`;
+        }
     }
 }
