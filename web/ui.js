@@ -84,16 +84,10 @@ export class UI {
             isInteger: true,
             valueFormat: () => this.#config.gridSize, // Display calculated size
             onUpdate: () => {
+                this.#regenerateTerrain();
+
                 // Update calculated display.
                 this.#gridSizeValue.textContent = this.#config.gridSize;
-
-                // Compute heights.
-                this.#terrainGrid = new Grid(this.#config);
-                this.#terrainGrid[this.#config.terrainAlgo]();
-
-                // Render terrain.
-                this.#terrainRenderer.setTerrainGrid(this.#terrainGrid);
-                this.#terrainRenderer.createGridMeshes();
 
                 // Reset avatar position to (0,0) and update.
                 this.#config.avatar.x = 0;
@@ -106,8 +100,8 @@ export class UI {
         this.#setupSlider('height-multiplier-slider', 'height-multiplier-value', 'heightMultiplier', {
             valueFormat: (v) => v.toFixed(2),
             onUpdate: () => {
-                // Recompute the maxH on the existing grid instance.
-                this.#terrainGrid.setConfig(this.#config);
+                // Recompute the existing grid instance as needed.
+                this.#terrainGrid.reset(this.#config);
                 // Re-render the terrain with the new height. No need to regenerate data.
                 this.#regenerateTerrain();
                 // Update avatar height.
@@ -173,7 +167,7 @@ export class UI {
     }
 
     #regenerateTerrain() {
-        this.#terrainGrid.setConfig(this.#config);
+        this.#terrainGrid.reset(this.#config);
         this.#terrainGrid[this.#config.terrainAlgo]();
         this.#terrainRenderer.createGridMeshes();
         this.#terrainRenderer.updateAvatarPosition();

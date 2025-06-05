@@ -31,20 +31,21 @@ export class Grid {
     #config;
 
     constructor(config) {
-        this.#config = config;
-        this.setConfig(config);
-
-        // Grid layout.
-        this.#size = config.gridSize;
-        this.#cellSize = GRID_UNIT / this.#size;
-        this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
+        this.reset(config);
     }
 
     // Updates the stored generation parameters.
-    setConfig(config) {
+    reset(config) {
         this.#config = config;
         this.seed = config.rngSeed;
         this.#maxH = (GRID_UNIT / 5) * this.#config.heightMultiplier;
+
+        // Grid layout, don't reallocate unless necessary.
+        if (this.#size != config.gridSize) {
+            this.#size = config.gridSize;
+            this.#cellSize = GRID_UNIT / this.#size;
+            this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
+        }
     }
 
     ///////////////
