@@ -1,4 +1,4 @@
-import { Grid } from './terrain.js';
+import { rangeMapper } from './utils.js';
 
 export class UI {
     #config;
@@ -84,14 +84,17 @@ export class UI {
             isInteger: true,
             valueFormat: () => this.#config.gridSize, // Display calculated size
             onUpdate: () => {
+                const oldSize = this.#terrainGrid.size;
+                const conv = rangeMapper(0, oldSize, 0, this.#config.gridSize);
+
                 this.#regenerateTerrain();
 
                 // Update calculated display.
                 this.#gridSizeValue.textContent = this.#config.gridSize;
 
-                // Reset avatar position to (0,0) and update.
-                this.#config.avatar.x = 0;
-                this.#config.avatar.y = 0;
+                // Extrapolate new position in the grid.
+                this.#config.avatar.x = Math.round(conv(this.#config.avatar.x));
+                this.#config.avatar.y = Math.round(conv(this.#config.avatar.y));
                 this.#terrainRenderer.updateAvatarPosition();
                 this.#updateAvatarStatus();
             }
