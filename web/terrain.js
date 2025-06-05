@@ -1,5 +1,5 @@
 import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
-import { createLCG, mkRng, rangeMapper, clamp } from './utils.js';
+import { createLCG, mkRng, rangeMapper } from './utils.js';
 
 function warpedNoise(noise, warpx, warpy, strength, simshift) {
 	return (x, y, frequency) => {
@@ -23,7 +23,6 @@ export class Grid {
     // Private fields for internal state.
     #size;
     #cellSize;
-    #seed;
     #rng;
     #noiseGen;
     #maxH;
@@ -37,7 +36,7 @@ export class Grid {
     // Updates the stored generation parameters.
     reset(config) {
         this.#config = config;
-        this.seed = config.rngSeed;
+        this.#initRng();
         this.#maxH = (GRID_UNIT / 5) * this.#config.heightMultiplier;
 
         // Grid layout, don't reallocate unless necessary.
@@ -48,32 +47,41 @@ export class Grid {
         }
     }
 
+    // Initialize random number generator and noise.
+    #initRng() {
+        this.#reseed();
+		const noise = createNoise2D(createLCG(this.seed));
+		const warpx = createNoise2D(createLCG(this.seed + 1));
+		const warpy = createNoise2D(createLCG(this.seed + 2));
+        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.noiseWarpingStrength, SIM_SHIFT);
+    }
+
+    // Resets the random number generator.
+    #reseed() {
+        this.#rng = mkRng(this.seed);
+    }
+
     ///////////////
     // Accessors //
 
-    get size() {
-        return this.#size;
-    }
-
     get cellSize() {
         return this.#cellSize;
-    }
-
-    get maxH() {
-        return this.#maxH;
     }
 
     get data() {
         return this.#data;
     }
 
-    set seed(newSeed) {
-        this.#seed = newSeed;
-        this.reseed();
-		const noise = createNoise2D(createLCG(this.#seed));
-		const warpx = createNoise2D(createLCG(this.#seed + 1));
-		const warpy = createNoise2D(createLCG(this.#seed + 2));
-        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.noiseWarpingStrength, SIM_SHIFT);
+    get maxH() {
+        return this.#maxH;
+    }
+
+    get seed() {
+        return this.#config.rngSeed;
+    }
+
+    get size() {
+        return this.#size;
     }
 
     ///////////////
@@ -95,11 +103,6 @@ export class Grid {
         }
 
         return total;
-    }
-
-    // Resets the random number generator.
-    reseed() {
-        this.#rng = mkRng(this.#seed);
     }
 
     // Apply the given function on every cell.
@@ -128,7 +131,7 @@ export class Grid {
 
     // Random heights.
     rand() {
-        this.reseed();
+        this.#reseed();
         this.apply(() => this.#rng(1, this.#maxH));
     }
 
@@ -140,7 +143,7 @@ export class Grid {
 
     // Normalized midpoint displacement.
     midpoint() {
-        this.reseed();
+        this.#reseed();
         this.normalize(...midpointDisplacement(this.#data, this.#rng, this.#config.midpointRoughness));
     }
 
