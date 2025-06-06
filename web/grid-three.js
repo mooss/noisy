@@ -60,17 +60,17 @@ function initializeApplication(config, palettes) {
     // It sets up listeners and interacts with config, terrainGrid, and terrainRenderer.
     // Pass the initial terrainGrid; UI will manage updates/replacements.
 	// The UI being an object is only a convenience to setup everything, is doesn't need to be persisted.
-    new UI(config, terrainGrid, terrainRenderer, palettes);
+    new UI(config, terrainGrid, terrainRenderer);
 
     return terrainRenderer;
 }
 
 class FpsCounter {
-    constructor(elementId) {
-        this.element = document.getElementById(elementId);
+    constructor() {
         this.previous = performance.now();
         this.frames = 0;
         this.updateIntervalMs = 100; // Update FPS display every 100 milliseconds.
+        this.fps = 0;
     }
 
     update() {
@@ -79,21 +79,25 @@ class FpsCounter {
         const delta = current - this.previous;
 
         if (delta >= this.updateIntervalMs) {
-            const fps = (this.frames / (delta / 1000)).toFixed(1);
-            if (this.element) {
-                this.element.textContent = `FPS: ${fps}`;
-            }
+            this.fps = (this.frames / (delta / 1000)).toFixed(1);
             this.frames = 0;
             this.previous = current;
         }
+
+        return this.fps;
     }
 }
 
-function startAnimationLoop(config, terrainRenderer, fpsCounter) {
+function startAnimationLoop(config, terrainRenderer) {
+    const gui = new lil.GUI();
+    gui.add(config, 'needsRender').name('Needs Render (Debug)').hide(); // Debug control
+
+    const fps = new FpsCounter();
+    const fpsController = gui.add({ fps: 0 }, 'fps').name('FPS').disable();
+
     function animate() {
         requestAnimationFrame(animate);
-
-        fpsCounter.update();
+        fpsController.setValue(fps.update());
 
         // Only render if something has changed or controls are active.
         const controlsUpdated = terrainRenderer.controls.update(); // Required because of damping.
@@ -107,8 +111,7 @@ function startAnimationLoop(config, terrainRenderer, fpsCounter) {
 
 function main() {
     const terrainRenderer = initializeApplication(config, palettes);
-    const fpsCounter = new FpsCounter('fps-counter');
-    startAnimationLoop(config, terrainRenderer, fpsCounter);
+    startAnimationLoop(config, terrainRenderer);
 }
 
 main();
