@@ -5,15 +5,11 @@ export class UI {
     #terrainGrid;
     #terrainRenderer;
     #gui;
-    #avatarXController;
-    #avatarYController;
 
     constructor(config, terrainGrid, terrainRenderer) {
         this.#config = config;
         this.#terrainGrid = terrainGrid;
         this.#terrainRenderer = terrainRenderer;
-        this.#avatarXController = null;
-        this.#avatarYController = null;
 
         this.#gui = new lil.GUI();
         this.#setupGUI();
@@ -30,14 +26,13 @@ export class UI {
                 const oldSize = this.#terrainGrid.size;
                 const conv = rangeMapper(0, oldSize, 0, this.#config.gridSize);
 
-                this.#regenerateTerrain();
+                this.#updateTerrain();
 
                 // Update avatar position and scale based on new grid size.
                 this.#config.avatar.x = Math.round(conv(this.#config.avatar.x));
                 this.#config.avatar.y = Math.round(conv(this.#config.avatar.y));
                 this.#terrainRenderer.updateAvatarPosition();
                 this.#terrainRenderer.updateAvatarScale();
-                this.#updateAvatarStatus();
             })
             .onFinishChange(() => this.#config.needsRender = true);
 
@@ -45,7 +40,7 @@ export class UI {
             .name('Height multiplier')
             .onChange(() => {
                 this.#terrainGrid.reset(this.#config); // Recompute maxH.
-                this.#regenerateTerrain();
+                this.#updateTerrain();
                 this.#terrainRenderer.updateAvatarPosition();
             })
             .onFinishChange(() => this.#config.needsRender = true);
@@ -80,7 +75,7 @@ export class UI {
         const terrainFolder = this.#gui.addFolder('Terrain generation');
         terrainFolder.add(this.#config.gen, 'seed')
             .name('Seed')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
 
         terrainFolder.add(this.#config.gen, 'terrainAlgo', {
@@ -91,7 +86,7 @@ export class UI {
         }).name('Algorithm')
             .onChange(() => {
                 this.#updateAlgorithmFolders();
-                this.#regenerateTerrain();
+                this.#updateTerrain();
             })
             .onFinishChange(() => this.#config.needsRender = true);
 
@@ -100,23 +95,23 @@ export class UI {
         const noiseFolder = terrainFolder.addFolder('Noise parameters');
         noiseFolder.add(this.#config.gen.noise, 'octaves', 1, 8, 1)
             .name('Octaves')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
         noiseFolder.add(this.#config.gen.noise, 'persistence', 0.1, 1.0, 0.05)
             .name('Persistence')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
         noiseFolder.add(this.#config.gen.noise, 'lacunarity', 1.1, 4.0, 0.1)
             .name('Lacunarity')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
         noiseFolder.add(this.#config.gen.noise, 'fundamental', 0.1, 5.0, 0.1)
             .name('Fundamental')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
         noiseFolder.add(this.#config.gen.noise, 'warpingStrength', 0.0, 0.5, 0.01)
             .name('Warping strength')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
 
         //////////////////
@@ -124,17 +119,17 @@ export class UI {
         const ridgeFolder = terrainFolder.addFolder('Ridge parameters');
         ridgeFolder.add(this.#config.gen.noise.ridge, 'invertSignal')
             .name('Invert signal')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
         ridgeFolder.add(this.#config.gen.noise.ridge, 'squareSignal')
             .name('Square signal')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
         ridgeFolder.add(this.#config.gen.noise.ridge, 'style', {
             'Octavian': 'octavian',
             'Melodic': 'melodic'
         }).name('Ridge Style')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
 
         /////////////////////
@@ -142,7 +137,7 @@ export class UI {
         const midpointFolder = terrainFolder.addFolder('Midpoint parameters');
         midpointFolder.add(this.#config.gen, 'midpointRoughness', 0.4, 0.8, 0.02)
             .name('Roughness')
-            .onChange(() => this.#regenerateTerrain())
+            .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
 
         ///////////////////
@@ -161,22 +156,10 @@ export class UI {
                 this.#terrainRenderer.updateAvatarPosition();
             })
             .onFinishChange(() => this.#config.needsRender = true);
-        this.#avatarXController = avatarFolder.add(this.#config.avatar, 'x').name('Avatar x').disable();
-        this.#avatarYController = avatarFolder.add(this.#config.avatar, 'y').name('Avatar y').disable();
-
 
         /////////////////////////////
         // Post registration setup //
         this.#updateAlgorithmFolders();
-        this.#updateAvatarStatus();
-    }
-
-    #regenerateTerrain() {
-        this.#terrainGrid.reset(this.#config);
-        this.#terrainGrid[this.#config.gen.terrainAlgo]();
-        this.#terrainRenderer.createGridMeshes();
-        this.#terrainRenderer.updateAvatarPosition();
-        this.#config.needsRender = true;
     }
 
     #setupKeyboard() {
@@ -214,7 +197,6 @@ export class UI {
 
             if (moved) {
                 this.#terrainRenderer.updateAvatarPosition();
-                this.#updateAvatarStatus();
                 this.#config.needsRender = true;
             }
         });
@@ -249,9 +231,11 @@ export class UI {
         });
     }
 
-    // Updates the avatar's position display in the GUI.
-    #updateAvatarStatus() {
-        this.#avatarXController.updateDisplay();
-        this.#avatarYController.updateDisplay();
+    #updateTerrain() {
+        this.#terrainGrid.reset(this.#config);
+        this.#terrainGrid[this.#config.gen.terrainAlgo]();
+        this.#terrainRenderer.createGridMeshes();
+        this.#terrainRenderer.updateAvatarPosition();
+        this.#config.needsRender = true;
     }
 }
