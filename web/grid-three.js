@@ -60,44 +60,15 @@ function initializeApplication(config, palettes) {
     // It sets up listeners and interacts with config, terrainGrid, and terrainRenderer.
     // Pass the initial terrainGrid; UI will manage updates/replacements.
 	// The UI being an object is only a convenience to setup everything, is doesn't need to be persisted.
-    new UI(config, terrainGrid, terrainRenderer);
+    const ui = new UI(config, terrainGrid, terrainRenderer);
 
-    return terrainRenderer;
+    return [terrainRenderer, ui];
 }
 
-class FpsCounter {
-    constructor() {
-        this.previous = performance.now();
-        this.frames = 0;
-        this.updateIntervalMs = 100; // Update FPS display every 100 milliseconds.
-        this.fps = 0;
-    }
-
-    update() {
-        const current = performance.now();
-        this.frames++;
-        const delta = current - this.previous;
-
-        if (delta >= this.updateIntervalMs) {
-            this.fps = (this.frames / (delta / 1000)).toFixed(1);
-            this.frames = 0;
-            this.previous = current;
-        }
-
-        return this.fps;
-    }
-}
-
-function startAnimationLoop(config, terrainRenderer) {
-    const gui = new lil.GUI();
-    gui.add(config, 'needsRender').name('Needs Render (Debug)').hide(); // Debug control
-
-    const fps = new FpsCounter();
-    const fpsController = gui.add({ fps: 0 }, 'fps').name('FPS').disable();
-
+function startAnimationLoop(config, terrainRenderer, ui) {
     function animate() {
         requestAnimationFrame(animate);
-        fpsController.setValue(fps.update());
+        ui.updateFPS();
 
         // Only render if something has changed or controls are active.
         const controlsUpdated = terrainRenderer.controls.update(); // Required because of damping.
@@ -110,8 +81,8 @@ function startAnimationLoop(config, terrainRenderer) {
 }
 
 function main() {
-    const terrainRenderer = initializeApplication(config, palettes);
-    startAnimationLoop(config, terrainRenderer);
+    const [terrainRenderer, ui] = initializeApplication(config, palettes);
+    startAnimationLoop(config, terrainRenderer, ui);
 }
 
 main();

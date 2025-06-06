@@ -1,10 +1,35 @@
 import { rangeMapper } from './utils.js';
 
+class FpsCounter {
+    constructor() {
+        this.previous = performance.now();
+        this.frames = 0;
+        this.updateIntervalMs = 100; // Update FPS display every 100 milliseconds.
+        this.fps = 0;
+    }
+
+    update() {
+        const current = performance.now();
+        this.frames++;
+        const delta = current - this.previous;
+
+        if (delta >= this.updateIntervalMs) {
+            this.fps = (this.frames / (delta / 1000)).toFixed(1);
+            this.frames = 0;
+            this.previous = current;
+        }
+
+        return this.fps;
+    }
+}
+
 export class UI {
     #config;
+    #fps;
+    #fpsController;
+    #gui;
     #terrainGrid;
     #terrainRenderer;
-    #gui;
 
     constructor(config, terrainGrid, terrainRenderer) {
         this.#config = config;
@@ -12,8 +37,17 @@ export class UI {
         this.#terrainRenderer = terrainRenderer;
 
         this.#gui = new lil.GUI();
+        this.#setupFPS();
         this.#setupGUI();
         this.#setupKeyboard();
+    }
+
+    ///////////////////
+    // Setup methods //
+
+    #setupFPS() {
+        this.#fps = new FpsCounter();
+        this.#fpsController = this.#gui.add({ fps: 0 }, 'fps').name('FPS').disable();
     }
 
     #setupGUI() {
@@ -202,6 +236,9 @@ export class UI {
         });
     }
 
+    ////////////////////
+    // Update methods //
+
     // Dynamically show/hide parameter folders based on the selected terrain algorithm.
     #updateAlgorithmFolders() {
         const activeTerrainAlgo = this.#config.gen.terrainAlgo;
@@ -229,6 +266,10 @@ export class UI {
                 }
             }
         });
+    }
+
+    updateFPS() {
+        this.#fpsController.setValue(this.#fps.update());
     }
 
     #updateTerrain() {
