@@ -7,20 +7,41 @@ const GRID_UNIT = 256;
 // x and y coordinates shift to hide simplex artifact at the origin.
 const SIM_SHIFT = 1024;
 
-// Handles terrain data storage and generation algorithms.
+/**
+ * Handles terrain data storage and generation algorithms.
+ * @class Grid
+ */
 export class Grid {
+    /** @private @type {number} The number of cells along one dimension of the grid. */
     #size;
+    /** @private @type {number} The size of a single cell in world units. */
     #cellSize;
+    /** @private @type {RNG} The random number generator instance. */
     #rng;
+    /** @private @type {number} The maximum height value for the terrain. */
     #maxH;
+    /** @private @type {number[][]} The 2D array storing the height data. */
     #data;
+    /** @private @type {object} The configuration object for generation parameters. */
     #config;
 
+    /**
+     * Initializes a new Grid instance.
+     *
+     * @param {object} config - The initial configuration object for the grid.
+     */
     constructor(config) {
         this.reset(config);
     }
 
-    // Updates the stored generation parameters.
+    /**
+     * Resets the grid with new generation parameters.
+     *
+     * Updates the stored generation parameters and re-initializes the RNG.
+     * Reallocates the grid data array only if the grid size changes.
+     *
+     * @param {object} config - The new configuration object.
+     */
     reset(config) {
         this.#config = config;
         this.#maxH = (GRID_UNIT / 5) * this.#config.heightMultiplier;
@@ -49,22 +70,42 @@ export class Grid {
     ///////////////
     // Accessors //
 
+    /**
+     * Gets the size of a single cell.
+     * @returns {number}
+     */
     get cellSize() {
         return this.#cellSize;
     }
 
+    /**
+     * Gets the grid's height data.
+     * @returns {number[][]} The 2D array representing grid heights.
+     */
     get data() {
         return this.#data;
     }
 
+    /**
+     * Gets the maximum possible height value.
+     * @returns {number}
+     */
     get maxH() {
         return this.#maxH;
     }
 
+    /**
+     * Gets the seed used for generation.
+     * @returns {number}
+     */
     get seed() {
         return this.#config.gen.seed;
     }
 
+    /**
+     * Gets the size of the grid (number of cells per side).
+     * @returns {number}
+     */
     get size() {
         return this.#size;
     }
@@ -72,11 +113,22 @@ export class Grid {
     ///////////////
     // Utilities //
 
-    // Apply the given function on every cell.
+    /**
+     * Applies a function to every cell in the grid, updating its value.
+     *
+     * The function receives the cell's coordinates and should return the new value.
+     *
+     * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning a new height.
+     */
     apply(fun) {
         this.range((x, y) => this.#data[x][y] = fun(x, y));
     }
 
+    /**
+     * Iterates over every cell in the grid and executes a function.
+     *
+     * @param {function(number, number): void} fun - The function to execute for each cell, taking (x, y).
+     */
     range(fun) {
         for (let x = 0; x < this.#size; x++) {
             for (let y = 0; y < this.#size; y++) {
@@ -85,7 +137,14 @@ export class Grid {
         }
     }
 
-    // Returns the height at a specific grid coordinate.
+    /**
+     * Returns the height at a specific grid coordinate.
+     *
+     * @param {number} x - The x-coordinate.
+     * @param {number} y - The y-coordinate.
+     *
+     * @returns {number|undefined} The height at the given coordinates, or undefined if out of bounds.
+     */
     getHeightAt(x, y) {
         if (x >= 0 && x < this.#size && y >= 0 && y < this.#size) {
             return this.#data[x][y];
@@ -93,7 +152,14 @@ export class Grid {
         return undefined;
     }
 
-    // Normalize all heights between 0.1 and maxH.
+    /**
+     * Normalizes all height values in the grid to a range between 0.1 and maxH.
+     *
+     * If min and max are not provided, they are computed from the current grid data.
+     *
+     * @param {number} [min] - The minimum value of the current data range.
+     * @param {number} [max] - The maximum value of the current data range.
+     */
     normalize(min, max) {
         if (min === undefined) { // Compute min and max manually.
             min = Infinity, max = -Infinity;
@@ -116,13 +182,17 @@ export class Grid {
     ///////////////////////
     // Height generation //
 
-    // Simplex noise.
+    /**
+     * Generates terrain using Simplex noise.
+     */
     noise() {
         this.apply((x, y) => this.#rng.simplex(x, y));
         this.normalize();
     }
 
-    // Normalized midpoint displacement.
+    /**
+     * Generates terrain using the midpoint displacement (diamond-square) algorithm.
+     */
     midpoint() {
         this.#rng.reseed();
         this.normalize(...midpointDisplacement(
@@ -130,13 +200,19 @@ export class Grid {
         ));
     }
 
-    // Random heights.
+    /**
+     * Fills the grid with random height values.
+     */
     rand() {
         this.#rng.reseed();
         this.apply(() => this.#rng.float(1, this.#maxH));
     }
 
-    // Ridge noise using simplex noise as a base.
+    /**
+     * Generates terrain using ridge noise, based on Simplex noise.
+     *
+     * Can produce 'octavian' or 'melodic' style ridges based on configuration.
+     */
     ridge() {
         let fun = 'octavianRidge';
         if (this.#config.gen.noise.ridge.style === 'melodic') {
@@ -148,6 +224,15 @@ export class Grid {
     }
 }
 
+/**
+ * Generates height data using the diamond-square algorithm.
+ *
+ * @param {number[][]}                       grid      - The 2D array (must be square with side length 2^n + 1) to fill.
+ * @param {function(number, number): number} rng       - A function that returns a random number within a given range `(min, max)`.
+ * @param {number}                           roughness - Controls the magnitude of the random displacement. Higher values create rougher terrain.
+ *
+ * @returns {[number, number]} An array containing the minimum and maximum height values generated `[min, max]`.
+ */
 function midpointDisplacement(grid, rng, roughness) {
     const size = grid.length;
     let range = 1;
@@ -199,8 +284,8 @@ function midpointDisplacement(grid, rng, roughness) {
                 let count = 0;
                 let sum = 0;
 
-                // Points in this step can be on the edge of the grid and therefore only have three
-                // valid neighbours so the coordinates must be carefully checked.
+                // Points in this step can be on the edge of the grid and therefore only have two or
+                // three valid neighbours, so the coordinates must be carefully checked.
                 if (x >= halfStep) { sum += grid[x - halfStep][y]; count++; }
                 if (x + halfStep < size) { sum += grid[x + halfStep][y]; count++; }
                 if (y >= halfStep) { sum += grid[x][y - halfStep]; count++; }
