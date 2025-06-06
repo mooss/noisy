@@ -1,4 +1,5 @@
 import { rangeMapper } from './utils.js';
+import { GUI } from './gui.js';
 
 class FpsCounter {
     constructor() {
@@ -36,7 +37,7 @@ export class UI {
         this.#terrainGrid = terrainGrid;
         this.#terrainRenderer = terrainRenderer;
 
-        this.#gui = new lil.GUI();
+        this.#gui = new GUI();
         this.#setupFPS();
         this.#setupGUI();
         this.#setupKeyboard();
