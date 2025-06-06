@@ -1,16 +1,5 @@
-import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
-import { createLCG, mkRng, rangeMapper } from './utils.js';
-
-function warpedNoise(noise, warpx, warpy, strength, simshift) {
-	return (x, y, frequency) => {
-		x = x * frequency + simshift;
-		y = y * frequency + simshift;
-		return noise(
-			x + warpx(x, y) * strength,
-			y + warpy(x, y) * strength,
-		)
-	}
-}
+import { RNG } from './rng.js';
+import { rangeMapper } from './utils.js';
 
 // Base dimension of a grid.
 const GRID_UNIT = 256;
@@ -20,11 +9,9 @@ const SIM_SHIFT = 1024;
 
 // Handles terrain data storage and generation algorithms.
 export class Grid {
-    // Private fields for internal state.
     #size;
     #cellSize;
     #rng;
-    #noiseGen;
     #maxH;
     #data;
     #config;
@@ -36,7 +23,6 @@ export class Grid {
     // Updates the stored generation parameters.
     reset(config) {
         this.#config = config;
-        this.#initRng();
         this.#maxH = (GRID_UNIT / 5) * this.#config.heightMultiplier;
 
         // Grid layout, don't reallocate unless necessary.
@@ -45,20 +31,19 @@ export class Grid {
             this.#cellSize = GRID_UNIT / this.#size;
             this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
         }
-    }
 
-    // Initialize random number generator and noise.
-    #initRng() {
-        this.#reseed();
-		const noise = createNoise2D(createLCG(this.seed));
-		const warpx = createNoise2D(createLCG(this.seed + 1));
-		const warpy = createNoise2D(createLCG(this.seed + 2));
-        this.#noiseGen = warpedNoise(noise, warpx, warpy, this.#config.gen.noise.warpingStrength, SIM_SHIFT);
-    }
-
-    // Resets the random number generator.
-    #reseed() {
-        this.#rng = mkRng(this.seed);
+        const noi = this.#config.gen.noise;
+        this.#rng = new RNG({
+            seed:  this.seed,
+            warp:  noi.warpingStrength,
+            shift: SIM_SHIFT,
+            octaves: noi.octaves,
+            fundamental: noi.fundamental / this.#size,
+            persistence: noi.persistence,
+            lacunarity:  noi.lacunarity,
+            ridgeInvert: noi.ridge.invertSignal,
+            ridgeSquare: noi.ridge.squareSignal,
+        });
     }
 
     ///////////////
@@ -87,24 +72,6 @@ export class Grid {
     ///////////////
     // Utilities //
 
-    // Returns the fractal simplex noise value at the given coordinates.
-    simplex(x, y) {
-        let total = 0;
-        let frequency = this.#config.gen.noise.fundamental / this.#size;
-        let amplitude = 1;
-
-        for (let i = 0; i < this.#config.gen.noise.octaves; i++) {
-            let octave = this.#noiseGen(x, y, frequency);
-            total += octave * amplitude;
-
-            // Update amplitude and frequency for the next octave.
-            amplitude *= this.#config.gen.noise.persistence;
-            frequency *= this.#config.gen.noise.lacunarity;
-        }
-
-        return total;
-    }
-
     // Apply the given function on every cell.
     apply(fun) {
         this.range((x, y) => this.#data[x][y] = fun(x, y));
@@ -126,85 +93,6 @@ export class Grid {
         return undefined;
     }
 
-    ///////////////////////
-    // Height generation //
-
-    // Random heights.
-    rand() {
-        this.#reseed();
-        this.apply(() => this.#rng(1, this.#maxH));
-    }
-
-    // Simplex noise.
-    noise() {
-        this.apply((x, y) => this.simplex(x, y));
-        this.normalize();
-    }
-
-    // Normalized midpoint displacement.
-    midpoint() {
-        this.#reseed();
-        this.normalize(...midpointDisplacement(this.#data, this.#rng, this.#config.gen.midpointRoughness));
-    }
-
-
-    // Ridge noise using simplex noise as a base.
-    ridge() {
-        if (this.#config.gen.noise.ridge.style === 'octavian') {
-            this.octavianRidge();
-        } else {
-            this.melodicRidge();
-        }
-    }
-
-    // Ridge noise where the ridge transformation is applied to each octave.
-    octavianRidge() {
-        this.apply((x, y) => {
-            let total = 0;
-            let frequency = this.#config.gen.noise.fundamental / this.#size;
-            let amplitude = 1;
-
-            for (let i = 0; i < this.#config.gen.noise.octaves; i++) {
-                let signal = this.toRidge(this.#noiseGen(x, y, frequency));
-
-                // Add the contribution of this octave to the result.
-                total += signal * amplitude;
-
-                // Update amplitude and frequency for the next octave.
-                amplitude *= this.#config.gen.noise.persistence;
-                frequency *= this.#config.gen.noise.lacunarity;
-            }
-            return total;
-        });
-        this.normalize();
-    }
-
-    // Ridge noise where the ridge transformation is applied to the already layered octaves.
-    melodicRidge() {
-        this.apply((x, y) => this.toRidge(this.simplex(x, y)));
-        this.normalize();
-    }
-
-    toRidge(signal) {
-        // Taking the absolute value maps [-1, 1] -> [0, 1] and makes the negative values
-        // positive, thus transforming the smooth transition from positive to negative
-        // values into a sharp "rebound".
-        signal = Math.abs(signal);
-
-        // Inverting the elevation with `1 - signal` makes the rebound occur at the top,
-        // creating ridges instead of valleys.
-        if (this.#config.gen.noise.ridge.invertSignal) {
-            signal = 1.0 - signal;
-        }
-
-        // Squaring the signal will emphasize ridges/valleys.
-        if (this.#config.gen.noise.ridge.squareSignal) {
-            signal *= signal;
-        }
-
-        return signal;
-    }
-
     // Normalize all heights between 0.1 and maxH.
     normalize(min, max) {
         if (min === undefined) { // Compute min and max manually.
@@ -223,6 +111,40 @@ export class Grid {
 
         const norm = rangeMapper(min, max, .1, this.maxH);
         this.apply((x, y) => norm(this.#data[x][y]));
+    }
+
+    ///////////////////////
+    // Height generation //
+
+    // Simplex noise.
+    noise() {
+        this.apply((x, y) => this.#rng.simplex(x, y));
+        this.normalize();
+    }
+
+    // Normalized midpoint displacement.
+    midpoint() {
+        this.#rng.reseed();
+        this.normalize(...midpointDisplacement(
+            this.#data, (min, max) => this.#rng.float(min, max), this.#config.gen.midpointRoughness,
+        ));
+    }
+
+    // Random heights.
+    rand() {
+        this.#rng.reseed();
+        this.apply(() => this.#rng.float(1, this.#maxH));
+    }
+
+    // Ridge noise using simplex noise as a base.
+    ridge() {
+        let fun = 'octavianRidge';
+        if (this.#config.gen.noise.ridge.style === 'melodic') {
+            fun = 'melodicRidge';
+        }
+
+        this.apply((x, y) => this.#rng[fun](x, y));
+        this.normalize();
     }
 }
 
