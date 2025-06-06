@@ -1,5 +1,41 @@
 import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
-import { createLCG, mkRng } from './utils.js';
+
+////////////////////
+// Free functions //
+
+/**
+ * Creates a Linear Congruential Generator (LCG) that produces pseudorandom values between 0 and 1.
+ *
+ * This provides a deterministic alternative to Math.random() since it can be seeded.
+ *
+ * @param {number} seed The initial seed value for the generator.
+ *
+ * @returns {() => number} A function that returns a pseudorandom float (1 <= res < max).
+ */
+function createLCG(seed) {
+    const a = 1664525;
+    const c = 1013904223;
+    const m = Math.pow(2, 32);
+    let currentSeed = seed;
+
+    return () => {
+        currentSeed = (a * currentSeed + c) % m;
+        return currentSeed / m;
+    };
+}
+
+/**
+ * Returns a function that will generate a random number between given minimum and maximum values,
+ * based on a provided seed.
+ *
+ * @param {number} seed The seed to initialize the pseudorandom number generator.
+ *
+ * @returns {function(min: number, max: number): number} A function that returns a float (min <= res < max).
+ */
+function mkRng(seed) {
+    let generator = createLCG(seed);
+    return (min, max) => generator() * (max - min) + min;
+}
 
 /**
  * Creates a warped simplex noise function.
@@ -26,6 +62,9 @@ function warpedNoise(noise, warpx, warpy, strength, simshift) {
 		)
 	}
 }
+
+///////////////
+// RNG class //
 
 /**
  * A seeded random number and noise generator class.
