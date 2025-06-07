@@ -1,12 +1,9 @@
-/**
- * A GUI panel for controlling various parameters.
- */
-export class GUI {
+class Panel {
     /**
      * The main container element for the GUI.
      * @type {HTMLDivElement}
      */
-    #elt;
+    _elt;
 
     /**
      * All folders contained in the GUI.
@@ -14,12 +11,50 @@ export class GUI {
      */
     folders = [];
 
+    constructor(parent) {
+        this._elt = document.createElement('div');
+        this.folders = [];
+        parent.appendChild(this._elt);
+    }
+
+
     /**
-     * Creates an instance of GUI and adds it to the document body.
+     * Adds a control to the GUI.
+     *
+     * The type of control created depends on the type of the property.
+     *
+     * @param {object} target - The object containing the property to control.
+     * @param {string} prop   - The property to control.
+     * @param {...*}   args   - Specification of the control (min, max, step, options).
+     *
+     * @returns {HTMLElement} The new control element.
+     */
+    add(target, prop, ...args) {
+        return createControl(this._elt, target, prop, args);
+    }
+
+
+    /**
+     * Adds a folder to the panel.
+     *
+     * @param {string} name - The name of the folder.
+     *
+     * @returns {Folder} The new folder.
+     */
+    addFolder(name) {
+        const folder = new Folder(name, this._elt);
+        this.folders.push(folder);
+        return folder;
+    }
+}
+
+export class GUI extends Panel {
+    /**
+     * Creates a GUI instance and adds it to the document body.
      */
     constructor() {
-        this.#elt = document.createElement('div');
-        Object.assign(this.#elt.style, {
+        super(document.body);
+        Object.assign(this._elt.style, {
             // Top left position.
             position: 'absolute',
             top: '10px',          // Distance from the top to the nearest ancestor.
@@ -40,43 +75,13 @@ export class GUI {
             // Behavior.
             overflowY: 'auto', // Adds a scrollbar if content overflows vertically.
         });
-
-        document.body.appendChild(this.#elt);
-    }
-
-    /**
-     * Adds a control to the GUI.
-     *
-     * The type of control created depends on the type of the property.
-     *
-     * @param {object} target - The object containing the property to control.
-     * @param {string} prop   - The property to control.
-     * @param {...*}   args   - Specification of the control (min, max, step, options).
-     *
-     * @returns {HTMLElement} The new control element.
-     */
-    add(target, prop, ...args) {
-        return createControl(this.#elt, target, prop, args);
-    }
-
-    /**
-     * Adds a folder to the GUI.
-     *
-     * @param {string} name - The name of the folder.
-     *
-     * @returns {Folder} The new folder.
-     */
-    addFolder(name) {
-        const folder = new Folder(name, this.#elt);
-        this.folders.push(folder);
-        return folder;
     }
 }
 
-class Folder {
+class Folder extends Panel {
     constructor(title, parent) {
+        super(parent);
         this._title = title;
-        this.folders = [];
 
         this._details = document.createElement('details');
         this._details.open = true;
@@ -92,19 +97,9 @@ class Folder {
         this._summary.style.cursor = 'pointer';
         this._details.appendChild(this._summary);
 
-        this._content = document.createElement('div');
-        this._content.style.marginLeft = '10px';
-        this._details.appendChild(this._content);
-    }
-
-    add(target, prop, ...args) {
-        return createControl(this._content, target, prop, args);
-    }
-
-    addFolder(name) {
-        const folder = new Folder(name, this._content);
-        this.folders.push(folder);
-        return folder;
+        this._elt = document.createElement('div');
+        this._elt.style.marginLeft = '10px';
+        this._details.appendChild(this._elt);
     }
 
     show() {
