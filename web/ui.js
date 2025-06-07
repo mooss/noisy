@@ -29,6 +29,7 @@ export class UI {
     #fps;
     #fpsController;
     #gui;
+    #terrainFolder;
     #terrainGrid;
     #terrainRenderer;
 
@@ -107,13 +108,13 @@ export class UI {
 
         ///////////////////////////////
         // Terrain generation folder //
-        const terrainFolder = this.#gui.addFolder('Terrain generation');
-        terrainFolder.add(this.#config.gen, 'seed')
+        this.#terrainFolder = this.#gui.addFolder('Terrain generation');
+        this.#terrainFolder.add(this.#config.gen, 'seed')
             .name('Seed')
             .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
 
-        terrainFolder.add(this.#config.gen, 'terrainAlgo', {
+        this.#terrainFolder.add(this.#config.gen, 'terrainAlgo', {
             'Random': 'rand',
             'Noise': 'noise',
             'Ridge': 'ridge',
@@ -127,7 +128,7 @@ export class UI {
 
         //////////////////
         // Noise folder //
-        const noiseFolder = terrainFolder.addFolder('Noise parameters');
+        const noiseFolder = this.#terrainFolder.addFolder('Noise parameters');
         noiseFolder.add(this.#config.gen.noise, 'octaves', 1, 8, 1)
             .name('Octaves')
             .onChange(() => this.#updateTerrain())
@@ -151,7 +152,7 @@ export class UI {
 
         //////////////////
         // Ridge folder //
-        const ridgeFolder = terrainFolder.addFolder('Ridge parameters');
+        const ridgeFolder = this.#terrainFolder.addFolder('Ridge parameters');
         ridgeFolder.add(this.#config.gen.noise.ridge, 'invertSignal')
             .name('Invert signal')
             .onChange(() => this.#updateTerrain())
@@ -169,7 +170,7 @@ export class UI {
 
         /////////////////////
         // Midpoint folder //
-        const midpointFolder = terrainFolder.addFolder('Midpoint parameters');
+        const midpointFolder = this.#terrainFolder.addFolder('Midpoint parameters');
         midpointFolder.add(this.#config.gen, 'midpointRoughness', 0.4, 0.8, 0.02)
             .name('Roughness')
             .onChange(() => this.#updateTerrain())
@@ -243,9 +244,8 @@ export class UI {
     // Dynamically show/hide parameter folders based on the selected terrain algorithm.
     #updateAlgorithmFolders() {
         const activeTerrainAlgo = this.#config.gen.terrainAlgo;
-        const terrainFolders = this.#gui.folders.find(f => f._title === 'Terrain generation').folders;
 
-        terrainFolders.forEach(folder => {
+        this.#terrainFolder.folders.forEach(folder => {
             if (folder._title === 'Noise parameters') {
                 if (['noise', 'ridge'].includes(activeTerrainAlgo)) {
                     folder.show();

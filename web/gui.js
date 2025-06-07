@@ -1,30 +1,73 @@
+/**
+ * A GUI panel for controlling various parameters.
+ */
 export class GUI {
+    /**
+     * The main container element for the GUI.
+     * @type {HTMLDivElement}
+     */
+    #elt;
+
+    /**
+     * All folders contained in the GUI.
+     * @type {Array<Folder>}
+     */
+    folders = [];
+
+    /**
+     * Creates an instance of GUI and adds it to the document body.
+     */
     constructor() {
-        this.folders = [];
-        this._container = document.createElement('div');
-        Object.assign(this._container.style, {
+        this.#elt = document.createElement('div');
+        Object.assign(this.#elt.style, {
+            // Top left position.
             position: 'absolute',
-            top: '10px',
-            right: '10px',
+            top: '10px',          // Distance from the top to the nearest ancestor.
+            left: '10px',         // Distance from the right of the nearest positioned ancestor
+            zIndex: '1000',       // Ensure element is on top.
+
+            // Dimensions.
+            width: '300px',
             maxHeight: '90vh',
-            overflowY: 'auto',
+
+            // Inner style.
             padding: '10px',
-            backgroundColor: 'rgba(0,0,0,0.5)',
+            backgroundColor: 'rgba(0, 0, 0, .7)',
             color: '#fff',
             fontFamily: 'sans-serif',
             fontSize: '14px',
-            zIndex: '1000',
-            width: '250px',
+
+            // Behavior.
+            overflowY: 'auto', // Adds a scrollbar if content overflows vertically.
         });
-        document.body.appendChild(this._container);
+
+        document.body.appendChild(this.#elt);
     }
 
+    /**
+     * Adds a control to the GUI.
+     *
+     * The type of control created depends on the type of the property.
+     *
+     * @param {object} target - The object containing the property to control.
+     * @param {string} prop   - The property to control.
+     * @param {...*}   args   - Specification of the control (min, max, step, options).
+     *
+     * @returns {HTMLElement} The new control element.
+     */
     add(target, prop, ...args) {
-        return createControl(this._container, target, prop, args);
+        return createControl(this.#elt, target, prop, args);
     }
 
+    /**
+     * Adds a folder to the GUI.
+     *
+     * @param {string} name - The name of the folder.
+     *
+     * @returns {Folder} The new folder.
+     */
     addFolder(name) {
-        const folder = new Folder(name, this._container);
+        const folder = new Folder(name, this.#elt);
         this.folders.push(folder);
         return folder;
     }
