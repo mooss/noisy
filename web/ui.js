@@ -245,26 +245,18 @@ export class UI {
     #updateAlgorithmFolders() {
         const activeTerrainAlgo = this.#config.gen.terrainAlgo;
 
+        const title2algo = {
+            'Noise parameters': ['noise', 'ridge'],
+            'Ridge parameters': ['ridge'],
+            'Midpoint parameters': ['midpoint'],
+        }
+
         this.#terrainFolder.folders.forEach(folder => {
-            if (folder._title === 'Noise parameters') {
-                if (['noise', 'ridge'].includes(activeTerrainAlgo)) {
-                    folder.show();
-                } else {
-                    folder.hide();
-                }
-            }
-            if (folder._title === 'Ridge parameters') {
-                if (activeTerrainAlgo === 'ridge') {
-                    folder.show();
-                } else {
-                    folder.hide();
-                }
-            } else if (folder._title === 'Midpoint parameters') {
-                if (activeTerrainAlgo === 'midpoint') {
-                    folder.show();
-                } else {
-                    folder.hide();
-                }
+            const mustShow = title2algo[folder.title];
+            if (mustShow.includes(activeTerrainAlgo)) {
+                folder.show();
+            } else {
+                folder.hide();
             }
         });
     }

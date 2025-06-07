@@ -1,38 +1,70 @@
+/**
+ * Spawns an HTML element below parent and assign it an optional style.
+ *
+ * A `css` method is added to the element to conveniently change the stile.
+ *
+ * @param {string}      tag         - The HTML tag name for the new element.
+ * @param {HTMLElement} parent      - The parent DOM element.
+ * @param {object}      [style]     - CSS properties of the new element.
+ *
+ * @returns {HTMLElement} The newly created HTML element.
+ */
+function spawn(tag, parent, style) {
+    let res = document.createElement(tag);
+    res.css = function(attrs) {
+        Object.assign(res.style, attrs);
+    };
+
+    parent.appendChild(res);
+
+    if (style !== undefined) {
+        res.css(style);
+    }
+
+    return res;
+}
+
+/**
+ * GUI panel that can display information and adjust parameters.
+ */
 class Panel {
     /**
-     * The main container element for the GUI.
+     * The main container element for the panel.
      * @type {HTMLDivElement}
      */
     _elt;
 
     /**
-     * All folders contained in the GUI.
+     * All folders contained within this panel.
      * @type {Array<Folder>}
      */
     folders = [];
 
-    constructor(parent) {
-        this._elt = document.createElement('div');
+    /**
+     * Creates a new Panel instance.
+     *
+     * @param {HTMLElement} parent  - The parent DOM element.
+     * @param {object}      [style] - CSS properties of the new element.
+     */
+    constructor(parent, style) {
+        this._elt = spawn('div', parent, style);
         this.folders = [];
-        parent.appendChild(this._elt);
     }
 
-
     /**
-     * Adds a control to the GUI.
+     * Adds a control to the Panel.
      *
      * The type of control created depends on the type of the property.
      *
      * @param {object} target - The object containing the property to control.
-     * @param {string} prop   - The property to control.
-     * @param {...*}   args   - Specification of the control (min, max, step, options).
+     * @param {string} prop   - The name of the property to control.
+     * @param {...*}   args   - Additional arguments for control specification (e.g., min, max, step, options).
      *
      * @returns {HTMLElement} The new control element.
      */
     add(target, prop, ...args) {
         return createControl(this._elt, target, prop, args);
     }
-
 
     /**
      * Adds a folder to the panel.
@@ -48,13 +80,15 @@ class Panel {
     }
 }
 
+/**
+ * Main element of the graphical user interface.
+ */
 export class GUI extends Panel {
     /**
      * Creates a GUI instance and adds it to the document body.
      */
     constructor() {
-        super(document.body);
-        Object.assign(this._elt.style, {
+        super(document.body, {
             // Top left position.
             position: 'absolute',
             top: '10px',          // Distance from the top to the nearest ancestor.
@@ -78,34 +112,52 @@ export class GUI extends Panel {
     }
 }
 
+/**
+ * A collapsible folder within the GUI.
+ */
 class Folder extends Panel {
-    constructor(title, parent) {
-        super(parent);
-        this._title = title;
+    /**
+     * The title of the folder.
+     * @type {string}
+     */
+    title;
 
-        this._details = document.createElement('details');
-        this._details.open = true;
-        Object.assign(this._details.style, {
+    /**
+     * The details HTML element that wraps the folder content.
+     * @type {HTMLDetailsElement}
+     */
+    _details;
+
+    /**
+     * Creates a new Folder instance.
+     * @param {HTMLElement} parent  - The parent DOM element.
+     * @param {string}      title   - The title of the folder.
+     */
+    constructor(title, parent) {
+        super(parent, {marginLeft: '10px'});
+
+        this._details = spawn('details', parent, {
             border: '1px solid #888',
             marginBottom: '5px',
             padding: '5px',
         });
-        parent.appendChild(this._details);
+        this._details.open = true;
 
-        this._summary = document.createElement('summary');
-        this._summary.textContent = title;
-        this._summary.style.cursor = 'pointer';
-        this._details.appendChild(this._summary);
-
-        this._elt = document.createElement('div');
-        this._elt.style.marginLeft = '10px';
-        this._details.appendChild(this._elt);
+        spawn('summary', this._details, {cursor: 'pointer'}).textContent = title;
+        this.title = title;
+        this._details.appendChild(this._elt); // Doesn't display properly without this.
     }
 
+    /**
+     * Shows the folder.
+     */
     show() {
         this._details.style.display = '';
     }
 
+    /**
+     * Hides the folder.
+     */
     hide() {
         this._details.style.display = 'none';
     }
@@ -156,20 +208,16 @@ class Controller {
 }
 
 function createControl(parent, target, prop, args) {
-    const wrapper = document.createElement('div');
-    Object.assign(wrapper.style, {
+    const wrapper = spawn('div', parent, {
         display: 'flex',
         alignItems: 'center',
         marginBottom: '4px',
     });
-    parent.appendChild(wrapper);
 
-    const labelEl = document.createElement('label');
-    Object.assign(labelEl.style, {
+    const labelEl = spawn('label', wrapper, {
         flex: '1',
         marginRight: '6px',
     });
-    wrapper.appendChild(labelEl);
 
     let inputEl, valueSpan;
     const initial = target[prop];
