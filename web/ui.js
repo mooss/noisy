@@ -49,7 +49,7 @@ export class UI {
 
     #setupFPS() {
         this.#fps = new FpsCounter();
-        this.#fpsController = this.#gui.add({ fps: 0 }, 'fps').name('FPS').disable();
+        this.#fpsController = this.#gui.number({ fps: 0 }, 'fps').legend('FPS').readOnly();
     }
 
     #setupGUI() {
@@ -102,10 +102,9 @@ export class UI {
         ///////////////////////////////
         // Terrain generation folder //
         this.#terrainFolder = this.#gui.addFolder('Terrain generation');
-        this.#terrainFolder.add(this.#config.gen, 'seed')
-            .name('Seed')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
+        this.#terrainFolder.number(this.#config.gen, 'seed')
+            .legend('Seed')
+            .onChange(() => this.#updateTerrain());
 
         this.#terrainFolder.select(this.#config.gen, 'terrainAlgo', {
             'Random': 'rand',
@@ -243,7 +242,7 @@ export class UI {
     }
 
     updateFPS() {
-        this.#fpsController.setValue(this.#fps.update());
+        this.#fpsController.input.value = this.#fps.update();
     }
 
     #updateTerrain() {

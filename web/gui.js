@@ -83,6 +83,10 @@ class Panel {
         return new Boolean(this._elt, target, property);
     }
 
+    number(target, property) {
+        return new Number(this._elt, target, property);
+    }
+
     range(target, property, min, max, step) {
         return new Range(this._elt, target, property, min, max, step);
     }
@@ -269,6 +273,11 @@ class Select extends Param {
 
     tag() { return 'select'; }
     value() { return JSON.parse(this.input.value); }
+}
+
+class Number extends Param {
+    setup(initial) { this.setInput({type: 'number', value: initial}); }
+    value() { return parseFloat(this.input.value); }
 }
 
 class Controller {
