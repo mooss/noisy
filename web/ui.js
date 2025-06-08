@@ -76,30 +76,28 @@ export class UI {
                 this.#updateTerrain();
             });
 
-        gridFolder.add(this.#config, 'renderStyle', {
+        gridFolder.select(this.#config, 'renderStyle', {
             'Squares': 'quadPrism',
             'Hexagons': 'hexPrism',
             'Surface': 'surface'
-        }).name('Shape')
+        }).legend('Shape')
             .onChange(() => {
                 this.#terrainRenderer.createGridMeshes();
                 this.#config.needsRender = true;
-            })
-            .onFinishChange(() => this.#config.needsRender = true);
+            });
 
-        gridFolder.add(this.#config, 'palette', {
+        gridFolder.select(this.#config, 'palette', {
             'Bright terrain': 0,
             'Continental': 1,
             'Cyberpuke': 2,
             'Black & white': 3,
             'Fantasy': 4,
             'Sunset': 5
-        }).name('Palette')
+        }).legend('Palette')
             .onChange(() => {
                 this.#terrainRenderer.createGridMeshes();
                 this.#config.needsRender = true;
-            })
-            .onFinishChange(() => this.#config.needsRender = true);
+            });
 
         ///////////////////////////////
         // Terrain generation folder //
@@ -109,17 +107,16 @@ export class UI {
             .onChange(() => this.#updateTerrain())
             .onFinishChange(() => this.#config.needsRender = true);
 
-        this.#terrainFolder.add(this.#config.gen, 'terrainAlgo', {
+        this.#terrainFolder.select(this.#config.gen, 'terrainAlgo', {
             'Random': 'rand',
             'Noise': 'noise',
             'Ridge': 'ridge',
             'Midpoint': 'midpoint'
-        }).name('Algorithm')
+        }).legend('Algorithm')
             .onChange(() => {
                 this.#updateAlgorithmFolders();
                 this.#updateTerrain();
-            })
-            .onFinishChange(() => this.#config.needsRender = true);
+            });
 
         //////////////////
         // Noise folder //
@@ -149,12 +146,11 @@ export class UI {
         ridgeFolder.bool(this.#config.gen.noise.ridge, 'squareSignal')
             .legend('Square signal')
             .onChange(() => this.#updateTerrain());
-        ridgeFolder.add(this.#config.gen.noise.ridge, 'style', {
+        ridgeFolder.select(this.#config.gen.noise.ridge, 'style', {
             'Octavian': 'octavian',
             'Melodic': 'melodic'
-        }).name('Ridge Style')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
+        }).legend('Ridge Style')
+            .onChange(() => this.#updateTerrain());
 
         /////////////////////
         // Midpoint folder //

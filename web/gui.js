@@ -11,15 +11,12 @@
  */
 function spawn(tag, parent, style) {
     let res = document.createElement(tag);
-    res.css = function(attrs) {
-        Object.assign(res.style, attrs);
-    };
-
-    parent.appendChild(res);
-
+    res.css = function(attrs) { Object.assign(res.style, attrs); };
     if (style !== undefined) {
         res.css(style);
     }
+
+    parent.appendChild(res);
 
     return res;
 }
@@ -88,6 +85,10 @@ class Panel {
 
     range(target, property, min, max, step) {
         return new Range(this._elt, target, property, min, max, step);
+    }
+
+    select(target, property, options) {
+        return new Select(this._elt, target, property, options);
     }
 }
 
@@ -254,6 +255,20 @@ class Range extends Param {
 
     update(value) { this.valueSpan.textContent = value; }
     value() { return parseFloat(this.input.value); }
+}
+
+class Select extends Param {
+    setup(initial, options) {
+        for (const [key, value] of Object.entries(options)) {
+            const option = spawn('option', this.input);
+            option.text = key;
+            option.value = JSON.stringify(value);
+            if (value === initial) option.selected = true;
+        }
+    }
+
+    tag() { return 'select'; }
+    value() { return JSON.parse(this.input.value); }
 }
 
 class Controller {
