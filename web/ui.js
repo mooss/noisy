@@ -56,30 +56,25 @@ export class UI {
         /////////////////
         // Grid folder //
         const gridFolder = this.#gui.addFolder('Grid');
-        gridFolder.add(this.#config, 'gridPower', 1, 9, 1)
-            .name('Grid size (2^n + 1)')
-            .onChange(() => {
+        gridFolder.range(this.#config, 'gridPower', 1, 9, 1)
+            .legend('Grid size (2^n + 1)')
+            .onInput(() => {
+                // Update avatar position and scale based on new grid size.
                 const oldSize = this.#terrainGrid.size;
                 const conv = rangeMapper(0, oldSize, 0, this.#config.gridSize);
-
-                this.#updateTerrain();
-
-                // Update avatar position and scale based on new grid size.
                 this.#config.avatar.x = Math.round(conv(this.#config.avatar.x));
                 this.#config.avatar.y = Math.round(conv(this.#config.avatar.y));
-                this.#terrainRenderer.updateAvatarPosition();
-                this.#terrainRenderer.updateAvatarScale();
-            })
-            .onFinishChange(() => this.#config.needsRender = true);
 
-        gridFolder.add(this.#config, 'heightMultiplier', 0.1, 5.0, 0.05)
-            .name('Height multiplier')
-            .onChange(() => {
+                this.#updateTerrain();
+                this.#terrainRenderer.updateAvatarScale();
+            });
+
+        gridFolder.range(this.#config, 'heightMultiplier', 0.1, 5.0, 0.05)
+            .legend('Height multiplier')
+            .onInput(() => {
                 this.#terrainGrid.reset(this.#config); // Recompute maxH.
                 this.#updateTerrain();
-                this.#terrainRenderer.updateAvatarPosition();
-            })
-            .onFinishChange(() => this.#config.needsRender = true);
+            });
 
         gridFolder.add(this.#config, 'renderStyle', {
             'Squares': 'quadPrism',
@@ -129,26 +124,21 @@ export class UI {
         //////////////////
         // Noise folder //
         const noiseFolder = this.#terrainFolder.addFolder('Noise parameters');
-        noiseFolder.add(this.#config.gen.noise, 'octaves', 1, 8, 1)
-            .name('Octaves')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
-        noiseFolder.add(this.#config.gen.noise, 'persistence', 0.1, 1.0, 0.05)
-            .name('Persistence')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
-        noiseFolder.add(this.#config.gen.noise, 'lacunarity', 1.1, 4.0, 0.1)
-            .name('Lacunarity')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
-        noiseFolder.add(this.#config.gen.noise, 'fundamental', 0.1, 5.0, 0.1)
-            .name('Fundamental')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
-        noiseFolder.add(this.#config.gen.noise, 'warpingStrength', 0.0, 0.5, 0.01)
-            .name('Warping strength')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
+        noiseFolder.range(this.#config.gen.noise, 'octaves', 1, 8, 1)
+            .legend('Octaves')
+            .onInput(() => this.#updateTerrain());
+        noiseFolder.range(this.#config.gen.noise, 'persistence', 0.1, 1.0, 0.05)
+            .legend('Persistence')
+            .onInput(() => this.#updateTerrain());
+        noiseFolder.range(this.#config.gen.noise, 'lacunarity', 1.1, 4.0, 0.1)
+            .legend('Lacunarity')
+            .onInput(() => this.#updateTerrain());
+        noiseFolder.range(this.#config.gen.noise, 'fundamental', 0.1, 5.0, 0.1)
+            .legend('Fundamental')
+            .onInput(() => this.#updateTerrain());
+        noiseFolder.range(this.#config.gen.noise, 'warpingStrength', 0.0, 0.5, 0.01)
+            .legend('Warping strength')
+            .onInput(() => this.#updateTerrain());
 
         //////////////////
         // Ridge folder //
@@ -169,27 +159,24 @@ export class UI {
         /////////////////////
         // Midpoint folder //
         const midpointFolder = this.#terrainFolder.addFolder('Midpoint parameters');
-        midpointFolder.add(this.#config.gen, 'midpointRoughness', 0.4, 0.8, 0.02)
-            .name('Roughness')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
+        midpointFolder.range(this.#config.gen, 'midpointRoughness', 0.4, 0.8, 0.02)
+            .legend('Roughness')
+            .onInput(() => this.#updateTerrain());
 
         ///////////////////
         // Avatar folder //
         const avatarFolder = this.#gui.addFolder('Avatar');
-        avatarFolder.add(this.#config.avatar, 'size', 0.1, 2.0, 0.1)
-            .name('Size')
-            .onChange(() => {
+        avatarFolder.range(this.#config.avatar, 'size', 0.1, 2.0, 0.1)
+            .legend('Size')
+            .onInput(() => {
                 this.#terrainRenderer.avatarMesh.scale.setScalar(this.#config.avatar.size * this.#terrainGrid.cellSize);
                 this.#config.needsRender = true;
-            })
-            .onFinishChange(() => this.#config.needsRender = true);
-        avatarFolder.add(this.#config.avatar, 'heightOffset', 0.0, 2.0, 0.1)
-            .name('Height offset')
-            .onChange(() => {
+            });
+        avatarFolder.range(this.#config.avatar, 'heightOffset', 0.0, 2.0, 0.1)
+            .legend('Height offset')
+            .onInput(() => {
                 this.#terrainRenderer.updateAvatarPosition();
-            })
-            .onFinishChange(() => this.#config.needsRender = true);
+            });
 
         /////////////////////////////
         // Post registration setup //

@@ -79,8 +79,15 @@ class Panel {
         return folder;
     }
 
+    /////////////////////////////
+    // Parameters registration //
+
     bool(target, property) {
         return new Boolean(this._elt, target, property);
+    }
+
+    range(target, property, min, max, step) {
+        return new Range(this._elt, target, property, min, max, step);
     }
 }
 
@@ -164,7 +171,7 @@ class Folder extends Panel {
 // methods.
 class Param {
     // UI parameter attached to parent and tied to target.property.
-    constructor(parent, target, property) {
+    constructor(parent, target, property, ...args) {
         // Setup UI elements.
         this.box = spawn('div', parent, {
             display: 'flex',
@@ -186,8 +193,8 @@ class Param {
             if (this._onChange) this._onChange(this.value());
         });
 
-        this.setup(target[property]);
-        this.value(); // Fail early if not defined in the concrete subclass.
+        this.setup(target[property], ...args);
+        this.update(this.value());
     }
 
     // Assign to the properties of this.input.
@@ -231,6 +238,22 @@ class Param {
 class Boolean extends Param {
     setup(initial) { this.setInput({type: 'checkbox', checked: initial}); }
     value() { return this.input.checked; }
+}
+
+class Range extends Param {
+    setup(initial, min, max, step) {
+        this.setInput({
+            type: 'range',
+            min: min,
+            max: max,
+            step: step,
+            value: initial,
+        })
+        this.valueSpan = spawn('span', this.box, {'marginLeft': '8px'});
+    }
+
+    update(value) { this.valueSpan.textContent = value; }
+    value() { return parseFloat(this.input.value); }
 }
 
 class Controller {
