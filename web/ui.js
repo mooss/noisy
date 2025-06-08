@@ -160,7 +160,7 @@ export class UI {
 
         ///////////////////
         // Avatar folder //
-        const avatarFolder = this.#gui.addFolder('Avatar');
+        const avatarFolder = this.#gui.addFolder('Avatar').close();
         avatarFolder.range(this.#config.avatar, 'size', 0.1, 2.0, 0.1)
             .legend('Size')
             .onInput(() => {

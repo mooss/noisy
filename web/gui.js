@@ -145,13 +145,10 @@ class Folder extends Panel {
         this.#details.appendChild(this._elt); // Doesn't display properly without this.
     }
 
-    show() {
-        this.#details.style.display = '';
-    }
-
-    hide() {
-        this.#details.style.display = 'none';
-    }
+    show() { this.#details.style.display = ''; return this; }
+    hide() { this.#details.style.display = 'none'; return this; }
+    open() { this.#details.open = true; return this; }
+    close() { this.#details.open = false; return this; }
 }
 
 /////////////////////
