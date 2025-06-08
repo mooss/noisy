@@ -170,7 +170,11 @@ class Param {
             flex: '1',
             marginRight: '6px',
         });
-        this.input = spawn(this.tag(), this.box);
+        this.valueContainer = spawn('div', this.box, { // Aligns inputs.
+            width: '120px',
+            display: 'flex',
+        });
+        this.input = spawn(this.tag(), this.valueContainer);
     }
 
     // Sets the text content of the label.
@@ -233,12 +237,16 @@ class InputParam extends Param {
 }
 
 class Boolean extends InputParam {
-    setup(initial) { this.setInput({type: 'checkbox', checked: initial}); }
+    setup(initial) {
+        this.input.css({width: 'auto'});
+        this.setInput({type: 'checkbox', checked: initial});
+    }
     value() { return this.input.checked; }
 }
 
 class Range extends InputParam {
     setup(initial, min, max, step) {
+        this.input.css({width: '100%'});
         this.setInput({
             type: 'range',
             min: min,
@@ -246,7 +254,10 @@ class Range extends InputParam {
             step: step,
             value: initial,
         })
-        this.valueSpan = spawn('span', this.box, {'marginLeft': '8px'});
+        this.valueSpan = spawn('span', this.valueContainer, {
+            width: '40px',
+            marginLeft: '5px',
+        });
     }
 
     update(value) { this.valueSpan.textContent = value; }
@@ -255,6 +266,7 @@ class Range extends InputParam {
 
 class Select extends InputParam {
     setup(initial, options) {
+        this.input.css({width: '100%'});
         for (const [key, value] of Object.entries(options)) {
             const option = spawn('option', this.input);
             option.text = key;
@@ -268,7 +280,10 @@ class Select extends InputParam {
 }
 
 class Number extends InputParam {
-    setup(initial) { this.setInput({type: 'number', value: initial}); }
+    setup(initial) {
+        this.input.css({width: '100%'});
+        this.setInput({type: 'number', value: initial});
+    }
     value() { return parseFloat(this.input.value); }
 }
 
