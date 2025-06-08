@@ -246,7 +246,14 @@ class Boolean extends InputParam {
 
 class Range extends InputParam {
     setup(initial, min, max, step) {
-        this.input.css({width: '100%'});
+        this.input.css({
+            width: '100%',
+            height: '20px',
+            appearance: 'none',
+            background: '#333',
+            outline: 'none',
+            cursor: 'pointer'
+        });
         this.setInput({
             type: 'range',
             min: min,
@@ -258,6 +265,26 @@ class Range extends InputParam {
             width: '40px',
             marginLeft: '5px',
         });
+        
+        // Style the slider thumb as a vertical bar
+        const style = spawn('style', document.head);
+        style.textContent = `
+            input[type="range"]::-webkit-slider-thumb {
+                appearance: none;
+                width: 4px;
+                height: 20px;
+                background: #fff;
+                cursor: pointer;
+            }
+            input[type="range"]::-moz-range-thumb {
+                width: 4px;
+                height: 20px;
+                background: #fff;
+                cursor: pointer;
+                border: none;
+                border-radius: 0;
+            }
+        `;
     }
 
     update(value) { this.valueSpan.textContent = value; }
