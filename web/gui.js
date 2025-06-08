@@ -89,7 +89,7 @@ class Panel {
  */
 export class GUI extends Panel {
     /**
-     * Creates a GUI instance and adds it to the document body.
+     * Creates a GUI instance and attach it to the document body.
      */
     constructor() {
         super(document.body, {
@@ -120,17 +120,13 @@ export class GUI extends Panel {
  * A collapsible folder within the GUI.
  */
 class Folder extends Panel {
-    /**
-     * The title of the folder.
-     * @type {string}
-     */
     title;
 
     /**
      * The details HTML element that wraps the folder content.
      * @type {HTMLDetailsElement}
      */
-    _details;
+    #details;
 
     /**
      * Creates a new Folder instance.
@@ -140,30 +136,24 @@ class Folder extends Panel {
     constructor(title, parent) {
         super(parent, {marginLeft: '10px'});
 
-        this._details = spawn('details', parent, {
+        this.#details = spawn('details', parent, {
             border: '1px solid #888',
             marginBottom: '5px',
             padding: '5px',
         });
-        this._details.open = true;
+        this.#details.open = true;
 
-        spawn('summary', this._details, {cursor: 'pointer'}).textContent = title;
+        spawn('summary', this.#details, {cursor: 'pointer'}).textContent = title;
         this.title = title;
-        this._details.appendChild(this._elt); // Doesn't display properly without this.
+        this.#details.appendChild(this._elt); // Doesn't display properly without this.
     }
 
-    /**
-     * Shows the folder.
-     */
     show() {
-        this._details.style.display = '';
+        this.#details.style.display = '';
     }
 
-    /**
-     * Hides the folder.
-     */
     hide() {
-        this._details.style.display = 'none';
+        this.#details.style.display = 'none';
     }
 }
 
