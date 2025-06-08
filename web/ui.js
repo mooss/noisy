@@ -153,14 +153,12 @@ export class UI {
         //////////////////
         // Ridge folder //
         const ridgeFolder = this.#terrainFolder.addFolder('Ridge parameters');
-        ridgeFolder.add(this.#config.gen.noise.ridge, 'invertSignal')
-            .name('Invert signal')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
-        ridgeFolder.add(this.#config.gen.noise.ridge, 'squareSignal')
-            .name('Square signal')
-            .onChange(() => this.#updateTerrain())
-            .onFinishChange(() => this.#config.needsRender = true);
+        ridgeFolder.bool(this.#config.gen.noise.ridge, 'invertSignal')
+            .legend('Invert signal')
+            .onChange(() => this.#updateTerrain());
+        ridgeFolder.bool(this.#config.gen.noise.ridge, 'squareSignal')
+            .legend('Square signal')
+            .onChange(() => this.#updateTerrain());
         ridgeFolder.add(this.#config.gen.noise.ridge, 'style', {
             'Octavian': 'octavian',
             'Melodic': 'melodic'

@@ -78,6 +78,10 @@ class Panel {
         this.folders.push(folder);
         return folder;
     }
+
+    bool(target, property) {
+        return new Boolean(this._elt, target, property);
+    }
 }
 
 /**
@@ -161,6 +165,82 @@ class Folder extends Panel {
     hide() {
         this._details.style.display = 'none';
     }
+}
+
+/////////////////////
+// Parameter types //
+
+// Abstract base parameter class, all concrete parameters must implement the setup and value
+// methods.
+class Param {
+    // UI parameter attached to parent and tied to target.property.
+    constructor(parent, target, property) {
+        // Setup UI elements.
+        this.box = spawn('div', parent, {
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: '4px',
+        });
+        this.label = spawn('label', this.box, {
+            flex: '1',
+            marginRight: '6px',
+        });
+        this.input = spawn(this.tag(), this.box);
+        this.input.addEventListener('input', () => {
+            const value = this.value();
+            this.update(value);
+            target[property] = value;
+            if (this._onInput) this._onInput(value);
+        })
+        this.input.addEventListener('change', () => {
+            if (this._onChange) this._onChange(this.value());
+        });
+
+        this.setup(target[property]);
+        this.value(); // Fail early if not defined in the concrete subclass.
+    }
+
+    // Assign to the properties of this.input.
+    setInput(fields) { Object.assign(this.input, fields); }
+
+    //////////////////////////
+    // Overrideable methods //
+    // The methods below define behaviors that are shared by some parameter types, but still need to
+    // be redefined by others.
+
+    // Returns the tag name for the input element.
+    tag() { return 'input'; }
+
+    // Initialisation of the parameter given the initial value, must be defined in the concrete
+    // subclass.
+    setup() { throw new Error('Method "setup()" must be implemented.'); }
+
+    // Returns the current value of the parameter in the UI, must be defined in the concrete
+    // subclass.
+    value() { throw new Error('Method "value()" must be implemented.'); }
+
+    // Update the UI given the new value.
+    update() {}
+
+    //////////////////////////////////
+    // Chainable definition methods //
+
+    // Make the input read-only.
+    readOnly() { this.input.disabled = true; return this; }
+
+    // Set the text content of the label.
+    legend(name) { this.label.textContent = name; return this; }
+
+    // Register a listener for the change event.
+    onChange(fun) { this._onChange = fun; return this; }
+
+    // Register a listener for the input event.
+    onInput(fun) { this._onInput = fun; return this; }
+}
+
+class Boolean extends Param {
+    setup(initial) { this.setInput({type: 'checkbox', checked: initial}); }
+    value() { return this.input.checked; }
 }
 
 class Controller {
