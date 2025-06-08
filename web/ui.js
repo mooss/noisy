@@ -49,7 +49,7 @@ export class UI {
 
     #setupFPS() {
         this.#fps = new FpsCounter();
-        this.#fpsController = this.#gui.number({ fps: 0 }, 'fps').legend('FPS').readOnly();
+        this.#fpsController = this.#gui.readOnly(0).legend('FPS');
     }
 
     #setupGUI() {
@@ -242,7 +242,7 @@ export class UI {
     }
 
     updateFPS() {
-        this.#fpsController.input.value = this.#fps.update();
+        this.#fpsController.update(this.#fps.update());
     }
 
     #updateTerrain() {

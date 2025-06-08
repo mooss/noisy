@@ -79,6 +79,10 @@ class Panel {
     select(target, property, options) {
         return new Select(this._elt, target, property, options);
     }
+
+    readOnly(content) {
+        return new ReadOnly(this._elt, content);
+    }
 }
 
 /**
@@ -154,11 +158,8 @@ class Folder extends Panel {
 /////////////////////
 // Parameter types //
 
-// Abstract base parameter class, all concrete parameters must implement the setup and value
-// methods.
 class Param {
-    // UI parameter attached to parent and tied to target.property.
-    constructor(parent, target, property, ...args) {
+    constructor(parent) {
         // Setup UI elements.
         this.box = spawn('div', parent, {
             display: 'flex',
@@ -170,6 +171,21 @@ class Param {
             marginRight: '6px',
         });
         this.input = spawn(this.tag(), this.box);
+    }
+
+    // Sets the text content of the label.
+    legend(name) { this.label.textContent = name; return this; }
+
+    // Returns the tag name for the input element.
+    tag() { return 'input'; }
+}
+
+// Abstract base input parameter, all concrete input parameters must implement the setup and value
+// methods.
+class InputParam extends Param {
+    // UI parameter attached to parent and tied to target.property.
+    constructor(parent, target, property, ...args) {
+        super(parent);
         this.input.addEventListener('input', () => {
             const value = this.value();
             this.update(value);
@@ -184,16 +200,13 @@ class Param {
         this.update(this.value());
     }
 
-    // Assign to the properties of this.input.
+    // Assigns to the properties of this.input.
     setInput(fields) { Object.assign(this.input, fields); }
 
     //////////////////////////
     // Overrideable methods //
     // The methods below define behaviors that are shared by some parameter types, but still need to
     // be redefined by others.
-
-    // Returns the tag name for the input element.
-    tag() { return 'input'; }
 
     // Initialisation of the parameter given the initial value, must be defined in the concrete
     // subclass.
@@ -212,9 +225,6 @@ class Param {
     // Make the input read-only.
     readOnly() { this.input.disabled = true; return this; }
 
-    // Set the text content of the label.
-    legend(name) { this.label.textContent = name; return this; }
-
     // Register a listener for the change event.
     onChange(fun) { this._onChange = fun; return this; }
 
@@ -222,12 +232,12 @@ class Param {
     onInput(fun) { this._onInput = fun; return this; }
 }
 
-class Boolean extends Param {
+class Boolean extends InputParam {
     setup(initial) { this.setInput({type: 'checkbox', checked: initial}); }
     value() { return this.input.checked; }
 }
 
-class Range extends Param {
+class Range extends InputParam {
     setup(initial, min, max, step) {
         this.setInput({
             type: 'range',
@@ -243,7 +253,7 @@ class Range extends Param {
     value() { return parseFloat(this.input.value); }
 }
 
-class Select extends Param {
+class Select extends InputParam {
     setup(initial, options) {
         for (const [key, value] of Object.entries(options)) {
             const option = spawn('option', this.input);
@@ -257,7 +267,20 @@ class Select extends Param {
     value() { return JSON.parse(this.input.value); }
 }
 
-class Number extends Param {
+class Number extends InputParam {
     setup(initial) { this.setInput({type: 'number', value: initial}); }
     value() { return parseFloat(this.input.value); }
+}
+
+class ReadOnly extends Param {
+    constructor(parent, content) {
+        super(parent);
+        this.update(content);
+    }
+
+    tag() { return 'label'; }
+
+    update(content) {
+        this.input.textContent = content;
+    }
 }
