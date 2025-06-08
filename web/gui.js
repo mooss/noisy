@@ -1,3 +1,12 @@
+const colors = {
+    border: 'grey',
+    input: 'steelblue',
+    inputBg: '#2D3748',
+    label: 'lightskyblue',
+    param: 'orchid',
+    text: 'lightgray',
+}
+
 /**
  * Spawns an HTML element below parent and assign it an optional style.
  *
@@ -96,20 +105,20 @@ export class GUI extends Panel {
         super(document.body, {
             // Top left position.
             position: 'absolute',
-            top: '10px',          // Distance from the top to the nearest ancestor.
-            left: '10px',         // Distance from the right of the nearest positioned ancestor
+            top: '8px',          // Distance from the top to the nearest ancestor.
+            left: '8px',         // Distance from the right of the nearest positioned ancestor.
             zIndex: '1000',       // Ensure element is on top.
 
             // Dimensions.
-            width: '300px',
+            width: '280px',
             maxHeight: '90vh',
 
             // Inner style.
-            padding: '10px',
-            backgroundColor: 'rgba(0, 0, 0, .7)',
-            color: '#fff',
-            fontFamily: 'sans-serif',
-            fontSize: '14px',
+            padding: '4px',
+            backgroundColor: 'rgba(20, 25, 35, 0.85)',
+            color: colors.text,
+            fontSize: '12px',
+            borderRadius: '4px',
 
             // Behavior.
             overflowY: 'auto', // Adds a scrollbar if content overflows vertically.
@@ -135,16 +144,21 @@ class Folder extends Panel {
      * @param {string}      title   - The title of the folder.
      */
     constructor(title, parent) {
-        super(parent, {marginLeft: '10px'});
+        super(parent);
 
         this.#details = spawn('details', parent, {
-            border: '1px solid #888',
-            marginBottom: '5px',
-            padding: '5px',
+            border: `1px solid ${colors.border}`,
+            marginTop: '4px',
+            padding: '1px 4px 4px 4px',
+            borderRadius: '3px',
         });
         this.#details.open = true;
 
-        spawn('summary', this.#details, {cursor: 'pointer'}).textContent = title;
+        spawn('summary', this.#details, {
+            cursor: 'pointer',
+            fontWeight: 600,
+            'padding': 0,
+        }).textContent = title;
         this.title = title;
         this.#details.appendChild(this._elt); // Doesn't display properly without this.
     }
@@ -164,17 +178,24 @@ class Param {
         this.box = spawn('div', parent, {
             display: 'flex',
             alignItems: 'center',
-            marginBottom: '4px',
+            padding: '4px 0 0 0',
         });
         this.label = spawn('label', this.box, {
             flex: '1',
-            marginRight: '6px',
+            marginRight: '8px',
+            color: colors.label,
         });
         this.valueContainer = spawn('div', this.box, { // Aligns inputs.
-            width: '120px',
+            width: '110px',
             display: 'flex',
+            color: colors.param,
         });
-        this.input = spawn(this.tag(), this.valueContainer);
+        this.input = spawn(this.tag(), this.valueContainer, {
+            color: colors.param,
+            padding: '0',
+            boxSizing: 'border-box',
+            fontSize: '10px',
+        });
     }
 
     // Sets the text content of the label.
@@ -238,7 +259,36 @@ class InputParam extends Param {
 
 class Boolean extends InputParam {
     setup(initial) {
-        this.input.css({width: 'auto'});
+        this.input.css({
+            margin: 0,
+            width: 'auto',
+            // Add custom styling:
+            appearance: 'none',
+            WebkitAppearance: 'none',
+            width: '14px',
+            height: '14px',
+            backgroundColor: colors.inputBg,
+            border: `1px solid ${colors.input}`,
+            position: 'relative',
+            cursor: 'pointer',
+        });
+
+        // Add checkmark styling using ::before pseudo-element
+        const style = spawn('style', document.head);
+        style.textContent = `
+            input[type="checkbox"]:checked::before {
+                content: '';
+                position: absolute;
+                left: 4px;
+                top: 1px;
+                width: 3px;
+                height: 7px;
+                border: solid ${colors.param};
+                border-width: 0 2px 2px 0;
+                transform: rotate(45deg);
+            }
+        `;
+
         this.setInput({type: 'checkbox', checked: initial});
     }
     value() { return this.input.checked; }
@@ -248,11 +298,13 @@ class Range extends InputParam {
     setup(initial, min, max, step) {
         this.input.css({
             width: '100%',
-            height: '20px',
+            height: '16px',
             appearance: 'none',
-            background: '#333',
+            background: colors.inputBg,
             outline: 'none',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            padding: '0',
+            margin: '0',
         });
         this.setInput({
             type: 'range',
@@ -266,20 +318,18 @@ class Range extends InputParam {
             marginLeft: '5px',
         });
         
-        // Style the slider thumb as a vertical bar
+        // Style the slider thumb as a vertical bar.
         const style = spawn('style', document.head);
         style.textContent = `
             input[type="range"]::-webkit-slider-thumb {
                 appearance: none;
-                width: 4px;
-                height: 20px;
-                background: #fff;
+                width: 3px;
+                background: ${colors.input};
                 cursor: pointer;
             }
             input[type="range"]::-moz-range-thumb {
-                width: 4px;
-                height: 20px;
-                background: #fff;
+                width: 3px;
+                background: ${colors.input};
                 cursor: pointer;
                 border: none;
                 border-radius: 0;
@@ -293,7 +343,14 @@ class Range extends InputParam {
 
 class Select extends InputParam {
     setup(initial, options) {
-        this.input.css({width: '100%'});
+        this.input.css({
+            width: '100%',
+            background: colors.inputBg,
+            border: `1px solid ${colors.input}`,
+            height: '16px',
+            paddingLeft: '2px',
+            boxSizing: 'border-box',
+        });
         for (const [key, value] of Object.entries(options)) {
             const option = spawn('option', this.input);
             option.text = key;
@@ -308,7 +365,12 @@ class Select extends InputParam {
 
 class Number extends InputParam {
     setup(initial) {
-        this.input.css({width: '100%'});
+        this.input.css({
+            width: '100%',
+            background: 'rgba(45, 55, 72, 0.8)',
+            border: `1px solid ${colors.input}`,
+            paddingLeft: '2px',
+        });
         this.setInput({type: 'number', value: initial});
     }
     value() { return parseFloat(this.input.value); }
