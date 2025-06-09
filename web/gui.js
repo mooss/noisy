@@ -110,7 +110,7 @@ export class GUI extends Panel {
             zIndex: '1000',       // Ensure element is on top.
 
             // Dimensions.
-            width: '200px',
+            width: '230px',
             maxHeight: '90vh',
 
             // Inner style.
@@ -152,7 +152,7 @@ class Folder extends Panel {
         this.#details = spawn('details', parent, {
             marginTop: '4px',
             padding: '0',
-            paddingLeft: `${left}px`,
+            paddingLeft: isNested ? `${left}px` : '0',
         });
         spawn('summary', this.#details, {
             cursor: 'pointer',
@@ -169,7 +169,6 @@ class Folder extends Panel {
         this.#details.open = true;
         this.title = title;
         this._elt.style.paddingLeft = '0';
-        this._elt.style.marginLeft = isNested ? 0: `-${left}px`;
         content.appendChild(this._elt); // Doesn't display properly without this.
     }
 
@@ -291,7 +290,7 @@ class Boolean extends InputParam {
                 position: absolute;
                 left: 4px;
                 top: 1px;
-                width: 3px;
+                width: 4px;
                 height: 7px;
                 border: solid ${colors.param};
                 border-width: 0 2px 2px 0;
@@ -333,12 +332,14 @@ class Range extends InputParam {
         style.textContent = `
             input[type="range"]::-webkit-slider-thumb {
                 appearance: none;
-                width: 3px;
+                width: 4px;
+                height: 16px;
                 background: ${colors.input};
                 cursor: pointer;
             }
             input[type="range"]::-moz-range-thumb {
                 width: 3px;
+                height: 16px;
                 background: ${colors.input};
                 cursor: pointer;
                 border: none;
