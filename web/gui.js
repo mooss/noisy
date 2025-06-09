@@ -110,7 +110,7 @@ export class GUI extends Panel {
             zIndex: '1000',       // Ensure element is on top.
 
             // Dimensions.
-            width: '280px',
+            width: '200px',
             maxHeight: '90vh',
 
             // Inner style.
@@ -146,21 +146,31 @@ class Folder extends Panel {
     constructor(title, parent) {
         super(parent);
 
-        this.#details = spawn('details', parent, {
-            border: `1px solid ${colors.border}`,
-            marginTop: '4px',
-            padding: '1px 4px 4px 4px',
-            borderRadius: '3px',
-        });
-        this.#details.open = true;
+        const isNested = parent.closest('details') !== null;
+        const left = 6;
 
+        this.#details = spawn('details', parent, {
+            marginTop: '4px',
+            padding: '0',
+            paddingLeft: `${left}px`,
+        });
         spawn('summary', this.#details, {
             cursor: 'pointer',
             fontWeight: 600,
-            'padding': 0,
+            padding: '4px 0',
+            marginLeft: isNested ? `-${left}px` : '0',
+            paddingLeft: isNested ? `${left-2}px` : '0',
         }).textContent = title;
+        const content = spawn('div', this.#details, {
+            borderLeft: isNested ? `3px solid ${colors.border}` : 'none',
+            paddingLeft: isNested ? `${left}px` : '0',
+        });
+
+        this.#details.open = true;
         this.title = title;
-        this.#details.appendChild(this._elt); // Doesn't display properly without this.
+        this._elt.style.paddingLeft = '0';
+        this._elt.style.marginLeft = isNested ? 0: `-${left}px`;
+        content.appendChild(this._elt); // Doesn't display properly without this.
     }
 
     show() { this.#details.style.display = ''; return this; }

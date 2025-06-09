@@ -119,7 +119,7 @@ export class UI {
 
         //////////////////
         // Noise folder //
-        const noiseFolder = this.#terrainFolder.addFolder('Noise parameters');
+        const noiseFolder = this.#terrainFolder.addFolder('Noise');
         noiseFolder.range(this.#config.gen.noise, 'octaves', 1, 8, 1)
             .legend('Octaves')
             .onInput(() => this.#updateTerrain());
@@ -138,7 +138,7 @@ export class UI {
 
         //////////////////
         // Ridge folder //
-        const ridgeFolder = this.#terrainFolder.addFolder('Ridge parameters');
+        const ridgeFolder = this.#terrainFolder.addFolder('Ridge');
         ridgeFolder.bool(this.#config.gen.noise.ridge, 'invertSignal')
             .legend('Invert signal')
             .onChange(() => this.#updateTerrain());
@@ -153,7 +153,7 @@ export class UI {
 
         /////////////////////
         // Midpoint folder //
-        const midpointFolder = this.#terrainFolder.addFolder('Midpoint parameters');
+        const midpointFolder = this.#terrainFolder.addFolder('Midpoint');
         midpointFolder.range(this.#config.gen, 'midpointRoughness', 0.4, 0.8, 0.02)
             .legend('Roughness')
             .onInput(() => this.#updateTerrain());
@@ -226,9 +226,9 @@ export class UI {
         const activeTerrainAlgo = this.#config.gen.terrainAlgo;
 
         const title2algo = {
-            'Noise parameters': ['noise', 'ridge'],
-            'Ridge parameters': ['ridge'],
-            'Midpoint parameters': ['midpoint'],
+            'Noise': ['noise', 'ridge'],
+            'Ridge': ['ridge'],
+            'Midpoint': ['midpoint'],
         }
 
         this.#terrainFolder.folders.forEach(folder => {
@@ -242,7 +242,7 @@ export class UI {
     }
 
     updateFPS() {
-        this.#fpsController.update(this.#fps.update());
+        this.#fpsController.update(Math.round(this.#fps.update()));
     }
 
     #updateTerrain() {
