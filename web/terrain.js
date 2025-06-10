@@ -81,6 +81,14 @@ export class Grid {
     // Accessors //
 
     /**
+     * Gets the method name of the configured algorithm.
+     * @returns {number}
+     */
+    get algorithm() {
+        return this.#config.gen.terrainAlgo;
+    }
+
+    /**
      * Gets the size of a single cell.
      * @returns {number}
      */
@@ -215,6 +223,13 @@ export class Grid {
 
     ///////////////////////
     // Height generation //
+
+    /**
+     * Generates terrain with the configured algorithm.
+     */
+    generate() {
+        this[this.algorithm]();
+    }
 
     /**
      * Generates terrain using Simplex noise.

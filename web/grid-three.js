@@ -58,7 +58,7 @@ const config = {
 function initializeApplication(config, palettes) {
     // 1. Create the Terrain Grid Data Structure.
     const terrainGrid = new Grid(config);
-    terrainGrid[config.gen.terrainAlgo](); // Perform initial generation.
+    terrainGrid.generate(); // Perform initial generation.
     config.avatar.x = config.avatar.y = Math.floor(terrainGrid.size / 2); // Place avatar in the middle.
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).

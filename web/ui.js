@@ -223,8 +223,6 @@ export class UI {
 
     // Dynamically show/hide parameter folders based on the selected terrain algorithm.
     #updateAlgorithmFolders() {
-        const activeTerrainAlgo = this.#config.gen.terrainAlgo;
-
         const title2algo = {
             'Noise': ['noise', 'ridge'],
             'Ridge': ['ridge'],
@@ -233,7 +231,7 @@ export class UI {
 
         this.#terrainFolder.folders.forEach(folder => {
             const mustShow = title2algo[folder.title];
-            if (mustShow.includes(activeTerrainAlgo)) {
+            if (mustShow.includes(this.#config.gen.terrainAlgo)) {
                 folder.show();
             } else {
                 folder.hide();
@@ -247,7 +245,7 @@ export class UI {
 
     #updateTerrain() {
         this.#terrainGrid.reset(this.#config);
-        this.#terrainGrid[this.#config.gen.terrainAlgo]();
+        this.#terrainGrid.generate();
         this.#terrainRenderer.createGridMeshes();
         this.#terrainRenderer.updateAvatarPosition();
         this.#config.needsRender = true;
