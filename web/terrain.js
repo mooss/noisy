@@ -25,9 +25,13 @@ export class Grid {
     /** @private @type {object} The configuration object for generation parameters. */
     #config;
     /** @private @type {number} The x-coordinate of the chunk. */
-    x;
+    #x;
     /** @private @type {number} The y-coordinate of the chunk. */
-    y;
+    #y;
+    /** @private @type {number} The x offset of the chunk. */
+    #xOffset;
+    /** @private @type {number} The y offset of the chunk. */
+    #yOffset;
 
     /**
      * Initializes a new Grid instance.
@@ -53,14 +57,16 @@ export class Grid {
     reset(config, chunkX = 0, chunkY = 0) {
         this.#config = config;
         this.#maxH = (GRID_UNIT / 5) * this.#config.heightMultiplier;
-        this.x = chunkX;
-        this.y = chunkY;
+        this.#x = chunkX;
+        this.#y = chunkY;
 
         // Grid layout, don't reallocate unless necessary.
         if (this.#size != config.gridSize) {
             this.#size = config.gridSize;
             this.#cellSize = GRID_UNIT / this.#size;
             this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
+            this.#xOffset = chunkX * (this.#size - 1);
+            this.#yOffset = chunkY * (this.#size - 1);
         }
 
         const noi = this.#config.gen.noise;
@@ -101,7 +107,7 @@ export class Grid {
      * @returns {number}
      */
     get x() {
-        return this.x;
+        return this.#x;
     }
 
     /**
@@ -109,7 +115,7 @@ export class Grid {
      * @returns {number}
      */
     get y() {
-        return this.y;
+        return this.#y;
     }
 
     /**
@@ -117,7 +123,7 @@ export class Grid {
      * @returns {string} The chunk identifier in the format "x,y".
      */
     get id() {
-        return `${this.x},${this.y}`;
+        return `${this.#x},${this.#y}`;
     }
 
     /**
@@ -157,13 +163,18 @@ export class Grid {
 
     /**
      * Applies a function to every cell in the grid, updating its value.
-     *
-     * The function receives the cell's coordinates and should return the new value.
-     *
      * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning a new height.
      */
     apply(fun) {
         this.range((x, y) => this.#data[x][y] = fun(x, y));
+    }
+
+    /**
+     * Applies a function to every cell in the grid using the x and y offsets, updating its value.
+     * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning a new height.
+     */
+    offsetApply(fun) {
+        this.range((x, y) => this.#data[x][y] = fun(x + this.#xOffset, y + this.#yOffset));
     }
 
     /**
@@ -235,7 +246,7 @@ export class Grid {
      * Generates terrain using Simplex noise.
      */
     noise() {
-        this.apply((x, y) => this.#rng.simplex(x, y));
+        this.offsetApply((x, y) => this.#rng.simplex(x, y));
         this.normalize();
     }
 
@@ -268,7 +279,7 @@ export class Grid {
             fun = 'melodicRidge';
         }
 
-        this.apply((x, y) => this.#rng[fun](x, y));
+        this.offsetApply((x, y) => this.#rng[fun](x, y));
         this.normalize();
     }
 }
