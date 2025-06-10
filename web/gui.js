@@ -1,3 +1,5 @@
+import { clamp } from './utils.js'
+
 const colors = {
     border: 'grey',
     input: 'steelblue',
@@ -220,6 +222,7 @@ class InputParam extends Param {
     // UI parameter attached to parent and tied to target.property.
     constructor(parent, target, property, ...args) {
         super(parent);
+
         this.input.addEventListener('input', () => {
             const value = this.value();
             this.update(value);
@@ -229,9 +232,20 @@ class InputParam extends Param {
         this.input.addEventListener('change', () => {
             if (this._onChange) this._onChange(this.value());
         });
-
         this.setup(target[property], ...args);
         this.update(this.value());
+
+        if (this.scroll) { // Parameter with mouse scroll support.
+            this.input.addEventListener('wheel', (event) => {
+                if (event.deltaY == 0) return; // Only process vertical scroll.
+                event.preventDefault(); // No zoom.
+                const before = this.value();
+                this.scroll(event.deltaY < 0);
+                if (this.value() == before) return; // No change.
+                this.input.dispatchEvent(new Event('input'));
+                this.input.dispatchEvent(new Event('change'));
+            })
+        }
     }
 
     // Assigns to the properties of this.input.
@@ -304,6 +318,15 @@ class Boolean extends InputParam {
 }
 
 class Range extends InputParam {
+    scroll(up) {
+        let delta = parseFloat(-this.input.step);
+        if (up) delta = -delta;
+        this.input.value = clamp(
+            this.value() + delta,
+            parseFloat(this.input.min), parseFloat(this.input.max),
+        );
+    }
+
     setup(initial, min, max, step) {
         this.input.css({
             width: '100%',
@@ -353,6 +376,15 @@ class Range extends InputParam {
 }
 
 class Select extends InputParam {
+    scroll(up) {
+        let delta = 1;
+        if (up) delta = -1;
+        this.input.selectedIndex = clamp(
+            this.input.selectedIndex + delta,
+            0, this.input.options.length -1,
+        );
+    }
+
     setup(initial, options) {
         this.input.css({
             width: '100%',
@@ -375,6 +407,12 @@ class Select extends InputParam {
 }
 
 class Number extends InputParam {
+    scroll(up) {
+        let delta = -1;
+        if (up) delta = -delta;
+        this.input.value = this.value() + delta;
+    }
+
     setup(initial) {
         this.input.css({
             width: '100%',
@@ -384,6 +422,7 @@ class Number extends InputParam {
         });
         this.setInput({type: 'number', value: initial});
     }
+
     value() { return parseFloat(this.input.value); }
 }
 
