@@ -10,6 +10,15 @@ const config = {
         return 2**this.gridPower + 1;
     },
 
+    // Chunking system.
+    chunks: {
+        enabled: false, // Toggle chunk system on/off.
+        radius: 1,      // Number of chunks in each direction from center chunk.
+        get totalChunks() {
+            return (this.radius * 2 + 1)**2;
+        },
+    },
+
     // Visualization options.
     renderStyle: 'quadPrism', // How the terrain is rendered (quadPrism, hexPrism, surface).
     palette: 0,               // Index of the color palette to use.
