@@ -24,14 +24,20 @@ export class Grid {
     #data;
     /** @private @type {object} The configuration object for generation parameters. */
     #config;
+    /** @private @type {number} The x-coordinate of the chunk. */
+    x;
+    /** @private @type {number} The y-coordinate of the chunk. */
+    y;
 
     /**
      * Initializes a new Grid instance.
      *
      * @param {object} config - The initial configuration object for the grid.
+     * @param {number} [chunkX=0] - The x-coordinate of the chunk.
+     * @param {number} [chunkY=0] - The y-coordinate of the chunk.
      */
-    constructor(config) {
-        this.reset(config);
+    constructor(config, chunkX = 0, chunkY = 0) {
+        this.reset(config, chunkX, chunkY);
     }
 
     /**
@@ -41,10 +47,14 @@ export class Grid {
      * Reallocates the grid data array only if the grid size changes.
      *
      * @param {object} config - The new configuration object.
+     * @param {number} [chunkX=0] - The x-coordinate of the chunk.
+     * @param {number} [chunkY=0] - The y-coordinate of the chunk.
      */
-    reset(config) {
+    reset(config, chunkX = 0, chunkY = 0) {
         this.#config = config;
         this.#maxH = (GRID_UNIT / 5) * this.#config.heightMultiplier;
+        this.x = chunkX;
+        this.y = chunkY;
 
         // Grid layout, don't reallocate unless necessary.
         if (this.#size != config.gridSize) {
@@ -76,6 +86,30 @@ export class Grid {
      */
     get cellSize() {
         return this.#cellSize;
+    }
+
+    /**
+     * Gets the x-coordinate of the chunk.
+     * @returns {number}
+     */
+    get x() {
+        return this.x;
+    }
+
+    /**
+     * Gets the y-coordinate of the chunk.
+     * @returns {number}
+     */
+    get y() {
+        return this.y;
+    }
+
+    /**
+     * Gets the chunk identifier.
+     * @returns {string} The chunk identifier in the format "x,y".
+     */
+    get id() {
+        return `${this.x},${this.y}`;
     }
 
     /**
