@@ -363,3 +363,41 @@ function midpointDisplacement(grid, rng, roughness) {
 
     return [min_, max_];
 }
+
+/////////////////////
+// Local utilities //
+
+/**
+ * Converts a world coordinate to its corresponding chunk coordinate.
+ *
+ * @param {number} worldCoord - The world coordinate (x or y).
+ * @param {number} chunkSize  - The size of a chunk in world units.
+ * @returns {number} The chunk coordinate.
+ */
+export function world2chunk(worldCoord, chunkSize) {
+    return Math.floor(worldCoord / chunkSize);
+}
+
+/**
+ * Converts a world coordinate to its local coordinate within a chunk.
+ *
+ * @param {number} worldCoord - The world coordinate (x or y).
+ * @param {number} chunkSize  - The size of a chunk in world units.
+ * @returns {number} The local coordinate within the chunk.
+ */
+export function world2local(worldCoord, chunkSize) {
+    // Use modulo operator, but ensure positive result for negative worldCoords
+    return ((worldCoord % chunkSize) + chunkSize) % chunkSize;
+}
+
+/**
+ * Converts chunk and local coordinates back to a world coordinate.
+ *
+ * @param {number} chunkCoord - The chunk coordinate (x or y).
+ * @param {number} localCoord - The local coordinate within the chunk (x or y).
+ * @param {number} chunkSize  - The size of a chunk in world units.
+ * @returns {number} The world coordinate.
+ */
+export function local2world(chunkCoord, localCoord, chunkSize) {
+    return chunkCoord * chunkSize + localCoord;
+}
