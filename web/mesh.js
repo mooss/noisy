@@ -69,6 +69,7 @@ export function createSurfaceMesh(terrainGrid, palette) {
 
     const surfaceMesh = new THREE.Mesh(geometry, material);
     surfaceMesh.rotation.z = Math.PI / 2;
+    surfaceMesh.position.set(size * cellSize / 2, size * cellSize / 2, 0);
     return surfaceMesh;
 }
 
@@ -87,11 +88,6 @@ export function createPrismMeshes(type, terrainGrid, palette) {
     const hexRadius = cellSize / Math.sqrt(3);
     const hexWidth = cellSize;
 
-    const totalGridWidth = (size - 1) * cellSize + (isHex ? hexWidth / 2 : 0);
-    const totalGridHeight = (size - 1) * cellSize * ySpacingFactor;
-    const startX = -totalGridWidth / 2;
-    const startY = -totalGridHeight / 2;
-
     const positions = [], normals = [], colors = [], indices = [];
     let indexOffset = 0;
 
@@ -107,8 +103,8 @@ export function createPrismMeshes(type, terrainGrid, palette) {
         for (let j = 0; j < size; j++) {
             const height = data[i][j];
             const xOffset = isHex && (j % 2 !== 0) ? hexWidth / 2 : 0;
-            const xPos = startX + i * cellSize + xOffset;
-            const yPos = startY + j * cellSize * ySpacingFactor;
+            const xPos = i * cellSize + xOffset;
+            const yPos = j * cellSize * ySpacingFactor;
 
             const color = interpolateColors(palette, height / maxH);
             const matrix = new THREE.Matrix4().makeScale(1, 1, height).setPosition(xPos, yPos, 0);

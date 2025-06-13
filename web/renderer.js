@@ -32,9 +32,9 @@ export class TerrainRenderer {
         // Camera. Mediocre, needs to be improved.
         const aspect = window.innerWidth / window.innerHeight;
         const camDist = this.#terrainGrid.size * this.#terrainGrid.cellSize * 1.2 + 50;
+        const center = (this.#terrainGrid.size * this.#terrainGrid.cellSize) / 2;
         this.#camera = new THREE.PerspectiveCamera(60, aspect, 0.1, camDist * 2);
-        this.#camera.position.set(0, -camDist * 0.7, camDist * 0.7);
-        this.#camera.lookAt(this.#scene.position);
+        this.#camera.position.set(center, center - camDist * 0.7, camDist * 0.7);
 
         // Renderer.
         this.#renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -52,6 +52,7 @@ export class TerrainRenderer {
         this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
         this.#controls.enableDamping = true; // Smooths camera movement.
         this.#controls.dampingFactor = 0.1;
+        this.#controls.target.set(center, center, 0);
         this.#controls.addEventListener('change', () => {
             this.#config.needsRender = true; // Render when controls are changed (for instance on zoom).
         });
@@ -73,11 +74,9 @@ export class TerrainRenderer {
 
     updateAvatarPosition() {
         const height = this.#terrainGrid.getHeightAt(this.#config.avatar.x, this.#config.avatar.y);
-        const { cellSize, size } = this.#terrainGrid;
-        const totalGridWorldSize = size * cellSize;
-        const halfGridWorldSize = totalGridWorldSize / 2;
-        const worldX = (this.#config.avatar.x * cellSize) - halfGridWorldSize + (cellSize / 2);
-        const worldY = (this.#config.avatar.y * cellSize) - halfGridWorldSize + (cellSize / 2);
+        const { cellSize } = this.#terrainGrid;
+        const worldX = this.#config.avatar.x * cellSize;
+        const worldY = this.#config.avatar.y * cellSize;
         const worldZ = height + this.#config.avatar.heightOffset * cellSize;
 
         this.avatarMesh.position.set(worldX, worldY, worldZ);
