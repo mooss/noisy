@@ -1,3 +1,4 @@
+import { Avatar } from './avatar.js';
 import { createSurfaceMesh, createPrismMeshes } from './mesh.js';
 
 export class TerrainRenderer {
@@ -6,7 +7,7 @@ export class TerrainRenderer {
     #renderer;
     #controls;
     #terrainMeshes;
-    avatarMesh;
+    #avatar;
     #terrainGrid;
     #config;
     #palettes;
@@ -63,11 +64,8 @@ export class TerrainRenderer {
     }
 
     #createAvatarMesh() {
-        const avatar = this.#config.avatar;
-        const geometry = new THREE.SphereGeometry(avatar.size, 32, 32);
-        const material = new THREE.MeshStandardMaterial({ color: 0xff0000 }); // Red sphere.
-        this.avatarMesh = new THREE.Mesh(geometry, material);
-        this.#scene.add(this.avatarMesh);
+        this.#avatar = new Avatar();
+        this.#scene.add(this.#avatar.mesh);
         this.updateAvatarPosition();
         this.updateAvatarScale();
     }
@@ -79,13 +77,13 @@ export class TerrainRenderer {
         const worldY = this.#config.avatar.y * cellSize;
         const worldZ = height + this.#config.avatar.heightOffset * cellSize;
 
-        this.avatarMesh.position.set(worldX, worldY, worldZ);
+        this.#avatar.setPosition(worldX, worldY, worldZ);
         this.#config.needsRender = true;
     }
 
     updateAvatarScale() {
-        const scale = this.#config.avatar.size * this.#terrainGrid.cellSize;
-        this.avatarMesh.scale.set(scale, scale, scale);
+        this.#avatar.setScale(this.#config.avatar.size * this.#terrainGrid.cellSize);
+        this.#config.needsRender = true;
     }
 
     // Clears existing terrain meshes from the scene and disposes their resources.

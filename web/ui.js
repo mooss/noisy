@@ -164,8 +164,7 @@ export class UI {
         avatarFolder.range(this.#config.avatar, 'size', 0.1, 2.0, 0.1)
             .legend('Size')
             .onInput(() => {
-                this.#terrainRenderer.avatarMesh.scale.setScalar(this.#config.avatar.size * this.#terrainGrid.cellSize);
-                this.#config.needsRender = true;
+                this.#terrainRenderer.updateAvatarScale();
             });
         avatarFolder.range(this.#config.avatar, 'heightOffset', 0.0, 2.0, 0.1)
             .legend('Height offset')
