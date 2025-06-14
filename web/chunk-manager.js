@@ -23,30 +23,16 @@ export class ChunkManager {
     }
 
     /**
-     * Generates a new terrain chunk for the given chunk coordinates.
-     * If a chunk already exists at these coordinates, it will be regenerated.
-     *
-     * @param {number} x - The X coordinate of the chunk.
-     * @param {number} y - The Y coordinate of the chunk.
-     * @returns {Grid} The newly generated or regenerated Grid instance for the chunk.
-     */
-    generateChunk(x, y) {
-        const terrainGrid = new Grid(this.#config, x, y);
-        terrainGrid.generate();
-        this.#chunks.set(terrainGrid.id, terrainGrid);
-        return terrainGrid;
-    }
-
-    /**
-     * Retrieves an existing terrain chunk by its coordinates.
+     * Retrieves a chunk by its coordinates, create it if it doesn't exist.
      *
      * @param {number} x - The X coordinate of the chunk.
      * @param {number} y - The Y coordinate of the chunk.
      * @returns {Grid|undefined} The Grid instance for the chunk, or undefined if not found.
      */
-    get(x, y) {
+    at(x, y) {
         const chunkId = `${x},${y}`;
-        return this.#chunks.get(chunkId);
+        if (this.#chunks.has(chunkId)) return this.#chunks.get(chunkId);
+        return this.regen(x, y);
     }
 
     /**
@@ -55,5 +41,20 @@ export class ChunkManager {
      */
     getAllChunks() {
         return this.#chunks;
+    }
+
+    /**
+     * Generates a new terrain chunk for the given chunk coordinates.
+     * If a chunk already exists at these coordinates, it will be regenerated.
+     *
+     * @param {number} x - The X coordinate of the chunk.
+     * @param {number} y - The Y coordinate of the chunk.
+     * @returns {Grid} The newly generated or regenerated Grid instance for the chunk.
+     */
+    regen(x, y) {
+        const terrainGrid = new Grid(this.#config, x, y);
+        terrainGrid.generate();
+        this.#chunks.set(terrainGrid.id, terrainGrid);
+        return terrainGrid;
     }
 }

@@ -1,7 +1,8 @@
-import { Grid } from './terrain.js';
+import { chunksInRadius, world2chunk } from './terrain.js';
 import { TerrainRenderer } from './renderer.js';
 import { UI } from './ui.js';
 import { palettes } from './palettes.js';
+import { ChunkManager } from './chunk-manager.js';
 
 const config = {
     // Grid configuration.
@@ -13,7 +14,10 @@ const config = {
     // Chunking system.
     chunks: {
         enabled: false, // Toggle chunk system on/off.
-        radius: 1,      // Number of chunks in each direction from center chunk.
+        // Chunks within this distance will be unloaded when entering a new chunk.
+        loadRadius: 1,
+        // Chunks beyond this distance will be unloaded when entering a new chunk.
+        unloadRadius: 2,
         get totalChunks() {
             return (this.radius * 2 + 1)**2;
         },
@@ -56,20 +60,33 @@ const config = {
 };
 
 function initializeApplication(config, palettes) {
-    // 1. Create the Terrain Grid Data Structure.
-    const terrainGrid = new Grid(config);
-    terrainGrid.generate(); // Perform initial generation.
-    config.avatar.x = config.avatar.y = Math.floor(terrainGrid.size / 2); // Place avatar in the middle.
+    // 1. Create the terrain.
+    const chunkManager = new ChunkManager(config);
+
+    config.avatar.x = Math.floor(config.gridSize / 2);
+    config.avatar.y = Math.floor(config.gridSize / 2);
+    const chunkX = world2chunk(config.avatar.x, config.gridSize);
+    const chunkY = world2chunk(config.avatar.y, config.gridSize);
+
+    let initialTerrainGrid = chunkManager.at(0, 0);
+    if (config.chunks.enabled) {
+        chunksInRadius(
+            chunkX,
+            chunkY,
+            config.chunks.loadRadius
+        ).forEach(({x, y}) => chunkManager.at(x, y));
+    }
+
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).
     // It performs the initial scene setup and mesh creation in its constructor.
-    const terrainRenderer = new TerrainRenderer(terrainGrid, config, palettes);
+    const terrainRenderer = new TerrainRenderer(initialTerrainGrid, config, palettes);
 
     // 3. Create the UI Handler.
     // It sets up listeners and interacts with config, terrainGrid, and terrainRenderer.
     // Pass the initial terrainGrid; UI will manage updates/replacements.
 	// The UI being an object is only a convenience to setup everything, is doesn't need to be persisted.
-    const ui = new UI(config, terrainGrid, terrainRenderer);
+    const ui = new UI(config, initialTerrainGrid, terrainRenderer);
 
     return [terrainRenderer, ui];
 }

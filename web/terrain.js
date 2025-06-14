@@ -401,3 +401,21 @@ export function world2local(worldCoord, chunkSize) {
 export function local2world(chunkCoord, localCoord, chunkSize) {
     return chunkCoord * chunkSize + localCoord;
 }
+
+/**
+ * Generates a list of chunk coordinates within a specified radius around a center chunk.
+ *
+ * @param {number} centerX - The X coordinate of the center chunk.
+ * @param {number} centerY - The Y coordinate of the center chunk.
+ * @param {number} radius - The radius (in chunks) around the center.
+ * @returns {Array<{x: number, y: number}>} An array of chunk coordinate objects.
+ */
+export function chunksInRadius(centerX, centerY, radius) {
+    const chunkCoords = [];
+    for (let x = centerX - radius; x <= centerX + radius; x++) {
+        for (let y = centerY - radius; y <= centerY + radius; y++) {
+            chunkCoords.push({ x, y });
+        }
+    }
+    return chunkCoords;
+}
