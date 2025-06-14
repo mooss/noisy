@@ -1,4 +1,4 @@
-import { chunksInRadius, world2chunk } from './terrain.js';
+import { BlockCoordinates } from './coordinates.js';
 import { TerrainRenderer } from './renderer.js';
 import { UI } from './ui.js';
 import { palettes } from './palettes.js';
@@ -65,16 +65,12 @@ function initializeApplication(config, palettes) {
 
     config.avatar.x = Math.floor(config.gridSize / 2);
     config.avatar.y = Math.floor(config.gridSize / 2);
-    const chunkX = world2chunk(config.avatar.x, config.gridSize);
-    const chunkY = world2chunk(config.avatar.y, config.gridSize);
+    const chunkCoords = new BlockCoordinates(config.avatar.x, config.avatar.y).asChunk(config.gridSize);
 
     let initialTerrainGrid = chunkManager.at(0, 0);
     if (config.chunks.enabled) {
-        chunksInRadius(
-            chunkX,
-            chunkY,
-            config.chunks.loadRadius
-        ).forEach(({x, y}) => chunkManager.at(x, y));
+        chunkCoords.within(config.chunks.loadRadius)
+            .forEach(({x, y}) => chunkManager.at(x, y));
     }
 
 

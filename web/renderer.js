@@ -1,5 +1,6 @@
 import { Avatar } from './avatar.js';
 import { createSurfaceMesh, createPrismMeshes } from './mesh.js';
+import { BlockCoordinates, WorldCoordinates } from './coordinates.js';
 
 export class TerrainRenderer {
     #scene;
@@ -73,11 +74,10 @@ export class TerrainRenderer {
     updateAvatarPosition() {
         const height = this.#terrainGrid.getHeightAt(this.#config.avatar.x, this.#config.avatar.y);
         const { cellSize } = this.#terrainGrid;
-        const worldX = this.#config.avatar.x * cellSize;
-        const worldY = this.#config.avatar.y * cellSize;
-        const worldZ = height + this.#config.avatar.heightOffset * cellSize;
-
-        this.#avatar.setPosition(worldX, worldY, worldZ);
+        const pos = new BlockCoordinates(this.#config.avatar.x, this.#config.avatar.y).
+              toWorld(cellSize);
+        pos.z = height + this.#config.avatar.heightOffset * cellSize;
+        this.#avatar.setPosition(pos.x, pos.y, pos.z);
         this.#config.needsRender = true;
     }
 

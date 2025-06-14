@@ -1,5 +1,6 @@
 import { RNG } from './rng.js';
 import { rangeMapper } from './utils.js';
+import { BlockCoordinates } from './coordinates.js';
 
 // Base dimension of a grid.
 const GRID_UNIT = 256;
@@ -362,60 +363,4 @@ function midpointDisplacement(grid, rng, roughness) {
     }
 
     return [min_, max_];
-}
-
-/////////////////////
-// Local utilities //
-
-/**
- * Converts a world coordinate to its corresponding chunk coordinate.
- *
- * @param {number} worldCoord - The world coordinate (x or y).
- * @param {number} chunkSize  - The size of a chunk in world units.
- * @returns {number} The chunk coordinate.
- */
-export function world2chunk(worldCoord, chunkSize) {
-    return Math.floor(worldCoord / chunkSize);
-}
-
-/**
- * Converts a world coordinate to its local coordinate within a chunk.
- *
- * @param {number} worldCoord - The world coordinate (x or y).
- * @param {number} chunkSize  - The size of a chunk in world units.
- * @returns {number} The local coordinate within the chunk.
- */
-export function world2local(worldCoord, chunkSize) {
-    // Use modulo operator, but ensure positive result for negative worldCoords
-    return ((worldCoord % chunkSize) + chunkSize) % chunkSize;
-}
-
-/**
- * Converts chunk and local coordinates back to a world coordinate.
- *
- * @param {number} chunkCoord - The chunk coordinate (x or y).
- * @param {number} localCoord - The local coordinate within the chunk (x or y).
- * @param {number} chunkSize  - The size of a chunk in world units.
- * @returns {number} The world coordinate.
- */
-export function local2world(chunkCoord, localCoord, chunkSize) {
-    return chunkCoord * chunkSize + localCoord;
-}
-
-/**
- * Generates a list of chunk coordinates within a specified radius around a center chunk.
- *
- * @param {number} centerX - The X coordinate of the center chunk.
- * @param {number} centerY - The Y coordinate of the center chunk.
- * @param {number} radius - The radius (in chunks) around the center.
- * @returns {Array<{x: number, y: number}>} An array of chunk coordinate objects.
- */
-export function chunksInRadius(centerX, centerY, radius) {
-    const chunkCoords = [];
-    for (let x = centerX - radius; x <= centerX + radius; x++) {
-        for (let y = centerY - radius; y <= centerY + radius; y++) {
-            chunkCoords.push({ x, y });
-        }
-    }
-    return chunkCoords;
 }
