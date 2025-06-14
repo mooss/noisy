@@ -137,3 +137,63 @@ export function createPrismMeshes(type, terrainGrid, palette) {
 
     return new THREE.Mesh(mergedGeometry, new THREE.MeshStandardMaterial({ vertexColors: true }));
 }
+
+export class TerrainMesh {
+    #meshes;
+    #grid;
+    #palette;
+    #renderStyle;
+
+    constructor(terrainGrid, palette, renderStyle) {
+        this.#meshes = new THREE.Group();
+        this.#grid = terrainGrid;
+        this.#palette = palette;
+        this.#renderStyle = renderStyle;
+        this.#createMeshes();
+    }
+
+    #createMeshes() {
+        let mesh;
+        switch (this.#renderStyle) {
+            case 'hexPrism':
+                mesh = createPrismMeshes('hexagon', this.#grid, this.#palette);
+                break;
+            case 'quadPrism':
+                mesh = createPrismMeshes('square', this.#grid, this.#palette);
+                break;
+            case 'surface':
+                mesh = createSurfaceMesh(this.#grid, this.#palette);
+                break;
+        }
+        if (mesh) {
+            this.#meshes.add(mesh);
+        }
+    }
+
+    clear() {
+        while (this.#meshes.children.length > 0) {
+            const mesh = this.#meshes.children[0];
+            this.#meshes.remove(mesh);
+
+            if (mesh.geometry) {
+                mesh.geometry.dispose();
+            }
+
+            if (mesh.material) {
+                mesh.material.dispose();
+            }
+        }
+    }
+
+    recreate(terrainGrid, palette, renderStyle) {
+        this.clear();
+        this.#grid = terrainGrid;
+        this.#palette = palette;
+        this.#renderStyle = renderStyle;
+        this.#createMeshes();
+    }
+
+    get mesh() {
+        return this.#meshes;
+    }
+}

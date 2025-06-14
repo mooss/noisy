@@ -1,13 +1,13 @@
 import { Avatar } from './avatar.js';
-import { createSurfaceMesh, createPrismMeshes } from './mesh.js';
-import { BlockCoordinates, WorldCoordinates } from './coordinates.js';
+import { TerrainMesh } from './mesh.js';
+import { BlockCoordinates } from './coordinates.js';
 
 export class TerrainRenderer {
     #scene;
     #camera;
     #renderer;
     #controls;
-    #terrainMeshes;
+    #terrainMesh;
     #avatar;
     #terrainGrid;
     #config;
@@ -59,9 +59,12 @@ export class TerrainRenderer {
             this.#config.needsRender = true; // Render when controls are changed (for instance on zoom).
         });
 
-        // Meshes group.
-        this.#terrainMeshes = new THREE.Group();
-        this.#scene.add(this.#terrainMeshes);
+        this.#terrainMesh = new TerrainMesh(
+            this.#terrainGrid,
+            this.#palettes[this.#config.palette],
+            this.#config.renderStyle
+        );
+        this.#scene.add(this.#terrainMesh.mesh);
     }
 
     #createAvatarMesh() {
@@ -86,42 +89,13 @@ export class TerrainRenderer {
         this.#config.needsRender = true;
     }
 
-    // Clears existing terrain meshes from the scene and disposes their resources.
-    clearTerrainMeshes() {
-        while (this.#terrainMeshes.children.length > 0) {
-            const mesh = this.#terrainMeshes.children[0];
-            this.#terrainMeshes.remove(mesh);
-
-            // Dispose geometry and material to free memory.
-            if (mesh.geometry) {
-                mesh.geometry.dispose();
-            }
-
-            if (mesh.material) {
-                mesh.material.dispose();
-            }
-        }
-    }
-
     // Creates or updates the terrain meshes based on current grid data and config.
     createGridMeshes() {
-        this.clearTerrainMeshes();
-		const palette = this.#palettes[this.#config.palette];
-        let mesh;
-        switch (this.#config.renderStyle) {
-            case 'hexPrism':
-                mesh = createPrismMeshes('hexagon', this.#terrainGrid, palette);
-                break;
-            case 'quadPrism':
-                mesh = createPrismMeshes('square', this.#terrainGrid, palette);
-                break;
-            case 'surface':
-                mesh = createSurfaceMesh(this.#terrainGrid, palette);
-                break;
-        }
-        if (mesh) {
-            this.#terrainMeshes.add(mesh);
-        }
+        this.#terrainMesh.recreate(
+            this.#terrainGrid,
+            this.#palettes[this.#config.palette],
+            this.#config.renderStyle
+        );
         this.#config.needsRender = true;
     }
 

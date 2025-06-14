@@ -1,6 +1,5 @@
 import { RNG } from './rng.js';
 import { rangeMapper } from './utils.js';
-import { BlockCoordinates } from './coordinates.js';
 
 // Base dimension of a grid.
 const GRID_UNIT = 256;
@@ -66,8 +65,8 @@ export class Grid {
             this.#size = config.gridSize;
             this.#cellSize = GRID_UNIT / this.#size;
             this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
-            this.#xOffset = chunkX * (this.#size - 1);
-            this.#yOffset = chunkY * (this.#size - 1);
+            this.#xOffset = chunkX * this.#size;
+            this.#yOffset = chunkY * this.#size;
         }
 
         const noi = this.#config.gen.noise;
