@@ -72,7 +72,7 @@ export class UI {
         gridFolder.range(this.#config.grid, 'heightMultiplier', 0.1, 5.0, 0.05)
             .legend('Height multiplier')
             .onInput(() => {
-                this.#terrainGrid.reset(this.#config); // Recompute maxH.
+                this.#terrainGrid.reset(this.#config.gen, this.#config.grid);
                 this.#updateTerrain();
             });
 
@@ -243,7 +243,7 @@ export class UI {
     }
 
     #updateTerrain() {
-        this.#terrainGrid.reset(this.#config);
+        this.#terrainGrid.reset(this.#config.gen, this.#config.grid);
         this.#terrainGrid.generate();
         this.#terrainRenderer.createGridMeshes();
         this.#terrainRenderer.updateAvatarPosition();

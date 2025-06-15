@@ -1,5 +1,7 @@
-import { RNG } from './rng.js';
+import { GenerationConfig } from './config/generation.js';
+import { GridConfig } from './config/grid.js';
 import { rangeMapper } from './utils.js';
+import { RNG } from './rng.js';
 
 // Base dimension of a grid.
 const GRID_UNIT = 256;
@@ -22,8 +24,10 @@ export class Grid {
     #maxH;
     /** @private @type {number[][]} The 2D array storing the height data. */
     #data;
-    /** @private @type {object} The configuration object for generation parameters. */
-    #config;
+    /** @private @type {GenerationConfig} The configuration object for generation parameters. */
+    #generationConfig;
+    /** @private @type {GridConfig} The configuration object for grid parameters. */
+    #gridConfig;
     /** @private @type {number} The x-coordinate of the chunk. */
     #x;
     /** @private @type {number} The y-coordinate of the chunk. */
@@ -36,12 +40,13 @@ export class Grid {
     /**
      * Initializes a new Grid instance.
      *
-     * @param {object} config - The initial configuration object for the grid.
-     * @param {number} [chunkX=0] - The x-coordinate of the chunk.
-     * @param {number} [chunkY=0] - The y-coordinate of the chunk.
+     * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
+     * @param {GridConfig}       gridConfig       - The configuration object for grid parameters.
+     * @param {number}           [chunkX=0]       - The x-coordinate of the chunk.
+     * @param {number}           [chunkY=0]       - The y-coordinate of the chunk.
      */
-    constructor(config, chunkX = 0, chunkY = 0) {
-        this.reset(config, chunkX, chunkY);
+    constructor(generationConfig, gridConfig, chunkX = 0, chunkY = 0) {
+        this.reset(generationConfig, gridConfig, chunkX, chunkY);
     }
 
     /**
@@ -50,26 +55,29 @@ export class Grid {
      * Updates the stored generation parameters and re-initializes the RNG.
      * Reallocates the grid data array only if the grid size changes.
      *
-     * @param {object} config - The new configuration object.
-     * @param {number} [chunkX=0] - The x-coordinate of the chunk.
-     * @param {number} [chunkY=0] - The y-coordinate of the chunk.
+     * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
+     * @param {GridConfig}       gridConfig       - The configuration object for grid parameters.
+     * @param {number}           [chunkX=0]       - The x-coordinate of the chunk.
+     * @param {number}           [chunkY=0]       - The y-coordinate of the chunk.
      */
-    reset(config, chunkX = 0, chunkY = 0) {
-        this.#config = config;
-        this.#maxH = (GRID_UNIT / 5) * this.#config.grid.heightMultiplier;
+    reset(generationConfig, gridConfig, chunkX = 0, chunkY = 0) {
+        this.#generationConfig = generationConfig;
+        this.#gridConfig = gridConfig;
+        this.#maxH = (GRID_UNIT / 5) * this.#gridConfig.heightMultiplier;
         this.#x = chunkX;
         this.#y = chunkY;
 
         // Grid layout, don't reallocate unless necessary.
-        if (this.#size != config.grid.size) {
-            this.#size = config.grid.size;
+        if (this.#size != this.#gridConfig.size) {
+            this.#size = this.#gridConfig.size;
             this.#cellSize = GRID_UNIT / this.#size;
             this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
-            this.#xOffset = chunkX * this.#size;
-            this.#yOffset = chunkY * this.#size;
         }
 
-        const noi = this.#config.gen.noise;
+        this.#xOffset = chunkX * this.#size;
+        this.#yOffset = chunkY * this.#size;
+
+        const noi = this.#generationConfig.noise;
         this.#rng = new RNG({
             seed:  this.seed,
             warp:  noi.warpingStrength,
@@ -91,7 +99,7 @@ export class Grid {
      * @returns {number}
      */
     get algorithm() {
-        return this.#config.gen.terrainAlgo;
+        return this.#generationConfig.terrainAlgo;
     }
 
     /**
@@ -147,7 +155,7 @@ export class Grid {
      * @returns {number}
      */
     get seed() {
-        return this.#config.gen.seed;
+        return this.#generationConfig.seed;
     }
 
     /**
@@ -256,7 +264,7 @@ export class Grid {
     midpoint() {
         this.#rng.reseed();
         this.normalize(...midpointDisplacement(
-            this.#data, (min, max) => this.#rng.float(min, max), this.#config.gen.midpointRoughness,
+            this.#data, (min, max) => this.#rng.float(min, max), this.#generationConfig.midpointRoughness,
         ));
     }
 
@@ -275,7 +283,7 @@ export class Grid {
      */
     ridge() {
         let fun = 'octavianRidge';
-        if (this.#config.gen.noise.ridge.style === 'melodic') {
+        if (this.#generationConfig.noise.ridge.style === 'melodic') {
             fun = 'melodicRidge';
         }
 

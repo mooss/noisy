@@ -52,7 +52,7 @@ export class ChunkManager {
      * @returns {Grid} The newly generated or regenerated Grid instance for the chunk.
      */
     regen(x, y) {
-        const terrainGrid = new Grid(this.#config, x, y);
+        const terrainGrid = new Grid(this.#config.gen, this.#config.grid, x, y);
         terrainGrid.generate();
         this.#chunks.set(terrainGrid.id, terrainGrid);
         return terrainGrid;
