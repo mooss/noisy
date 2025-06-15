@@ -47,7 +47,7 @@ function initializeApplication(config, palettes) {
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).
     // It performs the initial scene setup and mesh creation in its constructor.
-    const terrainRenderer = new TerrainRenderer(initialTerrainGrid, config, palettes);
+    const terrainRenderer = new TerrainRenderer(initialTerrainGrid, config.render, config.avatar, palettes);
 
     // 3. Create the UI Handler.
     // It sets up listeners and interacts with config, terrainGrid, and terrainRenderer.

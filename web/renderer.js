@@ -8,12 +8,14 @@ export class TerrainRenderer {
     #terrainMesh;
     #avatar;
     #terrainGrid;
-    #config;
+    #renderConfig;
+    #avatarConfig;
     #palettes;
 
-    constructor(terrainGrid, config, palettes) {
+    constructor(terrainGrid, renderConfig, avatarConfig, palettes) {
         this.#terrainGrid = terrainGrid;
-        this.#config = config;
+        this.#renderConfig = renderConfig;
+        this.#avatarConfig = avatarConfig;
         this.#palettes = palettes;
 
         const camDist = this.#terrainGrid.size * this.#terrainGrid.cellSize * 1.2 + 50;
@@ -31,13 +33,13 @@ export class TerrainRenderer {
             new THREE.Vector3(center, center, 0)
         );
         this.#scene.setRenderCallback(() => {
-            this.#config.needsRender = true;
+            this.#renderConfig.needsRender = true;
         });
 
         this.#terrainMesh = new TerrainMesh(
             this.#terrainGrid,
-            this.#palettes[this.#config.render.palette],
-            this.#config.render.style
+            this.#palettes[this.#renderConfig.palette],
+            this.#renderConfig.style
         );
         this.#scene.scene.add(this.#terrainMesh.mesh);
 
@@ -53,28 +55,28 @@ export class TerrainRenderer {
     }
 
     updateAvatarPosition() {
-        const height = this.#terrainGrid.getHeightAt(this.#config.avatar.x, this.#config.avatar.y);
+        const height = this.#terrainGrid.getHeightAt(this.#avatarConfig.x, this.#avatarConfig.y);
         const { cellSize } = this.#terrainGrid;
-        const pos = new BlockCoordinates(this.#config.avatar.x, this.#config.avatar.y).
+        const pos = new BlockCoordinates(this.#avatarConfig.x, this.#avatarConfig.y).
               toWorld(cellSize);
-        pos.z = height + this.#config.avatar.heightOffset * cellSize;
+        pos.z = height + this.#avatarConfig.heightOffset * cellSize;
         this.#avatar.setPosition(pos.x, pos.y, pos.z);
-        this.#config.needsRender = true;
+        this.#renderConfig.needsRender = true;
     }
 
     updateAvatarScale() {
-        this.#avatar.setScale(this.#config.avatar.size * this.#terrainGrid.cellSize);
-        this.#config.needsRender = true;
+        this.#avatar.setScale(this.#avatarConfig.size * this.#terrainGrid.cellSize);
+        this.#renderConfig.needsRender = true;
     }
 
     // Creates or updates the terrain meshes based on current grid data and config.
     createGridMeshes() {
         this.#terrainMesh.recreate(
             this.#terrainGrid,
-            this.#palettes[this.#config.render.palette],
-            this.#config.render.style
+            this.#palettes[this.#renderConfig.palette],
+            this.#renderConfig.style
         );
-        this.#config.needsRender = true;
+        this.#renderConfig.needsRender = true;
     }
 
 
