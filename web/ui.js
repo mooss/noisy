@@ -56,12 +56,12 @@ export class UI {
         /////////////////
         // Grid folder //
         const gridFolder = this.#gui.addFolder('Grid');
-        gridFolder.range(this.#config, 'gridPower', 1, 9, 1)
+        gridFolder.range(this.#config.grid, 'power', 1, 8, 1)
             .legend('Grid size (2^n + 1)')
             .onInput(() => {
                 // Update avatar position and scale based on new grid size.
                 const oldSize = this.#terrainGrid.size;
-                const conv = rangeMapper(0, oldSize, 0, this.#config.gridSize);
+                const conv = rangeMapper(0, oldSize, 0, this.#config.grid.size);
                 this.#config.avatar.x = Math.round(conv(this.#config.avatar.x));
                 this.#config.avatar.y = Math.round(conv(this.#config.avatar.y));
 
@@ -69,14 +69,14 @@ export class UI {
                 this.#terrainRenderer.updateAvatarScale();
             });
 
-        gridFolder.range(this.#config, 'heightMultiplier', 0.1, 5.0, 0.05)
+        gridFolder.range(this.#config.grid, 'heightMultiplier', 0.1, 5.0, 0.05)
             .legend('Height multiplier')
             .onInput(() => {
                 this.#terrainGrid.reset(this.#config); // Recompute maxH.
                 this.#updateTerrain();
             });
 
-        gridFolder.select(this.#config, 'renderStyle', {
+        gridFolder.select(this.#config.render, 'style', {
             'Squares': 'quadPrism',
             'Hexagons': 'hexPrism',
             'Surface': 'surface'
@@ -86,7 +86,7 @@ export class UI {
                 this.#config.needsRender = true;
             });
 
-        gridFolder.select(this.#config, 'palette', {
+        gridFolder.select(this.#config.render, 'palette', {
             'Bright terrain': 0,
             'Continental': 1,
             'Cyberpuke': 2,
@@ -181,7 +181,7 @@ export class UI {
         document.addEventListener('keydown', (event) => {
             let moved = false;
             const avatar = this.#config.avatar;
-            const gridSize = this.#config.gridSize;
+            const gridSize = this.#config.grid.size;
 
             switch (event.code) {
             case 'KeyW': // Up.

@@ -4,56 +4,27 @@ import { UI } from './ui.js';
 import { palettes } from './palettes.js';
 import { ChunkManager } from './chunk-manager.js';
 
+import { AvatarConfig } from './config/avatar.js';
+import { ChunkConfig } from './config/chunk.js';
+import { GenerationConfig } from './config/generation.js';
+import { RenderConfig } from './config/render.js';
+import { GridConfig } from './config/grid.js';
+
 const config = {
     // Grid configuration.
-    gridPower: 5, // Power of the grid (one side is )
-    get gridSize() {
-        return 2**this.gridPower + 1;
-    },
+    grid: new GridConfig(),
 
     // Chunking system.
-    chunks: {
-        enabled: false, // Toggle chunk system on/off.
-        // Chunks within this distance will be unloaded when entering a new chunk.
-        loadRadius: 1,
-        // Chunks beyond this distance will be unloaded when entering a new chunk.
-        unloadRadius: 2,
-        get totalChunks() {
-            return (this.radius * 2 + 1)**2;
-        },
-    },
+    chunks: new ChunkConfig(),
 
     // Visualization options.
-    renderStyle: 'quadPrism', // How the terrain is rendered (quadPrism, hexPrism, surface).
-    palette: 0,               // Index of the color palette to use.
-    heightMultiplier: 1.0,    // Multiplier for the terrain height.
+    render: new RenderConfig(),
 
     // Generation settings.
-    gen: {
-        seed: 23,               // Seed for deterministic terrain generation.
-        terrainAlgo: 'ridge',   // Terrain creation algorithm (ridge, rand, noise, midpoint).
-        midpointRoughness: 0.6, // Roughness factor for midpoint displacement.
-        noise: {
-            octaves: 6,         // Simplex Noise octaves to layer.
-            persistence: 0.65,  // Amplitude reduction per octave.
-            lacunarity: 1.5,    // Frequency increase per octave.
-            fundamental: 1.1,   // Base frequency for noise.
-            warpingStrength: 0, // Warping strength for noise coordinates.
-            ridge: {
-                invertSignal: true,  // Invert signal for ridges (1 - abs(noise)) vs valleys (abs(noise)).
-                squareSignal: false, // Square the signal to sharpen ridges/valleys.
-                style: 'octavian',   // Style of ridge generation (octavian, melodic).
-            },
-        },
-    },
+    gen: new GenerationConfig(),
 
     // Player avatar.
-    avatar: {
-        x: undefined,
-        y: undefined,
-        size: .5,         // Avatar sphere radius (cell size multiplier).
-        heightOffset: .5, // How high above the terrain the avatar floats (cell size multiplier).
-    },
+    avatar: new AvatarConfig(),
 
     // Render settings.
     needsRender: true, // Whether the frame should be updated.
@@ -63,16 +34,16 @@ function initializeApplication(config, palettes) {
     // 1. Create the terrain.
     const chunkManager = new ChunkManager(config);
 
-    config.avatar.x = Math.floor(config.gridSize / 2);
-    config.avatar.y = Math.floor(config.gridSize / 2);
-    const chunkCoords = new BlockCoordinates(config.avatar.x, config.avatar.y).asChunk(config.gridSize);
+    const avatar = config.avatar;
+    avatar.x = Math.floor(config.grid.size / 2);
+    avatar.y = Math.floor(config.grid.size / 2);
+    const chunkCoords = new BlockCoordinates(avatar.x, avatar.y).asChunk(config.grid.size);
 
     let initialTerrainGrid = chunkManager.at(0, 0);
     if (config.chunks.enabled) {
         chunkCoords.within(config.chunks.loadRadius)
             .forEach(({x, y}) => chunkManager.at(x, y));
     }
-
 
     // 2. Create the Renderer (handles THREE.js scene, camera, meshes).
     // It performs the initial scene setup and mesh creation in its constructor.

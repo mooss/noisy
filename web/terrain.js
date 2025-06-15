@@ -56,13 +56,13 @@ export class Grid {
      */
     reset(config, chunkX = 0, chunkY = 0) {
         this.#config = config;
-        this.#maxH = (GRID_UNIT / 5) * this.#config.heightMultiplier;
+        this.#maxH = (GRID_UNIT / 5) * this.#config.grid.heightMultiplier;
         this.#x = chunkX;
         this.#y = chunkY;
 
         // Grid layout, don't reallocate unless necessary.
-        if (this.#size != config.gridSize) {
-            this.#size = config.gridSize;
+        if (this.#size != config.grid.size) {
+            this.#size = config.grid.size;
             this.#cellSize = GRID_UNIT / this.#size;
             this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
             this.#xOffset = chunkX * this.#size;

@@ -36,8 +36,8 @@ export class TerrainRenderer {
 
         this.#terrainMesh = new TerrainMesh(
             this.#terrainGrid,
-            this.#palettes[this.#config.palette],
-            this.#config.renderStyle
+            this.#palettes[this.#config.render.palette],
+            this.#config.render.style
         );
         this.#scene.scene.add(this.#terrainMesh.mesh);
 
@@ -71,8 +71,8 @@ export class TerrainRenderer {
     createGridMeshes() {
         this.#terrainMesh.recreate(
             this.#terrainGrid,
-            this.#palettes[this.#config.palette],
-            this.#config.renderStyle
+            this.#palettes[this.#config.render.palette],
+            this.#config.render.style
         );
         this.#config.needsRender = true;
     }
