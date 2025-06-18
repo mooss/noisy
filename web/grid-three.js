@@ -30,7 +30,22 @@ const config = {
     needsRender: true, // Whether the frame should be updated.
 };
 
-function initializeApplication(config, palettes) {
+function startAnimationLoop(config, terrainRenderer, ui) {
+    function animate() {
+        requestAnimationFrame(animate);
+        ui.updateFPS();
+
+        // Only render if something has changed or controls are active.
+        const controlsUpdated = terrainRenderer.controls.update(); // Required because of damping.
+        if (config.needsRender || controlsUpdated) {
+            terrainRenderer.renderer.render(terrainRenderer.scene, terrainRenderer.camera);
+            config.needsRender = false;
+        }
+    }
+    animate();
+}
+
+function main() {
     // 1. Create the terrain.
     const chunkManager = new ChunkManager(config);
 
@@ -55,26 +70,7 @@ function initializeApplication(config, palettes) {
 	// The UI being an object is only a convenience to setup everything, is doesn't need to be persisted.
     const ui = new UI(config, initialTerrainGrid, terrainRenderer);
 
-    return [terrainRenderer, ui];
-}
-
-function startAnimationLoop(config, terrainRenderer, ui) {
-    function animate() {
-        requestAnimationFrame(animate);
-        ui.updateFPS();
-
-        // Only render if something has changed or controls are active.
-        const controlsUpdated = terrainRenderer.controls.update(); // Required because of damping.
-        if (config.needsRender || controlsUpdated) {
-            terrainRenderer.renderer.render(terrainRenderer.scene, terrainRenderer.camera);
-            config.needsRender = false;
-        }
-    }
-    animate();
-}
-
-function main() {
-    const [terrainRenderer, ui] = initializeApplication(config, palettes);
+    // 4. Start the animation loop.
     startAnimationLoop(config, terrainRenderer, ui);
 }
 
