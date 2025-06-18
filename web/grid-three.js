@@ -9,6 +9,7 @@ import { ChunkConfig } from './config/chunk.js';
 import { GenerationConfig } from './config/generation.js';
 import { RenderConfig } from './config/render.js';
 import { GridConfig } from './config/grid.js';
+import { TerrainMesh } from './mesh.js';
 
 const config = {
     // Grid configuration.
@@ -16,9 +17,6 @@ const config = {
 
     // Chunking system.
     chunks: new ChunkConfig(),
-
-    // Visualization options.
-    render: new RenderConfig(),
 
     // Generation settings.
     gen: new GenerationConfig(),
@@ -28,6 +26,7 @@ const config = {
 
     // Render settings.
     needsRender: true, // Whether the frame should be updated.
+    render: undefined,
 };
 
 function startAnimationLoop(config, terrainRenderer, ui) {
@@ -46,7 +45,7 @@ function startAnimationLoop(config, terrainRenderer, ui) {
 }
 
 function main() {
-    // 1. Create the terrain.
+    // 1. Create the terrain data.
     const chunkManager = new ChunkManager(config);
 
     const avatar = config.avatar;
@@ -54,23 +53,36 @@ function main() {
     avatar.y = Math.floor(config.grid.size / 2);
     const chunkCoords = new BlockCoordinates(avatar.x, avatar.y).asChunk(config.grid.size);
 
-    let initialTerrainGrid = chunkManager.at(0, 0);
+    let terrainGrid = chunkManager.at(0, 0);
     if (config.chunks.enabled) {
         chunkCoords.within(config.chunks.loadRadius)
             .forEach(({x, y}) => chunkManager.at(x, y));
     }
 
-    // 2. Create the Renderer (handles THREE.js scene, camera, meshes).
-    // It performs the initial scene setup and mesh creation in its constructor.
-    const terrainRenderer = new TerrainRenderer(initialTerrainGrid, config.render, config.avatar, palettes);
+    // 2. Create the meshes.
+    const terrainMesh = new TerrainMesh();
 
-    // 3. Create the UI Handler.
+    // 3. Create the renderer (handles the THREE.js setup).
+    const updateTerrainMesh = () => {
+        terrainMesh.update(terrainGrid, palettes[config.render.palette], config.render.style);
+        config.needsRender = true;
+    }
+    const terrainRenderer = new TerrainRenderer(
+        terrainGrid, config.avatar, updateTerrainMesh,
+    );
+    terrainRenderer.scene.add(terrainMesh.mesh);
+
+    // 4. Create the UI Handler.
     // It sets up listeners and interacts with config, terrainGrid, and terrainRenderer.
     // Pass the initial terrainGrid; UI will manage updates/replacements.
 	// The UI being an object is only a convenience to setup everything, is doesn't need to be persisted.
-    const ui = new UI(config, initialTerrainGrid, terrainRenderer);
+    const ui = new UI(config, terrainGrid, terrainRenderer);
 
-    // 4. Start the animation loop.
+    // 4. Initialise the configuration parameters.
+    config.render = new RenderConfig(ui.root.addFolder('Render'), updateTerrainMesh);
+    updateTerrainMesh();
+
+    // 5. Start the animation loop.
     startAnimationLoop(config, terrainRenderer, ui);
 }
 

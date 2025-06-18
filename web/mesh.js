@@ -146,9 +146,8 @@ export class TerrainMesh {
      */
     #mesh;
 
-    constructor(grid, palette, style) {
+    constructor() {
         this.#mesh = new THREE.Group();
-        this.#createMeshes(grid, palette, style);
     }
 
     #createMeshes(grid, palette, style) {
@@ -169,7 +168,7 @@ export class TerrainMesh {
         this.#mesh.add(child);
     }
 
-    clear() {
+    #clear() {
         while (this.#mesh.children.length > 0) {
             const child = this.#mesh.children[0];
             this.#mesh.remove(child);
@@ -178,8 +177,8 @@ export class TerrainMesh {
         }
     }
 
-    recreate(grid, palette, style) {
-        this.clear();
+    update(grid, palette, style) {
+        this.#clear();
         this.#createMeshes(grid, palette, style);
     }
 

@@ -76,29 +76,6 @@ export class UI {
                 this.#updateTerrain();
             });
 
-        gridFolder.select(this.#config.render, 'style', {
-            'Squares': 'quadPrism',
-            'Hexagons': 'hexPrism',
-            'Surface': 'surface'
-        }).legend('Shape')
-            .onChange(() => {
-                this.#terrainRenderer.createGridMeshes();
-                this.#config.needsRender = true;
-            });
-
-        gridFolder.select(this.#config.render, 'palette', {
-            'Bright terrain': 0,
-            'Continental': 1,
-            'Cyberpuke': 2,
-            'Black & white': 3,
-            'Fantasy': 4,
-            'Sunset': 5
-        }).legend('Palette')
-            .onChange(() => {
-                this.#terrainRenderer.createGridMeshes();
-                this.#config.needsRender = true;
-            });
-
         ///////////////////////////////
         // Terrain generation folder //
         this.#terrainFolder = this.#gui.addFolder('Terrain generation');
@@ -248,5 +225,11 @@ export class UI {
         this.#terrainRenderer.createGridMeshes();
         this.#terrainRenderer.updateAvatarPosition();
         this.#config.needsRender = true;
+    }
+
+    ///////////////////////
+    // Stop gap measures //
+    get root() {
+        return this.#gui;
     }
 }
