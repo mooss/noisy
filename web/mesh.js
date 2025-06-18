@@ -139,61 +139,51 @@ export function createPrismMeshes(type, terrainGrid, palette) {
 }
 
 export class TerrainMesh {
-    #meshes;
-    #grid;
-    #palette;
-    #renderStyle;
+    /**
+     * @private @type {THREE.Group} The group containing the terrain mesh.
+     * A group made of a single mesh is used here instead of the mesh itself so that it only has to
+     * be added to the scene once and can be freely modified afterwards.
+     */
+    #mesh;
 
-    constructor(terrainGrid, palette, renderStyle) {
-        this.#meshes = new THREE.Group();
-        this.#grid = terrainGrid;
-        this.#palette = palette;
-        this.#renderStyle = renderStyle;
-        this.#createMeshes();
+    constructor(grid, palette, style) {
+        this.#mesh = new THREE.Group();
+        this.#createMeshes(grid, palette, style);
     }
 
-    #createMeshes() {
-        let mesh;
-        switch (this.#renderStyle) {
-            case 'hexPrism':
-                mesh = createPrismMeshes('hexagon', this.#grid, this.#palette);
-                break;
-            case 'quadPrism':
-                mesh = createPrismMeshes('square', this.#grid, this.#palette);
-                break;
-            case 'surface':
-                mesh = createSurfaceMesh(this.#grid, this.#palette);
-                break;
+    #createMeshes(grid, palette, style) {
+        let child;
+        switch (style) {
+        case 'hexPrism':
+            child = createPrismMeshes('hexagon', grid, palette);
+            break;
+        case 'quadPrism':
+            child = createPrismMeshes('square', grid, palette);
+            break;
+        case 'surface':
+            child = createSurfaceMesh(grid, palette);
+            break;
+        default:
+            throw new Error(`Unknown render style ${style}`);
         }
-        if (mesh) {
-            this.#meshes.add(mesh);
-        }
+        this.#mesh.add(child);
     }
 
     clear() {
-        while (this.#meshes.children.length > 0) {
-            const mesh = this.#meshes.children[0];
-            this.#meshes.remove(mesh);
-
-            if (mesh.geometry) {
-                mesh.geometry.dispose();
-            }
-
-            if (mesh.material) {
-                mesh.material.dispose();
-            }
+        while (this.#mesh.children.length > 0) {
+            const child = this.#mesh.children[0];
+            this.#mesh.remove(child);
+            child.geometry.dispose();
+            child.material.dispose();
         }
     }
 
-    recreate(terrainGrid, palette, renderStyle) {
+    recreate(grid, palette, style) {
         this.clear();
-        this.#grid = terrainGrid;
-        this.#palette = palette;
-        this.#renderStyle = renderStyle;
-        this.#createMeshes();
+        this.#createMeshes(grid, palette, style);
     }
 
     get mesh() {
-        return this.#meshes;
+        return this.#mesh;
     }
 }
