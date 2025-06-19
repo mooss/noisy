@@ -1,3 +1,5 @@
+import { rangeMapper } from "../utils.js";
+
 export class GridConfig {
     constructor() {
         this.power = 5;               // Power of the grid (one side is 2^n + 1).
@@ -6,5 +8,23 @@ export class GridConfig {
 
     get size() {
         return 2**this.power + 1;
+    }
+
+    ui(parent, grid, avatar, updateTerrain) {
+        parent.range(this, 'power', 1, 8, 1)
+            .legend('Grid size (2^n + 1)')
+            .onInput(() => {
+                // Update avatar position and scale based on new grid size.
+                const oldSize = grid.size;
+                const conv = rangeMapper(0, oldSize, 0, this.size);
+                avatar.x = Math.round(conv(avatar.x));
+                avatar.y = Math.round(conv(avatar.y));
+
+                updateTerrain();
+            });
+
+        parent.range(this, 'heightMultiplier', 0.1, 5.0, 0.05)
+            .legend('Height multiplier')
+            .onInput(updateTerrain);
     }
 }

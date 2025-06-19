@@ -30,17 +30,16 @@ export class UI {
     #fpsController;
     #gui;
     #terrainFolder;
-    #terrainGrid;
     #terrainRenderer;
+    #updateTerrain;
 
-    constructor(config, terrainGrid, terrainRenderer) {
+    constructor(config, terrainRenderer, updateTerrain) {
         this.#config = config;
-        this.#terrainGrid = terrainGrid;
         this.#terrainRenderer = terrainRenderer;
+        this.#updateTerrain = updateTerrain;
 
         this.#gui = new GUI();
         this.#setupFPS();
-        this.#setupGUI();
         this.#setupKeyboard();
     }
 
@@ -52,30 +51,7 @@ export class UI {
         this.#fpsController = this.#gui.readOnly(0).legend('FPS');
     }
 
-    #setupGUI() {
-        /////////////////
-        // Grid folder //
-        const gridFolder = this.#gui.addFolder('Grid');
-        gridFolder.range(this.#config.grid, 'power', 1, 8, 1)
-            .legend('Grid size (2^n + 1)')
-            .onInput(() => {
-                // Update avatar position and scale based on new grid size.
-                const oldSize = this.#terrainGrid.size;
-                const conv = rangeMapper(0, oldSize, 0, this.#config.grid.size);
-                this.#config.avatar.x = Math.round(conv(this.#config.avatar.x));
-                this.#config.avatar.y = Math.round(conv(this.#config.avatar.y));
-
-                this.#updateTerrain();
-                this.#terrainRenderer.updateAvatarScale();
-            });
-
-        gridFolder.range(this.#config.grid, 'heightMultiplier', 0.1, 5.0, 0.05)
-            .legend('Height multiplier')
-            .onInput(() => {
-                this.#terrainGrid.reset(this.#config.gen, this.#config.grid);
-                this.#updateTerrain();
-            });
-
+    setupGUI() {
         ///////////////////////////////
         // Terrain generation folder //
         this.#terrainFolder = this.#gui.addFolder('Terrain generation');
@@ -217,14 +193,6 @@ export class UI {
 
     updateFPS() {
         this.#fpsController.update(Math.round(this.#fps.update()));
-    }
-
-    #updateTerrain() {
-        this.#terrainGrid.reset(this.#config.gen, this.#config.grid);
-        this.#terrainGrid.generate();
-        this.#terrainRenderer.createGridMeshes();
-        this.#terrainRenderer.updateAvatarPosition();
-        this.#config.needsRender = true;
     }
 
     ///////////////////////

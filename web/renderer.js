@@ -1,5 +1,4 @@
 import { Avatar } from './avatar.js';
-import { TerrainMesh } from './mesh.js';
 import { BlockCoordinates } from './coordinates.js';
 
 export class TerrainRenderer {
@@ -12,7 +11,7 @@ export class TerrainRenderer {
     #terrainGrid;
     #avatarConfig;
 
-    constructor(terrainGrid, avatarConfig, updateTerrainMesh) {
+    constructor(terrainGrid, avatarConfig) {
         this.#terrainGrid = terrainGrid;
         this.#avatarConfig = avatarConfig;
 
@@ -40,7 +39,6 @@ export class TerrainRenderer {
         this.#controls.target = new THREE.Vector3(center, center, 0);
         window.addEventListener('resize', this.#onWindowResize.bind(this), false);
 
-        this.createGridMeshes = updateTerrainMesh;
         this.#createAvatarMesh();
     }
 
