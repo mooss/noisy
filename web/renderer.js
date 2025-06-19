@@ -1,18 +1,13 @@
-import { Avatar } from './avatar.js';
 export class TerrainRenderer {
     #scene;
     #camera;
     #renderer;
     #controls;
 
-    #avatar;
     #terrainGrid;
-    #avatarConfig;
 
-    constructor(terrainGrid, avatarConfig) {
+    constructor(terrainGrid) {
         this.#terrainGrid = terrainGrid;
-        this.#avatarConfig = avatarConfig;
-
         this.#scene = new THREE.Scene();
         this.#scene.background = new THREE.Color(0, 0, 0);
 
@@ -36,30 +31,16 @@ export class TerrainRenderer {
         this.#controls.dampingFactor = 0.1;
         this.#controls.target = new THREE.Vector3(center, center, 0);
         window.addEventListener('resize', this.#onWindowResize.bind(this), false);
+    }
 
-        this.#createAvatarMesh();
+    addMesh(mesh) {
+        this.#scene.add(mesh);
     }
 
     #onWindowResize() {
         this.#camera.aspect = window.innerWidth / window.innerHeight;
         this.#camera.updateProjectionMatrix();
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    #createAvatarMesh() {
-        this.#avatar = new Avatar();
-        this.#scene.add(this.#avatar.mesh);
-        this.updateAvatarPosition();
-        this.updateAvatarScale();
-    }
-
-    updateAvatarPosition() {
-        const pos = this.#terrainGrid.positionOf(this.#avatarConfig.position);
-        this.#avatar.setPosition(pos.x, pos.y, pos.z + this.#avatarConfig.heightOffset * this.#terrainGrid.cellSize);
-    }
-
-    updateAvatarScale() {
-        this.#avatar.setScale(this.#avatarConfig.size * this.#terrainGrid.cellSize);
     }
 
     // Public accessors for core components needed by the main loop.

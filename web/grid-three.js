@@ -8,7 +8,7 @@ import { ChunkConfig } from './config/chunk.js';
 import { GenerationConfig } from './config/generation.js';
 import { RenderConfig } from './config/render.js';
 import { GridConfig } from './config/grid.js';
-import { TerrainMesh } from './mesh.js';
+import { AvatarMesh, TerrainMesh } from './mesh.js';
 import { GUI } from './gui.js';
 
 const config = {
@@ -58,12 +58,12 @@ function main() {
     const chunkManager = new ChunkManager(config);
     const terrainGrid = chunkManager.at(0, 0);
     const terrainMesh = new TerrainMesh();
+    const avatar = new AvatarMesh();
 
     // Renderer.
-    const terrainRenderer = new TerrainRenderer(
-        terrainGrid, config.avatar
-    );
-    terrainRenderer.scene.add(terrainMesh.mesh);
+    const terrainRenderer = new TerrainRenderer(terrainGrid);
+    terrainRenderer.addMesh(terrainMesh.mesh);
+    terrainRenderer.addMesh(avatar.mesh);
 
 
     // UI callbacks.
@@ -72,8 +72,10 @@ function main() {
         config.needsRender = true;
     }
     const updateAvatar = () => {
-        terrainRenderer.updateAvatarPosition();
-        terrainRenderer.updateAvatarScale();
+        const pos = terrainGrid.positionOf(config.avatar.position);
+        pos.z += config.avatar.heightOffset * terrainGrid.cellSize;
+        avatar.setPosition(pos);
+        avatar.setScale(config.avatar.size * terrainGrid.cellSize);
         config.needsRender = true;
     }
     const updateTerrain = () => {

@@ -48,7 +48,7 @@ export class Coordinates {
      * of their chunk.
      *
      * @param {Coordinates} chunkCoords - The chunk block coordinates.
-     * @param {number}           chunkSize   - The size of a chunk in world units.
+     * @param {number}      chunkSize   - The size of a chunk in world units.
      * @returns {Coordinates} this.
      */
     asGlobal(chunkCoords, chunkSize) {
