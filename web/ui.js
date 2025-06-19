@@ -1,5 +1,3 @@
-import { GUI } from './gui.js';
-
 class FpsCounter {
     constructor() {
         this.previous = performance.now();
@@ -23,79 +21,52 @@ class FpsCounter {
     }
 }
 
-export class UI {
-    #config;
+export class FpsWidget {
     #fps;
-    #fpsController;
-    #gui;
-    #updateAvatar;
+    #fpsUI;
 
-    constructor(config, updateAvatar) {
-        this.#config = config;
-        this.#updateAvatar = updateAvatar;
-
-        this.#gui = new GUI();
-        this.#setupFPS();
-        this.#setupKeyboard();
-    }
-
-    ///////////////////
-    // Setup methods //
-
-    #setupFPS() {
+    constructor(parent) {
         this.#fps = new FpsCounter();
-        this.#fpsController = this.#gui.readOnly(0).legend('FPS');
+        this.#fpsUI = parent.readOnly(0).legend('FPS');
     }
 
-    #setupKeyboard() {
-        document.addEventListener('keydown', (event) => {
-            let moved = false;
-            const avatar = this.#config.avatar;
-            const gridSize = this.#config.grid.size;
+    update() {
+        this.#fpsUI.update(Math.round(this.#fps.update()));
+    }
+}
 
-            switch (event.code) {
-            case 'KeyW': // Up.
-                if (avatar.y < gridSize - 1) {
-                    avatar.y++;
-                    moved = true;
-                }
-                break;
-            case 'KeyS': // Down.
-                if (avatar.y > 0) {
-                    avatar.y--;
-                    moved = true;
-                }
-                break;
-            case 'KeyA': // Left.
-                if (avatar.x > 0) {
-                    avatar.x--;
-                    moved = true;
-                }
-                break;
-            case 'KeyD': // Right.
-                if (avatar.x < gridSize - 1) {
-                    avatar.x++;
-                    moved = true;
-                }
-                break;
+
+export function setupKeyboard(avatar, grid, update) {
+    document.addEventListener('keydown', (event) => {
+        let moved = false;
+
+        switch (event.code) {
+        case 'KeyW': // Up.
+            if (avatar.y < grid.size - 1) {
+                avatar.y++;
+                moved = true;
             }
-
-            if (moved) {
-                this.#updateAvatar();
+            break;
+        case 'KeyS': // Down.
+            if (avatar.y > 0) {
+                avatar.y--;
+                moved = true;
             }
-        });
-    }
+            break;
+        case 'KeyA': // Left.
+            if (avatar.x > 0) {
+                avatar.x--;
+                moved = true;
+            }
+            break;
+        case 'KeyD': // Right.
+            if (avatar.x < grid.size - 1) {
+                avatar.x++;
+                moved = true;
+            }
+            break;
+        }
 
-    ////////////////////
-    // Update methods //
-
-    updateFPS() {
-        this.#fpsController.update(Math.round(this.#fps.update()));
-    }
-
-    ///////////////////////
-    // Stop gap measures //
-    get root() {
-        return this.#gui;
-    }
+        if (moved) update();
+    });
 }
