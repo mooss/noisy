@@ -12,7 +12,7 @@ export class GridConfig {
 
     ui(parent, grid, avatar, updateTerrain) {
         parent.range(this, 'power', 1, 8, 1)
-            .legend('Grid size (2^n + 1)')
+            .legend('Grid size')
             .onInput(() => {
                 // Update avatar position and scale based on new grid size.
                 const oldSize = grid.size;

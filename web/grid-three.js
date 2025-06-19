@@ -40,10 +40,8 @@ function startAnimationLoop(renderer, fps) {
 // function loadChunks(chunkManager) {
 //     const chunkCoords = new BlockCoordinates(config.avatar.x, config.avatar.y)
 //           .asChunk(config.grid.size);
-//     if (config.chunks.enabled) {
-//         chunkCoords.within(config.chunks.loadRadius)
-//             .forEach(({x, y}) => chunkManager.at(x, y));
-//     }
+//     chunkCoords.within(config.chunks.loadRadius)
+//         .forEach(({x, y}) => chunkManager.at(x, y));
 // }
 
 function main() {
@@ -77,12 +75,14 @@ function main() {
         updateTerrainMesh();
         updateAvatar();
     }
+    const noOp = () => { console.log('noOp'); }
 
     // UI and controls definition.
     const gui = new GUI();
     const fps = new FpsWidget(gui);
     config.grid.ui(gui.addFolder('Grid'), terrainGrid, config.avatar, updateTerrain);
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
+    config.chunks.ui(gui.addFolder('Chunks').close(), noOp);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
     setupKeyboard(config.avatar, config.grid, updateAvatar);
