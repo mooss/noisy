@@ -1,6 +1,4 @@
 import { Avatar } from './avatar.js';
-import { BlockCoordinates } from './coordinates.js';
-
 export class TerrainRenderer {
     #scene;
     #camera;
@@ -56,12 +54,8 @@ export class TerrainRenderer {
     }
 
     updateAvatarPosition() {
-        const height = this.#terrainGrid.getHeightAt(this.#avatarConfig.x, this.#avatarConfig.y);
-        const { cellSize } = this.#terrainGrid;
-        const pos = new BlockCoordinates(this.#avatarConfig.x, this.#avatarConfig.y).
-              toWorld(cellSize);
-        pos.z = height + this.#avatarConfig.heightOffset * cellSize;
-        this.#avatar.setPosition(pos.x, pos.y, pos.z);
+        const pos = this.#terrainGrid.positionOf(this.#avatarConfig.position);
+        this.#avatar.setPosition(pos.x, pos.y, pos.z + this.#avatarConfig.heightOffset * this.#terrainGrid.cellSize);
     }
 
     updateAvatarScale() {

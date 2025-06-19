@@ -68,7 +68,7 @@ export class BlockCoordinates {
         return new WorldCoordinates(
             this.x * blockSize,
             this.y * blockSize,
-            0
+            undefined,
         );
     }
 

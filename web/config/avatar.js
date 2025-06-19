@@ -1,3 +1,5 @@
+import { BlockCoordinates } from "../coordinates.js";
+
 export class AvatarConfig {
     constructor() {
         this.x = undefined;
@@ -13,5 +15,10 @@ export class AvatarConfig {
         parent.range(this, 'heightOffset', 0.0, 2.0, 0.1)
             .legend('Height offset')
             .onInput(update);
+    }
+
+    /** @returns {BlockCoordinates} the global position*/
+    get position() {
+        return new BlockCoordinates(this.x, this.y);
     }
 }

@@ -2,6 +2,7 @@ import { GenerationConfig } from './config/generation.js';
 import { GridConfig } from './config/grid.js';
 import { rangeMapper } from './utils.js';
 import { RNG } from './rng.js';
+import { BlockCoordinates, WorldCoordinates } from './coordinates.js';
 
 // Base dimension of a grid.
 const GRID_UNIT = 256;
@@ -28,10 +29,8 @@ export class Grid {
     #generationConfig;
     /** @private @type {GridConfig} The configuration object for grid parameters. */
     #gridConfig;
-    /** @private @type {number} The x-coordinate of the chunk. */
-    #x;
-    /** @private @type {number} The y-coordinate of the chunk. */
-    #y;
+    /** @private @type {BlockCoordinates} The coordinates of the chunk. */
+    #coord;
     /** @private @type {number} The x offset of the chunk. */
     #xOffset;
     /** @private @type {number} The y offset of the chunk. */
@@ -64,8 +63,7 @@ export class Grid {
         this.#generationConfig = generationConfig;
         this.#gridConfig = gridConfig;
         this.#maxH = (GRID_UNIT / 5) * this.#gridConfig.heightMultiplier;
-        this.#x = chunkX;
-        this.#y = chunkY;
+        this.#coord = new BlockCoordinates(chunkX, chunkY);
 
         // Grid layout, don't reallocate unless necessary.
         if (this.#size != this.#gridConfig.size) {
@@ -111,27 +109,11 @@ export class Grid {
     }
 
     /**
-     * Gets the x-coordinate of the chunk.
-     * @returns {number}
-     */
-    get x() {
-        return this.#x;
-    }
-
-    /**
-     * Gets the y-coordinate of the chunk.
-     * @returns {number}
-     */
-    get y() {
-        return this.#y;
-    }
-
-    /**
      * Gets the chunk identifier.
      * @returns {string} The chunk identifier in the format "x,y".
      */
     get id() {
-        return `${this.#x},${this.#y}`;
+        return `${this.#coord.x},${this.#coord.y}`;
     }
 
     /**
@@ -199,18 +181,29 @@ export class Grid {
     }
 
     /**
-     * Returns the height at a specific grid coordinate.
+     * Returns the height at a specific grid coordinates.
      *
-     * @param {number} x - The x-coordinate.
-     * @param {number} y - The y-coordinate.
-     *
-     * @returns {number|undefined} The height at the given coordinates, or undefined if out of bounds.
+     * @param {BlockCoordinates} coord - The coordinates.
+     * @returns {number|undefined} The height at the given coordinates, undefined if out of bounds.
      */
-    getHeightAt(x, y) {
-        if (x >= 0 && x < this.#size && y >= 0 && y < this.#size) {
-            return this.#data[x][y];
+    heightOf(coord) {
+        if (coord.x >= 0 && coord.x < this.#size &&
+            coord.y >= 0 && coord.y < this.#size) {
+            return this.#data[coord.x][coord.y];
         }
         return undefined;
+    }
+
+    /**
+     * Returns the world position of the given grid coordinates.
+     *
+     * @param {BlockCoordinates} coord - The coordinates.
+     * @returns {WorldCoordinates} The position corresponding to the coordinates.
+     */
+    positionOf(coord) {
+        const res = new BlockCoordinates(coord.x, coord.y).toWorld(this.#cellSize);
+        res.z = this.heightOf(coord);
+        return res;
     }
 
     /**
