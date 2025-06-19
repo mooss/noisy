@@ -28,13 +28,10 @@ export class UI {
     #fps;
     #fpsController;
     #gui;
-    #terrainFolder;
-    #updateTerrain;
     #updateAvatar;
 
-    constructor(config, updateTerrain, updateAvatar) {
+    constructor(config, updateAvatar) {
         this.#config = config;
-        this.#updateTerrain = updateTerrain;
         this.#updateAvatar = updateAvatar;
 
         this.#gui = new GUI();
@@ -48,71 +45,6 @@ export class UI {
     #setupFPS() {
         this.#fps = new FpsCounter();
         this.#fpsController = this.#gui.readOnly(0).legend('FPS');
-    }
-
-    setupGUI() {
-        ///////////////////////////////
-        // Terrain generation folder //
-        this.#terrainFolder = this.#gui.addFolder('Terrain generation');
-        this.#terrainFolder.number(this.#config.gen, 'seed')
-            .legend('Seed')
-            .onChange(() => this.#updateTerrain());
-
-        this.#terrainFolder.select(this.#config.gen, 'terrainAlgo', {
-            'Random': 'rand',
-            'Noise': 'noise',
-            'Ridge': 'ridge',
-            'Midpoint': 'midpoint'
-        }).legend('Algorithm')
-            .onChange(() => {
-                this.#updateAlgorithmFolders();
-                this.#updateTerrain();
-            });
-
-        //////////////////
-        // Noise folder //
-        const noiseFolder = this.#terrainFolder.addFolder('Noise');
-        noiseFolder.range(this.#config.gen.noise, 'octaves', 1, 8, 1)
-            .legend('Octaves')
-            .onInput(() => this.#updateTerrain());
-        noiseFolder.range(this.#config.gen.noise, 'persistence', 0.1, 1.0, 0.05)
-            .legend('Persistence')
-            .onInput(() => this.#updateTerrain());
-        noiseFolder.range(this.#config.gen.noise, 'lacunarity', 1.1, 4.0, 0.1)
-            .legend('Lacunarity')
-            .onInput(() => this.#updateTerrain());
-        noiseFolder.range(this.#config.gen.noise, 'fundamental', 0.1, 5.0, 0.1)
-            .legend('Fundamental')
-            .onInput(() => this.#updateTerrain());
-        noiseFolder.range(this.#config.gen.noise, 'warpingStrength', 0.0, 0.5, 0.01)
-            .legend('Warping strength')
-            .onInput(() => this.#updateTerrain());
-
-        //////////////////
-        // Ridge folder //
-        const ridgeFolder = this.#terrainFolder.addFolder('Ridge');
-        ridgeFolder.bool(this.#config.gen.noise.ridge, 'invertSignal')
-            .legend('Invert signal')
-            .onChange(() => this.#updateTerrain());
-        ridgeFolder.bool(this.#config.gen.noise.ridge, 'squareSignal')
-            .legend('Square signal')
-            .onChange(() => this.#updateTerrain());
-        ridgeFolder.select(this.#config.gen.noise.ridge, 'style', {
-            'Octavian': 'octavian',
-            'Melodic': 'melodic'
-        }).legend('Ridge Style')
-            .onChange(() => this.#updateTerrain());
-
-        /////////////////////
-        // Midpoint folder //
-        const midpointFolder = this.#terrainFolder.addFolder('Midpoint');
-        midpointFolder.range(this.#config.gen, 'midpointRoughness', 0.4, 0.8, 0.02)
-            .legend('Roughness')
-            .onInput(() => this.#updateTerrain());
-
-        /////////////////////////////
-        // Post registration setup //
-        this.#updateAlgorithmFolders();
     }
 
     #setupKeyboard() {
@@ -156,24 +88,6 @@ export class UI {
 
     ////////////////////
     // Update methods //
-
-    // Dynamically show/hide parameter folders based on the selected terrain algorithm.
-    #updateAlgorithmFolders() {
-        const title2algo = {
-            'Noise': ['noise', 'ridge'],
-            'Ridge': ['ridge'],
-            'Midpoint': ['midpoint'],
-        }
-
-        this.#terrainFolder.folders.forEach(folder => {
-            const mustShow = title2algo[folder.title];
-            if (mustShow.includes(this.#config.gen.terrainAlgo)) {
-                folder.show();
-            } else {
-                folder.hide();
-            }
-        });
-    }
 
     updateFPS() {
         this.#fpsController.update(Math.round(this.#fps.update()));

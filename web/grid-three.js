@@ -83,12 +83,12 @@ function main() {
         updateAvatar();
     }
 
-    // UI declaration.
-    const ui = new UI(config, updateTerrain, updateAvatar);
+    // UI definition.
+    const ui = new UI(config, updateAvatar);
     config.grid.ui(ui.root.addFolder('Grid'), terrainGrid, config.avatar, updateTerrain);
     config.render.ui(ui.root.addFolder('Render'), updateTerrainMesh);
+    config.gen.ui(ui.root.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(ui.root.addFolder('Avatar').close(), updateAvatar);
-    ui.setupGUI();
 
     // Application start.
     updateTerrainMesh();
