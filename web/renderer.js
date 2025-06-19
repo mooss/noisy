@@ -1,18 +1,16 @@
-export class TerrainRenderer {
+export class Renderer {
     #scene;
     #camera;
     #renderer;
     #controls;
+    #mustRender = true;
 
-    #terrainGrid;
-
-    constructor(terrainGrid) {
-        this.#terrainGrid = terrainGrid;
+    constructor(chunkSide) {
         this.#scene = new THREE.Scene();
         this.#scene.background = new THREE.Color(0, 0, 0);
 
-        const camDist = this.#terrainGrid.size * this.#terrainGrid.cellSize * 1.2 + 50;
-        const center = (this.#terrainGrid.size * this.#terrainGrid.cellSize) / 2;
+        const camDist = chunkSide * 1.2 + 50;
+        const center = chunkSide / 2;
         this.#camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, .1, camDist * 2);
         this.#camera.position.set(center, center - camDist * 0.7, camDist * 0.7);
 
@@ -30,26 +28,29 @@ export class TerrainRenderer {
         this.#controls.enableDamping = true;
         this.#controls.dampingFactor = 0.1;
         this.#controls.target = new THREE.Vector3(center, center, 0);
-        window.addEventListener('resize', this.#onWindowResize.bind(this), false);
+
+        window.addEventListener('resize', this.resizeWindow.bind(this), false);
+        this.#controls.addEventListener('change', () => { this.#mustRender = true });
     }
 
     addMesh(mesh) {
         this.#scene.add(mesh);
     }
 
-    #onWindowResize() {
+    resizeWindow() {
         this.#camera.aspect = window.innerWidth / window.innerHeight;
         this.#camera.updateProjectionMatrix();
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    // Public accessors for core components needed by the main loop.
-    get scene() { return this.#scene; }
-    get camera() { return this.#camera; }
-    get renderer() { return this.#renderer; }
-    get controls() { return this.#controls; }
+    pleaseRender() {
+        this.#mustRender = true;
+    }
 
-    setTerrainGrid(newGrid) {
-        this.#terrainGrid = newGrid;
+    render() {
+        if (this.#mustRender || this.#controls.update()) {
+            this.#renderer.render(this.#scene, this.#camera);
+            this.#mustRender = false;
+        }
     }
 }

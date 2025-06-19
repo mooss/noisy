@@ -1,4 +1,4 @@
-import { TerrainRenderer } from './renderer.js';
+import { Renderer } from './renderer.js';
 import { FpsWidget, setupKeyboard } from './ui.js';
 import { palettes } from './palettes.js'; // TODO: turn to dict.
 import { ChunkManager } from './chunk-manager.js';
@@ -25,21 +25,14 @@ const config = {
     avatar: new AvatarConfig(),
 
     // Render settings.
-    needsRender: true, // Whether the frame should be updated.
     render: new RenderConfig(),
 };
 
-function startAnimationLoop(config, terrainRenderer, fps) {
+function startAnimationLoop(renderer, fps) {
     function animate() {
         requestAnimationFrame(animate);
         fps.update();
-
-        // Only render if something has changed or controls are active.
-        const controlsUpdated = terrainRenderer.controls.update(); // Required because of damping.
-        if (config.needsRender || controlsUpdated) {
-            terrainRenderer.renderer.render(terrainRenderer.scene, terrainRenderer.camera);
-            config.needsRender = false;
-        }
+        renderer.render();
     }
     animate();
 }
@@ -61,7 +54,7 @@ function main() {
     const avatar = new AvatarMesh();
 
     // Renderer.
-    const terrainRenderer = new TerrainRenderer(terrainGrid);
+    const terrainRenderer = new Renderer(terrainGrid.size * terrainGrid.cellSize);
     terrainRenderer.addMesh(terrainMesh.mesh);
     terrainRenderer.addMesh(avatar.mesh);
 
@@ -69,14 +62,14 @@ function main() {
     // UI callbacks.
     const updateTerrainMesh = () => {
         terrainMesh.update(terrainGrid, palettes[config.render.palette], config.render.style);
-        config.needsRender = true;
+        terrainRenderer.pleaseRender();
     }
     const updateAvatar = () => {
         const pos = terrainGrid.positionOf(config.avatar.position);
         pos.z += config.avatar.heightOffset * terrainGrid.cellSize;
         avatar.setPosition(pos);
         avatar.setScale(config.avatar.size * terrainGrid.cellSize);
-        config.needsRender = true;
+        terrainRenderer.pleaseRender();
     }
     const updateTerrain = () => {
         terrainGrid.reset(config.gen, config.grid);
@@ -99,7 +92,7 @@ function main() {
     config.avatar.x = Math.floor(config.grid.size / 2);
     config.avatar.y = Math.floor(config.grid.size / 2);
     updateAvatar();
-    startAnimationLoop(config, terrainRenderer, fps);
+    startAnimationLoop(terrainRenderer, fps);
 }
 
 main();
