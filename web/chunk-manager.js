@@ -25,14 +25,13 @@ export class ChunkManager {
     /**
      * Retrieves a chunk by its coordinates, create it if it doesn't exist.
      *
-     * @param {number} x - The X coordinate of the chunk.
-     * @param {number} y - The Y coordinate of the chunk.
+     * @param {Coordinates} coords - The coordinates of the chunk.
      * @returns {Grid|undefined} The Grid instance for the chunk, or undefined if not found.
      */
-    at(x, y) {
-        const chunkId = `${x},${y}`;
+    at(coords) {
+        const chunkId = `${coords.x},${coords.y}`;
         if (this.#chunks.has(chunkId)) return this.#chunks.get(chunkId);
-        return this.regen(x, y);
+        return this.regen(coords);
     }
 
     /**
@@ -47,12 +46,11 @@ export class ChunkManager {
      * Generates a new terrain chunk for the given chunk coordinates.
      * If a chunk already exists at these coordinates, it will be regenerated.
      *
-     * @param {number} x - The X coordinate of the chunk.
-     * @param {number} y - The Y coordinate of the chunk.
+     * @param {Coordinates} coords - The coordinates of the chunk.
      * @returns {Grid} The newly generated or regenerated Grid instance for the chunk.
      */
-    regen(x, y) {
-        const terrainGrid = new Grid(this.#config.gen, this.#config.grid, x, y);
+    regen(coords) {
+        const terrainGrid = new Grid(this.#config.gen, this.#config.grid, coords.x, coords.y);
         terrainGrid.generate();
         this.#chunks.set(terrainGrid.id, terrainGrid);
         return terrainGrid;

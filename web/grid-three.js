@@ -10,6 +10,7 @@ import { RenderConfig } from './config/render.js';
 import { GridConfig } from './config/grid.js';
 import { AvatarMesh, TerrainMesh } from './mesh.js';
 import { GUI } from './gui.js';
+import { Coordinates } from './coordinates.js';
 
 const config = {
     // Grid configuration.
@@ -47,7 +48,7 @@ function startAnimationLoop(renderer, fps) {
 function main() {
     // Data and meshes.
     const chunkManager = new ChunkManager(config);
-    const terrainGrid = chunkManager.at(0, 0);
+    const terrainGrid = chunkManager.at(new Coordinates(0, 0));
     const terrainMesh = new TerrainMesh();
     const avatar = new AvatarMesh();
 
