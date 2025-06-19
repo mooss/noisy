@@ -4,7 +4,7 @@
 /**
  * Represents 2D integer coordinates for blocks, either within a chunk or in a global grid.
  */
-export class BlockCoordinates {
+export class Coordinates {
     /** @type {number} x - The X coordinate. */
     x;
     /** @type {number} y - The Y coordinate. */
@@ -23,7 +23,7 @@ export class BlockCoordinates {
      * Convert in-place global block coordinates to the coordinates of the chunk containing them.
      *
      * @param {number} chunkSize - The size of a chunk.
-     * @returns {BlockCoordinates} this.
+     * @returns {Coordinates} this.
      */
     asChunk(chunkSize) {
         this.x = Math.floor(this.x / chunkSize);
@@ -35,7 +35,7 @@ export class BlockCoordinates {
      * Convert in-place global block coordinates to local block coordinates within their chunk.
      *
      * @param {number} chunkSize - The size of a chunk.
-     * @returns {BlockCoordinates} this.
+     * @returns {Coordinates} this.
      */
     asLocal(chunkSize) {
         this.x = ((this.x % chunkSize) + chunkSize) % chunkSize;
@@ -47,9 +47,9 @@ export class BlockCoordinates {
      * Convert in-place local block coordinates to global block coordinates given the coordinates
      * of their chunk.
      *
-     * @param {BlockCoordinates} chunkCoords - The chunk block coordinates.
+     * @param {Coordinates} chunkCoords - The chunk block coordinates.
      * @param {number}           chunkSize   - The size of a chunk in world units.
-     * @returns {BlockCoordinates} this.
+     * @returns {Coordinates} this.
      */
     asGlobal(chunkCoords, chunkSize) {
         this.x = chunkCoords.x * chunkSize + this.x;
@@ -62,10 +62,10 @@ export class BlockCoordinates {
      * Their height is set at zero.
      *
      * @param {number} blockSize - The size of a single block.
-     * @returns {WorldCoordinates} The world coordinates.
+     * @returns {Position} The world coordinates.
      */
     toWorld(blockSize) {
-        return new WorldCoordinates(
+        return new Position(
             this.x * blockSize,
             this.y * blockSize,
             undefined,
@@ -76,13 +76,13 @@ export class BlockCoordinates {
      * Generates a list of coordinates within a specified radius around this block.
      *
      * @param {number} radius - The radius (in chunks or blocks) around the center.
-     * @returns {Array<BlockCoordinates>} An array of chunk block coordinate objects.
+     * @returns {Array<Coordinates>} An array of chunk block coordinate objects.
      */
     within(radius) {
         const chunkCoords = [];
         for (let x = this.x - radius; x <= this.x + radius; x++) {
             for (let y = this.y - radius; y <= this.y + radius; y++) {
-                chunkCoords.push(new BlockCoordinates(x, y));
+                chunkCoords.push(new Coordinates(x, y));
             }
         }
         return chunkCoords;
@@ -92,7 +92,7 @@ export class BlockCoordinates {
 /**
  * Represents 3D floating-point coordinates for points in the world, either local or global.
  */
-export class WorldCoordinates {
+export class Position {
     /** @type {number} x - The X coordinate. */
     x;
     /** @type {number} y - The Y coordinate. */

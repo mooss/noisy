@@ -2,7 +2,7 @@ import { GenerationConfig } from './config/generation.js';
 import { GridConfig } from './config/grid.js';
 import { rangeMapper } from './utils.js';
 import { RNG } from './rng.js';
-import { BlockCoordinates, WorldCoordinates } from './coordinates.js';
+import { Coordinates, Position } from './coordinates.js';
 
 // Base dimension of a grid.
 const GRID_UNIT = 256;
@@ -29,7 +29,7 @@ export class Grid {
     #generationConfig;
     /** @private @type {GridConfig} The configuration object for grid parameters. */
     #gridConfig;
-    /** @private @type {BlockCoordinates} The coordinates of the chunk. */
+    /** @private @type {Coordinates} The coordinates of the chunk. */
     #coord;
     /** @private @type {number} The x offset of the chunk. */
     #xOffset;
@@ -63,7 +63,7 @@ export class Grid {
         this.#generationConfig = generationConfig;
         this.#gridConfig = gridConfig;
         this.#maxH = (GRID_UNIT / 5) * this.#gridConfig.heightMultiplier;
-        this.#coord = new BlockCoordinates(chunkX, chunkY);
+        this.#coord = new Coordinates(chunkX, chunkY);
 
         // Grid layout, don't reallocate unless necessary.
         if (this.#size != this.#gridConfig.size) {
@@ -183,7 +183,7 @@ export class Grid {
     /**
      * Returns the height at a specific grid coordinates.
      *
-     * @param {BlockCoordinates} coord - The coordinates.
+     * @param {Coordinates} coord - The coordinates.
      * @returns {number|undefined} The height at the given coordinates, undefined if out of bounds.
      */
     heightOf(coord) {
@@ -197,11 +197,11 @@ export class Grid {
     /**
      * Returns the world position of the given grid coordinates.
      *
-     * @param {BlockCoordinates} coord - The coordinates.
-     * @returns {WorldCoordinates} The position corresponding to the coordinates.
+     * @param {Coordinates} coord - The coordinates.
+     * @returns {Position} The position corresponding to the coordinates.
      */
     positionOf(coord) {
-        const res = new BlockCoordinates(coord.x, coord.y).toWorld(this.#cellSize);
+        const res = new Coordinates(coord.x, coord.y).toWorld(this.#cellSize);
         res.z = this.heightOf(coord);
         return res;
     }

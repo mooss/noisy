@@ -1,4 +1,4 @@
-import { BlockCoordinates } from "../coordinates.js";
+import { Coordinates } from "../coordinates.js";
 
 export class AvatarConfig {
     constructor() {
@@ -17,8 +17,8 @@ export class AvatarConfig {
             .onInput(update);
     }
 
-    /** @returns {BlockCoordinates} the global position*/
+    /** @returns {Coordinates} the global position*/
     get position() {
-        return new BlockCoordinates(this.x, this.y);
+        return new Coordinates(this.x, this.y);
     }
 }
