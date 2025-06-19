@@ -394,16 +394,35 @@ class Select extends InputParam {
             paddingLeft: '2px',
             boxSizing: 'border-box',
         });
-        for (const [key, value] of Object.entries(options)) {
-            const option = spawn('option', this.input);
-            option.text = key;
-            option.value = JSON.stringify(value);
-            if (value === initial) option.selected = true;
+
+        const isKeyBased = Object.prototype.hasOwnProperty.call(options, initial);
+        if (isKeyBased) {
+            this._dictMode = true; // Can't be private because of JS schenanigans.
+            for (const key of Object.keys(options)) {
+                const option = spawn('option', this.input);
+                option.text = key;
+                option.value = key;
+                if (key === initial) option.selected = true;
+            }
+        } else {
+            this._dictMode = false;
+            for (const [key, value] of Object.entries(options)) {
+                const option = spawn('option', this.input);
+                option.text = key;
+                option.value = JSON.stringify(value);
+                if (value === initial) option.selected = true;
+            }
         }
     }
 
     tag() { return 'select'; }
-    value() { return JSON.parse(this.input.value); }
+
+    value() {
+        if (this._dictMode) {
+            return this.input.value;
+        }
+        return JSON.parse(this.input.value);
+    }
 }
 
 class Number extends InputParam {

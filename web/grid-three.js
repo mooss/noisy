@@ -1,6 +1,6 @@
 import { Renderer } from './renderer.js';
 import { FpsWidget, setupKeyboard } from './ui.js';
-import { palettes } from './palettes.js'; // TODO: turn to dict.
+import { palettes } from './palettes.js';
 import { ChunkManager } from './chunk-manager.js';
 
 import { AvatarConfig } from './config/avatar.js';

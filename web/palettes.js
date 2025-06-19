@@ -49,11 +49,11 @@ const sunsetPalette = [
     rgb(3, 248, 252)    // Teal.
 ];
 
-export const palettes = [
-    brightTerrainPalette,
-    continentalPalette,
-    cyberPuke,
-    blackWhite,
-    fantasyPalette,
-    sunsetPalette,
-];
+export const palettes = {
+    'Bright terrain': brightTerrainPalette,
+    'Continental': continentalPalette,
+    'Cyberpuke': cyberPuke,
+    'Black & white': blackWhite,
+    'Fantasy': fantasyPalette,
+    'Sunset': sunsetPalette,
+};
