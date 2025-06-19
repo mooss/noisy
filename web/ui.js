@@ -1,4 +1,3 @@
-import { rangeMapper } from './utils.js';
 import { GUI } from './gui.js';
 
 class FpsCounter {
@@ -30,13 +29,13 @@ export class UI {
     #fpsController;
     #gui;
     #terrainFolder;
-    #terrainRenderer;
     #updateTerrain;
+    #updateAvatar;
 
-    constructor(config, terrainRenderer, updateTerrain) {
+    constructor(config, updateTerrain, updateAvatar) {
         this.#config = config;
-        this.#terrainRenderer = terrainRenderer;
         this.#updateTerrain = updateTerrain;
+        this.#updateAvatar = updateAvatar;
 
         this.#gui = new GUI();
         this.#setupFPS();
@@ -111,20 +110,6 @@ export class UI {
             .legend('Roughness')
             .onInput(() => this.#updateTerrain());
 
-        ///////////////////
-        // Avatar folder //
-        const avatarFolder = this.#gui.addFolder('Avatar').close();
-        avatarFolder.range(this.#config.avatar, 'size', 0.1, 2.0, 0.1)
-            .legend('Size')
-            .onInput(() => {
-                this.#terrainRenderer.updateAvatarScale();
-            });
-        avatarFolder.range(this.#config.avatar, 'heightOffset', 0.0, 2.0, 0.1)
-            .legend('Height offset')
-            .onInput(() => {
-                this.#terrainRenderer.updateAvatarPosition();
-            });
-
         /////////////////////////////
         // Post registration setup //
         this.#updateAlgorithmFolders();
@@ -164,8 +149,7 @@ export class UI {
             }
 
             if (moved) {
-                this.#terrainRenderer.updateAvatarPosition();
-                this.#config.needsRender = true;
+                this.#updateAvatar();
             }
         });
     }

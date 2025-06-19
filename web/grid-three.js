@@ -44,19 +44,14 @@ function startAnimationLoop(config, terrainRenderer, ui) {
     animate();
 }
 
-function placeAvatar() {
-    config.avatar.x = Math.floor(config.grid.size / 2);
-    config.avatar.y = Math.floor(config.grid.size / 2);
-}
-
-function loadChunks(chunkManager) {
-    const chunkCoords = new BlockCoordinates(config.avatar.x, config.avatar.y)
-          .asChunk(config.grid.size);
-    if (config.chunks.enabled) {
-        chunkCoords.within(config.chunks.loadRadius)
-            .forEach(({x, y}) => chunkManager.at(x, y));
-    }
-}
+// function loadChunks(chunkManager) {
+//     const chunkCoords = new BlockCoordinates(config.avatar.x, config.avatar.y)
+//           .asChunk(config.grid.size);
+//     if (config.chunks.enabled) {
+//         chunkCoords.within(config.chunks.loadRadius)
+//             .forEach(({x, y}) => chunkManager.at(x, y));
+//     }
+// }
 
 function main() {
     // Data and meshes.
@@ -76,23 +71,30 @@ function main() {
         terrainMesh.update(terrainGrid, palettes[config.render.palette], config.render.style);
         config.needsRender = true;
     }
+    const updateAvatar = () => {
+        terrainRenderer.updateAvatarPosition();
+        terrainRenderer.updateAvatarScale();
+        config.needsRender = true;
+    }
     const updateTerrain = () => {
         terrainGrid.reset(config.gen, config.grid);
         terrainGrid.generate();
         updateTerrainMesh();
-        terrainRenderer.updateAvatarPosition();
-        terrainRenderer.updateAvatarScale();
+        updateAvatar();
     }
 
     // UI declaration.
-    const ui = new UI(config, terrainRenderer, updateTerrain);
-    config.render.ui(ui.root.addFolder('Render'), updateTerrainMesh);
+    const ui = new UI(config, updateTerrain, updateAvatar);
     config.grid.ui(ui.root.addFolder('Grid'), terrainGrid, config.avatar, updateTerrain);
-    updateTerrainMesh();
+    config.render.ui(ui.root.addFolder('Render'), updateTerrainMesh);
+    config.avatar.ui(ui.root.addFolder('Avatar').close(), updateAvatar);
     ui.setupGUI();
-    placeAvatar();
 
     // Application start.
+    updateTerrainMesh();
+    config.avatar.x = Math.floor(config.grid.size / 2);
+    config.avatar.y = Math.floor(config.grid.size / 2);
+    updateAvatar();
     startAnimationLoop(config, terrainRenderer, ui);
 }
 
