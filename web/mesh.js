@@ -38,30 +38,41 @@ function _createHexagonGeometry(radius, height) {
 export function createSurfaceMesh(chunk, palette) {
     const { size, cellSize, maxH, data } = chunk;
 
-    const geometry = new THREE.PlaneGeometry(
-        size * cellSize,
-        size * cellSize,
-        size - 1,
-        size - 1
-    );
+    const geometry = new THREE.BufferGeometry();
 
-    const positionAttribute = geometry.getAttribute('position');
+    const vertices = [];
+    const indices = [];
     const colors = [];
 
-    // Set height and colors of each cell.
+    // Vertices and colors.
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
-            const vertexIndex = i * size + j;
+            const x = i * cellSize;
+            const y = j * cellSize;
             const height = data[i][j];
-            positionAttribute.setZ(vertexIndex, height);
-
             const color = interpolateColors(palette, height / maxH);
+
+            vertices.push(x, y, height);
             colors.push(color.r, color.g, color.b);
         }
     }
 
-    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    geometry.attributes.position.needsUpdate = true;
+    // Indices.
+    for (let i = 0; i < size - 1; i++) {
+        for (let j = 0; j < size - 1; j++) {
+            const topLeft = i * size + j;
+            const topRight = i * size + (j + 1);
+            const bottomLeft = (i + 1) * size + j;
+            const bottomRight = (i + 1) * size + (j + 1);
+
+            indices.push(topLeft, bottomLeft, topRight);
+            indices.push(topRight, bottomLeft, bottomRight);
+        }
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+    geometry.setIndex(indices);
     geometry.computeVertexNormals();
 
     const material = new THREE.MeshStandardMaterial({
@@ -69,10 +80,7 @@ export function createSurfaceMesh(chunk, palette) {
         side: THREE.DoubleSide
     });
 
-    const surfaceMesh = new THREE.Mesh(geometry, material);
-    surfaceMesh.rotation.z = Math.PI / 2;
-    surfaceMesh.position.set(size * cellSize / 2, size * cellSize / 2, 0);
-    return surfaceMesh;
+    return new THREE.Mesh(geometry, material);
 }
 
 /**
