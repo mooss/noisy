@@ -4,7 +4,7 @@ import { RNG } from './rng.js';
 import { Coordinates, Position } from './coordinates.js';
 
 // Base dimension of a chunk in 3d space.
-const CHUNK_UNIT = 256;
+export const CHUNK_UNIT = 256;
 
 // x and y coordinates shift to hide simplex artifact at the origin.
 const SIM_SHIFT = 1024;

@@ -1,3 +1,4 @@
+import { CHUNK_UNIT } from './chunk.js';
 import { interpolateColors } from './utils.js';
 
 /**
@@ -167,6 +168,9 @@ export class TerrainMesh {
         default:
             throw new Error(`Unknown render style ${style}`);
         }
+
+        child.translateX(chunk.coords.x * CHUNK_UNIT);
+        child.translateY(chunk.coords.y * CHUNK_UNIT);
         this.#mesh.add(child);
     }
 
