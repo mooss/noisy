@@ -10,12 +10,12 @@ export class GridConfig {
         return 2**this.power + 1;
     }
 
-    ui(parent, grid, avatar, updateTerrain) {
+    ui(parent, chunk, avatar, updateTerrain) {
         parent.range(this, 'power', 1, 8, 1)
             .legend('Grid size')
             .onInput(() => {
                 // Update avatar position and scale based on new grid size.
-                const oldSize = grid.size;
+                const oldSize = chunk.size;
                 const conv = rangeMapper(0, oldSize, 0, this.size);
                 avatar.x = Math.round(conv(avatar.x));
                 avatar.y = Math.round(conv(avatar.y));

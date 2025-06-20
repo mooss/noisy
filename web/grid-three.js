@@ -48,31 +48,30 @@ function startAnimationLoop(renderer, fps) {
 function main() {
     // Data and meshes.
     const chunkManager = new ChunkManager(config);
-    const terrainGrid = chunkManager.at(new Coordinates(0, 0));
+    const activeChunk = chunkManager.at(new Coordinates(0, 0));
     const terrainMesh = new TerrainMesh();
     const avatar = new AvatarMesh();
 
     // Renderer.
-    const terrainRenderer = new Renderer(terrainGrid.size * terrainGrid.cellSize);
-    terrainRenderer.addMesh(terrainMesh.mesh);
-    terrainRenderer.addMesh(avatar.mesh);
-
+    const renderer = new Renderer(activeChunk.size * activeChunk.cellSize);
+    renderer.addMesh(terrainMesh.mesh);
+    renderer.addMesh(avatar.mesh);
 
     // UI callbacks.
     const updateTerrainMesh = () => {
-        terrainMesh.update(terrainGrid, palettes[config.render.palette], config.render.style);
-        terrainRenderer.pleaseRender();
+        terrainMesh.update(activeChunk, palettes[config.render.palette], config.render.style);
+        renderer.pleaseRender();
     }
     const updateAvatar = () => {
-        const pos = terrainGrid.positionOf(config.avatar.position);
-        pos.z += config.avatar.heightOffset * terrainGrid.cellSize;
+        const pos = activeChunk.positionOf(config.avatar.position);
+        pos.z += config.avatar.heightOffset * activeChunk.cellSize;
         avatar.setPosition(pos);
-        avatar.setScale(config.avatar.size * terrainGrid.cellSize);
-        terrainRenderer.pleaseRender();
+        avatar.setScale(config.avatar.size * activeChunk.cellSize);
+        renderer.pleaseRender();
     }
     const updateTerrain = () => {
-        terrainGrid.reset(config.gen, config.grid);
-        terrainGrid.generate();
+        activeChunk.reset(config.gen, config.grid);
+        activeChunk.generate();
         updateTerrainMesh();
         updateAvatar();
     }
@@ -81,19 +80,19 @@ function main() {
     // UI and controls definition.
     const gui = new GUI();
     const fps = new FpsWidget(gui);
-    config.grid.ui(gui.addFolder('Grid'), terrainGrid, config.avatar, updateTerrain);
+    config.grid.ui(gui.addFolder('Grid'), activeChunk, config.avatar, updateTerrain);
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
     config.chunks.ui(gui.addFolder('Chunks').close(), noOp);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
-    setupKeyboard(config.avatar, config.grid, updateAvatar);
+    setupKeyboard(config.avatar, config.grid.size, updateAvatar);
 
     // Application start.
     updateTerrainMesh();
     config.avatar.x = Math.floor(config.grid.size / 2);
     config.avatar.y = Math.floor(config.grid.size / 2);
     updateAvatar();
-    startAnimationLoop(terrainRenderer, fps);
+    startAnimationLoop(renderer, fps);
 }
 
 main();

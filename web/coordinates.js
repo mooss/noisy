@@ -2,7 +2,8 @@
 // Integer coordinates //
 
 /**
- * Represents 2D integer coordinates for blocks, either within a chunk or in a global grid.
+ * Represents 2D integer coordinates for blocks, either locally within a chunk or globally within
+ * the grid.
  */
 export class Coordinates {
     /** @type {number} x - The X coordinate. */

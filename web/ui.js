@@ -36,13 +36,13 @@ export class FpsWidget {
 }
 
 
-export function setupKeyboard(avatar, grid, update) {
+export function setupKeyboard(avatar, size, update) {
     document.addEventListener('keydown', (event) => {
         let moved = false;
 
         switch (event.code) {
         case 'KeyW': // Up.
-            if (avatar.y < grid.size - 1) {
+            if (avatar.y < size - 1) {
                 avatar.y++;
                 moved = true;
             }
@@ -60,7 +60,7 @@ export function setupKeyboard(avatar, grid, update) {
             }
             break;
         case 'KeyD': // Right.
-            if (avatar.x < grid.size - 1) {
+            if (avatar.x < size - 1) {
                 avatar.x++;
                 moved = true;
             }

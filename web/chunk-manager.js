@@ -1,9 +1,9 @@
-import { Grid } from './terrain.js';
+import { Chunk } from './chunk.js';
 
 export class ChunkManager {
     /**
-     * Stores Grid instances by their chunk ID (e.g., "0,0", "1,0").
-     * @type {Map<string, Grid>}
+     * Stores Chunk instances by their ID (e.g., "0,0", "1,0").
+     * @type {Map<string, Chunk>}
      */
     #chunks;
 
@@ -26,7 +26,7 @@ export class ChunkManager {
      * Retrieves a chunk by its coordinates, create it if it doesn't exist.
      *
      * @param {Coordinates} coords - The coordinates of the chunk.
-     * @returns {Grid|undefined} The Grid instance for the chunk, or undefined if not found.
+     * @returns {Chunk} The Chunk.
      */
     at(coords) {
         const chunkId = `${coords.x},${coords.y}`;
@@ -36,7 +36,7 @@ export class ChunkManager {
 
     /**
      * Returns the map of all currently loaded chunks.
-     * @returns {Map<string, Grid>} An iterator over all Grid instances.
+     * @returns {Map<string, Chunk>} All the loaded chunks.
      */
     getAllChunks() {
         return this.#chunks;
@@ -47,12 +47,12 @@ export class ChunkManager {
      * If a chunk already exists at these coordinates, it will be regenerated.
      *
      * @param {Coordinates} coords - The coordinates of the chunk.
-     * @returns {Grid} The newly generated or regenerated Grid instance for the chunk.
+     * @returns {Chunk} The newly generated or regenerated Chunk.
      */
     regen(coords) {
-        const terrainGrid = new Grid(this.#config.gen, this.#config.grid, coords.x, coords.y);
-        terrainGrid.generate();
-        this.#chunks.set(terrainGrid.id, terrainGrid);
-        return terrainGrid;
+        const chunk = new Chunk(this.#config.gen, this.#config.grid, coords.x, coords.y);
+        chunk.generate();
+        this.#chunks.set(chunk.id, chunk);
+        return chunk;
     }
 }

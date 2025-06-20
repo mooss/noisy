@@ -4,18 +4,18 @@ import { rangeMapper } from './utils.js';
 import { RNG } from './rng.js';
 import { Coordinates, Position } from './coordinates.js';
 
-// Base dimension of a grid.
-const GRID_UNIT = 256;
+// Base dimension of a chunk in 3d space.
+const CHUNK_UNIT = 256;
 
 // x and y coordinates shift to hide simplex artifact at the origin.
 const SIM_SHIFT = 1024;
 
 /**
  * Handles terrain data storage and generation algorithms.
- * @class Grid
+ * @class Chunk
  */
-export class Grid {
-    /** @private @type {number} The number of cells along one dimension of the grid. */
+export class Chunk {
+    /** @private @type {number} The number of cells along one dimension of the chunk. */
     #size;
     /** @private @type {number} The size of a single cell in world units. */
     #cellSize;
@@ -37,7 +37,7 @@ export class Grid {
     #yOffset;
 
     /**
-     * Initializes a new Grid instance.
+     * Initializes a new Chunk instance.
      *
      * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
      * @param {GridConfig}       gridConfig       - The configuration object for grid parameters.
@@ -49,10 +49,10 @@ export class Grid {
     }
 
     /**
-     * Resets the grid with new generation parameters.
+     * Resets the chunk with new generation parameters.
      *
      * Updates the stored generation parameters and re-initializes the RNG.
-     * Reallocates the grid data array only if the grid size changes.
+     * Reallocates the chunk data array only if the chunk size changes.
      *
      * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
      * @param {GridConfig}       gridConfig       - The configuration object for grid parameters.
@@ -62,13 +62,13 @@ export class Grid {
     reset(generationConfig, gridConfig, chunkX = 0, chunkY = 0) {
         this.#generationConfig = generationConfig;
         this.#gridConfig = gridConfig;
-        this.#maxH = (GRID_UNIT / 5) * this.#gridConfig.heightMultiplier;
+        this.#maxH = (CHUNK_UNIT / 5) * this.#gridConfig.heightMultiplier;
         this.#coord = new Coordinates(chunkX, chunkY);
 
-        // Grid layout, don't reallocate unless necessary.
+        // Data layout, don't reallocate unless necessary.
         if (this.#size != this.#gridConfig.size) {
             this.#size = this.#gridConfig.size;
-            this.#cellSize = GRID_UNIT / this.#size;
+            this.#cellSize = CHUNK_UNIT / this.#size;
             this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
         }
 
@@ -117,8 +117,8 @@ export class Grid {
     }
 
     /**
-     * Gets the grid's height data.
-     * @returns {number[][]} The 2D array representing grid heights.
+     * Gets the chunk's height data.
+     * @returns {number[][]} The 2D array representing block heights.
      */
     get data() {
         return this.#data;
@@ -141,7 +141,7 @@ export class Grid {
     }
 
     /**
-     * Gets the size of the grid (number of cells per side).
+     * Gets the size of the chunk (number of cells per side).
      * @returns {number}
      */
     get size() {
@@ -152,7 +152,7 @@ export class Grid {
     // Utilities //
 
     /**
-     * Applies a function to every cell in the grid, updating its value.
+     * Applies a function to every cell in the chunk, updating its value.
      * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning a new height.
      */
     apply(fun) {
@@ -160,7 +160,7 @@ export class Grid {
     }
 
     /**
-     * Applies a function to every cell in the grid using the x and y offsets, updating its value.
+     * Applies a function to every cell in the chunk using the x and y offsets, updating its value.
      * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning a new height.
      */
     offsetApply(fun) {
@@ -168,7 +168,7 @@ export class Grid {
     }
 
     /**
-     * Iterates over every cell in the grid and executes a function.
+     * Iterates over every cell in the chunk and executes a function.
      *
      * @param {function(number, number): void} fun - The function to execute for each cell, taking (x, y).
      */
@@ -181,35 +181,35 @@ export class Grid {
     }
 
     /**
-     * Returns the height at a specific grid coordinates.
+     * Returns the height at a specific local coordinates.
      *
-     * @param {Coordinates} coord - The coordinates.
+     * @param {Coordinates} local - The coordinates.
      * @returns {number|undefined} The height at the given coordinates, undefined if out of bounds.
      */
-    heightOf(coord) {
-        if (coord.x >= 0 && coord.x < this.#size &&
-            coord.y >= 0 && coord.y < this.#size) {
-            return this.#data[coord.x][coord.y];
+    heightOf(local) {
+        if (local.x >= 0 && local.x < this.#size &&
+            local.y >= 0 && local.y < this.#size) {
+            return this.#data[local.x][local.y];
         }
         return undefined;
     }
 
     /**
-     * Returns the world position of the given grid coordinates.
+     * Returns the world position of the given local coordinates.
      *
-     * @param {Coordinates} coord - The coordinates.
+     * @param {Coordinates} local - The coordinates.
      * @returns {Position} The position corresponding to the coordinates.
      */
-    positionOf(coord) {
-        const res = new Coordinates(coord.x, coord.y).toWorld(this.#cellSize);
-        res.z = this.heightOf(coord);
+    positionOf(local) {
+        const res = new Coordinates(local.x, local.y).toWorld(this.#cellSize);
+        res.z = this.heightOf(local);
         return res;
     }
 
     /**
-     * Normalizes all height values in the grid to a range between 0.1 and maxH.
+     * Normalizes all height values in the chunk to a range between 0.1 and maxH.
      *
-     * If min and max are not provided, they are computed from the current grid data.
+     * If min and max are not provided, they are computed from the current chunk data.
      *
      * @param {number} [min] - The minimum value of the current data range.
      * @param {number} [max] - The maximum value of the current data range.
@@ -262,7 +262,7 @@ export class Grid {
     }
 
     /**
-     * Fills the grid with random height values.
+     * Fills the height data with random values.
      */
     rand() {
         this.#rng.reseed();
@@ -288,25 +288,25 @@ export class Grid {
 /**
  * Generates height data using the diamond-square algorithm.
  *
- * @param {number[][]}                       grid      - The 2D array (must be square with side length 2^n + 1) to fill.
+ * @param {number[][]}                       data      - The 2D array (must be square with side length 2^n + 1) to fill.
  * @param {function(number, number): number} rng       - A function that returns a random number within a given range `(min, max)`.
  * @param {number}                           roughness - Controls the magnitude of the random displacement. Higher values create rougher terrain.
  *
  * @returns {[number, number]} An array containing the minimum and maximum height values generated `[min, max]`.
  */
-function midpointDisplacement(grid, rng, roughness) {
-    const size = grid.length;
+function midpointDisplacement(data, rng, roughness) {
+    const size = data.length;
     let range = 1;
 
-    // Offset used to iterate through the grid.
+    // Offset used to iterate through the data.
     // Power of two. Starts big and is divided by two each iteration (adding level of details).
     let step = size - 1;
 
     // Initialize the four corners.
-    grid[0][0] = rng(0, range);
-    grid[0][size - 1] = rng(0, range);
-    grid[size - 1][0] = rng(0, range);
-    grid[size - 1][size - 1] = rng(0, range);
+    data[0][0] = rng(0, range);
+    data[0][size - 1] = rng(0, range);
+    data[size - 1][0] = rng(0, range);
+    data[size - 1][size - 1] = rng(0, range);
 
     // Keeping track of min and max heights to then normalize to the intended height range.
     let max_ = -Infinity, min_ = Infinity;
@@ -314,10 +314,10 @@ function midpointDisplacement(grid, rng, roughness) {
         if (val > max_) max_ = val;
         if (val < min_) min_ = val;
     };
-    minmax(grid[0][0]);
-    minmax(grid[0][size - 1]);
-    minmax(grid[size - 1][0]);
-    minmax(grid[size - 1][size - 1]);
+    minmax(data[0][0]);
+    minmax(data[0][size - 1]);
+    minmax(data[size - 1][0]);
+    minmax(data[size - 1][size - 1]);
 
     // Diamond-square proper.
     range *= roughness;
@@ -328,13 +328,13 @@ function midpointDisplacement(grid, rng, roughness) {
         // bit by a random value.
         for (let x = halfStep; x < size - 1; x += step) {
             for (let y = halfStep; y < size - 1; y += step) {
-                let avg = (grid[x - halfStep][y - halfStep] +
-                           grid[x - halfStep][y + halfStep] +
-                           grid[x + halfStep][y - halfStep] +
-                           grid[x + halfStep][y + halfStep]) / 4; // Average.
+                let avg = (data[x - halfStep][y - halfStep] +
+                           data[x - halfStep][y + halfStep] +
+                           data[x + halfStep][y - halfStep] +
+                           data[x + halfStep][y + halfStep]) / 4; // Average.
 
-                grid[x][y] = avg + rng(-range, range); // Nudge.
-                minmax(grid[x][y]);
+                data[x][y] = avg + rng(-range, range); // Nudge.
+                minmax(data[x][y]);
             }
         }
 
@@ -345,15 +345,15 @@ function midpointDisplacement(grid, rng, roughness) {
                 let count = 0;
                 let sum = 0;
 
-                // Points in this step can be on the edge of the grid and therefore only have two or
+                // Points in this step can be on the edge of the chunk and therefore only have two or
                 // three valid neighbours, so the coordinates must be carefully checked.
-                if (x >= halfStep) { sum += grid[x - halfStep][y]; count++; }
-                if (x + halfStep < size) { sum += grid[x + halfStep][y]; count++; }
-                if (y >= halfStep) { sum += grid[x][y - halfStep]; count++; }
-                if (y + halfStep < size) { sum += grid[x][y + halfStep]; count++; }
+                if (x >= halfStep) { sum += data[x - halfStep][y]; count++; }
+                if (x + halfStep < size) { sum += data[x + halfStep][y]; count++; }
+                if (y >= halfStep) { sum += data[x][y - halfStep]; count++; }
+                if (y + halfStep < size) { sum += data[x][y + halfStep]; count++; }
 
-                grid[x][y] = sum / count + rng(-range, range); // Average and nudge.
-                minmax(grid[x][y]);
+                data[x][y] = sum / count + rng(-range, range); // Average and nudge.
+                minmax(data[x][y]);
             }
         }
 
