@@ -40,7 +40,7 @@ function startAnimationLoop(renderer, fps) {
 
 function loadChunks(terrain) {
     const chunkCoords = config.avatar.position
-          .asChunk(config.grid.size);
+          .asChunk(config.chunks.size);
     chunkCoords.within(config.chunks.loadRadius)
         .forEach((coords) => terrain.at(coords));
 }
@@ -70,27 +70,31 @@ function main() {
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
-        activeChunk.reset(config.gen, config.grid);
+        activeChunk.reset(config.gen, config.chunks.size, config.grid.heightMultiplier);
         activeChunk.generate();
         updateTerrainMesh();
         updateAvatar();
+    }
+    const resizeChunk = () => {
+        config.avatar.chunkResize(activeChunk.size, config.chunks.size);
+        updateTerrain(); // Will update activeChunk.size.
     }
     const noOp = () => { console.log('noOp'); }
 
     // UI and controls definition.
     const gui = new GUI();
     const fps = new FpsWidget(gui);
-    config.grid.ui(gui.addFolder('Grid'), activeChunk, config.avatar, updateTerrain);
+    config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, noOp);
+    config.grid.ui(gui.addFolder('Grid'), updateTerrain);
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
-    config.chunks.ui(gui.addFolder('Chunks').close(), noOp);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
-    setupKeyboard(config.avatar, config.grid.size, updateAvatar);
+    setupKeyboard(config.avatar, config.chunks.size, updateAvatar);
 
     // Application start.
     updateTerrainMesh();
-    config.avatar.x = Math.floor(config.grid.size / 2);
-    config.avatar.y = Math.floor(config.grid.size / 2);
+    config.avatar.x = Math.floor(config.chunks.size / 2);
+    config.avatar.y = Math.floor(config.chunks.size / 2);
     updateAvatar();
     startAnimationLoop(renderer, fps);
 }

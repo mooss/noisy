@@ -1,4 +1,5 @@
 import { Coordinates } from "../coordinates.js";
+import { rangeMapper } from "../utils.js";
 
 export class AvatarConfig {
     constructor() {
@@ -15,6 +16,13 @@ export class AvatarConfig {
         parent.range(this, 'heightOffset', 0.0, 2.0, 0.1)
             .legend('Height offset')
             .onInput(update);
+    }
+
+    // Reposition the avatar when the chunk changes size.
+    chunkResize(then, now) {
+        const conv = rangeMapper(0, then, 0, now);
+        this.x = Math.round(conv(this.x));
+        this.y = Math.round(conv(this.y));
     }
 
     /** @returns {Coordinates} the global position*/

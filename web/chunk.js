@@ -27,8 +27,6 @@ export class Chunk {
     #data;
     /** @private @type {GenerationConfig} The configuration object for generation parameters. */
     #generationConfig;
-    /** @private @type {GridConfig} The configuration object for grid parameters. */
-    #gridConfig;
     /** @private @type {Coordinates} The coordinates of the chunk. */
     #coord;
     /** @private @type {number} The x offset of the chunk. */
@@ -44,8 +42,8 @@ export class Chunk {
      * @param {number}           [chunkX=0]       - The x-coordinate of the chunk.
      * @param {number}           [chunkY=0]       - The y-coordinate of the chunk.
      */
-    constructor(generationConfig, gridConfig, chunkX = 0, chunkY = 0) {
-        this.reset(generationConfig, gridConfig, chunkX, chunkY);
+    constructor(generationConfig, chunkSize, heightMultiplier, chunkX = 0, chunkY = 0) {
+        this.reset(generationConfig, chunkSize, heightMultiplier, chunkX, chunkY);
     }
 
     /**
@@ -59,15 +57,14 @@ export class Chunk {
      * @param {number}           [chunkX=0]       - The x-coordinate of the chunk.
      * @param {number}           [chunkY=0]       - The y-coordinate of the chunk.
      */
-    reset(generationConfig, gridConfig, chunkX = 0, chunkY = 0) {
+    reset(generationConfig, chunkSize, heightMultiplier, chunkX = 0, chunkY = 0) {
         this.#generationConfig = generationConfig;
-        this.#gridConfig = gridConfig;
-        this.#maxH = (CHUNK_UNIT / 5) * this.#gridConfig.heightMultiplier;
+        this.#maxH = (CHUNK_UNIT / 5) * heightMultiplier;
         this.#coord = new Coordinates(chunkX, chunkY);
 
         // Data layout, don't reallocate unless necessary.
-        if (this.#size != this.#gridConfig.size) {
-            this.#size = this.#gridConfig.size;
+        if (this.#size != chunkSize) {
+            this.#size = chunkSize;
             this.#cellSize = CHUNK_UNIT / this.#size;
             this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
         }
