@@ -1,7 +1,7 @@
 import { Renderer } from './renderer.js';
 import { FpsWidget, setupKeyboard } from './ui.js';
 import { palettes } from './palettes.js';
-import { ChunkManager } from './chunk-manager.js';
+import { Terrain } from './terrain.js';
 
 import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
@@ -38,17 +38,17 @@ function startAnimationLoop(renderer, fps) {
     animate();
 }
 
-// function loadChunks(chunkManager) {
-//     const chunkCoords = new BlockCoordinates(config.avatar.x, config.avatar.y)
-//           .asChunk(config.grid.size);
-//     chunkCoords.within(config.chunks.loadRadius)
-//         .forEach(({x, y}) => chunkManager.at(x, y));
-// }
+function loadChunks(terrain) {
+    const chunkCoords = config.avatar.position
+          .asChunk(config.grid.size);
+    chunkCoords.within(config.chunks.loadRadius)
+        .forEach((coords) => terrain.at(coords));
+}
 
 function main() {
     // Data and meshes.
-    const chunkManager = new ChunkManager(config);
-    const activeChunk = chunkManager.at(new Coordinates(0, 0));
+    const terrain = new Terrain(config);
+    const activeChunk = terrain.at(new Coordinates(1, 0));
     const terrainMesh = new TerrainMesh();
     const avatar = new AvatarMesh();
 

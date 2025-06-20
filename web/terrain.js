@@ -1,6 +1,9 @@
 import { Chunk } from './chunk.js';
 
-export class ChunkManager {
+/**
+ * Handles terrain generation and terrain mesh by managing multiple chunks.
+ */
+export class Terrain {
     /**
      * Stores Chunk instances by their ID (e.g., "0,0", "1,0").
      * @type {Map<string, Chunk>}
@@ -14,7 +17,7 @@ export class ChunkManager {
     #config;
 
     /**
-     * Creates an instance of ChunkManager.
+     * Creates an instance of Terrain.
      * @param {object} config - The application configuration object.
      */
     constructor(config) {
