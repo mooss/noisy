@@ -30,7 +30,7 @@ export class Renderer {
         this.#controls.target = new THREE.Vector3(center, center, 0);
 
         window.addEventListener('resize', this.resizeWindow.bind(this), false);
-        this.#controls.addEventListener('change', () => { this.#mustRender = true });
+        this.#controls.addEventListener('change', this.pleaseRender.bind(this));
     }
 
     addMesh(mesh) {
@@ -41,6 +41,7 @@ export class Renderer {
         this.#camera.aspect = window.innerWidth / window.innerHeight;
         this.#camera.updateProjectionMatrix();
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
+        this.pleaseRender();
     }
 
     pleaseRender() {
