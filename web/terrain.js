@@ -53,7 +53,7 @@ export class Terrain {
      * @returns {Chunk} The newly generated or regenerated Chunk.
      */
     regen(coords) {
-        const chunk = new Chunk(this.#config.gen, this.#config.chunks.size, this.#config.grid.heightMultiplier, coords.x, coords.y);
+        const chunk = new Chunk(this.#config.gen, this.#config.chunks.size, coords.x, coords.y);
         chunk.generate();
         this.#chunks.set(chunk.id, chunk);
         return chunk;

@@ -1,5 +1,4 @@
 import { GenerationConfig } from './config/generation.js';
-import { GridConfig } from './config/grid.js';
 import { rangeMapper } from './utils.js';
 import { RNG } from './rng.js';
 import { Coordinates, Position } from './coordinates.js';
@@ -38,12 +37,12 @@ export class Chunk {
      * Initializes a new Chunk instance.
      *
      * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
-     * @param {GridConfig}       gridConfig       - The configuration object for grid parameters.
+     * @param {number}           chunkSize        - The configuration object for grid parameters.
      * @param {number}           [chunkX=0]       - The x-coordinate of the chunk.
      * @param {number}           [chunkY=0]       - The y-coordinate of the chunk.
      */
-    constructor(generationConfig, chunkSize, heightMultiplier, chunkX = 0, chunkY = 0) {
-        this.reset(generationConfig, chunkSize, heightMultiplier, chunkX, chunkY);
+    constructor(generationConfig, chunkSize, chunkX = 0, chunkY = 0) {
+        this.reset(generationConfig, chunkSize, chunkX, chunkY);
     }
 
     /**
@@ -53,13 +52,13 @@ export class Chunk {
      * Reallocates the chunk data array only if the chunk size changes.
      *
      * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
-     * @param {GridConfig}       gridConfig       - The configuration object for grid parameters.
+     * @param {number}           chunkSize        - The configuration object for grid parameters.
      * @param {number}           [chunkX=0]       - The x-coordinate of the chunk.
      * @param {number}           [chunkY=0]       - The y-coordinate of the chunk.
      */
-    reset(generationConfig, chunkSize, heightMultiplier, chunkX = 0, chunkY = 0) {
+    reset(generationConfig, chunkSize, chunkX = 0, chunkY = 0) {
         this.#generationConfig = generationConfig;
-        this.#maxH = (CHUNK_UNIT / 5) * heightMultiplier;
+        this.#maxH = (CHUNK_UNIT / 5) * this.#generationConfig.heightMultiplier;
         this.#coord = new Coordinates(chunkX, chunkY);
 
         // Data layout, don't reallocate unless necessary.

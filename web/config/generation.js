@@ -3,6 +3,7 @@ export class GenerationConfig {
         this.seed = 23;               // Seed for deterministic terrain generation.
         this.terrainAlgo = 'ridge';   // Terrain creation algorithm (ridge, rand, noise, midpoint).
         this.midpointRoughness = 0.6; // Roughness factor for midpoint displacement.
+        this.heightMultiplier = 1.0;  // Multiplier for the terrain height.
         this.noise = {
             octaves: 6,         // Simplex Noise octaves to layer.
             persistence: 0.65,  // Amplitude reduction per octave.
@@ -34,6 +35,10 @@ export class GenerationConfig {
                 this.#updateAlgorithmFolders(parent);
                 regen();
             });
+
+        parent.range(this, 'heightMultiplier', 0.1, 5.0, 0.05)
+            .legend('Height multiplier')
+            .onInput(regen);
 
         ///////////
         // Noise //

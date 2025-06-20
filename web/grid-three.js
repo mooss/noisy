@@ -7,25 +7,21 @@ import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
 import { GenerationConfig } from './config/generation.js';
 import { RenderConfig } from './config/render.js';
-import { GridConfig } from './config/grid.js';
 import { AvatarMesh, TerrainMesh } from './mesh.js';
 import { GUI } from './gui.js';
 import { Coordinates } from './coordinates.js';
 
 const config = {
-    // Grid configuration.
-    grid: new GridConfig(),
-
     // Chunking system.
     chunks: new ChunkConfig(),
 
-    // Generation settings.
+    // Terrain generation.
     gen: new GenerationConfig(),
 
     // Player avatar.
     avatar: new AvatarConfig(),
 
-    // Render settings.
+    // Rendering.
     render: new RenderConfig(),
 };
 
@@ -70,7 +66,7 @@ function main() {
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
-        activeChunk.reset(config.gen, config.chunks.size, config.grid.heightMultiplier);
+        activeChunk.reset(config.gen, config.chunks.size);
         activeChunk.generate();
         updateTerrainMesh();
         updateAvatar();
@@ -85,7 +81,6 @@ function main() {
     const gui = new GUI();
     const fps = new FpsWidget(gui);
     config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, noOp);
-    config.grid.ui(gui.addFolder('Grid'), updateTerrain);
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
