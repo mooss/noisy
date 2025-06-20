@@ -24,7 +24,9 @@ export class Chunk {
     #maxH;
     /** @private @type {number[][]} The 2D array storing the height data. */
     #data;
-    /** @private @type {GenerationConfig} The configuration object for generation parameters. */
+    /** @private @type {ChunkConfig} The chunks configuration. */
+    #chunksConfig;
+    /** @private @type {GenerationConfig} The terrain generation configuration. */
     #generationConfig;
     /** @private @type {Coordinates} The offset of the chunk. */
     #offset;
@@ -39,9 +41,11 @@ export class Chunk {
      * @param {number}           chunkSize        - The configuration object for grid parameters.
      * @param {Coordinates}      [chunkCoords]    - The coordinates of the chunk.
      */
-    constructor(generationConfig, chunkSize, chunkCoords = new Coordinates(0, 0)) {
+    constructor(generationConfig, chunksConfig, chunkCoords = new Coordinates(0, 0)) {
         this.coords = chunkCoords;
-        this.reset(generationConfig, chunkSize);
+        this.#generationConfig = generationConfig;
+        this.#chunksConfig = chunksConfig;
+        this.reset();
     }
 
     /**
@@ -50,17 +54,15 @@ export class Chunk {
      * Updates the stored generation parameters and re-initializes the RNG.
      * Reallocates the chunk data array only if the chunk size changes.
      *
-     * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
-     * @param {number}           chunkSize        - The configuration object for grid parameters.
-     * @param {Coordinates}      [chunkCoords]    - The coordinates of the chunk.
+     * Takes no parameters because references to relevant config parameters are kept within the
+     * object 😬
      */
-    reset(generationConfig, chunkSize) {
-        this.#generationConfig = generationConfig;
+    reset() {
         this.#maxH = (CHUNK_UNIT / 5) * this.#generationConfig.heightMultiplier;
 
         // Data layout, don't reallocate unless necessary.
-        if (this.#size != chunkSize) {
-            this.#size = chunkSize;
+        if (this.#size != this.#chunksConfig.size) {
+            this.#size = this.#chunksConfig.size;
             this.#cellSize = CHUNK_UNIT / this.#size;
             this.#offset = new Coordinates(this.coords.x * this.#size, this.coords.y * this.#size);
             this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));

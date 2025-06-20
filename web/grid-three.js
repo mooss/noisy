@@ -66,7 +66,7 @@ function main() {
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
-        activeChunk.reset(config.gen, config.chunks.size);
+        activeChunk.reset();
         activeChunk.generate();
         updateTerrainMesh();
         updateAvatar();
