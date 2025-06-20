@@ -4,25 +4,17 @@ import { HeightGenerator } from './height-generation.js';
  * Handles terrain generation and terrain mesh by managing multiple chunks.
  */
 export class Terrain {
-    /**
-     * Stores Chunk instances by their ID (e.g., "0,0", "1,0").
-     * @type {Map<string, HeightGenerator>}
-     */
-    #chunks;
-
-    /**
-     * Reference to the application configuration.
-     * @type {object}
-     */
-    #config;
+    /** @type {Map<string, HeightGenerator>} Map id (e.g., "0,0", "1,0") => Chunk instances. */
+    #chunks = new Map();;
+    /** @type {function(Coordinates): HeightGenerator} Builds a height generator for the given coordinates */
+    #heightGen;
 
     /**
      * Creates an instance of Terrain.
-     * @param {object} config - The application configuration object.
+     * @param {function(Coordinates): HeightGenerator} heightGen - The height generator builder.
      */
-    constructor(config) {
-        this.#chunks = new Map();
-        this.#config = config;
+    constructor(heightGen) {
+        this.#heightGen = heightGen;
     }
 
     /**
@@ -38,14 +30,6 @@ export class Terrain {
     }
 
     /**
-     * Returns the map of all currently loaded chunks.
-     * @returns {Map<string, HeightGenerator>} All the loaded chunks.
-     */
-    getAllChunks() {
-        return this.#chunks;
-    }
-
-    /**
      * Generates a new terrain chunk for the given chunk coordinates.
      * If a chunk already exists at these coordinates, it will be regenerated.
      *
@@ -53,7 +37,7 @@ export class Terrain {
      * @returns {HeightGenerator} The newly generated or regenerated Chunk.
      */
     regen(coords) {
-        const chunk = new HeightGenerator(this.#config.gen, this.#config.chunks, coords);
+        const chunk = this.#heightGen(coords);
         chunk.generate();
         this.#chunks.set(chunk.id, chunk);
         return chunk;

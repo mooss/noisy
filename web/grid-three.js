@@ -10,6 +10,7 @@ import { RenderConfig } from './config/render.js';
 import { AvatarMesh, TerrainMesh } from './mesh.js';
 import { GUI } from './gui.js';
 import { Coordinates } from './coordinates.js';
+import { HeightGenerator } from './height-generation.js';
 
 const config = {
     // Chunking system.
@@ -43,7 +44,9 @@ function loadChunks(terrain) {
 
 function main() {
     // Data and meshes.
-    const terrain = new Terrain(config);
+    const terrain = new Terrain((coords) => {
+        return new HeightGenerator(config.gen, config.chunks, coords);
+    });
     const activeChunk = terrain.at(new Coordinates(1, 0));
     const terrainMesh = new TerrainMesh();
     const avatar = new AvatarMesh();
