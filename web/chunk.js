@@ -15,7 +15,7 @@ const SIM_SHIFT = 1024;
  */
 export class Chunk {
     /** @private @type {number} The number of cells along one dimension of the chunk. */
-    #size;
+    #size = undefined;
     /** @private @type {number} The size of a single cell in world units. */
     #cellSize;
     /** @private @type {RNG} The random number generator instance. */
@@ -26,23 +26,22 @@ export class Chunk {
     #data;
     /** @private @type {GenerationConfig} The configuration object for generation parameters. */
     #generationConfig;
-    /** @private @type {Coordinates} The coordinates of the chunk. */
-    #coord;
-    /** @private @type {number} The x offset of the chunk. */
-    #xOffset;
-    /** @private @type {number} The y offset of the chunk. */
-    #yOffset;
+    /** @private @type {Coordinates} The offset of the chunk. */
+    #offset;
+
+    /** @type {Coordinates} The coordinates of the chunk. */
+    coords;
 
     /**
      * Initializes a new Chunk instance.
      *
      * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
      * @param {number}           chunkSize        - The configuration object for grid parameters.
-     * @param {number}           [chunkX=0]       - The x-coordinate of the chunk.
-     * @param {number}           [chunkY=0]       - The y-coordinate of the chunk.
+     * @param {Coordinates}      [chunkCoords]    - The coordinates of the chunk.
      */
-    constructor(generationConfig, chunkSize, chunkX = 0, chunkY = 0) {
-        this.reset(generationConfig, chunkSize, chunkX, chunkY);
+    constructor(generationConfig, chunkSize, chunkCoords = new Coordinates(0, 0)) {
+        this.coords = chunkCoords;
+        this.reset(generationConfig, chunkSize);
     }
 
     /**
@@ -53,23 +52,19 @@ export class Chunk {
      *
      * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
      * @param {number}           chunkSize        - The configuration object for grid parameters.
-     * @param {number}           [chunkX=0]       - The x-coordinate of the chunk.
-     * @param {number}           [chunkY=0]       - The y-coordinate of the chunk.
+     * @param {Coordinates}      [chunkCoords]    - The coordinates of the chunk.
      */
-    reset(generationConfig, chunkSize, chunkX = 0, chunkY = 0) {
+    reset(generationConfig, chunkSize) {
         this.#generationConfig = generationConfig;
         this.#maxH = (CHUNK_UNIT / 5) * this.#generationConfig.heightMultiplier;
-        this.#coord = new Coordinates(chunkX, chunkY);
 
         // Data layout, don't reallocate unless necessary.
         if (this.#size != chunkSize) {
             this.#size = chunkSize;
             this.#cellSize = CHUNK_UNIT / this.#size;
+            this.#offset = new Coordinates(this.coords.x * this.#size, this.coords.y * this.#size);
             this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
         }
-
-        this.#xOffset = chunkX * this.#size;
-        this.#yOffset = chunkY * this.#size;
 
         const noi = this.#generationConfig.noise;
         this.#rng = new RNG({
@@ -109,7 +104,7 @@ export class Chunk {
      * @returns {string} The chunk identifier in the format "x,y".
      */
     get id() {
-        return `${this.#coord.x},${this.#coord.y}`;
+        return `${this.coords.x},${this.coords.y}`;
     }
 
     /**
@@ -160,7 +155,7 @@ export class Chunk {
      * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning a new height.
      */
     offsetApply(fun) {
-        this.range((x, y) => this.#data[x][y] = fun(x + this.#xOffset, y + this.#yOffset));
+        this.range((x, y) => this.#data[x][y] = fun(x + this.#offset.x, y + this.#offset.y));
     }
 
     /**
