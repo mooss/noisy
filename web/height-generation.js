@@ -3,17 +3,17 @@ import { rangeMapper } from './utils.js';
 import { RNG } from './rng.js';
 import { Coordinates, Position } from './coordinates.js';
 
-// Base dimension of a chunk in 3d space.
+// Base dimension of a chunk in 3d space in world units.
 export const CHUNK_UNIT = 256;
 
 // x and y coordinates shift to hide simplex artifact at the origin.
 const SIM_SHIFT = 1024;
 
 /**
- * Handles terrain data storage and generation algorithms.
- * @class Chunk
+ * Handles terrain data storage and height generation algorithms.
+ * @class HeightGenerator
  */
-export class Chunk {
+export class HeightGenerator {
     /** @private @type {number} The number of cells along one dimension of the chunk. */
     #size = undefined;
     /** @private @type {number} The size of a single cell in world units. */
@@ -22,24 +22,24 @@ export class Chunk {
     #rng;
     /** @private @type {number} The maximum height value for the terrain. */
     #maxH;
-    /** @private @type {number[][]} The 2D array storing the height data. */
-    #data;
+    /** @private @type {number[][]} The height field. */
+    #heights;
     /** @private @type {ChunkConfig} The chunks configuration. */
     #chunksConfig;
     /** @private @type {GenerationConfig} The terrain generation configuration. */
     #generationConfig;
-    /** @private @type {Coordinates} The offset of the chunk. */
+    /** @private @type {Coordinates} The offset of the chunk in world units. */
     #offset;
 
     /** @type {Coordinates} The coordinates of the chunk. */
     coords;
 
     /**
-     * Initializes a new Chunk instance.
+     * Initializes a new HeightGenerator instance.
      *
-     * @param {GenerationConfig} generationConfig - The configuration object for generation parameters.
-     * @param {number}           chunkSize        - The configuration object for grid parameters.
-     * @param {Coordinates}      [chunkCoords]    - The coordinates of the chunk.
+     * @param {GenerationConfig} generationConfig - The terrain generation configuration.
+     * @param {number}           chunksConfig     - The chunks configuration.
+     * @param {Coordinates}      [chunkCoords]    - The coordinates of the chunk containing the heights.
      */
     constructor(generationConfig, chunksConfig, chunkCoords = new Coordinates(0, 0)) {
         this.coords = chunkCoords;
@@ -49,10 +49,10 @@ export class Chunk {
     }
 
     /**
-     * Resets the chunk with new generation parameters.
+     * Resets the height generator with new generation parameters.
      *
      * Updates the stored generation parameters and re-initializes the RNG.
-     * Reallocates the chunk data array only if the chunk size changes.
+     * Reallocates the heights data array only if the chunk size changes.
      *
      * Takes no parameters because references to relevant config parameters are kept within the
      * object 😬
@@ -65,7 +65,7 @@ export class Chunk {
             this.#size = this.#chunksConfig.size;
             this.#cellSize = CHUNK_UNIT / this.#size;
             this.#offset = new Coordinates(this.coords.x * this.#size, this.coords.y * this.#size);
-            this.#data = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
+            this.#heights = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
         }
 
         const noi = this.#generationConfig.noise;
@@ -85,85 +85,52 @@ export class Chunk {
     ///////////////
     // Accessors //
 
-    /**
-     * Gets the method name of the configured algorithm.
-     * @returns {number}
-     */
-    get algorithm() {
-        return this.#generationConfig.terrainAlgo;
-    }
+    /** @returns {number} The method name of the configured algorithm. */
+    get algorithm() { return this.#generationConfig.terrainAlgo; }
 
-    /**
-     * Gets the size of a single cell.
-     * @returns {number}
-     */
-    get cellSize() {
-        return this.#cellSize;
-    }
+    /** @returns {number} The size of a single cell. */
+    get cellSize() { return this.#cellSize; }
 
-    /**
-     * Gets the chunk identifier.
-     * @returns {string} The chunk identifier in the format "x,y".
-     */
-    get id() {
-        return `${this.coords.x},${this.coords.y}`;
-    }
+    /** @returns {string} The chunk identifier in the format "x,y". */
+    get id() { return `${this.coords.x},${this.coords.y}`; }
 
-    /**
-     * Gets the chunk's height data.
-     * @returns {number[][]} The 2D array representing block heights.
-     */
-    get data() {
-        return this.#data;
-    }
+    /** @returns {number[][]} The height field. */
+    get data() { return this.#heights; }
 
-    /**
-     * Gets the maximum possible height value.
-     * @returns {number}
-     */
-    get maxH() {
-        return this.#maxH;
-    }
+    /** @returns {number} Gets the maximum possible height value. */
+    get maxH() { return this.#maxH; }
 
-    /**
-     * Gets the seed used for generation.
-     * @returns {number}
-     */
-    get seed() {
-        return this.#generationConfig.seed;
-    }
+    /** @returns {number} The seed used for generation. */
+    get seed() { return this.#generationConfig.seed; }
 
-    /**
-     * Gets the size of the chunk (number of cells per side).
-     * @returns {number}
-     */
-    get size() {
-        return this.#size;
-    }
+    /** @returns {number} The size of the chunk (number of cells per side). */
+    get size() { return this.#size; }
 
     ///////////////
     // Utilities //
 
     /**
-     * Applies a function to every cell in the chunk, updating its value.
-     * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning a new height.
+     * Applies fun to every coordinates of the height field.
+     * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning the new height.
      */
     apply(fun) {
-        this.range((x, y) => this.#data[x][y] = fun(x, y));
+        this.range((x, y) => this.#heights[x][y] = fun(x, y));
     }
 
     /**
-     * Applies a function to every cell in the chunk using the x and y offsets, updating its value.
-     * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning a new height.
+     * Applies fun to every coordinates of the height field, using the coordinates offset.
+     * The offsets are added before calling fun, they essentially shift the raw height coordinates
+     * to where the chunk is within the world.
+     *
+     * @param {function(number, number): number} fun - The function to apply, taking (x, y) and returning the new height.
      */
     offsetApply(fun) {
-        this.range((x, y) => this.#data[x][y] = fun(x + this.#offset.x, y + this.#offset.y));
+        this.range((x, y) => this.#heights[x][y] = fun(x + this.#offset.x, y + this.#offset.y));
     }
 
     /**
-     * Iterates over every cell in the chunk and executes a function.
-     *
-     * @param {function(number, number): void} fun - The function to execute for each cell, taking (x, y).
+     * Calls a function over all the coordinates of the height field.
+     * @param {function(number, number): void} fun - The function to execute for each coordinate pair, taking (x, y).
      */
     range(fun) {
         for (let x = 0; x < this.#size; x++) {
@@ -182,7 +149,7 @@ export class Chunk {
     heightOf(local) {
         if (local.x >= 0 && local.x < this.#size &&
             local.y >= 0 && local.y < this.#size) {
-            return this.#data[local.x][local.y];
+            return this.#heights[local.x][local.y];
         }
         return undefined;
     }
@@ -191,7 +158,7 @@ export class Chunk {
      * Returns the world position of the given local coordinates.
      *
      * @param {Coordinates} local - The coordinates.
-     * @returns {Position} The position corresponding to the coordinates.
+     * @returns {Position} The world position of the coordinates.
      */
     positionOf(local) {
         const res = new Coordinates(local.x, local.y).toWorld(this.#cellSize);
@@ -200,9 +167,8 @@ export class Chunk {
     }
 
     /**
-     * Normalizes all height values in the chunk to a range between 0.1 and maxH.
-     *
-     * If min and max are not provided, they are computed from the current chunk data.
+     * Normalizes all height values to a range between 0.1 and maxH.
+     * If min and max are not provided, they are computed from the current height field.
      *
      * @param {number} [min] - The minimum value of the current data range.
      * @param {number} [max] - The maximum value of the current data range.
@@ -211,52 +177,42 @@ export class Chunk {
         if (min === undefined) { // Compute min and max manually.
             min = Infinity, max = -Infinity;
             this.range((x, y) => {
-                const h = this.#data[x][y];
+                const h = this.#heights[x][y];
                 if (h < min) min = h;
                 if (h > max) max = h;
             });
         }
 
         if (min === max) { // Avoid potential division by zero.
-            this.apply((x, y) => this.#data[x][y] = this.maxH);
+            this.apply((x, y) => this.#heights[x][y] = this.maxH);
             return;
         }
 
         const norm = rangeMapper(min, max, .1, this.maxH);
-        this.apply((x, y) => norm(this.#data[x][y]));
+        this.apply((x, y) => norm(this.#heights[x][y]));
     }
 
     ///////////////////////
     // Height generation //
 
-    /**
-     * Generates terrain with the configured algorithm.
-     */
-    generate() {
-        this[this.algorithm]();
-    }
+    /** Generates terrain with the configured algorithm. */
+    generate() { this[this.algorithm](); }
 
-    /**
-     * Generates terrain using Simplex noise.
-     */
+    /** Generates terrain using Simplex noise. */
     noise() {
         this.offsetApply((x, y) => this.#rng.simplex(x, y));
         this.normalize();
     }
 
-    /**
-     * Generates terrain using the midpoint displacement (diamond-square) algorithm.
-     */
+    /** Generates terrain using the midpoint displacement (diamond-square) algorithm. */
     midpoint() {
         this.#rng.reseed();
         this.normalize(...midpointDisplacement(
-            this.#data, (min, max) => this.#rng.float(min, max), this.#generationConfig.midpointRoughness,
+            this.#heights, (min, max) => this.#rng.float(min, max), this.#generationConfig.midpointRoughness,
         ));
     }
 
-    /**
-     * Fills the height data with random values.
-     */
+    /** Fills the height data with random values. */
     rand() {
         this.#rng.reseed();
         this.apply(() => this.#rng.float(1, this.#maxH));
@@ -264,7 +220,6 @@ export class Chunk {
 
     /**
      * Generates terrain using ridge noise, based on Simplex noise.
-     *
      * Can produce 'octavian' or 'melodic' style ridges based on configuration.
      */
     ridge() {
@@ -281,25 +236,25 @@ export class Chunk {
 /**
  * Generates height data using the diamond-square algorithm.
  *
- * @param {number[][]}                       data      - The 2D array (must be square with side length 2^n + 1) to fill.
+ * @param {number[][]}                       heights   - The 2D array to fill (must be square with side length 2^n + 1).
  * @param {function(number, number): number} rng       - A function that returns a random number within a given range `(min, max)`.
  * @param {number}                           roughness - Controls the magnitude of the random displacement. Higher values create rougher terrain.
  *
  * @returns {[number, number]} An array containing the minimum and maximum height values generated `[min, max]`.
  */
-function midpointDisplacement(data, rng, roughness) {
-    const size = data.length;
+function midpointDisplacement(heights, rng, roughness) {
+    const size = heights.length;
     let range = 1;
 
-    // Offset used to iterate through the data.
+    // Offset used to iterate through the heights.
     // Power of two. Starts big and is divided by two each iteration (adding level of details).
     let step = size - 1;
 
     // Initialize the four corners.
-    data[0][0] = rng(0, range);
-    data[0][size - 1] = rng(0, range);
-    data[size - 1][0] = rng(0, range);
-    data[size - 1][size - 1] = rng(0, range);
+    heights[0][0] = rng(0, range);
+    heights[0][size - 1] = rng(0, range);
+    heights[size - 1][0] = rng(0, range);
+    heights[size - 1][size - 1] = rng(0, range);
 
     // Keeping track of min and max heights to then normalize to the intended height range.
     let max_ = -Infinity, min_ = Infinity;
@@ -307,10 +262,10 @@ function midpointDisplacement(data, rng, roughness) {
         if (val > max_) max_ = val;
         if (val < min_) min_ = val;
     };
-    minmax(data[0][0]);
-    minmax(data[0][size - 1]);
-    minmax(data[size - 1][0]);
-    minmax(data[size - 1][size - 1]);
+    minmax(heights[0][0]);
+    minmax(heights[0][size - 1]);
+    minmax(heights[size - 1][0]);
+    minmax(heights[size - 1][size - 1]);
 
     // Diamond-square proper.
     range *= roughness;
@@ -321,13 +276,13 @@ function midpointDisplacement(data, rng, roughness) {
         // bit by a random value.
         for (let x = halfStep; x < size - 1; x += step) {
             for (let y = halfStep; y < size - 1; y += step) {
-                let avg = (data[x - halfStep][y - halfStep] +
-                           data[x - halfStep][y + halfStep] +
-                           data[x + halfStep][y - halfStep] +
-                           data[x + halfStep][y + halfStep]) / 4; // Average.
+                let avg = (heights[x - halfStep][y - halfStep] +
+                           heights[x - halfStep][y + halfStep] +
+                           heights[x + halfStep][y - halfStep] +
+                           heights[x + halfStep][y + halfStep]) / 4; // Average.
 
-                data[x][y] = avg + rng(-range, range); // Nudge.
-                minmax(data[x][y]);
+                heights[x][y] = avg + rng(-range, range); // Nudge.
+                minmax(heights[x][y]);
             }
         }
 
@@ -340,13 +295,13 @@ function midpointDisplacement(data, rng, roughness) {
 
                 // Points in this step can be on the edge of the chunk and therefore only have two or
                 // three valid neighbours, so the coordinates must be carefully checked.
-                if (x >= halfStep) { sum += data[x - halfStep][y]; count++; }
-                if (x + halfStep < size) { sum += data[x + halfStep][y]; count++; }
-                if (y >= halfStep) { sum += data[x][y - halfStep]; count++; }
-                if (y + halfStep < size) { sum += data[x][y + halfStep]; count++; }
+                if (x >= halfStep) { sum += heights[x - halfStep][y]; count++; }
+                if (x + halfStep < size) { sum += heights[x + halfStep][y]; count++; }
+                if (y >= halfStep) { sum += heights[x][y - halfStep]; count++; }
+                if (y + halfStep < size) { sum += heights[x][y + halfStep]; count++; }
 
-                data[x][y] = sum / count + rng(-range, range); // Average and nudge.
-                minmax(data[x][y]);
+                heights[x][y] = sum / count + rng(-range, range); // Average and nudge.
+                minmax(heights[x][y]);
             }
         }
 
