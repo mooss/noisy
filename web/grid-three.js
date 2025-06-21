@@ -1,5 +1,5 @@
 import { Renderer } from './renderer.js';
-import { FpsWidget, setupKeyboard } from './ui.js';
+import { FpsWidget, Keyboard } from './ui.js';
 import { palettes } from './palettes.js';
 import { Terrain } from './terrain.js';
 
@@ -73,14 +73,20 @@ function main() {
     }
     const noOp = () => { console.log('noOp'); }
 
-    // UI and controls definition.
+    // UI definition.
     const gui = new GUI();
     const fps = new FpsWidget(gui);
     config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, noOp);
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
-    setupKeyboard(avatar, config.chunks, updateAvatar);
+
+    // Keyboard registration.
+    const keyboard = new Keyboard();
+    keyboard.down('KeyW', () => { avatar.y++; updateAvatar(); })
+    keyboard.down('KeyA', () => { avatar.x--; updateAvatar(); })
+    keyboard.down('KeyS', () => { avatar.y--; updateAvatar(); })
+    keyboard.down('KeyD', () => { avatar.x++; updateAvatar(); })
 
     // Application start.
     updateTerrainMesh();

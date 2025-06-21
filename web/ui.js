@@ -35,39 +35,16 @@ export class FpsWidget {
     }
 }
 
+export class Keyboard {
+    /** @type {Map<string, function(): void>} Keysdown codes to callback. */
+    #keydownCallbacks = new Map();
 
-export function setupKeyboard(avatar, chunksConfig, update) {
-    document.addEventListener('keydown', (event) => {
-        const size = chunksConfig.size;
-        let moved = false;
+    constructor() {
+        document.addEventListener('keydown', (event) => {
+            this.#keydownCallbacks.get(event.code)?.();
+        });
+    }
 
-        switch (event.code) {
-        case 'KeyW': // Up.
-            if (avatar.y < size - 1) {
-                avatar.y++;
-                moved = true;
-            }
-            break;
-        case 'KeyS': // Down.
-            if (avatar.y > 0) {
-                avatar.y--;
-                moved = true;
-            }
-            break;
-        case 'KeyA': // Left.
-            if (avatar.x > 0) {
-                avatar.x--;
-                moved = true;
-            }
-            break;
-        case 'KeyD': // Right.
-            if (avatar.x < size - 1) {
-                avatar.x++;
-                moved = true;
-            }
-            break;
-        }
-
-        if (moved) update();
-    });
+    /** Register a keydown callback, overrides the previous callback. */
+    down(code, callback) { this.#keydownCallbacks.set(code, callback); }
 }
