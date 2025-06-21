@@ -88,7 +88,7 @@ function main() {
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
-    setupKeyboard(config.avatar, config.chunks.size, updateAvatar);
+    setupKeyboard(config.avatar, config.chunks, updateAvatar);
 
     // Application start.
     updateTerrainMesh();

@@ -36,8 +36,9 @@ export class FpsWidget {
 }
 
 
-export function setupKeyboard(avatar, size, update) {
+export function setupKeyboard(avatar, chunksConfig, update) {
     document.addEventListener('keydown', (event) => {
+        const size = chunksConfig.size;
         let moved = false;
 
         switch (event.code) {
