@@ -70,9 +70,7 @@ function main() {
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
-        chunk.heights.reset();
-        chunk.heights.generate();
-        updateTerrainMesh();
+        terrain.regen();
         updateAvatar();
     }
     const resizeChunk = () => {

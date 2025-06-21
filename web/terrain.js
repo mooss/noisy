@@ -57,14 +57,24 @@ export class Terrain {
         return chunk;
     }
 
+    rangeChunks(fun) { for (const [_, chunk] of this.#chunks) fun(chunk); }
+
+    #updateOneMesh(chunk) {
+        const oldMesh = chunk.mesh;
+        chunk.mesh = this.#mkMesh(chunk.heights);
+        this.mesh.add(chunk.mesh);
+        this.mesh.remove(oldMesh);
+        oldMesh.geometry.dispose();
+        oldMesh.material.dispose();
+    }
     updateMesh() {
-        for (const [_, chunk] of this.#chunks) {
-            const oldMesh = chunk.mesh;
-            chunk.mesh = this.#mkMesh(chunk.heights);
-            this.mesh.add(chunk.mesh);
-            this.mesh.remove(oldMesh);
-            oldMesh.geometry.dispose();
-            oldMesh.material.dispose();
-        }
+        this.rangeChunks(this.#updateOneMesh.bind(this));
+    }
+    regen() {
+        this.rangeChunks((chunk) => {
+            chunk.heights.reset();
+            chunk.heights.generate();
+            this.#updateOneMesh(chunk);
+        })
     }
 }
