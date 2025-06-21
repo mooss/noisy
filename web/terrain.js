@@ -8,11 +8,11 @@ export class Chunk {
 
 /** Dynamically manages terrain as a collection of chunks. */
 export class Terrain {
-    /** @private @type {Map<string, Chunk>} Map id (e.g., "0,0", "1,0") => Chunk instances. */
+    /** @type {Map<string, Chunk>} Map id (e.g., "0,0", "1,0") => Chunk instances. */
     #chunks = new Map();;
-    /** @private @type {function(Coordinates): HeightGenerator} Returns the heights at the given chunk coordinates. */
+    /** @type {function(Coordinates): HeightGenerator} Returns the heights at the given chunk coordinates. */
     #mkHeights;
-    /** @private @type {function(HeightGenerator): THREE.Mesh} Returns the mesh for the given heights. */
+    /** @type {function(HeightGenerator): THREE.Mesh} Returns the mesh for the given heights. */
     #mkMesh;
     /** @type {THREE.Group} The mesh group of every active chunk. */
     mesh = new THREE.Group();

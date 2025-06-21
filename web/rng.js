@@ -5,11 +5,9 @@ import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/si
 
 /**
  * Creates a Linear Congruential Generator (LCG) that produces pseudorandom values between 0 and 1.
- *
  * This provides a deterministic alternative to Math.random() since it can be seeded.
  *
  * @param {number} seed The initial seed value for the generator.
- *
  * @returns {() => number} A function that returns a pseudorandom float (1 <= res < max).
  */
 function createLCG(seed) {
@@ -29,7 +27,6 @@ function createLCG(seed) {
  * based on a provided seed.
  *
  * @param {number} seed The seed to initialize the pseudorandom number generator.
- *
  * @returns {function(min: number, max: number): number} A function that returns a float (min <= res < max).
  */
 function mkRng(seed) {
@@ -49,7 +46,6 @@ function mkRng(seed) {
  * @param {function(number, number): number} warpy    - Noise function for warping the y-coordinate.
  * @param {number}                           strength - The magnitude of the warp effect.
  * @param {number}                           simshift - A constant offset applied to all coordinates.
- *
  * @returns {function(number, number, number): number} The warped noise function.
  */
 function warpedNoise(noise, warpx, warpy, strength, simshift) {
@@ -73,15 +69,14 @@ function warpedNoise(noise, warpx, warpy, strength, simshift) {
  * noise, all derived from a single initial seed.
  */
 export class RNG {
-    /** @private @type {function(number, number, number): number} */
+    /** @type {function(number, number, number): number} */
     #noise;
-    /** @private @type {function(number, number): number} */
+    /** @type {function(number, number): number} */
     #rng;
 
     /**
      * Creates an instance of RNG.
      *
-     * @constructor
      * @param {object}  options             - Configuration options for the generator.
      * @param {number}  options.seed        - The master seed for all random generation.
      * @param {number}  options.warp        - The strength of the domain warping effect on the noise.
@@ -115,7 +110,6 @@ export class RNG {
 
     /**
      * Reseeds the internal pseudo-random number generator (`#rng`).
-     *
      * @param {number} [seed=this.seed] - The new seed (defaulting to the current).
      */
     reseed(seed = this.seed) {
@@ -138,7 +132,6 @@ export class RNG {
      *
      * @param {number} min - The inclusive lower bound of the range.
      * @param {number} max - The exclusive upper bound of the range.
-     *
      * @returns {number} A random number such that `min <= result < max`.
      */
     float(min, max) {
@@ -151,11 +144,9 @@ export class RNG {
     /**
      * Calculates fractal noise by summing multiple layers (octaves) of a base noise function.
      *
-     * @private
      * @param {number}                                   x                   - The x-coordinate.
      * @param {number}                                   y                   - The y-coordinate.
      * @param {function(number, number, number): number} [noise=this.#noise] - The noise function to layer.
-     *
      * @returns {number} The total combined noise value.
      */
     #layeredNoise(x, y, noise = this.#noise) {
@@ -180,7 +171,6 @@ export class RNG {
      *
      * @param {number} x - The x-coordinate.
      * @param {number} y - The y-coordinate.
-     *
      * @returns {number} The simplex noise value.
      */
     simplex(x, y) {
@@ -198,7 +188,6 @@ export class RNG {
      *
      * @param {number} x - The x-coordinate.
      * @param {number} y - The y-coordinate.
-     *
      * @returns {number} The octavian ridge noise value.
      */
     octavianRidge(x, y) {
@@ -217,7 +206,6 @@ export class RNG {
      *
      * @param {number} x - The x-coordinate.
      * @param {number} y - The y-coordinate.
-     *
      * @returns {number} The melodic ridge noise value.
      */
     melodicRidge(x, y) {
@@ -233,9 +221,7 @@ export class RNG {
      * This involves taking the absolute value to create sharp "V" shapes (valleys) and optionally
      * inverting them to create ridges and/or squaring them for more dramatic features.
      *
-     * @private
      * @param {number} signal - The input noise signal, typically in the range [-1, 1] but anything will do.
-     *
      * @returns {number} The transformed signal.
      */
     #ridger(signal) {

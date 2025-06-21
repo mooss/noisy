@@ -14,21 +14,21 @@ const SIM_SHIFT = 1024;
  * @class HeightGenerator
  */
 export class HeightGenerator {
-    /** @private @type {number} The number of cells along one dimension of the chunk. */
+    /** @type {number} The number of cells along one dimension of the chunk. */
     #size = undefined;
-    /** @private @type {number} The size of a single cell in world units. */
+    /** @type {number} The size of a single cell in world units. */
     #cellSize;
-    /** @private @type {RNG} The random number generator instance. */
+    /** @type {RNG} The random number generator instance. */
     #rng;
-    /** @private @type {number} The maximum height value for the terrain. */
+    /** @type {number} The maximum height value for the terrain. */
     #maxH;
-    /** @private @type {number[][]} The height field. */
+    /** @type {number[][]} The height field. */
     #heights;
-    /** @private @type {ChunkConfig} The chunks configuration. */
+    /** @type {ChunkConfig} The chunks configuration. */
     #chunksConfig;
-    /** @private @type {GenerationConfig} The terrain generation configuration. */
+    /** @type {GenerationConfig} The terrain generation configuration. */
     #generationConfig;
-    /** @private @type {Coordinates} The offset of the chunk in world units. */
+    /** @type {Coordinates} The offset of the chunk in world units. */
     #offset;
 
     /** @type {Coordinates} The coordinates of the chunk. */
