@@ -6,9 +6,7 @@ export class Chunk {
     }
 }
 
-/**
- * Handles terrain generation and terrain mesh by managing multiple chunks.
- */
+/** Dynamically manages terrain as a collection of chunks. */
 export class Terrain {
     /** @private @type {Map<string, Chunk>} Map id (e.g., "0,0", "1,0") => Chunk instances. */
     #chunks = new Map();;
@@ -57,8 +55,19 @@ export class Terrain {
         return chunk;
     }
 
-    rangeChunks(fun) { for (const [_, chunk] of this.#chunks) fun(chunk); }
+    ///////////////////
+    // Active chunks //
 
+    /**
+     * Calls a function on all active chunks.
+     * @param {function(Chunk): void} fun - The function to apply to each chunk.
+     */
+    #rangeActive(fun) { for (const [_, chunk] of this.#chunks) fun(chunk); }
+
+    /**
+     * Updates the mesh of a single chunk.
+     * @param {Chunk} chunk - The chunk whose mesh needs to be updated.
+     */
     #updateOneMesh(chunk) {
         const oldMesh = chunk.mesh;
         chunk.mesh = this.#mkMesh(chunk.heights);
@@ -67,11 +76,15 @@ export class Terrain {
         oldMesh.geometry.dispose();
         oldMesh.material.dispose();
     }
+
+    /** Updates the mesh of all active chunks. */
     updateMesh() {
-        this.rangeChunks(this.#updateOneMesh.bind(this));
+        this.#rangeActive(this.#updateOneMesh.bind(this));
     }
+
+    /** Regenerates the heights and updates the mesh of all active chunks. */
     regen() {
-        this.rangeChunks((chunk) => {
+        this.#rangeActive((chunk) => {
             chunk.heights.reset();
             chunk.heights.generate();
             this.#updateOneMesh(chunk);
