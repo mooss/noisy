@@ -7,10 +7,11 @@ import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
 import { GenerationConfig } from './config/generation.js';
 import { RenderConfig } from './config/render.js';
-import { AvatarMesh, createTerrainMesh } from './mesh.js';
+import { createTerrainMesh } from './mesh.js';
 import { GUI } from './gui.js';
 import { Coordinates } from './coordinates.js';
 import { HeightGenerator } from './height-generation.js';
+import { Avatar } from './avatar.js';
 
 const config = {
     // Chunking system.
@@ -35,13 +36,6 @@ function startAnimationLoop(renderer, fps) {
     animate();
 }
 
-function loadChunks(terrain) {
-    const chunkCoords = config.avatar.position
-          .asChunk(config.chunks.size);
-    chunkCoords.within(config.chunks.loadRadius)
-        .forEach((coords) => terrain.at(coords));
-}
-
 function main() {
     // Data and meshes.
     const terrain = new Terrain((coords) => {
@@ -50,7 +44,7 @@ function main() {
         return createTerrainMesh(heights, palettes[config.render.palette], config.render.style);
     });
     const chunk = terrain.at(new Coordinates(0, 0));
-    const avatar = new AvatarMesh();
+    const avatar = new Avatar();
 
     // Renderer.
     const renderer = new Renderer();
@@ -63,7 +57,7 @@ function main() {
         renderer.pleaseRender();
     }
     const updateAvatar = () => {
-        const pos = chunk.heights.positionOf(config.avatar.position);
+        const pos = chunk.heights.positionOf(avatar.coords);
         pos.z += config.avatar.heightOffset * chunk.heights.cellSize;
         avatar.setPosition(pos);
         avatar.setScale(config.avatar.size * chunk.heights.cellSize);
@@ -74,7 +68,7 @@ function main() {
         updateAvatar();
     }
     const resizeChunk = () => {
-        config.avatar.chunkResize(chunk.heights.size, config.chunks.size);
+        avatar.chunkResize(chunk.heights.size, config.chunks.size);
         updateTerrain(); // Will update activeChunk.size.
     }
     const noOp = () => { console.log('noOp'); }
@@ -86,12 +80,12 @@ function main() {
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
-    setupKeyboard(config.avatar, config.chunks, updateAvatar);
+    setupKeyboard(avatar, config.chunks, updateAvatar);
 
     // Application start.
     updateTerrainMesh();
-    config.avatar.x = Math.floor(config.chunks.size / 2);
-    config.avatar.y = Math.floor(config.chunks.size / 2);
+    avatar.x = Math.floor(config.chunks.size / 2);
+    avatar.y = Math.floor(config.chunks.size / 2);
     updateAvatar();
     startAnimationLoop(renderer, fps);
 }

@@ -1,10 +1,5 @@
-import { Coordinates } from "../coordinates.js";
-import { rangeMapper } from "../utils.js";
-
 export class AvatarConfig {
     constructor() {
-        this.x = undefined;
-        this.y = undefined;
         this.size = 0.5;       // Avatar sphere radius (cell size multiplier).
         this.heightOffset = 0; // How high above the terrain the avatar floats (cell size multiplier).
     }
@@ -16,17 +11,5 @@ export class AvatarConfig {
         parent.range(this, 'heightOffset', 0.0, 2.0, 0.1)
             .legend('Height offset')
             .onInput(update);
-    }
-
-    // Reposition the avatar when the chunk changes size.
-    chunkResize(then, now) {
-        const conv = rangeMapper(0, then, 0, now);
-        this.x = Math.round(conv(this.x));
-        this.y = Math.round(conv(this.y));
-    }
-
-    /** @returns {Coordinates} the global position*/
-    get position() {
-        return new Coordinates(this.x, this.y);
     }
 }

@@ -177,22 +177,3 @@ export function createTerrainMesh(heights, palette, style) {
     mesh.translateY(heights.coords.y * CHUNK_UNIT);
     return mesh;
 }
-
-export class AvatarMesh {
-    /** @type {THREE.Mesh} */
-    mesh;
-
-    constructor() {
-        const geometry = new THREE.SphereGeometry(1, 32, 32);
-        const material = new THREE.MeshStandardMaterial({ color: 0xff0000 }); // Red sphere.
-        this.mesh = new THREE.Mesh(geometry, material);
-    }
-
-    setPosition(pos) {
-        this.mesh.position.set(pos.x, pos.y, pos.z);
-    }
-
-    setScale(scale) {
-        this.mesh.scale.set(scale, scale, scale);
-    }
-}
