@@ -52,7 +52,7 @@ export class HeightGenerator {
      * Resets the height generator with new generation parameters.
      *
      * Updates the stored generation parameters and re-initializes the RNG.
-     * Reallocates the heights data array only if the chunk size changes.
+     * Reallocates the heights container only if the chunk size changes.
      *
      * Takes no parameters because references to relevant config parameters are kept within the
      * object 😬

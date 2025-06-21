@@ -46,36 +46,39 @@ function main() {
     // Data and meshes.
     const terrain = new Terrain((coords) => {
         return new HeightGenerator(config.gen, config.chunks, coords);
+    }, (heights) => {
+        const mesh = new TerrainMesh();
+        mesh.update(heights, palettes[config.render.palette], config.render.style);
+        return mesh;
     });
-    const activeChunk = terrain.at(new Coordinates(1, 0));
-    const terrainMesh = new TerrainMesh();
+    const chunk = terrain.at(new Coordinates(1, 0));
     const avatar = new AvatarMesh();
 
     // Renderer.
-    const renderer = new Renderer(activeChunk.size * activeChunk.cellSize);
-    renderer.addMesh(terrainMesh.mesh);
+    const renderer = new Renderer(chunk.heights.size * chunk.heights.cellSize);
+    renderer.addMesh(chunk.mesh.mesh);
     renderer.addMesh(avatar.mesh);
 
     // UI callbacks.
     const updateTerrainMesh = () => {
-        terrainMesh.update(activeChunk, palettes[config.render.palette], config.render.style);
+        chunk.mesh.update(chunk.heights, palettes[config.render.palette], config.render.style);
         renderer.pleaseRender();
     }
     const updateAvatar = () => {
-        const pos = activeChunk.positionOf(config.avatar.position);
-        pos.z += config.avatar.heightOffset * activeChunk.cellSize;
+        const pos = chunk.heights.positionOf(config.avatar.position);
+        pos.z += config.avatar.heightOffset * chunk.heights.cellSize;
         avatar.setPosition(pos);
-        avatar.setScale(config.avatar.size * activeChunk.cellSize);
+        avatar.setScale(config.avatar.size * chunk.heights.cellSize);
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
-        activeChunk.reset();
-        activeChunk.generate();
+        chunk.heights.reset();
+        chunk.heights.generate();
         updateTerrainMesh();
         updateAvatar();
     }
     const resizeChunk = () => {
-        config.avatar.chunkResize(activeChunk.size, config.chunks.size);
+        config.avatar.chunkResize(chunk.heights.size, config.chunks.size);
         updateTerrain(); // Will update activeChunk.size.
     }
     const noOp = () => { console.log('noOp'); }
