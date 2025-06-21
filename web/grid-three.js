@@ -53,7 +53,7 @@ function main() {
     const avatar = new AvatarMesh();
 
     // Renderer.
-    const renderer = new Renderer(chunk.heights.size * chunk.heights.cellSize);
+    const renderer = new Renderer();
     renderer.addMesh(terrain.mesh);
     renderer.addMesh(avatar.mesh);
 

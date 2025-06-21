@@ -1,3 +1,5 @@
+import { CHUNK_UNIT } from "./height-generation.js";
+
 export class Renderer {
     #scene;
     #camera;
@@ -5,12 +7,12 @@ export class Renderer {
     #controls;
     #mustRender = true;
 
-    constructor(chunkSide) {
+    constructor() {
         this.#scene = new THREE.Scene();
         this.#scene.background = new THREE.Color(0, 0, 0);
 
-        const camDist = chunkSide * 1.2 + 50;
-        const center = chunkSide / 2;
+        const camDist = CHUNK_UNIT * 1.2 + 50;
+        const center = CHUNK_UNIT / 2;
         this.#camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, .1, camDist * 2);
         this.#camera.position.set(center, center - camDist * 0.7, camDist * 0.7);
 
