@@ -1,6 +1,4 @@
 import { HeightGenerator } from './height-generation.js';
-import { TerrainMesh } from './mesh.js';
-
 export class Chunk {
     constructor(heights, mesh) {
         this.heights = heights;
@@ -12,19 +10,19 @@ export class Chunk {
  * Handles terrain generation and terrain mesh by managing multiple chunks.
  */
 export class Terrain {
-    /** @type {Map<string, Chunk>} Map id (e.g., "0,0", "1,0") => Chunk instances. */
+    /** @private @type {Map<string, Chunk>} Map id (e.g., "0,0", "1,0") => Chunk instances. */
     #chunks = new Map();;
-    /** @type {function(Coordinates): HeightGenerator} Returns the heights at the given chunk coordinates. */
+    /** @private @type {function(Coordinates): HeightGenerator} Returns the heights at the given chunk coordinates. */
     #mkHeights;
-    /** @type {function(HeightGenerator): TerrainMesh} Returns the mesh for the given heights. */
+    /** @private @type {function(HeightGenerator): THREE.Mesh} Returns the mesh for the given heights. */
     #mkMesh;
-    // /** @type {THREE.Group} The mesh group of every loaded chunk. */
-    // #mesh;
+    /** @type {THREE.Group} The mesh group of every active chunk. */
+    mesh = new THREE.Group();
 
     /**
      * Creates an instance of Terrain.
      * @param {function(Coordinates): HeightGenerator} mkHeights - The heights builder.
-     * @param {function(HeightGenerator): TerrainMesh} mkMesh   - The mesh builder.
+     * @param {function(HeightGenerator): Three.Mesh}  mkMesh   - The mesh builder.
      */
     constructor(mkHeights, mkMesh) {
         this.#mkHeights = mkHeights;
@@ -53,9 +51,20 @@ export class Terrain {
     #generate(coords) {
         const heights = this.#mkHeights(coords);
         heights.generate();
-        const mesh = this.#mkMesh(heights);
-        const chunk = new Chunk(heights, mesh);
+        const chunk = new Chunk(heights, this.#mkMesh(heights));
+        this.mesh.add(chunk.mesh);
         this.#chunks.set(heights.id, chunk);
         return chunk;
+    }
+
+    updateMesh() {
+        for (const [_, chunk] of this.#chunks) {
+            const oldMesh = chunk.mesh;
+            chunk.mesh = this.#mkMesh(chunk.heights);
+            this.mesh.add(chunk.mesh);
+            this.mesh.remove(oldMesh);
+            oldMesh.geometry.dispose();
+            oldMesh.material.dispose();
+        }
     }
 }

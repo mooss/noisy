@@ -89,7 +89,7 @@ export function createSurfaceMesh(heights, palette) {
  * @param {string}          type    - Shape of the prism ('hexagon' or 'square').
  * @param {HeightGenerator} heights - Terrain data.
  * @param {Array}           palette - Color palette for height-based interpolation
- * @returns {THREE.Mesh} The generated prism mesh
+ * @returns {THREE.Mesh} The generated prism mesh.
  */
 export function createPrismMeshes(type, heights, palette) {
     const { size, cellSize, maxH, data } = heights;
@@ -149,56 +149,33 @@ export function createPrismMeshes(type, heights, palette) {
     return new THREE.Mesh(mergedGeometry, new THREE.MeshStandardMaterial({ vertexColors: true }));
 }
 
-export class TerrainMesh {
-    /**
-     * @private @type {THREE.Group} The group containing the terrain mesh.
-     * A group made of a single mesh is used here instead of the mesh itself so that it only has to
-     * be added to the scene once and can be freely modified afterwards.
-     */
-    #mesh;
-
-    constructor() {
-        this.#mesh = new THREE.Group();
+/**
+ * Creates a terrain mesh.
+ *
+ * @param {HeightGenerator} heights - Terrain data.
+ * @param {Array}           palette - Color palette for height-based interpolation.
+ * @param {string}          style   - Style of mesh to create ('hexPrism', 'quadPrism' or 'surface').
+ * @returns {THREE.Mesh} The terrain mesh.
+ */
+export function createTerrainMesh(heights, palette, style) {
+    let mesh;
+    switch (style) {
+    case 'hexPrism':
+        mesh = createPrismMeshes('hexagon', heights, palette);
+        break;
+    case 'quadPrism':
+        mesh = createPrismMeshes('square', heights, palette);
+        break;
+    case 'surface':
+        mesh = createSurfaceMesh(heights, palette);
+        break;
+    default:
+        throw new Error(`Unknown render style ${style}`);
     }
 
-    #createMeshes(heights, palette, style) {
-        let child;
-        switch (style) {
-        case 'hexPrism':
-            child = createPrismMeshes('hexagon', heights, palette);
-            break;
-        case 'quadPrism':
-            child = createPrismMeshes('square', heights, palette);
-            break;
-        case 'surface':
-            child = createSurfaceMesh(heights, palette);
-            break;
-        default:
-            throw new Error(`Unknown render style ${style}`);
-        }
-
-        child.translateX(heights.coords.x * CHUNK_UNIT);
-        child.translateY(heights.coords.y * CHUNK_UNIT);
-        this.#mesh.add(child);
-    }
-
-    #clear() {
-        while (this.#mesh.children.length > 0) {
-            const child = this.#mesh.children[0];
-            this.#mesh.remove(child);
-            child.geometry.dispose();
-            child.material.dispose();
-        }
-    }
-
-    update(heights, palette, style) {
-        this.#clear();
-        this.#createMeshes(heights, palette, style);
-    }
-
-    get mesh() {
-        return this.#mesh;
-    }
+    mesh.translateX(heights.coords.x * CHUNK_UNIT);
+    mesh.translateY(heights.coords.y * CHUNK_UNIT);
+    return mesh;
 }
 
 export class AvatarMesh {

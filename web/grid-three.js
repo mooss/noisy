@@ -7,7 +7,7 @@ import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
 import { GenerationConfig } from './config/generation.js';
 import { RenderConfig } from './config/render.js';
-import { AvatarMesh, TerrainMesh } from './mesh.js';
+import { AvatarMesh, createTerrainMesh } from './mesh.js';
 import { GUI } from './gui.js';
 import { Coordinates } from './coordinates.js';
 import { HeightGenerator } from './height-generation.js';
@@ -47,21 +47,19 @@ function main() {
     const terrain = new Terrain((coords) => {
         return new HeightGenerator(config.gen, config.chunks, coords);
     }, (heights) => {
-        const mesh = new TerrainMesh();
-        mesh.update(heights, palettes[config.render.palette], config.render.style);
-        return mesh;
+        return createTerrainMesh(heights, palettes[config.render.palette], config.render.style);
     });
-    const chunk = terrain.at(new Coordinates(1, 0));
+    const chunk = terrain.at(new Coordinates(0, 0));
     const avatar = new AvatarMesh();
 
     // Renderer.
     const renderer = new Renderer(chunk.heights.size * chunk.heights.cellSize);
-    renderer.addMesh(chunk.mesh.mesh);
+    renderer.addMesh(terrain.mesh);
     renderer.addMesh(avatar.mesh);
 
     // UI callbacks.
     const updateTerrainMesh = () => {
-        chunk.mesh.update(chunk.heights, palettes[config.render.palette], config.render.style);
+        terrain.updateMesh();
         renderer.pleaseRender();
     }
     const updateAvatar = () => {
