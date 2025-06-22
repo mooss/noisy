@@ -17,10 +17,20 @@ export class ChunkConfig {
     get power() { return this.#power; }
     get size() { return 2**this.power + 1; }
     get cellSize() { return CHUNK_UNIT / this.size; }
+    get converter() { return new CoordinatesConverter(this); }
 
     ui(parent, resize, load) {
         parent.range(this, 'power', 1, 8, 1).legend('Grid size').onInput(resize);
         parent.range(this, 'loadRadius', 0, 8, 1).legend('Load radius').onInput(load);
         parent.range(this, 'unloadRadius', 0, 4, 1).legend('Unload radius');
     }
+}
+
+export class CoordinatesConverter {
+    #config;
+    constructor(config) { this.#config = config; }
+    toChunk(global) { return global.toChunk(this.#config.size); }
+    toLocal(global) { return global.toLocal(this.#config.size); }
+    toGlobal(chunk, local) { return local.toGlobal(chunk); }
+    toWorld(global) { return global.toWorld(this.#config.cellSize); }
 }

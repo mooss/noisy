@@ -155,18 +155,6 @@ export class HeightGenerator {
     }
 
     /**
-     * Returns the world position of the given local coordinates.
-     *
-     * @param {Coordinates} local - The coordinates.
-     * @returns {Position} The world position of the coordinates.
-     */
-    positionOf(global) {
-        const res = global.toWorld(this.#cellSize);
-        res.z = this.heightOf(global.toLocal(this.#size));
-        return res;
-    }
-
-    /**
      * Normalizes all height values to a range between 0.1 and maxH.
      * If min and max are not provided, they are computed from the current height field.
      *
