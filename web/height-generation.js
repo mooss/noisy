@@ -83,9 +83,6 @@ export class HeightGenerator {
     /** @returns {string} The chunk identifier in the format "x,y". */
     get id() { return `${this.coords.x},${this.coords.y}`; }
 
-    /** @returns {number[][]} The height field. */
-    get data() { return this.#heights; }
-
     /** @returns {number} Gets the maximum possible height value. */
     get maxH() { return this.#maxH; }
 
@@ -135,12 +132,8 @@ export class HeightGenerator {
      * @param {Coordinates} local - The coordinates.
      * @returns {number|undefined} The height at the given coordinates, undefined if out of bounds.
      */
-    heightOf(local) {
-        if (local.x >= 0 && local.x < this.#size &&
-            local.y >= 0 && local.y < this.#size) {
-            return this.#heights[local.x][local.y];
-        }
-        return undefined;
+    at(x, y) {
+        return this.#heights[x][y];
     }
 
     /**

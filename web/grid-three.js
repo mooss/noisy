@@ -60,8 +60,9 @@ function main() {
     }
     const updateAvatar = () => {
         const chunk = terrain.chunkAt(conv.toChunk(avatar.coords));
+        const local = conv.toLocal(avatar.coords)
         const pos = conv.toWorld(avatar.coords);
-        pos.z = chunk.heights.heightOf(conv.toLocal(avatar.coords)) + config.avatar.heightOffset * config.chunks.blockSize;
+        pos.z = chunk.heights.at(local.x, local.y) + config.avatar.heightOffset * config.chunks.blockSize;
         avatar.setPosition(pos);
         avatar.setScale(config.avatar.size * config.chunks.blockSize);
         renderer.pleaseRender();
