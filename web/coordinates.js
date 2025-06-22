@@ -1,6 +1,8 @@
 /////////////////////////
 // Integer coordinates //
 
+import { CHUNK_UNIT } from "./height-generation.js";
+
 /**
  * Represents 2D integer coordinates for blocks, either locally within a chunk or globally within
  * the grid.
@@ -21,41 +23,43 @@ export class Coordinates {
     }
 
     /**
-     * Convert in-place global block coordinates to the coordinates of the chunk containing them.
+     * Convert global block coordinates to the coordinates of the chunk containing them.
      *
      * @param {number} chunkSize - The size of a chunk.
-     * @returns {Coordinates} this.
+     * @returns {Coordinates} The chunk coordinates.
      */
-    asChunk(chunkSize) {
-        this.x = Math.floor(this.x / chunkSize);
-        this.y = Math.floor(this.y / chunkSize);
-        return this;
+    toChunk(chunkSize) {
+        return new Coordinates(
+            Math.floor(this.x / chunkSize),
+            Math.floor(this.y / chunkSize)
+        );
     }
 
     /**
-     * Convert in-place global block coordinates to local block coordinates within their chunk.
+     * Convert global block coordinates to local block coordinates within their chunk.
      *
      * @param {number} chunkSize - The size of a chunk.
-     * @returns {Coordinates} this.
+     * @returns {Coordinates} The local coordinates.
      */
-    asLocal(chunkSize) {
-        this.x = ((this.x % chunkSize) + chunkSize) % chunkSize;
-        this.y = ((this.y % chunkSize) + chunkSize) % chunkSize;
-        return this;
+    toLocal(chunkSize) {
+        return new Coordinates(
+            ((this.x % chunkSize) + chunkSize) % chunkSize,
+            ((this.y % chunkSize) + chunkSize) % chunkSize
+        );
     }
 
     /**
-     * Convert in-place local block coordinates to global block coordinates given the coordinates
-     * of their chunk.
+     * Convert local block coordinates to global block coordinates given the coordinates of their
+     * chunk.
      *
      * @param {Coordinates} chunkCoords - The chunk block coordinates.
-     * @param {number}      chunkSize   - The size of a chunk in world units.
-     * @returns {Coordinates} this.
+     * @returns {Coordinates} The global coordinates.
      */
-    asGlobal(chunkCoords, chunkSize) {
-        this.x = chunkCoords.x * chunkSize + this.x;
-        this.y = chunkCoords.y * chunkSize + this.y;
-        return this;
+    toGlobal(chunkCoords) {
+        return new Coordinates(
+            chunkCoords.x * CHUNK_UNIT + this.x,
+            chunkCoords.y * CHUNK_UNIT + this.y
+        );
     }
 
     /**

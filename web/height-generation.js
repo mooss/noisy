@@ -160,9 +160,9 @@ export class HeightGenerator {
      * @param {Coordinates} local - The coordinates.
      * @returns {Position} The world position of the coordinates.
      */
-    positionOf(local) {
-        const res = new Coordinates(local.x, local.y).toWorld(this.#cellSize);
-        res.z = this.heightOf(local);
+    positionOf(global) {
+        const res = global.toWorld(this.#cellSize);
+        res.z = this.heightOf(global.toLocal(this.#size));
         return res;
     }
 

@@ -43,7 +43,6 @@ function main() {
     }, (heights) => {
         return createTerrainMesh(heights, palettes[config.render.palette], config.render.style);
     });
-    const chunk = terrain.at(new Coordinates(0, 0));
     const avatar = new Avatar();
 
     // Renderer.
@@ -57,10 +56,11 @@ function main() {
         renderer.pleaseRender();
     }
     const updateAvatar = () => {
+        const chunk = terrain.chunkAt(avatar.coords.toChunk(config.chunks.size));
         const pos = chunk.heights.positionOf(avatar.coords);
-        pos.z += config.avatar.heightOffset * chunk.heights.cellSize;
+        pos.z += config.avatar.heightOffset * config.chunks.cellSize;
         avatar.setPosition(pos);
-        avatar.setScale(config.avatar.size * chunk.heights.cellSize);
+        avatar.setScale(config.avatar.size * config.chunks.cellSize);
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
@@ -68,8 +68,8 @@ function main() {
         updateAvatar();
     }
     const resizeChunk = () => {
-        avatar.chunkResize(chunk.heights.size, config.chunks.size);
-        updateTerrain(); // Will update activeChunk.size.
+        avatar.chunkResize(config.chunks.previousSize, config.chunks.size);
+        updateTerrain();
     }
     const noOp = () => { console.log('noOp'); }
 

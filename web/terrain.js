@@ -33,7 +33,7 @@ export class Terrain {
      * @param {Coordinates} coords - The coordinates of the chunk.
      * @returns {Chunk} The Chunk.
      */
-    at(coords) {
+    chunkAt(coords) {
         const chunkId = `${coords.x},${coords.y}`;
         if (this.#chunks.has(chunkId)) return this.#chunks.get(chunkId);
         return this.#generate(coords);
