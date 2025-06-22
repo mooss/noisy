@@ -1,3 +1,5 @@
+import { mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
+
 export class GenerationConfig {
     constructor() {
         this.seed = 23;               // Seed for deterministic terrain generation.
@@ -16,6 +18,13 @@ export class GenerationConfig {
             },
         };
     }
+
+    generator(chunkSize) {
+        return new HeightFieldBuilder(this, chunkSize).generator;
+    }
+
+    ////////
+    // UI //
 
     ui(parent, regen) {
         //////////
@@ -92,5 +101,46 @@ export class GenerationConfig {
                 folder.hide();
             }
         }
+    }
+}
+
+class HeightFieldBuilder {
+    #c; #size;
+    constructor(generationConfig, chunkSize) {
+        this.#c = generationConfig;
+        this.#size = chunkSize;
+    }
+
+    #layered(noise) { return mkLayering(
+        noise, this.#c.noise.octaves, this.#c.noise.fundamental / this.#size,
+        this.#c.noise.persistence, this.#c.noise.lacunarity
+    ) }
+
+    get #simplex() { return mkSimplex(this.#c.seed, this.#c.noise.warpingStrength) }
+    get #ridger() {
+        return mkRidger(this.#c.noise.ridge.invertSignal, this.#c.noise.ridge.squareSignal);
+    }
+    get #layeredSimplex() { return this.#layered(this.#simplex) }
+    get #layeredOctavianRidge() {
+        const rid = this.#ridger, sim = this.#simplex;
+        return this.#layered((x, y) => { return rid(sim(x, y)) });
+    }
+    get #layeredMelodicRidge() {
+        const rid = this.#ridger, lay = this.#layered(this.#simplex);
+        return (x, y) => { return rid(lay(x, y)) };
+    }
+
+    get generator() {
+        switch (this.#c.terrainAlgo) {
+        case 'noise':
+            return this.#layeredSimplex;
+        case 'rand':
+            const rand = mkRng(this.#c.seed);
+            return () => rand(0, 1);
+        case 'ridge':
+            if (this.#c.noise.ridge.style == 'melodic') return this.#layeredMelodicRidge;
+            return this.#layeredOctavianRidge;
+        }
+        return undefined;
     }
 }

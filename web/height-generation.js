@@ -1,8 +1,7 @@
 import { GenerationConfig } from './config/generation.js';
 import { rangeMapper } from './utils.js';
-import { RNG } from './rng.js';
 import { Coordinates } from './coordinates.js';
-import { CHUNK_UNIT, SIM_SHIFT } from './constants.js';
+import { CHUNK_UNIT } from './constants.js';
 
 /**
  * Handles terrain data storage and height generation algorithms.
@@ -11,8 +10,6 @@ import { CHUNK_UNIT, SIM_SHIFT } from './constants.js';
 export class HeightGenerator {
     /** @type {number} The number of cells along one dimension of the chunk. */
     #size = undefined;
-    /** @type {RNG} The random number generator instance. */
-    #rng;
     /** @type {number} The maximum height value for the terrain. */
     #maxH;
     /** @type {number[][]} The height field. */
@@ -59,19 +56,6 @@ export class HeightGenerator {
             this.#offset = new Coordinates(this.coords.x * this.#size, this.coords.y * this.#size);
             this.#heights = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
         }
-
-        const noi = this.#generationConfig.noise;
-        this.#rng = new RNG({
-            seed:  this.seed,
-            warp:  noi.warpingStrength,
-            shift: SIM_SHIFT,
-            octaves: noi.octaves,
-            fundamental: noi.fundamental / this.#size,
-            persistence: noi.persistence,
-            lacunarity:  noi.lacunarity,
-            ridgeInvert: noi.ridge.invertSignal,
-            ridgeSquare: noi.ridge.squareSignal,
-        });
     }
 
     ///////////////
@@ -166,31 +150,8 @@ export class HeightGenerator {
     // Height generation //
 
     /** Generates terrain with the configured algorithm. */
-    generate() { this[this.algorithm](); }
-
-    /** Generates terrain using Simplex noise. */
-    noise() {
-        this.offsetApply((x, y) => this.#rng.simplex(x, y));
-        this.normalize();
-    }
-
-    /** Fills the height data with random values. */
-    rand() {
-        this.#rng.reseed();
-        this.apply(() => this.#rng.float(1, this.#maxH));
-    }
-
-    /**
-     * Generates terrain using ridge noise, based on Simplex noise.
-     * Can produce 'octavian' or 'melodic' style ridges based on configuration.
-     */
-    ridge() {
-        let fun = 'octavianRidge';
-        if (this.#generationConfig.noise.ridge.style === 'melodic') {
-            fun = 'melodicRidge';
-        }
-
-        this.offsetApply((x, y) => this.#rng[fun](x, y));
+    generate() {
+        this.offsetApply(this.#generationConfig.generator(this.#size));
         this.normalize();
     }
 }
