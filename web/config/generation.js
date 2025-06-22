@@ -2,9 +2,9 @@ import { mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
 
 export class GenerationConfig {
     constructor() {
-        this.seed = 23;               // Seed for deterministic terrain generation.
-        this.terrainAlgo = 'ridge';   // Terrain creation algorithm (ridge, rand, noise).
-        this.heightMultiplier = 1.0;  // Multiplier for the terrain height.
+        this.seed = 23;                     // Seed for deterministic terrain generation.
+        this.terrainAlgo = 'octavianRidge'; // Terrain creation algorithm.
+        this.heightMultiplier = 1.0;        // Multiplier for the terrain height.
         this.noise = {
             octaves: 6,         // Simplex Noise octaves to layer.
             persistence: 0.65,  // Amplitude reduction per octave.
@@ -35,8 +35,9 @@ export class GenerationConfig {
 
         parent.select(this, 'terrainAlgo', {
             'Random': 'rand',
-            'Noise': 'noise',
-            'Ridge': 'ridge',
+            'Simplex': 'simplex',
+            'Octavian ridge': 'octavianRidge',
+            'Melodic ridge': 'melodicRidge'
         }).legend('Algorithm')
             .onChange(() => {
                 this.#updateAlgorithmFolders(parent);
@@ -75,11 +76,6 @@ export class GenerationConfig {
         ridge.bool(this.noise.ridge, 'squareSignal')
             .legend('Square signal')
             .onChange(regen);
-        ridge.select(this.noise.ridge, 'style', {
-            'Octavian': 'octavian',
-            'Melodic': 'melodic'
-        }).legend('Ridge Style')
-            .onChange(regen);
 
         //////////////////////////////////
         // Show selected algorithm only //
@@ -89,8 +85,8 @@ export class GenerationConfig {
     // Dynamically show/hide parameter folders based on the selected terrain algorithm.
     #updateAlgorithmFolders(parent) {
         const title2algo = {
-            'Noise': ['noise', 'ridge'],
-            'Ridge': ['ridge'],
+            'Noise': ['simplex', 'octavianRidge', 'melodicRidge'],
+            'Ridge': ['octavianRidge', 'melodicRidge'],
         }
 
         for (let folder of parent.folders) {
@@ -132,14 +128,15 @@ class HeightFieldBuilder {
 
     get generator() {
         switch (this.#c.terrainAlgo) {
-        case 'noise':
+        case 'simplex':
             return this.#layeredSimplex;
         case 'rand':
             const rand = mkRng(this.#c.seed);
             return () => rand(0, 1);
-        case 'ridge':
-            if (this.#c.noise.ridge.style == 'melodic') return this.#layeredMelodicRidge;
+        case 'octavianRidge':
             return this.#layeredOctavianRidge;
+        case 'melodicRidge':
+            return this.#layeredMelodicRidge;
         }
         return undefined;
     }
