@@ -2,12 +2,7 @@ import { GenerationConfig } from './config/generation.js';
 import { rangeMapper } from './utils.js';
 import { RNG } from './rng.js';
 import { Coordinates } from './coordinates.js';
-
-// Base dimension of a chunk in 3d space in world units.
-export const CHUNK_UNIT = 256;
-
-// x and y coordinates shift to hide simplex artifact at the origin.
-const SIM_SHIFT = 1024;
+import { CHUNK_UNIT, SIM_SHIFT } from './constants.js';
 
 /**
  * Handles terrain data storage and height generation algorithms.

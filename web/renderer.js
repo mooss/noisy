@@ -1,4 +1,4 @@
-import { CHUNK_UNIT } from "./height-generation.js";
+import { CHUNK_UNIT } from "./constants.js";
 
 export class Renderer {
     #scene;

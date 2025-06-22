@@ -1,7 +1,7 @@
 /////////////////////////
 // Integer coordinates //
 
-import { CHUNK_UNIT } from "./height-generation.js";
+import { CHUNK_UNIT } from "./constants.js";
 
 /**
  * Represents 2D integer coordinates for blocks, either locally within a chunk or globally within
