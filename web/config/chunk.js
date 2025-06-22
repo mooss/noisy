@@ -16,7 +16,7 @@ export class ChunkConfig {
     }
     get power() { return this.#power; }
     get size() { return 2**this.power + 1; }
-    get cellSize() { return CHUNK_UNIT / this.size; }
+    get blockSize() { return CHUNK_UNIT / this.size; }
     get converter() { return new CoordinatesConverter(this); }
 
     ui(parent, resize, load) {
@@ -32,5 +32,5 @@ export class CoordinatesConverter {
     toChunk(global) { return global.toChunk(this.#config.size); }
     toLocal(global) { return global.toLocal(this.#config.size); }
     toGlobal(chunk, local) { return local.toGlobal(chunk); }
-    toWorld(global) { return global.toWorld(this.#config.cellSize); }
+    toWorld(global) { return global.toWorld(this.#config.blockSize); }
 }

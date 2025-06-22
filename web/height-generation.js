@@ -16,8 +16,6 @@ const SIM_SHIFT = 1024;
 export class HeightGenerator {
     /** @type {number} The number of cells along one dimension of the chunk. */
     #size = undefined;
-    /** @type {number} The size of a single cell in world units. */
-    #cellSize;
     /** @type {RNG} The random number generator instance. */
     #rng;
     /** @type {number} The maximum height value for the terrain. */
@@ -63,7 +61,6 @@ export class HeightGenerator {
         // Data layout, don't reallocate unless necessary.
         if (this.#size != this.#chunksConfig.size) {
             this.#size = this.#chunksConfig.size;
-            this.#cellSize = CHUNK_UNIT / this.#size;
             this.#offset = new Coordinates(this.coords.x * this.#size, this.coords.y * this.#size);
             this.#heights = Array(this.#size).fill(0).map(() => new Array(this.#size).fill(0));
         }
@@ -87,9 +84,6 @@ export class HeightGenerator {
 
     /** @returns {number} The method name of the configured algorithm. */
     get algorithm() { return this.#generationConfig.terrainAlgo; }
-
-    /** @returns {number} The size of a single cell. */
-    get cellSize() { return this.#cellSize; }
 
     /** @returns {string} The chunk identifier in the format "x,y". */
     get id() { return `${this.coords.x},${this.coords.y}`; }

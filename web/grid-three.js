@@ -41,7 +41,9 @@ function main() {
     const terrain = new Terrain((coords) => {
         return new HeightGenerator(config.gen, config.chunks, coords);
     }, (heights) => {
-        return createTerrainMesh(heights, palettes[config.render.palette], config.render.style);
+        const res = createTerrainMesh(heights, palettes[config.render.palette], config.render.style);
+        res.geometry.scale(config.chunks.blockSize, config.chunks.blockSize, 1);
+        return res;
     });
     const avatar = new Avatar();
     const conv = config.chunks.converter;
@@ -59,10 +61,10 @@ function main() {
     const updateAvatar = () => {
         const chunk = terrain.chunkAt(conv.toChunk(avatar.coords));
         const pos = conv.toWorld(avatar.coords);
-        pos.z = chunk.heights.heightOf(conv.toLocal(avatar.coords)) + config.avatar.heightOffset * config.chunks.cellSize;
+        pos.z = chunk.heights.heightOf(conv.toLocal(avatar.coords)) + config.avatar.heightOffset * config.chunks.blockSize;
         console.log(":POS", pos);
         avatar.setPosition(pos);
-        avatar.setScale(config.avatar.size * config.chunks.cellSize);
+        avatar.setScale(config.avatar.size * config.chunks.blockSize);
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
