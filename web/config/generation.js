@@ -1,8 +1,7 @@
 export class GenerationConfig {
     constructor() {
         this.seed = 23;               // Seed for deterministic terrain generation.
-        this.terrainAlgo = 'ridge';   // Terrain creation algorithm (ridge, rand, noise, midpoint).
-        this.midpointRoughness = 0.6; // Roughness factor for midpoint displacement.
+        this.terrainAlgo = 'ridge';   // Terrain creation algorithm (ridge, rand, noise).
         this.heightMultiplier = 1.0;  // Multiplier for the terrain height.
         this.noise = {
             octaves: 6,         // Simplex Noise octaves to layer.
@@ -29,7 +28,6 @@ export class GenerationConfig {
             'Random': 'rand',
             'Noise': 'noise',
             'Ridge': 'ridge',
-            'Midpoint': 'midpoint'
         }).legend('Algorithm')
             .onChange(() => {
                 this.#updateAlgorithmFolders(parent);
@@ -74,13 +72,6 @@ export class GenerationConfig {
         }).legend('Ridge Style')
             .onChange(regen);
 
-        //////////////
-        // Midpoint //
-        const midpoint = parent.addFolder('Midpoint');
-        midpoint.range(this, 'midpointRoughness', 0.4, 0.8, 0.02)
-            .legend('Roughness')
-            .onInput(regen);
-
         //////////////////////////////////
         // Show selected algorithm only //
         this.#updateAlgorithmFolders(parent);
@@ -91,7 +82,6 @@ export class GenerationConfig {
         const title2algo = {
             'Noise': ['noise', 'ridge'],
             'Ridge': ['ridge'],
-            'Midpoint': ['midpoint'],
         }
 
         for (let folder of parent.folders) {

@@ -1,7 +1,7 @@
 import { GenerationConfig } from './config/generation.js';
 import { rangeMapper } from './utils.js';
 import { RNG } from './rng.js';
-import { Coordinates, Position } from './coordinates.js';
+import { Coordinates } from './coordinates.js';
 
 // Base dimension of a chunk in 3d space in world units.
 export const CHUNK_UNIT = 256;
@@ -186,14 +186,6 @@ export class HeightGenerator {
         this.normalize();
     }
 
-    /** Generates terrain using the midpoint displacement (diamond-square) algorithm. */
-    midpoint() {
-        this.#rng.reseed();
-        this.normalize(...midpointDisplacement(
-            this.#heights, (min, max) => this.#rng.float(min, max), this.#generationConfig.midpointRoughness,
-        ));
-    }
-
     /** Fills the height data with random values. */
     rand() {
         this.#rng.reseed();
@@ -213,84 +205,4 @@ export class HeightGenerator {
         this.offsetApply((x, y) => this.#rng[fun](x, y));
         this.normalize();
     }
-}
-
-/**
- * Generates height data using the diamond-square algorithm.
- *
- * @param {number[][]}                       heights   - The 2D array to fill (must be square with side length 2^n + 1).
- * @param {function(number, number): number} rng       - A function that returns a random number within a given range `(min, max)`.
- * @param {number}                           roughness - Controls the magnitude of the random displacement. Higher values create rougher terrain.
- *
- * @returns {[number, number]} An array containing the minimum and maximum height values generated `[min, max]`.
- */
-function midpointDisplacement(heights, rng, roughness) {
-    const size = heights.length;
-    let range = 1;
-
-    // Offset used to iterate through the heights.
-    // Power of two. Starts big and is divided by two each iteration (adding level of details).
-    let step = size - 1;
-
-    // Initialize the four corners.
-    heights[0][0] = rng(0, range);
-    heights[0][size - 1] = rng(0, range);
-    heights[size - 1][0] = rng(0, range);
-    heights[size - 1][size - 1] = rng(0, range);
-
-    // Keeping track of min and max heights to then normalize to the intended height range.
-    let max_ = -Infinity, min_ = Infinity;
-    const minmax = val => {
-        if (val > max_) max_ = val;
-        if (val < min_) min_ = val;
-    };
-    minmax(heights[0][0]);
-    minmax(heights[0][size - 1]);
-    minmax(heights[size - 1][0]);
-    minmax(heights[size - 1][size - 1]);
-
-    // Diamond-square proper.
-    range *= roughness;
-    while (step > 1) {
-        let halfStep = step / 2;
-
-        // Diamond step, average the four diagonal neighbours of a new point and nudge it a little
-        // bit by a random value.
-        for (let x = halfStep; x < size - 1; x += step) {
-            for (let y = halfStep; y < size - 1; y += step) {
-                let avg = (heights[x - halfStep][y - halfStep] +
-                           heights[x - halfStep][y + halfStep] +
-                           heights[x + halfStep][y - halfStep] +
-                           heights[x + halfStep][y + halfStep]) / 4; // Average.
-
-                heights[x][y] = avg + rng(-range, range); // Nudge.
-                minmax(heights[x][y]);
-            }
-        }
-
-        // Square step, average the four (or three) linear neighbours and nudge it a little bit by a
-        // random value.
-        for (let x = 0; x < size; x += halfStep) {
-            for (let y = (x % step === 0) ? halfStep : 0; y < size; y += step) {
-                let count = 0;
-                let sum = 0;
-
-                // Points in this step can be on the edge of the chunk and therefore only have two or
-                // three valid neighbours, so the coordinates must be carefully checked.
-                if (x >= halfStep) { sum += heights[x - halfStep][y]; count++; }
-                if (x + halfStep < size) { sum += heights[x + halfStep][y]; count++; }
-                if (y >= halfStep) { sum += heights[x][y - halfStep]; count++; }
-                if (y + halfStep < size) { sum += heights[x][y + halfStep]; count++; }
-
-                heights[x][y] = sum / count + rng(-range, range); // Average and nudge.
-                minmax(heights[x][y]);
-            }
-        }
-
-        // Reduce the random range for the next iteration.
-        range *= roughness;
-        step = halfStep;
-    }
-
-    return [min_, max_];
 }

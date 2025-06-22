@@ -62,7 +62,6 @@ function main() {
         const chunk = terrain.chunkAt(conv.toChunk(avatar.coords));
         const pos = conv.toWorld(avatar.coords);
         pos.z = chunk.heights.heightOf(conv.toLocal(avatar.coords)) + config.avatar.heightOffset * config.chunks.blockSize;
-        console.log(":POS", pos);
         avatar.setPosition(pos);
         avatar.setScale(config.avatar.size * config.chunks.blockSize);
         renderer.pleaseRender();
