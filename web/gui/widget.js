@@ -8,9 +8,13 @@ export class GraphWidget extends Label {
             width: '100%',
             height: '80px',
             backgroundColor: colors.inputBg,
-            marginTop: '4px'
         });
         this.ctx = this.canvas.getContext('2d');
+
+        // Put the label on top of the graph (instead of putting it left).
+        this.box.style.flexDirection = 'column';
+        this.box.style.alignItems = 'flex-start';
+        this.label.style.marginBottom = '4px';
     }
 
     get width() { return this.canvas.clientWidth; }
