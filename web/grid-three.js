@@ -11,6 +11,7 @@ import { createTerrainMesh } from './mesh.js';
 import { GUI } from './gui/gui.js';
 import { HeightGenerator } from './height-generation.js';
 import { Avatar } from './avatar.js';
+import { numStats } from './config/stats.js';
 
 const config = {
     // Chunking system.
@@ -69,7 +70,7 @@ function main() {
     const updateTerrain = () => {
         terrain.regen(); // Also updates the mesh.
         updateAvatar();
-        updateHeightGraph(); // Defined later.
+        updateStats(); // Defined later.
     }
     const resizeChunk = () => {
         avatar.chunkResize(config.chunks.previousSize, config.chunks.size);
@@ -81,17 +82,26 @@ function main() {
     const gui = new GUI();
     const fps = new FpsWidget(gui);
     const heightGraph = gui.graph().legend("Sorted heights in active chunk");
+    const heightStats = gui.readOnly('').legend('Height stats');
+    // const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights");
     config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, noOp);
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
 
-    // Height graph.
-    const updateHeightGraph = () => {
+    // Stats and graphs.
+    const updateStats = () => {
         const chunk = terrain.chunkAt(conv.toChunk(avatar.coords));
         const heights = [];
         chunk.heights.rangeValues((x) => heights.push(x));
         heightGraph.update(heights.sort((l, r) => { return l - r; }));
+
+        const stats = numStats(heights);
+        const min = Math.min(...heights), max = Math.max(...heights);
+        heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
+min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
+
+        // zScoreGraph.update(stats.zScores);
     }
 
     // Keyboard registration.
@@ -105,7 +115,7 @@ function main() {
     avatar.x = Math.floor(config.chunks.size / 2);
     avatar.y = Math.floor(config.chunks.size / 2);
     updateAvatar();
-    updateHeightGraph();
+    updateStats();
     startAnimationLoop(renderer, fps);
 }
 
