@@ -45,5 +45,6 @@ export function interpolateColors(colors, value) {
  * @returns {function(number): number} A function that maps a number from the input range to the output range.
  */
 export function rangeMapper(fromMin, fromMax, toMin, toMax) {
-    return x => toMin + ((x - fromMin) / (fromMax - fromMin)) * (toMax - toMin);
+    const fromSub = fromMax - fromMin, toSub = toMax - toMin;
+    return x => toMin + ((x - fromMin) / fromSub) * toSub;
 }

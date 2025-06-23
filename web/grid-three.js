@@ -8,8 +8,7 @@ import { ChunkConfig } from './config/chunk.js';
 import { GenerationConfig } from './config/generation.js';
 import { RenderConfig } from './config/render.js';
 import { createTerrainMesh } from './mesh.js';
-import { GUI } from './gui.js';
-import { Coordinates } from './coordinates.js';
+import { GUI } from './gui/gui.js';
 import { HeightGenerator } from './height-generation.js';
 import { Avatar } from './avatar.js';
 
