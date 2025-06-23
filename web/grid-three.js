@@ -83,6 +83,8 @@ function main() {
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
+    const lostGraph = gui.graph().legend("Lost numbers");
+    lostGraph.update([4, 8, 15, 16, 23, 42]);
 
     // Keyboard registration.
     const keyboard = new Keyboard();

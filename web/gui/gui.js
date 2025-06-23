@@ -1,4 +1,5 @@
 import { Boolean, Number, Range, ReadOnly, Select } from "./parameters.js";
+import { GraphWidget } from "./widget.js";
 import { spawn, colors } from "./html.js";
 
 /**
@@ -46,6 +47,10 @@ class Panel {
 
     bool(target, property) {
         return new Boolean(this._elt, target, property);
+    }
+
+    graph() {
+        return new GraphWidget(this._elt);
     }
 
     number(target, property) {
