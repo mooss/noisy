@@ -20,41 +20,74 @@ export class GraphWidget extends Label {
     get width() { return this.canvas.clientWidth; }
     get height() { return this.canvas.clientHeight; }
 
-    /**
-     * Update the graph with new data points
-     * @param {number[]} values - Array of values to plot
-     * @param {string} [color] - Optional line color
-     */
-    update(values, color = colors.param) {
+    /** Updates the plot with new data points. */
+    update(values) {
         this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
-        this.#draw(values, color);
+        this.#draw(values);
     }
 
-    #draw(values, color) {
+    /** Draws the plot (graph and ticks). */
+    #draw(values) {
         if (values.length <= 1) { console.error("Cannot draw", values); return; }
 
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        const maxVal = Math.max(...values);
-        const minVal = Math.min(...values);
-        const range = maxVal - minVal || 1;
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        const range = max - min || 1;
 
+        this.#drawTicks(min, max, range);
+        this.#drawGraph(values, min, range);
+    }
+
+    /** Draws the graph line. */
+    #drawGraph(values, min, range) {
         const ctx = this.ctx;
-        ctx.strokeStyle = color;
+        ctx.strokeStyle = colors.param;
         ctx.lineWidth = 1;
         ctx.beginPath();
-
-        // Draw the line.
         values.forEach((value, i) => {
             const x = (i / (values.length - 1)) * this.width;
-            const y = this.height - ((value - minVal) / range) * this.height;
-
-            if (i === 0) {
-                ctx.moveTo(x, y);
-            } else {
-                ctx.lineTo(x, y);
-            }
+            const y = this.height - ((value - min) / range) * this.height;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
         });
         ctx.stroke();
+    }
+
+    /** Draws horizontal tick marks and labels for the Y axis. */
+    #drawTicks(min, max, range) {
+        const ctx = this.ctx;
+        ctx.fillStyle = colors.label;
+        ctx.font = '8px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+
+        const tickRange = this.#calculateTickRange(min, max);
+        const step = tickRange.step;
+        let tick = Math.ceil(min / step) * step;
+
+        for (; tick <= max; tick += step) {
+            const y = this.height - ((tick - min) / range) * this.height;
+            // Draw the horizontal tick line.
+            ctx.strokeStyle = colors.input;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(this.width, y);
+            ctx.stroke();
+
+            // Draw the tick label.
+            ctx.fillText(tick.toFixed(tickRange.precision), 4, y);
+        }
+    }
+
+    /** Calculates optimal tick spacing and precision for the Y axis. */
+    #calculateTickRange(min, max) {
+        const range = max - min;
+        const magnitude = Math.pow(10, Math.floor(Math.log10(range)));
+        const step = magnitude * (range / magnitude < 2 ? 0.2 : range / magnitude < 5 ? 0.5 : 1);
+        const precision = Math.max(0, -Math.floor(Math.log10(step)));
+        return { step, precision };
     }
 }
