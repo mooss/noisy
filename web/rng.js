@@ -84,15 +84,15 @@ export function mkRidger(invert, square) {
         // "rebound".
         signal = Math.abs(signal);
 
-        // Inverting the elevation with `1 - signal` makes the rebound occur at the top, creating
-        // ridges instead of valleys.
-        if (invert) {
-            signal = 1.0 - signal;
-        }
-
         // Squaring the signal will emphasize ridges and valleys.
         if (square) {
             signal *= signal;
+        }
+
+        // Inverting the elevation makes the rebound occur at the top, creating ridges instead of
+        // valleys.
+        if (invert) {
+            signal = - signal;
         }
 
         return signal;
