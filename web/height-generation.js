@@ -124,33 +124,7 @@ export class HeightGenerator {
      * @returns {number|undefined} The height at the given coordinates, undefined if out of bounds.
      */
     at(x, y) {
-        return this.#heights[x][y];
-    }
-
-    /**
-     * Normalizes all height values to a range between 0.1 and maxH.
-     * If min and max are not provided, they are computed from the current height field.
-     *
-     * @param {number} [min] - The minimum value of the current data range.
-     * @param {number} [max] - The maximum value of the current data range.
-     */
-    normalize(min, max) {
-        if (min === undefined) { // Compute min and max manually.
-            min = Infinity, max = -Infinity;
-            this.range((x, y) => {
-                const h = this.#heights[x][y];
-                if (h < min) min = h;
-                if (h > max) max = h;
-            });
-        }
-
-        if (min === max) { // Avoid potential division by zero.
-            this.apply((x, y) => this.#heights[x][y] = this.maxH);
-            return;
-        }
-
-        const norm = rangeMapper(min, max, .1, this.maxH);
-        this.apply((x, y) => norm(this.#heights[x][y]));
+        return this.norm(this.#heights[x][y]);
     }
 
     ///////////////////////
@@ -159,6 +133,14 @@ export class HeightGenerator {
     /** Generates terrain with the configured algorithm. */
     generate() {
         this.offsetApply(this.#generationConfig.generator(this.#size));
-        this.normalize();
+
+        let min = Infinity, max = -Infinity;
+        this.range((x, y) => {
+            const h = this.#heights[x][y];
+            if (h < min) min = h;
+            if (h > max) max = h;
+        });
+        if (min == max) this.norm = () => this.maxH;
+        else this.norm = rangeMapper(min, max, .1, this.maxH);
     }
 }
