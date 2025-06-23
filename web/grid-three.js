@@ -67,8 +67,9 @@ function main() {
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
-        terrain.regen();
+        terrain.regen(); // Also updates the mesh.
         updateAvatar();
+        updateHeightGraph(); // Defined later.
     }
     const resizeChunk = () => {
         avatar.chunkResize(config.chunks.previousSize, config.chunks.size);
@@ -79,12 +80,19 @@ function main() {
     // UI definition.
     const gui = new GUI();
     const fps = new FpsWidget(gui);
+    const heightGraph = gui.graph().legend("Sorted heights in active chunk");
     config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, noOp);
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
-    const lostGraph = gui.graph().legend("Lost numbers");
-    lostGraph.update([4, 8, 15, 16, 23, 42]);
+
+    // Height graph.
+    const updateHeightGraph = () => {
+        const chunk = terrain.chunkAt(conv.toChunk(avatar.coords));
+        const heights = [];
+        chunk.heights.rangeValues((x) => heights.push(x));
+        heightGraph.update(heights.sort((l, r) => { return l - r; }));
+    }
 
     // Keyboard registration.
     const keyboard = new Keyboard();
@@ -94,10 +102,10 @@ function main() {
     keyboard.down('KeyD', () => { avatar.x++; updateAvatar(); })
 
     // Application start.
-    updateTerrainMesh();
     avatar.x = Math.floor(config.chunks.size / 2);
     avatar.y = Math.floor(config.chunks.size / 2);
     updateAvatar();
+    updateHeightGraph();
     startAnimationLoop(renderer, fps);
 }
 

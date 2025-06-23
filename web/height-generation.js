@@ -111,6 +111,13 @@ export class HeightGenerator {
     }
 
     /**
+     * Calls a function on all the heights.
+     * @param {function(number): void} fun - The function to call for each height value.
+     */
+    rangeValues(fun) { this.range((x, y) => fun(this.#heights[x][y])) }
+
+
+    /**
      * Returns the height at a specific local coordinates.
      *
      * @param {Coordinates} local - The coordinates.
