@@ -134,9 +134,9 @@ export class HeightGenerator {
     /** Generates terrain with the configured algorithm. */
     generate() {
         const gen = this.#generationConfig.generator(this.#size);
+        let mapper = this.norm = () => this.maxH;
+        if (gen.low != gen.high) mapper = rangeMapper(gen.low, gen.high, this.#minH, this.maxH);
+        this.norm = (x) => Math.max(this.#minH, mapper(x));
         this.offsetApply(gen.fun);
-
-        if (gen.low == gen.high) this.norm = () => this.maxH;
-        else this.norm = rangeMapper(gen.low, gen.high, this.#minH, this.maxH);
     }
 }
