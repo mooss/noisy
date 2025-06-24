@@ -83,7 +83,7 @@ function main() {
     const fps = new FpsWidget(gui);
     const heightGraph = gui.graph().legend("Sorted heights in active chunk");
     const heightStats = gui.readOnly('').legend('Height stats');
-    // const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights");
+    const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
     config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, noOp);
     config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
@@ -101,7 +101,7 @@ function main() {
         heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
 min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
-        // zScoreGraph.update(stats.zScores);
+        zScoreGraph.update(stats.zScores);
     }
 
     // Keyboard registration.
