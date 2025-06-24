@@ -12,6 +12,8 @@ export class HeightGenerator {
     #size = undefined;
     /** @type {number} The maximum height value for the terrain. */
     #maxH;
+    /** @type {number} The minimum height value for the terrain. */
+    #minH = .1;
     /** @type {number[][]} The height field. */
     #heights;
     /** @type {ChunkConfig} The chunks configuration. */
@@ -116,7 +118,6 @@ export class HeightGenerator {
      */
     rangeValues(fun) { this.range((x, y) => fun(this.#heights[x][y])) }
 
-
     /**
      * Returns the height at a specific local coordinates.
      *
@@ -132,15 +133,10 @@ export class HeightGenerator {
 
     /** Generates terrain with the configured algorithm. */
     generate() {
-        this.offsetApply(this.#generationConfig.generator(this.#size));
+        const gen = this.#generationConfig.generator(this.#size);
+        this.offsetApply(gen.fun);
 
-        let min = Infinity, max = -Infinity;
-        this.range((x, y) => {
-            const h = this.#heights[x][y];
-            if (h < min) min = h;
-            if (h > max) max = h;
-        });
-        if (min == max) this.norm = () => this.maxH;
-        else this.norm = rangeMapper(min, max, .1, this.maxH);
+        if (gen.low == gen.high) this.norm = () => this.maxH;
+        else this.norm = rangeMapper(gen.low, gen.high, this.#minH, this.maxH);
     }
 }

@@ -1,4 +1,6 @@
 import { mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
+import { numStats } from "../stats.js";
+import { clone } from "../utils.js";
 
 export class GenerationConfig {
     constructor() {
@@ -19,8 +21,14 @@ export class GenerationConfig {
         };
     }
 
+    heightfun(chunkSize) {
+        return new HeightFieldBuilder(this, chunkSize).fun;
+    }
+
     generator(chunkSize) {
-        return new HeightFieldBuilder(this, chunkSize).generator;
+        const res = lowhigh(this);
+        res.fun = new HeightFieldBuilder(this, chunkSize).fun;
+        return res;
     }
 
     ////////
@@ -126,7 +134,7 @@ class HeightFieldBuilder {
         return (x, y) => { return rid(lay(x, y)) };
     }
 
-    get generator() {
+    get fun() {
         switch (this.#c.terrainAlgo) {
         case 'simplex':
             return this.#layeredSimplex;
@@ -140,4 +148,20 @@ class HeightFieldBuilder {
         }
         return undefined;
     }
+}
+
+/**
+ * Samples the generator with a high fundamental to compute statistically reasonable low and high
+ * bounds.
+ */
+function lowhigh(config) {
+    config = clone(config);
+    // Make sure to sample a high amount.
+    config.noise.fundamental = 5;
+    const gen = config.heightfun(7);
+    const heights = [];
+    for (let i = 0; i < 100; ++i)
+        for (let j = 0; j < 100; ++j)
+            heights.push(gen(i, j));
+    return numStats(heights).outlierBounds(2);
 }

@@ -11,7 +11,7 @@ import { createTerrainMesh } from './mesh.js';
 import { GUI } from './gui/gui.js';
 import { HeightGenerator } from './height-generation.js';
 import { Avatar } from './avatar.js';
-import { numStats } from './config/stats.js';
+import { numStats } from './stats.js';
 
 const config = {
     // Chunking system.

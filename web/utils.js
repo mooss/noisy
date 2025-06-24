@@ -48,3 +48,10 @@ export function rangeMapper(fromMin, fromMax, toMin, toMax) {
     const fromSub = fromMax - fromMin, toSub = toMax - toMin;
     return x => toMin + ((x - fromMin) / fromSub) * toSub;
 }
+
+/** Deep clones an instance, does not clone private fields. */
+export function clone(instance) {
+    const data = structuredClone(instance);
+    const empty = Object.create(instance.constructor.prototype);
+    return Object.assign(empty, data);
+}
