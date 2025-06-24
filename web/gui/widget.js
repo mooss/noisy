@@ -15,6 +15,11 @@ export class GraphWidget extends Label {
         this.box.style.flexDirection = 'column';
         this.box.style.alignItems = 'flex-start';
         this.label.style.marginBottom = '4px';
+        this.label.style.cursor = 'pointer';
+
+        // Toggle graph visibility when label is clicked
+        const toggleviz = () => this.#visible(!this.opened());
+        this.label.addEventListener('click', toggleviz);
     }
 
     get width() { return this.canvas.clientWidth; }
@@ -23,8 +28,22 @@ export class GraphWidget extends Label {
     /** Updates the plot with new data points. */
     update(values) {
         this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
+        const opened = this.opened();
+        this.#visible(true);
         this.#draw(values);
+        this.#visible(opened);
     }
+
+    #visible(show) {
+        this.canvas.style.display = show ? '': 'none';
+        this.label.style.textDecoration = show ? 'none': 'underline';
+    }
+    close() { this.#visible(false); return this; }
+    open() { this.#visible(true); return this; }
+    opened() { return this.canvas.style.display === ''; }
+
+    /////////////////////////////
+    // Private drawing methods //
 
     /** Draws the plot (graph and ticks). */
     #draw(values) {
