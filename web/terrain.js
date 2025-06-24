@@ -1,4 +1,3 @@
-import { HeightGenerator } from './height-generation.js';
 export class Chunk {
     constructor(heights, mesh) {
         this.heights = heights;
@@ -51,7 +50,7 @@ export class Terrain {
         heights.generate();
         const chunk = new Chunk(heights, this.#mkMesh(heights));
         this.mesh.add(chunk.mesh);
-        this.#chunks.set(heights.id, chunk);
+        this.#chunks.set(`${coords.x},${coords.y}`, chunk);
         return chunk;
     }
 
@@ -70,6 +69,7 @@ export class Terrain {
      */
     #updateOneMesh(chunk) {
         const oldMesh = chunk.mesh;
+        chunk.heights = this.#mkHeights(chunk.heights.coords);
         chunk.mesh = this.#mkMesh(chunk.heights);
         this.mesh.add(chunk.mesh);
         this.mesh.remove(oldMesh);
@@ -85,8 +85,6 @@ export class Terrain {
     /** Regenerates the heights and updates the mesh of all active chunks. */
     regen() {
         this.#rangeActive((chunk) => {
-            chunk.heights.reset();
-            chunk.heights.generate();
             this.#updateOneMesh(chunk);
         })
     }

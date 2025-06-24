@@ -1,6 +1,6 @@
 import { mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
 import { numStats } from "../stats.js";
-import { clone } from "../utils.js";
+import { clone, rangeMapper } from "../utils.js";
 
 export class GenerationConfig {
     constructor() {
@@ -21,13 +21,15 @@ export class GenerationConfig {
         };
     }
 
-    heightfun(chunkSize) {
-        return new HeightFieldBuilder(this, chunkSize).fun;
+    heightField(nblocks) { return new HeightField(this, nblocks) }
+
+    heightfun(nblocks) {
+        return new HeightFieldBuilder(this, nblocks).fun;
     }
 
-    generator(chunkSize) {
+    generator(nblocks) {
         const res = lowhigh(this);
-        res.fun = new HeightFieldBuilder(this, chunkSize).fun;
+        res.fun = new HeightFieldBuilder(this, nblocks).fun;
         return res;
     }
 
@@ -110,9 +112,9 @@ export class GenerationConfig {
 
 class HeightFieldBuilder {
     #c; #size;
-    constructor(generationConfig, chunkSize) {
+    constructor(generationConfig, nblocks) {
         this.#c = generationConfig;
-        this.#size = chunkSize;
+        this.#size = nblocks;
     }
 
     #layered(noise) { return mkLayering(
@@ -157,11 +159,40 @@ class HeightFieldBuilder {
 function lowhigh(config) {
     config = clone(config);
     // Make sure to sample a high amount.
-    config.noise.fundamental = 5;
-    const gen = config.heightfun(7);
+    config.noise.fundamental = .1;
+    const gen = config.heightfun(1);
     const heights = [];
     for (let i = 0; i < 100; ++i)
         for (let j = 0; j < 100; ++j)
             heights.push(gen(i, j));
     return numStats(heights).outlierBounds(2);
+}
+
+export class HeightField {
+    constructor(config, nblocks) {
+        this.raw = config.heightfun(nblocks);
+        const bounds = lowhigh(config);
+        this.low = bounds.low; this.high = bounds.high;
+    }
+
+    /** Returns a function mapping the height to a range approximately between low and high */
+    #mapper(low, high) {
+        if (this.low == this.high) return () => high;
+        return rangeMapper(this.low, this.high, low, high);
+    }
+
+    /**
+     * Returns a height function that normalised function between an absolute minimal value and an
+     * approximate high value.
+     *
+     * @return {function(number, number) number} The normalised height function.
+     */
+    mkNormalised(min, high) {
+        const mapper = this.#mapper(min, high);
+        return (x, y) => {
+            const res = mapper(this.raw(x, y));
+            if (res < min) return min;
+            return res;
+        }
+    }
 }
