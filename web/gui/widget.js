@@ -18,8 +18,10 @@ export class GraphWidget extends Label {
         this.label.style.cursor = 'pointer';
 
         // Toggle graph visibility when label is clicked
-        const toggleviz = () => this.#visible(!this.opened());
-        this.label.addEventListener('click', toggleviz);
+        this.label.addEventListener('click', () => {
+            this.#visible(!this.opened())
+            if (this.opened()) this.#draw();
+        });
     }
 
     get width() { return this.canvas.clientWidth; }
@@ -27,46 +29,44 @@ export class GraphWidget extends Label {
 
     /** Updates the plot with new data points. */
     update(values) {
-        this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
-        const opened = this.opened();
-        this.#visible(true);
-        this.#draw(values);
-        this.#visible(opened);
+        this.values = values;
+        this.#draw();
     }
 
     #visible(show) {
         this.canvas.style.display = show ? '': 'none';
         this.label.style.textDecoration = show ? 'none': 'underline';
     }
+
     close() { this.#visible(false); return this; }
-    open() { this.#visible(true); return this; }
+    open() { this.#visible(true); this.#draw(); return this; }
     opened() { return this.canvas.style.display === ''; }
 
     /////////////////////////////
     // Private drawing methods //
 
     /** Draws the plot (graph and ticks). */
-    #draw(values) {
-        if (values.length <= 1) { console.error("Cannot draw", values); return; }
-
+    #draw() {
+        if (this.values.length <= 1) { console.error("Cannot draw", this.values); return; }
         this.canvas.width = this.width;
         this.canvas.height = this.height;
-        const min = Math.min(...values);
-        const max = Math.max(...values);
+        const min = Math.min(...this.values);
+        const max = Math.max(...this.values);
         const range = max - min || 1;
 
+        this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
         this.#drawTicks(min, max, range);
-        this.#drawGraph(values, min, range);
+        this.#drawGraph(min, range);
     }
 
     /** Draws the graph line. */
-    #drawGraph(values, min, range) {
+    #drawGraph(min, range) {
         const ctx = this.ctx;
         ctx.strokeStyle = colors.param;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        values.forEach((value, i) => {
-            const x = (i / (values.length - 1)) * this.width;
+        this.values.forEach((value, i) => {
+            const x = (i / (this.values.length - 1)) * this.width;
             const y = this.height - ((value - min) / range) * this.height;
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
