@@ -39,7 +39,7 @@ function startAnimationLoop(renderer, fps) {
 function main() {
     // Data, meshes and utilities.
     const terrain = new Terrain((coords) => {
-        const field = config.gen.heightField(config.chunks.size);
+        const field = config.gen.heightField();
         const maxH = (CHUNK_UNIT / 5) * config.gen.heightMultiplier;
         return {
             raw: field.raw,
@@ -69,9 +69,10 @@ function main() {
     }
     const updateAvatar = () => {
         const chunk = terrain.chunkAt(conv.toChunk(avatar.coords));
-        const local = conv.toLocal(avatar.coords)
+        const local = conv.toLocal(avatar.coords);
         const pos = conv.toWorld(avatar.coords);
-        pos.z = chunk.heights.at(local.x, local.y) + config.avatar.heightOffset * config.chunks.blockSize;
+        pos.z = chunk.heights.at(local.x * config.chunks.sampling, local.y * config.chunks.sampling)
+            + config.avatar.heightOffset * config.chunks.blockSize;
         avatar.setPosition(pos);
         avatar.setScale(config.avatar.size * config.chunks.blockSize);
         renderer.pleaseRender();
@@ -104,7 +105,7 @@ function main() {
         const heights = [];
         for (let i = 0; i < config.chunks.size; ++i)
             for (let j = 0; j < config.chunks.size; ++j)
-                heights.push(chunk.heights.raw(i, j));
+                heights.push(chunk.heights.at(i, j));
         heightGraph.update(heights.sort((l, r) => { return l - r; }));
 
         const stats = numStats(heights);

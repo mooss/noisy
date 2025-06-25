@@ -14,10 +14,11 @@ export class ChunkConfig {
         this.previousSize = this.size;
         this.#power = value;
     }
-    get power() { return this.#power; }
-    get size() { return 2**this.power + 1; }
-    get blockSize() { return CHUNK_UNIT / this.size; }
-    get converter() { return new CoordinatesConverter(this); }
+    get power() { return this.#power }
+    get size() { return 2**this.power + 1 }
+    get sampling() { return 1/this.size }
+    get blockSize() { return CHUNK_UNIT / this.size }
+    get converter() { return new CoordinatesConverter(this) }
 
     ui(parent, resize, load) {
         parent.range(this, 'power', 1, 8, 1).legend('Grid size').onInput(resize);

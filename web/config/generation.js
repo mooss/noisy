@@ -21,15 +21,15 @@ export class GenerationConfig {
         };
     }
 
-    heightField(nblocks) { return new HeightField(this, nblocks) }
+    heightField() { return new HeightField(this) }
 
-    heightfun(nblocks) {
-        return new HeightFieldBuilder(this, nblocks).fun;
+    heightfun() {
+        return new HeightFieldBuilder(this).fun;
     }
 
-    generator(nblocks) {
+    generator() {
         const res = lowhigh(this);
-        res.fun = new HeightFieldBuilder(this, nblocks).fun;
+        res.fun = new HeightFieldBuilder(this).fun;
         return res;
     }
 
@@ -111,14 +111,13 @@ export class GenerationConfig {
 }
 
 class HeightFieldBuilder {
-    #c; #size;
-    constructor(generationConfig, nblocks) {
+    #c;
+    constructor(generationConfig) {
         this.#c = generationConfig;
-        this.#size = nblocks;
     }
 
     #layered(noise) { return mkLayering(
-        noise, this.#c.noise.octaves, this.#c.noise.fundamental / this.#size,
+        noise, this.#c.noise.octaves, this.#c.noise.fundamental,
         this.#c.noise.persistence, this.#c.noise.lacunarity
     ) }
 
@@ -169,8 +168,8 @@ function lowhigh(config) {
 }
 
 export class HeightField {
-    constructor(config, nblocks) {
-        this.raw = config.heightfun(nblocks);
+    constructor(config) {
+        this.raw = config.heightfun();
         const bounds = lowhigh(config);
         this.low = bounds.low; this.high = bounds.high;
     }
