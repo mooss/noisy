@@ -36,8 +36,8 @@ function _createHexagonGeometry(radius, height) {
  * @returns {THREE.Mesh} The generated surface mesh.
  */
 export function createSurfaceMesh(heights, palette) {
-    const { size } = heights;
-    const sampling = 1 / size; // Distance between each vertex.
+    const { nblocks } = heights;
+    const sampling = 1 / nblocks; // Distance between each vertex.
     const geometry = new THREE.BufferGeometry();
 
     const vertices = [];
@@ -45,8 +45,8 @@ export function createSurfaceMesh(heights, palette) {
     const colors = [];
 
     // Vertices and colors.
-    for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
+    for (let i = 0; i < nblocks; i++) {
+        for (let j = 0; j < nblocks; j++) {
             const height = heights.at(i * sampling, j * sampling);
             const color = interpolateColors(palette, height);
 
@@ -56,12 +56,12 @@ export function createSurfaceMesh(heights, palette) {
     }
 
     // Indices.
-    for (let i = 0; i < size - 1; i++) {
-        for (let j = 0; j < size - 1; j++) {
-            const topLeft = i * size + j;
-            const topRight = i * size + (j + 1);
-            const bottomLeft = (i + 1) * size + j;
-            const bottomRight = (i + 1) * size + (j + 1);
+    for (let i = 0; i < nblocks - 1; i++) {
+        for (let j = 0; j < nblocks - 1; j++) {
+            const topLeft = i * nblocks + j;
+            const topRight = i * nblocks + (j + 1);
+            const bottomLeft = (i + 1) * nblocks + j;
+            const bottomRight = (i + 1) * nblocks + (j + 1);
 
             indices.push(topLeft, bottomLeft, topRight);
             indices.push(topRight, bottomLeft, bottomRight);
@@ -90,8 +90,8 @@ export function createSurfaceMesh(heights, palette) {
  * @returns {THREE.Mesh} The generated prism mesh.
  */
 function createPrismMeshes(type, heights, palette) {
-    const { size } = heights;
-    const sampling = 1 / size; // Distance between each vertex.
+    const { nblocks } = heights;
+    const sampling = 1 / nblocks; // Distance between each vertex.
     const isHex = type === 'hexagon';
     const ySpacingFactor = isHex ? Math.sqrt(3) / 2 : 1;
     const hexRadius = Math.sqrt(1/3);
@@ -107,8 +107,8 @@ function createPrismMeshes(type, heights, palette) {
     const normAttr = baseGeometry.getAttribute('normal');
     const idxAttr = baseGeometry.getIndex();
 
-    for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
+    for (let i = 0; i < nblocks; i++) {
+        for (let j = 0; j < nblocks; j++) {
             const height = heights.at(i * sampling, j * sampling);
             const xOffset = isHex && (j % 2 !== 0) ? .5 : 0;
             const xPos = i + xOffset;

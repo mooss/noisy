@@ -8,7 +8,6 @@ import { RenderConfig } from './config/render.js';
 import { GUI } from './gui/gui.js';
 import { Avatar } from './avatar.js';
 import { numStats } from './stats.js';
-import { CHUNK_UNIT } from './constants.js';
 
 const config = {
     // Chunking system.
@@ -35,20 +34,7 @@ function startAnimationLoop(renderer, fps) {
 
 function main() {
     // Data, meshes and utilities.
-    const terrain = new Terrain((coords) => {
-        const field = config.gen.heightField();
-        return {
-            at: field.mkNormalised(.01, 1),
-            size: config.chunks.nblocks,
-            coords: coords,
-        }
-    }, (heights) => {
-        const res = config.render.mesh(heights);
-        res.geometry.scale(config.chunks.blockSize, config.chunks.blockSize, config.gen.verticalUnit);
-        res.translateX(heights.coords.x * CHUNK_UNIT);
-        res.translateY(heights.coords.y * CHUNK_UNIT);
-        return res;
-    });
+    const terrain = new Terrain(config.chunks, config.gen, config.render);
     const avatar = new Avatar();
     const conv = config.chunks.converter;
 
@@ -58,15 +44,11 @@ function main() {
     renderer.addMesh(avatar.mesh);
 
     // UI callbacks.
-    const updateTerrainMesh = () => {
-        terrain.updateMesh();
-        renderer.pleaseRender();
-    }
     const updateAvatar = () => {
-        const chunk = terrain.chunkAt(conv.toChunk(avatar.coords));
+        const chunk = terrain.getChunk(conv.toChunk(avatar.coords));
         const local = conv.toLocal(avatar.coords);
         const pos = conv.toWorld(avatar.coords);
-        pos.z = chunk.heights.at(local.x * config.chunks.sampling, local.y * config.chunks.sampling)
+        pos.z = chunk.height(local.x * config.chunks.sampling, local.y * config.chunks.sampling)
             * config.gen.verticalUnit
             + config.avatar.heightOffset * config.chunks.blockSize;
         avatar.setPosition(pos);
@@ -91,17 +73,17 @@ function main() {
     const heightStats = gui.readOnly('').legend('Height stats');
     const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
     config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, noOp);
-    config.render.ui(gui.addFolder('Render'), updateTerrainMesh);
+    config.render.ui(gui.addFolder('Render'), updateTerrain);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
 
     // Stats and graphs.
     const updateStats = () => {
-        const chunk = terrain.chunkAt(conv.toChunk(avatar.coords));
+        const chunk = terrain.getChunk(conv.toChunk(avatar.coords));
         const heights = [];
         for (let i = 0; i < config.chunks.nblocks; ++i)
             for (let j = 0; j < config.chunks.nblocks; ++j)
-                heights.push(chunk.heights.at(i, j));
+                heights.push(chunk.height(i, j));
         heightGraph.update(heights.sort((l, r) => { return l - r; }));
 
         const stats = numStats(heights);
