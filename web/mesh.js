@@ -89,7 +89,7 @@ export function createSurfaceMesh(heights, palette) {
  * @param {Array}           palette - Color palette for height-based interpolation
  * @returns {THREE.Mesh} The generated prism mesh.
  */
-export function createPrismMeshes(type, heights, palette) {
+function createPrismMeshes(type, heights, palette) {
     const { size } = heights;
     const sampling = 1 / size; // Distance between each vertex.
     const isHex = type === 'hexagon';
@@ -146,31 +146,10 @@ export function createPrismMeshes(type, heights, palette) {
     return new THREE.Mesh(mergedGeometry, new THREE.MeshStandardMaterial({ vertexColors: true }));
 }
 
-/**
- * Creates a terrain mesh.
- *
- * @param {HeightGenerator} heights - Terrain data.
- * @param {Array}           palette - Color palette for height-based interpolation.
- * @param {string}          style   - Style of mesh to create ('hexPrism', 'quadPrism' or 'surface').
- * @returns {THREE.Mesh} The terrain mesh.
- */
-export function createTerrainMesh(heights, palette, style) {
-    let mesh;
-    switch (style) {
-    case 'hexPrism':
-        mesh = createPrismMeshes('hexagon', heights, palette);
-        break;
-    case 'quadPrism':
-        mesh = createPrismMeshes('square', heights, palette);
-        break;
-    case 'surface':
-        mesh = createSurfaceMesh(heights, palette);
-        break;
-    default:
-        throw new Error(`Unknown render style ${style}`);
-    }
+export function createHexagonMesh(heights, palette) {
+    return createPrismMeshes('hexagon', heights, palette);
+}
 
-    mesh.translateX(heights.coords.x * CHUNK_UNIT);
-    mesh.translateY(heights.coords.y * CHUNK_UNIT);
-    return mesh;
+export function createSquareMesh(heights, palette) {
+    return createPrismMeshes('square', heights, palette);
 }

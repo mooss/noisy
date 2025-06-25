@@ -47,7 +47,6 @@ export class Terrain {
      */
     #generate(coords) {
         const heights = this.#mkHeights(coords);
-        heights.generate();
         const chunk = new Chunk(heights, this.#mkMesh(heights));
         this.mesh.add(chunk.mesh);
         this.#chunks.set(`${coords.x},${coords.y}`, chunk);

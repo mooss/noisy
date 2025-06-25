@@ -1,16 +1,14 @@
 import { Renderer } from './renderer.js';
 import { FpsWidget, Keyboard } from './ui.js';
-import { palettes } from './palettes.js';
 import { Terrain } from './terrain.js';
-
 import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
 import { GenerationConfig } from './config/generation.js';
 import { RenderConfig } from './config/render.js';
-import { createTerrainMesh } from './mesh.js';
 import { GUI } from './gui/gui.js';
 import { Avatar } from './avatar.js';
 import { numStats } from './stats.js';
+import { CHUNK_UNIT } from './constants.js';
 
 const config = {
     // Chunking system.
@@ -42,12 +40,13 @@ function main() {
         return {
             at: field.mkNormalised(.01, 1),
             size: config.chunks.nblocks,
-            generate: () => {},
             coords: coords,
         }
     }, (heights) => {
-        const res = createTerrainMesh(heights, palettes[config.render.palette], config.render.style);
+        const res = config.render.mesh(heights);
         res.geometry.scale(config.chunks.blockSize, config.chunks.blockSize, config.gen.verticalUnit);
+        res.translateX(heights.coords.x * CHUNK_UNIT);
+        res.translateY(heights.coords.y * CHUNK_UNIT);
         return res;
     });
     const avatar = new Avatar();
