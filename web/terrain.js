@@ -32,7 +32,7 @@ export class Terrain {
     get #verticalUnit() { return this.#conf.gen.verticalUnit }
     get #nblocks()      { return this.#conf.chunks.nblocks }
     #shiftedHeight(coords) {
-        return (x, y) => this.#height(x + coords.x * this.#nblocks, y + coords.y * this.#nblocks);
+        return (x, y) => this.#height(x + coords.x, y + coords.y);
     }
 
     /** Creates a new mesh at the given coordinates, scales it and positions it in the world. */

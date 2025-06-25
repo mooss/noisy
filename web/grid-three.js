@@ -56,7 +56,7 @@ function main() {
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
-        terrain.regen(); // Also updates the mesh.
+        terrain.regen();
         updateAvatar();
         updateStats(); // Defined later.
     }
