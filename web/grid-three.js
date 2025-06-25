@@ -11,7 +11,6 @@ import { createTerrainMesh } from './mesh.js';
 import { GUI } from './gui/gui.js';
 import { Avatar } from './avatar.js';
 import { numStats } from './stats.js';
-import { CHUNK_UNIT } from './constants.js';
 
 const config = {
     // Chunking system.
@@ -40,18 +39,15 @@ function main() {
     // Data, meshes and utilities.
     const terrain = new Terrain((coords) => {
         const field = config.gen.heightField();
-        const maxH = (CHUNK_UNIT / 5) * config.gen.heightMultiplier;
         return {
-            raw: field.raw,
-            at: field.mkNormalised(.1, maxH),
-            maxH: maxH,
+            at: field.mkNormalised(.01, 1),
             size: config.chunks.nblocks,
             generate: () => {},
             coords: coords,
         }
     }, (heights) => {
         const res = createTerrainMesh(heights, palettes[config.render.palette], config.render.style);
-        res.geometry.scale(config.chunks.blockSize, config.chunks.blockSize, 1);
+        res.geometry.scale(config.chunks.blockSize, config.chunks.blockSize, config.gen.verticalUnit);
         return res;
     });
     const avatar = new Avatar();
@@ -72,6 +68,7 @@ function main() {
         const local = conv.toLocal(avatar.coords);
         const pos = conv.toWorld(avatar.coords);
         pos.z = chunk.heights.at(local.x * config.chunks.sampling, local.y * config.chunks.sampling)
+            * config.gen.verticalUnit
             + config.avatar.heightOffset * config.chunks.blockSize;
         avatar.setPosition(pos);
         avatar.setScale(config.avatar.size * config.chunks.blockSize);

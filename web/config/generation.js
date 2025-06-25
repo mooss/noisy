@@ -1,3 +1,4 @@
+import { CHUNK_UNIT } from "../constants.js";
 import { mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
@@ -22,6 +23,7 @@ export class GenerationConfig {
     }
 
     heightField() { return new HeightField(this) }
+    get verticalUnit() { return (CHUNK_UNIT / 5) * this.heightMultiplier }
 
     ////////
     // UI //

@@ -36,7 +36,7 @@ function _createHexagonGeometry(radius, height) {
  * @returns {THREE.Mesh} The generated surface mesh.
  */
 export function createSurfaceMesh(heights, palette) {
-    const { size, maxH } = heights;
+    const { size } = heights;
     const sampling = 1 / size; // Distance between each vertex.
     const geometry = new THREE.BufferGeometry();
 
@@ -48,7 +48,7 @@ export function createSurfaceMesh(heights, palette) {
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
             const height = heights.at(i * sampling, j * sampling);
-            const color = interpolateColors(palette, height / maxH);
+            const color = interpolateColors(palette, height);
 
             vertices.push(i, j, height);
             colors.push(color.r, color.g, color.b);
@@ -90,7 +90,7 @@ export function createSurfaceMesh(heights, palette) {
  * @returns {THREE.Mesh} The generated prism mesh.
  */
 export function createPrismMeshes(type, heights, palette) {
-    const { size, maxH } = heights;
+    const { size } = heights;
     const sampling = 1 / size; // Distance between each vertex.
     const isHex = type === 'hexagon';
     const ySpacingFactor = isHex ? Math.sqrt(3) / 2 : 1;
@@ -114,7 +114,7 @@ export function createPrismMeshes(type, heights, palette) {
             const xPos = i + xOffset;
             const yPos = j * ySpacingFactor;
 
-            const color = interpolateColors(palette, height / maxH);
+            const color = interpolateColors(palette, height);
             const matrix = new THREE.Matrix4().makeScale(1, 1, height).setPosition(xPos, yPos, 0);
 
             for (let v = 0; v < posAttr.count; v++) {
