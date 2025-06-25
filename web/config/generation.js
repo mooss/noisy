@@ -23,16 +23,6 @@ export class GenerationConfig {
 
     heightField() { return new HeightField(this) }
 
-    heightfun() {
-        return new HeightFieldBuilder(this).fun;
-    }
-
-    generator() {
-        const res = lowhigh(this);
-        res.fun = new HeightFieldBuilder(this).fun;
-        return res;
-    }
-
     ////////
     // UI //
 
@@ -159,17 +149,17 @@ function lowhigh(config) {
     config = clone(config);
     // Make sure to sample a high amount.
     config.noise.fundamental = .1;
-    const gen = config.heightfun(1);
+    const gen = new HeightFieldBuilder(config).fun;
     const heights = [];
     for (let i = 0; i < 100; ++i)
         for (let j = 0; j < 100; ++j)
             heights.push(gen(i, j));
-    return numStats(heights).outlierBounds(2);
+    return numStats(heights).outlierBounds(4);
 }
 
 export class HeightField {
     constructor(config) {
-        this.raw = config.heightfun();
+        this.raw = new HeightFieldBuilder(config).fun;
         const bounds = lowhigh(config);
         this.low = bounds.low; this.high = bounds.high;
     }
