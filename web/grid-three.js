@@ -45,7 +45,7 @@ function main() {
             raw: field.raw,
             at: field.mkNormalised(.1, maxH),
             maxH: maxH,
-            size: config.chunks.size,
+            size: config.chunks.nblocks,
             generate: () => {},
             coords: coords,
         }
@@ -83,7 +83,7 @@ function main() {
         updateStats(); // Defined later.
     }
     const resizeChunk = () => {
-        avatar.chunkResize(config.chunks.previousSize, config.chunks.size);
+        avatar.chunkResize(config.chunks.previousSize, config.chunks.nblocks);
         updateTerrain();
     }
     const noOp = () => { console.log('noOp'); }
@@ -103,8 +103,8 @@ function main() {
     const updateStats = () => {
         const chunk = terrain.chunkAt(conv.toChunk(avatar.coords));
         const heights = [];
-        for (let i = 0; i < config.chunks.size; ++i)
-            for (let j = 0; j < config.chunks.size; ++j)
+        for (let i = 0; i < config.chunks.nblocks; ++i)
+            for (let j = 0; j < config.chunks.nblocks; ++j)
                 heights.push(chunk.heights.at(i, j));
         heightGraph.update(heights.sort((l, r) => { return l - r; }));
 
@@ -124,8 +124,8 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     keyboard.down('KeyD', () => { avatar.x++; updateAvatar(); })
 
     // Application start.
-    avatar.x = Math.floor(config.chunks.size / 2);
-    avatar.y = Math.floor(config.chunks.size / 2);
+    avatar.x = Math.floor(config.chunks.nblocks / 2);
+    avatar.y = Math.floor(config.chunks.nblocks / 2);
     updateAvatar();
     updateStats();
     startAnimationLoop(renderer, fps);
