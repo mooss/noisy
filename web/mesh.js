@@ -28,6 +28,23 @@ function _createHexagonGeometry(radius, height) {
     });
 }
 
+// Computes the surface indices of for a square mesh.
+function surfaceIndices(size) {
+    const indices = [];
+    for (let i = 0; i < size - 1; i++) {
+        for (let j = 0; j < size - 1; j++) {
+            const topLeft = i * size + j;
+            const topRight = i * size + (j + 1);
+            const bottomLeft = (i + 1) * size + j;
+            const bottomRight = (i + 1) * size + (j + 1);
+
+            indices.push(topLeft, bottomLeft, topRight);
+            indices.push(topRight, bottomLeft, bottomRight);
+        }
+    }
+    return indices;
+}
+
 /**
  * Creates a surface mesh from a height field.
  *
@@ -36,12 +53,12 @@ function _createHexagonGeometry(radius, height) {
  * @returns {THREE.Mesh} The generated surface mesh.
  */
 export function createSurfaceMesh(heights, palette) {
-    const { nblocks } = heights;
+    let { nblocks } = heights;
     const sampling = 1 / nblocks; // Distance between each vertex.
+    nblocks+=1; // Create one additional row and column to overlap this mesh and the next one.
     const geometry = new THREE.BufferGeometry();
 
     const vertices = [];
-    const indices = [];
     const colors = [];
 
     // Vertices and colors.
@@ -55,27 +72,25 @@ export function createSurfaceMesh(heights, palette) {
         }
     }
 
-    // Indices.
-    for (let i = 0; i < nblocks - 1; i++) {
-        for (let j = 0; j < nblocks - 1; j++) {
-            const topLeft = i * nblocks + j;
-            const topRight = i * nblocks + (j + 1);
-            const bottomLeft = (i + 1) * nblocks + j;
-            const bottomRight = (i + 1) * nblocks + (j + 1);
-
-            indices.push(topLeft, bottomLeft, topRight);
-            indices.push(topRight, bottomLeft, bottomRight);
-        }
-    }
-
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
-    geometry.setIndex(indices);
+    geometry.setIndex(surfaceIndices(nblocks));
     geometry.computeVertexNormals();
 
     const material = new THREE.MeshStandardMaterial({
         vertexColors: true,
-        side: THREE.DoubleSide
+        side: THREE.FrontSide,
+        // Shading is clunky because the vertices at the edge of a mesh don't take into account
+        // vertices from the neighboring chunk and therefore have incorrect normal data which makes
+        // the seams very visible.
+        //
+        // Using flat shading has a pretty interesting old-school effect, so it can stay like that
+        // for now.
+        // The seams are still visible, but much less.
+        //
+        // Should shading be desirable in the future, it shouldn't be too hard to compute normals
+        // manually by taking inspiration from `computeVertexNormals` at https://github.com/mrdoob/three.js/blob/64b50b0910427c1bbeae01888ddc5be896dae227/src/core/BufferGeometry.js#L975.
+        flatShading: true,
     });
 
     return new THREE.Mesh(geometry, material);
