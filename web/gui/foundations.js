@@ -42,21 +42,27 @@ export class Param extends Label {
 // Abstract base input parameter, all concrete input parameters must implement the setup and value
 // methods.
 export class InputParam extends Param {
+    // fun(value: number) -> any
+    // Function to format the raw value into what is to be displayed.
+    // Only works for range right now.
+    #format;
+
     // UI parameter attached to parent and tied to target.property.
     constructor(parent, target, property, ...args) {
         super(parent);
+        this.#format = (x) => x;
 
         this.input.addEventListener('input', () => {
             const value = this.value();
-            this.update(value);
             target[property] = value;
+            this.update(this.#format(value));
             if (this._onInput) this._onInput(value);
         })
         this.input.addEventListener('change', () => {
             if (this._onChange) this._onChange(this.value());
         });
         this.setup(target[property], ...args);
-        this.update(this.value());
+        this.update(this.#format(this.value()));
 
         if (this.scroll) { // Parameter with mouse scroll support.
             this.input.addEventListener('wheel', (event) => {
@@ -93,12 +99,16 @@ export class InputParam extends Param {
     //////////////////////////////////
     // Chainable definition methods //
 
-    // Make the input read-only.
+    // Makes the input read-only.
     readOnly() { this.input.disabled = true; return this; }
 
-    // Register a listener for the change event.
+    // Registers a listener for the change event.
     onChange(fun) { this._onChange = fun; return this; }
 
-    // Register a listener for the input event.
+    // Registers a listener for the input event.
     onInput(fun) { this._onInput = fun; return this; }
+
+    // Sets the function that will format the raw value into the displayed value.
+    formatter(fun) { this.#format = fun; return this; }
+
 }

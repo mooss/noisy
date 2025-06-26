@@ -15,13 +15,15 @@ export class ChunkConfig {
         this.#power = value;
     }
     get power() { return this.#power }
-    get nblocks() { return 2**this.power + 1 }
+    get nblocks() { return 2**this.power }
     get sampling() { return 1/this.nblocks }
     get blockSize() { return CHUNK_UNIT / this.nblocks }
     get converter() { return new CoordinatesConverter(this) }
 
     ui(parent, resize, load) {
-        parent.range(this, 'power', 1, 8, 1).legend('Grid size').onInput(resize);
+        parent.range(this, 'power', 1, 8, 1).legend('Blocks in grid')
+            .onInput(resize)
+            .formatter(() => this.nblocks);
         parent.range(this, 'loadRadius', 0, 8, 1).legend('Load radius').onInput(load);
         // parent.range(this, 'unloadRadius', 0, 4, 1).legend('Unload radius');
     }
