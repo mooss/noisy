@@ -1,4 +1,5 @@
 import { CHUNK_UNIT } from "./constants.js";
+import { Coordinates } from "./coordinates.js";
 
 class Chunk {
     constructor(coords, mesh, height) {
@@ -10,18 +11,15 @@ class Chunk {
 
 /** Dynamically manages terrain as a collection of chunks. */
 export class Terrain {
-    /** @type {Map<string, Chunk>} Map id (e.g., "0,0", "1,0") => Chunk instances. */
-    #chunks = new Map();;
     /** References to the relevant configurations */
     #conf;
+
     /**
      * Height generator normalised between .01 and 1.
      * The low bound is hard, the height cannot go below .01.
      * The high bound is soft, it can go above 1, but this is statistically rare.
      */
     #height;
-    /** @type {THREE.Group} The mesh group of every active chunk. */
-    mesh = new THREE.Group();
 
     constructor(chunks, gen, render) {
         this.#conf = {chunks, gen, render };
@@ -31,9 +29,20 @@ export class Terrain {
     get #blockSize()    { return this.#conf.chunks.blockSize }
     get #verticalUnit() { return this.#conf.gen.verticalUnit }
     get #nblocks()      { return this.#conf.chunks.nblocks }
-    #shiftedHeight(coords) {
-        return (x, y) => this.#height(x + coords.x, y + coords.y);
+    get #loadRadius()   { return this.#conf.chunks.loadRadius }
+    #shiftedHeight(coords) { return (x, y) => this.#height(x + coords.x, y + coords.y) }
+
+    /** Regenerates the heights and updates the mesh of all active chunks. */
+    regen() {
+        this.#height = this.#conf.gen.heightField().mkNormalised(.01, 1);
+        this.#rangeActive(this.#updateMesh.bind(this));
     }
+
+    ////////////
+    // Meshes //
+
+    /** @type {THREE.Group} The mesh group of every active chunk. */
+    mesh = new THREE.Group();
 
     /** Creates a new mesh at the given coordinates, scales it and positions it in the world. */
     #newMesh(coords) {
@@ -51,24 +60,65 @@ export class Terrain {
      * Updates the mesh of a single chunk.
      * @param {Chunk} chunk - The chunk whose mesh needs to be updated.
      */
-    #updateChunk(chunk) {
+    #updateMesh(chunk) {
         const oldMesh = chunk.mesh;
         chunk.mesh = this.#newMesh(chunk.coords);
         this.mesh.add(chunk.mesh);
-        this.mesh.remove(oldMesh);
-        oldMesh.geometry.dispose();
-        oldMesh.material.dispose();
+        this.#removeMesh(oldMesh);
     }
+
+    /**
+     * Removes a mesh from the mesh group and disposes of its resources.
+     * @param {THREE.Mesh} mesh - The mesh to remove.
+     */
+    #removeMesh(mesh) {
+        this.mesh.remove(mesh);
+        mesh.geometry.dispose();
+        mesh.material.dispose();
+    }
+
+    ////////////
+    // Chunks //
+
+    /** @type {Map<Coordinates, Chunk>} Map id (e.g., "0,0", "1,0") => Chunk instances. */
+    #chunks = new Map();;
 
     /** Returns the chunk stored at the given coordinates, creating it if necessary. */
     getChunk(coords) {
-        const id = `${coords.x},${coords.y}`;
-        if (this.#chunks.has(id)) return this.#chunks.get(id);
+        let chunk = this.#chunks.get(coords);
+        if (chunk !== undefined) return chunk;
+        return this.#loadChunk(coords);
+    }
 
+    #loadChunk(coords) {
         const chunk = new Chunk(coords, this.#newMesh(coords), this.#shiftedHeight(coords));
         this.mesh.add(chunk.mesh);
-        this.#chunks.set(id, chunk);
+        this.#chunks.set(coords, chunk);
         return chunk;
+    }
+
+    #center = undefined;
+
+    centerOn(globalCoords) {
+        const chunkCoords = globalCoords.toChunk(this.#nblocks);
+        if (this.#center != undefined && chunkCoords.equals(this.#center)) return;
+        this.#center = chunkCoords;
+        this.reload();
+    }
+
+    reload() {
+        const oldChunks = this.#chunks;
+        this.#chunks = new Map();
+        this.#center.within(this.#loadRadius, (coords) => {
+            const chunk = oldChunks.get(coords);
+            if (chunk === undefined) return this.#loadChunk(coords); // Load new chunk.
+            // Transfer old chunk.
+            this.#chunks.set(coords, chunk);
+            oldChunks.delete(coords);
+        });
+
+        // The remaining old chunks can be thrown away.
+        oldChunks.forEach((chunk) => this.#removeMesh(chunk.mesh));
     }
 
     /**
@@ -76,10 +126,4 @@ export class Terrain {
      * @param {function(Chunk): void} fun - The function to apply to each chunk.
      */
     #rangeActive(fun) { for (const [_, chunk] of this.#chunks) fun(chunk); }
-
-    /** Regenerates the heights and updates the mesh of all active chunks. */
-    regen() {
-        this.#height = this.#conf.gen.heightField().mkNormalised(.01, 1);
-        this.#rangeActive(this.#updateChunk.bind(this));
-    }
 }

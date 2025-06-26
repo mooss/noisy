@@ -45,6 +45,7 @@ function main() {
 
     // UI callbacks.
     const updateAvatar = () => {
+        terrain.centerOn(avatar.coords);
         const chunk = terrain.getChunk(conv.toChunk(avatar.coords));
         const local = conv.toLocal(avatar.coords);
         const pos = conv.toWorld(avatar.coords);
@@ -64,7 +65,10 @@ function main() {
         avatar.chunkResize(config.chunks.previousSize, config.chunks.nblocks);
         updateTerrain();
     }
-    const noOp = () => { console.log('noOp'); }
+    const loadChunks = () => {
+        terrain.reload();
+        renderer.pleaseRender();
+    }
 
     // UI definition.
     const gui = new GUI();
@@ -72,7 +76,7 @@ function main() {
     const heightGraph = gui.graph().legend("Sorted heights in active chunk");
     const heightStats = gui.readOnly('').legend('Height stats');
     const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
-    config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, noOp);
+    config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, loadChunks);
     config.render.ui(gui.addFolder('Render'), updateTerrain);
     config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);

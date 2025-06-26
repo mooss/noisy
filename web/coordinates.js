@@ -25,26 +25,26 @@ export class Coordinates {
     /**
      * Convert global block coordinates to the coordinates of the chunk containing them.
      *
-     * @param {number} chunkSize - The size of a chunk.
+     * @param {number} nblocks - The size of a chunk.
      * @returns {Coordinates} The chunk coordinates.
      */
-    toChunk(chunkSize) {
+    toChunk(nblocks) {
         return new Coordinates(
-            Math.floor(this.x / chunkSize),
-            Math.floor(this.y / chunkSize)
+            Math.floor(this.x / nblocks),
+            Math.floor(this.y / nblocks)
         );
     }
 
     /**
      * Convert global block coordinates to local block coordinates within their chunk.
      *
-     * @param {number} chunkSize - The size of a chunk.
+     * @param {number} nblocks - The size of a chunk.
      * @returns {Coordinates} The local coordinates.
      */
-    toLocal(chunkSize) {
+    toLocal(nblocks) {
         return new Coordinates(
-            ((this.x % chunkSize) + chunkSize) % chunkSize,
-            ((this.y % chunkSize) + chunkSize) % chunkSize
+            ((this.x % nblocks) + nblocks) % nblocks,
+            ((this.y % nblocks) + nblocks) % nblocks
         );
     }
 
@@ -83,15 +83,15 @@ export class Coordinates {
      * @param {number} radius - The radius (in chunks or blocks) around the center.
      * @returns {Array<Coordinates>} An array of chunk block coordinate objects.
      */
-    within(radius) {
-        const chunkCoords = [];
+    within(radius, fun) {
         for (let x = this.x - radius; x <= this.x + radius; x++) {
             for (let y = this.y - radius; y <= this.y + radius; y++) {
-                chunkCoords.push(new Coordinates(x, y));
+                fun(new Coordinates(x, y));
             }
         }
-        return chunkCoords;
     }
+
+    equals(other) { return this.x == other.x && this.y == other.y }
 }
 
 /**
