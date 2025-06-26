@@ -109,6 +109,10 @@ export class InputParam extends Param {
     onInput(fun) { this._onInput = fun; return this; }
 
     // Sets the function that will format the raw value into the displayed value.
-    formatter(fun) { this.#format = fun; return this; }
+    formatter(fun) {
+        this.#format = fun;
+        this.update(fun(this.value()));
+        return this;
+    }
 
 }

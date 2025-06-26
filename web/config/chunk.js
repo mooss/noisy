@@ -20,7 +20,7 @@ export class ChunkConfig {
     get blockSize() { return CHUNK_UNIT / this.nblocks }
 
     ui(parent, resize, load) {
-        parent.range(this, 'power', 1, 8, 1).legend('Blocks in grid')
+        parent.range(this, 'power', 1, 8, 1).legend('Blocks in a chunk')
             .onInput(resize)
             .formatter(() => this.nblocks);
         parent.range(this, 'loadRadius', 0, 8, 1).legend('Load radius').onInput(load);
