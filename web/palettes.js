@@ -51,9 +51,9 @@ const sunsetPalette = [
 
 export const palettes = {
     'Bright terrain': brightTerrainPalette,
-    'Continental': continentalPalette,
-    'Cyberpuke': cyberPuke,
-    'Black & white': blackWhite,
     'Fantasy': fantasyPalette,
     'Sunset': sunsetPalette,
+    'Black & white': blackWhite,
+    'Cyberpuke': cyberPuke,
+    'Continental': continentalPalette,
 };
