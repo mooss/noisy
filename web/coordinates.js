@@ -92,6 +92,7 @@ export class Coordinates {
     }
 
     equals(other) { return this.x == other.x && this.y == other.y }
+    string() { return `${this.x},${this.y}` }
 }
 
 /**

@@ -85,7 +85,7 @@ export class Terrain {
 
     /** Returns the chunk stored at the given coordinates, creating it if necessary. */
     getChunk(coords) {
-        let chunk = this.#chunks.get(coords);
+        let chunk = this.#chunks.get(coords.string());
         if (chunk !== undefined) return chunk;
         return this.#loadChunk(coords);
     }
@@ -93,7 +93,7 @@ export class Terrain {
     #loadChunk(coords) {
         const chunk = new Chunk(coords, this.#newMesh(coords), this.#shiftedHeight(coords));
         this.mesh.add(chunk.mesh);
-        this.#chunks.set(coords, chunk);
+        this.#chunks.set(coords.string(), chunk);
         return chunk;
     }
 
@@ -110,15 +110,16 @@ export class Terrain {
         const oldChunks = this.#chunks;
         this.#chunks = new Map();
         this.#center.within(this.#loadRadius, (coords) => {
-            const chunk = oldChunks.get(coords);
+            const chunk = oldChunks.get(coords.string());
             if (chunk === undefined) return this.#loadChunk(coords); // Load new chunk.
             // Transfer old chunk.
-            this.#chunks.set(coords, chunk);
-            oldChunks.delete(coords);
+            this.#chunks.set(coords.string(), chunk);
+            oldChunks.delete(coords.string());
         });
 
         // The remaining old chunks can be thrown away.
         oldChunks.forEach((chunk) => this.#removeMesh(chunk.mesh));
+        oldChunks.clear(); // Don't wait for GC, there might be lots of memory in here.
     }
 
     /**
