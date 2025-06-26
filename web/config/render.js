@@ -3,15 +3,15 @@ import { palettes } from '../palettes.js';
 
 export class RenderConfig {
     constructor() {
-        this.style = 'quadPrism';            // How the terrain is rendered (quadPrism, hexPrism, surface).
+        this.style = 'surface';              // How the terrain is rendered.
         this.paletteName = 'Bright terrain'; // Name of the color palette to use.
     }
 
     ui(parent, update) {
         parent.select(this, 'style', {
+            'Surface': 'surface',
             'Squares': 'quadPrism',
             'Hexagons': 'hexPrism',
-            'Surface': 'surface'
         }).legend('Shape').onChange(update);
 
         parent.select(this, 'paletteName', palettes)
