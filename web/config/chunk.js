@@ -18,7 +18,6 @@ export class ChunkConfig {
     get nblocks() { return 2**this.power }
     get sampling() { return 1/this.nblocks }
     get blockSize() { return CHUNK_UNIT / this.nblocks }
-    get converter() { return new CoordinatesConverter(this) }
 
     ui(parent, resize, load) {
         parent.range(this, 'power', 1, 8, 1).legend('Blocks in grid')
@@ -27,13 +26,4 @@ export class ChunkConfig {
         parent.range(this, 'loadRadius', 0, 8, 1).legend('Load radius').onInput(load);
         // parent.range(this, 'unloadRadius', 0, 4, 1).legend('Unload radius');
     }
-}
-
-export class CoordinatesConverter {
-    #config;
-    constructor(config) { this.#config = config }
-    toChunk(global) { return global.toChunk(this.#config.nblocks) }
-    toLocal(global) { return global.toLocal(this.#config.nblocks) }
-    toGlobal(chunk, local) { return local.toGlobal(chunk) }
-    toWorld(global) { return global.toWorld(this.#config.blockSize) }
 }

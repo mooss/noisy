@@ -30,7 +30,15 @@ export class Terrain {
     get #verticalUnit() { return this.#conf.gen.verticalUnit }
     get #nblocks()      { return this.#conf.chunks.nblocks }
     get #loadRadius()   { return this.#conf.chunks.loadRadius }
-    #shiftedHeight(coords) { return (x, y) => this.#height(x + coords.x, y + coords.y) }
+    get #sampling()     { return this.#conf.chunks.sampling }
+
+    /**
+     * Returns the height function of the given chunk.
+     * The chunk is the height field between 0 and 1 (for both coordinates).
+     */
+    chunkHeightFun(chunkCoords) {
+        return (x, y) => this.#height(x + chunkCoords.x, y + chunkCoords.y);
+    }
 
     /** Regenerates the heights and updates the mesh of all active chunks. */
     regen() {
@@ -47,7 +55,7 @@ export class Terrain {
     /** Creates a new mesh at the given coordinates, scales it and positions it in the world. */
     #newMesh(coords) {
         const res = this.#conf.render.mesh({
-            at: this.#shiftedHeight(coords),
+            at: this.chunkHeightFun(coords),
             nblocks: this.#nblocks,
         });
         res.geometry.scale(this.#blockSize, this.#blockSize, this.#verticalUnit);
@@ -81,17 +89,10 @@ export class Terrain {
     // Chunks //
 
     /** @type {Map<Coordinates, Chunk>} Map id (e.g., "0,0", "1,0") => Chunk instances. */
-    #chunks = new Map();;
-
-    /** Returns the chunk stored at the given coordinates, creating it if necessary. */
-    getChunk(coords) {
-        let chunk = this.#chunks.get(coords.string());
-        if (chunk !== undefined) return chunk;
-        return this.#loadChunk(coords);
-    }
+    #chunks = new Map();
 
     #loadChunk(coords) {
-        const chunk = new Chunk(coords, this.#newMesh(coords), this.#shiftedHeight(coords));
+        const chunk = new Chunk(coords, this.#newMesh(coords), this.chunkHeightFun(coords));
         this.mesh.add(chunk.mesh);
         this.#chunks.set(coords.string(), chunk);
         return chunk;
@@ -127,4 +128,15 @@ export class Terrain {
      * @param {function(Chunk): void} fun - The function to apply to each chunk.
      */
     #rangeActive(fun) { for (const [_, chunk] of this.#chunks) fun(chunk); }
+
+    ///////////
+    // Other //
+
+    /** Returns the world position of the given global coordinates. */
+    positionOf(global) {
+        const res = global.toWorld(this.#blockSize);
+        res.z = this.#height(global.x * this.#sampling, global.y * this.#sampling)
+            * this.#verticalUnit;
+        return res;
+    }
 }

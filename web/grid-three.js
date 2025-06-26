@@ -36,7 +36,6 @@ function main() {
     // Data, meshes and utilities.
     const terrain = new Terrain(config.chunks, config.gen, config.render);
     const avatar = new Avatar();
-    const conv = config.chunks.converter;
 
     // Renderer.
     const renderer = new Renderer();
@@ -46,12 +45,8 @@ function main() {
     // UI callbacks.
     const updateAvatar = () => {
         terrain.centerOn(avatar.coords);
-        const chunk = terrain.getChunk(conv.toChunk(avatar.coords));
-        const local = conv.toLocal(avatar.coords);
-        const pos = conv.toWorld(avatar.coords);
-        pos.z = chunk.height(local.x * config.chunks.sampling, local.y * config.chunks.sampling)
-            * config.gen.verticalUnit
-            + config.avatar.heightOffset * config.chunks.blockSize;
+        const pos = terrain.positionOf(avatar.coords);
+        pos.z += + config.avatar.heightOffset * config.chunks.blockSize;
         avatar.setPosition(pos);
         avatar.setScale(config.avatar.size * config.chunks.blockSize);
         renderer.pleaseRender();
@@ -83,11 +78,11 @@ function main() {
 
     // Stats and graphs.
     const updateStats = () => {
-        const chunk = terrain.getChunk(conv.toChunk(avatar.coords));
+        const heightfun = terrain.chunkHeightFun(avatar.coords.toChunk(config.chunks.nblocks))
         const heights = [];
         for (let i = 0; i < config.chunks.nblocks; ++i)
             for (let j = 0; j < config.chunks.nblocks; ++j)
-                heights.push(chunk.height(i, j));
+                heights.push(heightfun(i/config.chunks.nblocks, j/config.chunks.nblocks));
         heightGraph.update(heights.sort((l, r) => { return l - r; }));
 
         const stats = numStats(heights);
