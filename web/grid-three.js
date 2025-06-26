@@ -46,9 +46,9 @@ function main() {
     const updateAvatar = () => {
         terrain.centerOn(avatar.coords);
         const pos = terrain.positionOf(avatar.coords);
-        pos.z += + config.avatar.heightOffset * config.chunks.blockSize;
+        pos.z += + config.avatar.heightOffset;
         avatar.setPosition(pos);
-        avatar.setScale(config.avatar.size * config.chunks.blockSize);
+        avatar.setScale(config.avatar.size);
         renderer.pleaseRender();
     }
     const updateTerrain = () => {
