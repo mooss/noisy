@@ -13,8 +13,9 @@ export class Renderer {
 
         const camDist = CHUNK_UNIT * 1.2 + 50;
         const center = CHUNK_UNIT / 2;
-        this.#camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, .1, camDist * 2);
+        this.#camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, .1, 10000);
         this.#camera.position.set(center, center - camDist * 0.7, camDist * 0.7);
+        this.#camera.up.set(0, 0, 1);
 
         this.#renderer = new THREE.WebGLRenderer({ antialias: true });
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
@@ -26,7 +27,7 @@ export class Renderer {
         directionalLight.position.set(1, 1, 1).normalize();
         this.#scene.add(directionalLight);
 
-        this.#controls = new THREE.OrbitControls(this.#camera, this.#renderer.domElement);
+        this.#controls = new THREE.MapControls(this.#camera, this.#renderer.domElement);
         this.#controls.enableDamping = true;
         this.#controls.dampingFactor = 0.1;
         this.#controls.target = new THREE.Vector3(center, center, 0);
