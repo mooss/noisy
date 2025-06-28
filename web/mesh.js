@@ -1,4 +1,3 @@
-import { CHUNK_UNIT } from './constants.js';
 import { interpolateColors } from './utils.js';
 
 /**

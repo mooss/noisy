@@ -1,6 +1,4 @@
 import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
-import { SIM_SHIFT } from './constants.js';
-
 ////////////////////
 // Free functions //
 
@@ -52,7 +50,7 @@ function mkWarped(noise, warp, strength) {
         const wp = warp(x, y);
 		return noise(
 			x + wp * strength,
-			y + wp * strength,
+			y + wp * strength + 10,
 		)
 	}
 }
@@ -115,8 +113,15 @@ export function mkLayering(noise, octaves, fundamental, persistence, lacunarity)
         let frequency = fundamental;
         let amplitude = 1;
 
-        for (let i = 0; i < octaves; i++) {
-            let octave = noise(x * frequency + SIM_SHIFT, y * frequency + SIM_SHIFT);
+        for (let oct = 0; oct < octaves; oct++) {
+            // The noise is shifted with the octave index to avoid the artifact that occurs at the
+            // origin when layering noise.
+            // This artifact is probably due to the fact that the same base noise value is
+            // accumulated at the origin, thus reinforcing the directionality that can occur in raw
+            // noise.
+            // I don't know where this idea that simplex has no directional artifacts because they
+            // are very much visible in this project.
+            let octave = noise(x * frequency + oct, y * frequency + oct + 10);
             total += octave * amplitude;
 
             // Update amplitude and frequency for the next octave.
