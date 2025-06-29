@@ -8,7 +8,7 @@ export class AvatarConfig {
         parent.range(this, 'size', 1, 10, 1)
             .legend('Size')
             .onInput(update);
-        parent.range(this, 'heightOffset', 0, 10, 1)
+        parent.range(this, 'heightOffset', 0, 0.2, 0.01)
             .legend('Height offset')
             .onInput(update);
     }

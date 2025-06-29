@@ -18,8 +18,10 @@ export class Terrain {
      * Height generator normalised between .01 and 1.
      * The low bound is hard, the height cannot go below .01.
      * The high bound is soft, it can go above 1, but this is statistically rare.
+     *
+     * The unit is the chunk, i.e. the first chunk is within [0 <= x <= 1], [0 <= y <= 1].
      */
-    #height;
+    height;
 
     constructor(chunks, gen, render) {
         this.#conf = {chunks, gen, render };
@@ -30,19 +32,18 @@ export class Terrain {
     get #verticalUnit() { return this.#conf.gen.verticalUnit }
     get #nblocks()      { return this.#conf.chunks.nblocks }
     get #loadRadius()   { return this.#conf.chunks.loadRadius }
-    get #sampling()     { return this.#conf.chunks.sampling }
 
     /**
      * Returns the height function of the given chunk.
      * The chunk is the height field between 0 and 1 (for both coordinates).
      */
     chunkHeightFun(chunkCoords) {
-        return (x, y) => this.#height(x + chunkCoords.x, y + chunkCoords.y);
+        return (x, y) => this.height(x + chunkCoords.x, y + chunkCoords.y);
     }
 
     /** Regenerates the heights and updates the mesh of all active chunks. */
     regen() {
-        this.#height = this.#conf.gen.heightField().mkNormalised(.01, 1);
+        this.height = this.#conf.gen.heightField().mkNormalised(.01, 1);
         this.#rangeActive(this.#updateMesh.bind(this));
     }
 
@@ -100,8 +101,11 @@ export class Terrain {
 
     #center = undefined;
 
-    centerOn(globalCoords) {
-        const chunkCoords = globalCoords.toChunk(this.#nblocks);
+    /**
+     * Loads the blocks within range of worldPosition and unloads the blocks outside its range.
+     */
+    centerOn(worldPosition) {
+        const chunkCoords = worldPosition.toChunk();
         if (this.#center != undefined && chunkCoords.equals(this.#center)) return;
         this.#center = chunkCoords;
         this.reload();
@@ -128,15 +132,4 @@ export class Terrain {
      * @param {function(Chunk): void} fun - The function to apply to each chunk.
      */
     #rangeActive(fun) { for (const [_, chunk] of this.#chunks) fun(chunk); }
-
-    ///////////
-    // Other //
-
-    /** Returns the world position of the given global coordinates. */
-    positionOf(global) {
-        const res = global.toWorld(this.#blockSize);
-        res.z = this.#height(global.x * this.#sampling, global.y * this.#sampling)
-            * this.#verticalUnit;
-        return res;
-    }
 }

@@ -1,8 +1,6 @@
 /////////////////////////
 // Integer coordinates //
 
-import { CHUNK_UNIT } from "./constants.js";
-
 /**
  * Represents 2D integer coordinates for blocks, either locally within a chunk or globally within
  * the grid.
@@ -17,63 +15,28 @@ export class Coordinates {
      * @param {number} x - The X coordinate.
      * @param {number} y - The Y coordinate.
      */
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-    }
+    constructor(x, y) { this.x = x; this.y = y; }
 
     /**
      * Convert global block coordinates to the coordinates of the chunk containing them.
      *
-     * @param {number} nblocks - The size of a chunk.
+     * @param {number} nblocks - The number of blocks in a chunk.
      * @returns {Coordinates} The chunk coordinates.
      */
     toChunk(nblocks) {
-        return new Coordinates(
-            Math.floor(this.x / nblocks),
-            Math.floor(this.y / nblocks)
-        );
+        return new Coordinates(Math.floor(this.x / nblocks), Math.floor(this.y / nblocks));
     }
 
     /**
      * Convert global block coordinates to local block coordinates within their chunk.
      *
-     * @param {number} nblocks - The size of a chunk.
+     * @param {number} nblocks - The number of blocks in a chunk.
      * @returns {Coordinates} The local coordinates.
      */
     toLocal(nblocks) {
         return new Coordinates(
             ((this.x % nblocks) + nblocks) % nblocks,
-            ((this.y % nblocks) + nblocks) % nblocks
-        );
-    }
-
-    /**
-     * Convert local block coordinates to global block coordinates given the coordinates of their
-     * chunk.
-     *
-     * @param {Coordinates} chunkCoords - The chunk block coordinates.
-     * @returns {Coordinates} The global coordinates.
-     */
-    toGlobal(chunkCoords) {
-        return new Coordinates(
-            chunkCoords.x * CHUNK_UNIT + this.x,
-            chunkCoords.y * CHUNK_UNIT + this.y
-        );
-    }
-
-    /**
-     * Creates WorldCoordinates from global block coordinates.
-     * Their height is set at zero.
-     *
-     * @param {number} blockSize - The size of a single block.
-     * @returns {Position} The world coordinates.
-     */
-    toWorld(blockSize) {
-        return new Position(
-            this.x * blockSize,
-            this.y * blockSize,
-            undefined,
+            ((this.y % nblocks) + nblocks) % nblocks,
         );
     }
 
@@ -111,9 +74,13 @@ export class Position {
      * @param {number} y - The Y coordinate.
      * @param {number} z - The Z coordinate.
      */
-    constructor(x, y, z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
+    constructor(x, y, z) { this.x = x; this.y = y; this.z = z; }
+
+    /**
+     * Convert the position to the chunk Coordinates containing it.
+     * This is just a conversion of the x and y coordinates to an int.
+     *
+     * @returns {Coordinates} The chunk coordinates.
+     */
+    toChunk() { return new Coordinates(Math.floor(this.x), Math.floor(this.y)) }
 }

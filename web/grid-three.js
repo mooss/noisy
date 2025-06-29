@@ -8,6 +8,7 @@ import { RenderConfig } from './config/render.js';
 import { GUI } from './gui/gui.js';
 import { Avatar } from './avatar.js';
 import { numStats } from './stats.js';
+import { CHUNK_UNIT } from './constants.js';
 
 const config = {
     // Chunking system.
@@ -29,7 +30,7 @@ function startAnimationLoop(renderer, onFrame) {
     function animate() {
         requestAnimationFrame(animate);
         const now = performance.now();
-        onFrame(now - prev);
+        onFrame((now - prev) / 1000);
         prev = now;
         renderer.render();
     }
@@ -49,19 +50,14 @@ function main() {
     // UI callbacks.
     const updateAvatar = () => {
         terrain.centerOn(avatar.coords);
-        const pos = terrain.positionOf(avatar.coords);
-        pos.z += + config.avatar.heightOffset;
-        avatar.setPosition(pos);
+        avatar.z = terrain.height(avatar.x, avatar.y) + config.avatar.heightOffset;
+        avatar.reposition(CHUNK_UNIT, config.gen.verticalUnit);
         avatar.setScale(config.avatar.size);
     }
     const regenerateTerrain = () => {
         terrain.regen();
         updateAvatar();
         updateStats(); // Defined later.
-    }
-    const resizeChunk = () => {
-        avatar.chunkResize(config.chunks.previousSize, config.chunks.nblocks);
-        regenerateTerrain();
     }
     const reloadTerrain = () => terrain.reload();
 
@@ -71,7 +67,7 @@ function main() {
     const heightGraph = gui.graph().legend("Sorted heights in active chunk");
     const heightStats = gui.readOnly('').legend('Height stats');
     const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
-    config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, reloadTerrain);
+    config.chunks.ui(gui.addFolder('Chunks'), regenerateTerrain, reloadTerrain);
     config.render.ui(gui.addFolder('Render'), regenerateTerrain);
     config.gen.ui(gui.addFolder('Terrain generation'), regenerateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
@@ -93,12 +89,10 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
         zScoreGraph.update(stats.zScores);
     }
 
-    // Keyboard registration.
-    const keyboard = new Keyboard();
+    // Final touches.
+    avatar.x = .5; avatar.y = .5; avatar.z = 0; // Center of the original chunk.
 
-    // Application start.
-    avatar.x = Math.floor(config.chunks.nblocks / 2);
-    avatar.y = Math.floor(config.chunks.nblocks / 2);
+    const keyboard = new Keyboard();
     regenerateTerrain();
     startAnimationLoop(renderer, (delta) => {
         fps.update(delta);

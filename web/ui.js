@@ -1,12 +1,12 @@
 class FpsCounter {
-    #delta = 0; #frames = 0; #interval = 100; #fps = 0;
+    #delta = 0; #frames = 0; #interval = .1; #fps = 0;
 
     update(delta) {
         this.#frames++;
         this.#delta += delta;
 
         if (this.#delta >= this.#interval) {
-            this.#fps = (this.#frames / (this.#delta / 1000)).toFixed(1);
+            this.#fps = (this.#frames / this.#delta).toFixed(1);
             this.#frames = 0;
             this.#delta = 0;
         }

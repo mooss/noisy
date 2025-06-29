@@ -1,12 +1,11 @@
-import { Coordinates } from "./coordinates.js";
-import { rangeMapper } from "./utils.js";
+import { Position } from "./coordinates.js";
 
 export class Avatar {
-    /** @type {Coordinates} */
-    coords = new Coordinates();
+    /** @type {Position} World position of the avatar. */
+    coords = new Position();
     /** @type {THREE.Mesh} */
     mesh;
-    speed = .005; // Units per second
+    speed = .5; // Units per second.
 
     constructor() {
         const geometry = new THREE.SphereGeometry(1, 32, 32);
@@ -18,26 +17,19 @@ export class Avatar {
     // Returns true when the avatar position changed.
     update(dt, keyboard) {
         let dx = 0, dy = 0;
-        if (keyboard.isPressed('KeyW')) dy += 1;
-        if (keyboard.isPressed('KeyS')) dy -= 1;
-        if (keyboard.isPressed('KeyA')) dx -= 1;
-        if (keyboard.isPressed('KeyD')) dx += 1;
+        if (keyboard.isPressed('KeyW')) dy += this.speed;
+        if (keyboard.isPressed('KeyS')) dy -= this.speed;
+        if (keyboard.isPressed('KeyA')) dx -= this.speed;
+        if (keyboard.isPressed('KeyD')) dx += this.speed;
         if (dx == 0 && dy == 0) return false;
 
-        this.x += dx * this.speed * dt;
-        this.y += dy * this.speed * dt;
+        this.x += dx * dt;
+        this.y += dy * dt;
         return true;
     }
 
-    // Reposition the avatar when the chunk changes size.
-    chunkResize(then, now) {
-        const conv = rangeMapper(0, then, 0, now);
-        this.x = Math.round(conv(this.x));
-        this.y = Math.round(conv(this.y));
-    }
-
-    setPosition(pos) {
-        this.mesh.position.set(pos.x, pos.y, pos.z);
+    reposition(hscale, vscale) {
+        this.mesh.position.set(this.x * hscale, this.y * hscale, this.z * vscale);
     }
 
     setScale(scale) {
@@ -46,6 +38,8 @@ export class Avatar {
 
     get x() { return this.coords.x; }
     get y() { return this.coords.y; }
+    get z() { return this.coords.z; }
     set x(value) { this.coords.x = value; }
     set y(value) { this.coords.y = value; }
+    set z(value) { this.coords.z = value; }
 }
