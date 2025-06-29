@@ -16,7 +16,10 @@ export class Renderer {
         this.#camera.position.set(center, center - camDist * 0.7, camDist * 0.7);
         this.#camera.up.set(0, 0, 1);
 
-        this.#renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.#renderer = new THREE.WebGLRenderer({
+            antialias: true,
+            powerPreference: "high-performance",
+        });
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.#renderer.domElement);
 
