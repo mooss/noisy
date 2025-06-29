@@ -5,7 +5,6 @@ export class Renderer {
     #camera;
     #renderer;
     #controls;
-    #mustRender = true;
 
     constructor() {
         this.#scene = new THREE.Scene();
@@ -33,7 +32,6 @@ export class Renderer {
         this.#controls.target = new THREE.Vector3(center, center, 0);
 
         window.addEventListener('resize', this.resizeWindow.bind(this), false);
-        this.#controls.addEventListener('change', this.pleaseRender.bind(this));
     }
 
     addMesh(mesh) {
@@ -44,17 +42,10 @@ export class Renderer {
         this.#camera.aspect = window.innerWidth / window.innerHeight;
         this.#camera.updateProjectionMatrix();
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
-        this.pleaseRender();
-    }
-
-    pleaseRender() {
-        this.#mustRender = true;
     }
 
     render() {
-        if (this.#mustRender || this.#controls.update()) {
-            this.#renderer.render(this.#scene, this.#camera);
-            this.#mustRender = false;
-        }
+        this.#controls.update();
+        this.#renderer.render(this.#scene, this.#camera);
     }
 }

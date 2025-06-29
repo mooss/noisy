@@ -53,7 +53,6 @@ function main() {
         pos.z += + config.avatar.heightOffset;
         avatar.setPosition(pos);
         avatar.setScale(config.avatar.size);
-        renderer.pleaseRender();
     }
     const updateTerrain = () => {
         terrain.regen();
@@ -66,7 +65,6 @@ function main() {
     }
     const loadChunks = () => {
         terrain.reload();
-        renderer.pleaseRender();
     }
 
     // UI definition.
@@ -107,8 +105,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     // Application start.
     avatar.x = Math.floor(config.chunks.nblocks / 2);
     avatar.y = Math.floor(config.chunks.nblocks / 2);
-    updateAvatar();
-    updateStats();
+    updateTerrain();
     startAnimationLoop(renderer, (delta) => {
         fps.update(delta);
     });
