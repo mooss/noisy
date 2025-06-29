@@ -54,18 +54,16 @@ function main() {
         avatar.setPosition(pos);
         avatar.setScale(config.avatar.size);
     }
-    const updateTerrain = () => {
+    const regenerateTerrain = () => {
         terrain.regen();
         updateAvatar();
         updateStats(); // Defined later.
     }
     const resizeChunk = () => {
         avatar.chunkResize(config.chunks.previousSize, config.chunks.nblocks);
-        updateTerrain();
+        regenerateTerrain();
     }
-    const loadChunks = () => {
-        terrain.reload();
-    }
+    const reloadTerrain = () => terrain.reload();
 
     // UI definition.
     const gui = new GUI();
@@ -73,9 +71,9 @@ function main() {
     const heightGraph = gui.graph().legend("Sorted heights in active chunk");
     const heightStats = gui.readOnly('').legend('Height stats');
     const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
-    config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, loadChunks);
-    config.render.ui(gui.addFolder('Render'), updateTerrain);
-    config.gen.ui(gui.addFolder('Terrain generation'), updateTerrain)
+    config.chunks.ui(gui.addFolder('Chunks'), resizeChunk, reloadTerrain);
+    config.render.ui(gui.addFolder('Render'), regenerateTerrain);
+    config.gen.ui(gui.addFolder('Terrain generation'), regenerateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
 
     // Stats and graphs.
@@ -97,17 +95,15 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
     // Keyboard registration.
     const keyboard = new Keyboard();
-    keyboard.down('KeyW', () => { avatar.y++; updateAvatar(); })
-    keyboard.down('KeyA', () => { avatar.x--; updateAvatar(); })
-    keyboard.down('KeyS', () => { avatar.y--; updateAvatar(); })
-    keyboard.down('KeyD', () => { avatar.x++; updateAvatar(); })
 
     // Application start.
     avatar.x = Math.floor(config.chunks.nblocks / 2);
     avatar.y = Math.floor(config.chunks.nblocks / 2);
-    updateTerrain();
+    regenerateTerrain();
     startAnimationLoop(renderer, (delta) => {
         fps.update(delta);
+        keyboard.checkFocus();
+        if (avatar.update(delta, keyboard)) updateAvatar();
     });
 }
 

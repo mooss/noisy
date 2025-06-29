@@ -24,21 +24,17 @@ export class FpsWidget {
         this.#fpsUI = parent.readOnly(0).legend('FPS');
     }
 
-    update(delta) {
-        this.#fpsUI.update(Math.round(this.#fps.update(delta)));
-    }
+    update(delta) { this.#fpsUI.update(Math.round(this.#fps.update(delta))) }
 }
 
 export class Keyboard {
-    /** @type {Map<string, function(): void>} Keysdown codes to callback. */
-    #keydownCallbacks = new Map();
+    #pressedKeys = new Set();
 
     constructor() {
-        document.addEventListener('keydown', (event) => {
-            this.#keydownCallbacks.get(event.code)?.();
-        });
+        document.addEventListener('keydown', (e) => this.#pressedKeys.add(e.code));
+        document.addEventListener('keyup', (e) => this.#pressedKeys.delete(e.code));
     }
 
-    /** Register a keydown callback, overrides the previous callback. */
-    down(code, callback) { this.#keydownCallbacks.set(code, callback); }
+    isPressed(code) { return this.#pressedKeys.has(code) }
+    checkFocus() { if (!document.hasFocus()) this.#pressedKeys = new Set() }
 }
