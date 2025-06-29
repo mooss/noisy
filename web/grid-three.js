@@ -23,10 +23,14 @@ const config = {
     render: new RenderConfig(),
 };
 
-function startAnimationLoop(renderer, fps) {
+function startAnimationLoop(renderer, onFrame) {
+    let prev = performance.now();
+
     function animate() {
         requestAnimationFrame(animate);
-        fps.update();
+        const now = performance.now();
+        onFrame(now - prev);
+        prev = now;
         renderer.render();
     }
     animate();
@@ -105,7 +109,9 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     avatar.y = Math.floor(config.chunks.nblocks / 2);
     updateAvatar();
     updateStats();
-    startAnimationLoop(renderer, fps);
+    startAnimationLoop(renderer, (delta) => {
+        fps.update(delta);
+    });
 }
 
 main();

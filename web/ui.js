@@ -1,23 +1,17 @@
 class FpsCounter {
-    constructor() {
-        this.previous = performance.now();
-        this.frames = 0;
-        this.updateIntervalMs = 100; // Update FPS display every 100 milliseconds.
-        this.fps = 0;
-    }
+    #delta = 0; #frames = 0; #interval = 100; #fps = 0;
 
-    update() {
-        const current = performance.now();
-        this.frames++;
-        const delta = current - this.previous;
+    update(delta) {
+        this.#frames++;
+        this.#delta += delta;
 
-        if (delta >= this.updateIntervalMs) {
-            this.fps = (this.frames / (delta / 1000)).toFixed(1);
-            this.frames = 0;
-            this.previous = current;
+        if (this.#delta >= this.#interval) {
+            this.#fps = (this.#frames / (this.#delta / 1000)).toFixed(1);
+            this.#frames = 0;
+            this.#delta = 0;
         }
 
-        return this.fps;
+        return this.#fps;
     }
 }
 
@@ -30,8 +24,8 @@ export class FpsWidget {
         this.#fpsUI = parent.readOnly(0).legend('FPS');
     }
 
-    update() {
-        this.#fpsUI.update(Math.round(this.#fps.update()));
+    update(delta) {
+        this.#fpsUI.update(Math.round(this.#fps.update(delta)));
     }
 }
 
