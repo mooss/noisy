@@ -23,9 +23,10 @@ export function interpolateColors(colors, value) {
     if (colors.length === 0) return new THREE.Color(1, 1, 1);
     if (colors.length === 1) return colors[0].clone();
 
-    value = THREE.MathUtils.clamp(value, 0, 1);
+    value = clamp(value, 0, 1);
 
     const nsegments = colors.length - 1;
+    // ceil and round can be interesting here.
     const segment = Math.min(Math.floor(value * nsegments), nsegments - 1);
     const color1 = colors[segment];
     const color2 = colors[segment + 1];
