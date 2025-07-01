@@ -74,16 +74,17 @@ class Panel {
  * Main element of the graphical user interface.
  */
 export class GUI extends Panel {
+    static POSITION_RIGHT = { right: '8px', left: 'auto' };
     /**
      * Creates a GUI instance and attach it to the document body.
      */
-    constructor() {
-        super(document.body, {
-            // Top left position.
+    constructor(...styleOverride) {
+        super(document.body, Object.assign({
+            // Top left default position.
             position: 'absolute',
-            top: '8px',          // Distance from the top to the nearest ancestor.
-            left: '8px',         // Distance from the right of the nearest positioned ancestor.
-            zIndex: '1000',       // Ensure element is on top.
+            top: '8px',     // Distance from the top to the nearest ancestor.
+            left: '8px',    // Distance from the right of the nearest positioned ancestor.
+            zIndex: '1000', // Ensure element is on top.
 
             // Dimensions.
             width: '230px',
@@ -98,7 +99,7 @@ export class GUI extends Panel {
 
             // Behavior.
             overflowY: 'auto', // Adds a scrollbar if content overflows vertically.
-        });
+        }, ...styleOverride));
     }
 }
 
