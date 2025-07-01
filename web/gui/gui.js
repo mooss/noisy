@@ -101,6 +101,42 @@ export class GUI extends Panel {
             overflowY: 'auto', // Adds a scrollbar if content overflows vertically.
         }, ...styleOverride));
     }
+
+    /**
+     * Adds a very thin bar at the top of the GUI that toggles collapsing/unrolling the panel when
+     * clicked.
+     * It must be called only once.
+     * @returns {this}
+     */
+    collapsible() {
+        // Create the thin bar element.
+        const bar = document.createElement('div');
+        bar.style.height = '4px';
+        bar.style.width = '100%';
+        bar.style.cursor = 'pointer';
+        bar.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        bar.style.borderRadius = '2px 2px 0 0';
+        bar.style.marginBottom = '4px';
+
+        // Insert the bar as the first child of the panel container.
+        this._elt.insertBefore(bar, this._elt.firstChild);
+
+        // On click, toggle the visibility of all children except the bar.
+        let isCollapsed = false;
+        bar.addEventListener('click', () => {
+            isCollapsed = !isCollapsed;
+            for (let i = 0; i < this._elt.children.length; i++) {
+                const child = this._elt.children[i];
+                if (child !== bar) {
+                    // This only collapses the root of each elements, thus not affecting the
+                    // visibility of things like folders.
+                    child.style.display = isCollapsed ? 'none' : '';
+                }
+            }
+        });
+
+        return this;
+    }
 }
 
 /**
