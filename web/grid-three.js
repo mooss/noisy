@@ -62,16 +62,17 @@ function main() {
     const reloadTerrain = () => terrain.reload();
 
     // UI definition.
-    const gui = new GUI();
-    const other = new GUI();
-    const fps = new FpsWidget(other);
+    const gui = new GUI({ left: '8px' }).collapsible();
+    const fps = new FpsWidget(gui);
     const heightGraph = gui.graph().legend("Sorted heights in active chunk");
     const heightStats = gui.readOnly('').legend('Height stats');
     const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
     config.chunks.ui(gui.addFolder('Chunks'), regenerateTerrain, reloadTerrain);
     config.render.ui(gui.addFolder('Render'), regenerateTerrain);
-    config.gen.ui(gui.addFolder('Terrain generation'), regenerateTerrain)
     config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
+
+    const terrainGeneration = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
+    config.gen.ui(terrainGeneration, regenerateTerrain)
 
     // Stats and graphs.
     const updateStats = () => {
