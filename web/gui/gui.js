@@ -13,12 +13,6 @@ class Panel {
     _elt;
 
     /**
-     * All folders contained within this panel.
-     * @type {Array<Folder>}
-     */
-    folders = [];
-
-    /**
      * Creates a new Panel instance.
      *
      * @param {HTMLElement} parent  - The parent DOM element.
@@ -26,20 +20,6 @@ class Panel {
      */
     constructor(parent, style) {
         this._elt = spawn('div', parent, style);
-        this.folders = [];
-    }
-
-    /**
-     * Adds a folder to the panel.
-     *
-     * @param {string} name - The name of the folder.
-     *
-     * @returns {Folder} The new folder.
-     */
-    addFolder(name) {
-        const folder = new Folder(name, this._elt);
-        this.folders.push(folder);
-        return folder;
     }
 
     /////////////////////////////
@@ -47,6 +27,10 @@ class Panel {
 
     bool(target, property) {
         return new Boolean(this._elt, target, property);
+    }
+
+    folder(name) {
+        return new Folder(name, this._elt);
     }
 
     graph() {

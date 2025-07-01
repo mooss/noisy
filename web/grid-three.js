@@ -67,9 +67,9 @@ function main() {
     const heightGraph = gui.graph().legend("Sorted heights in active chunk");
     const heightStats = gui.readOnly('').legend('Height stats');
     const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
-    config.chunks.ui(gui.addFolder('Chunks'), regenerateTerrain, reloadTerrain);
-    config.render.ui(gui.addFolder('Render'), regenerateTerrain);
-    config.avatar.ui(gui.addFolder('Avatar').close(), updateAvatar);
+    config.chunks.ui(gui.folder('Chunks'), regenerateTerrain, reloadTerrain);
+    config.render.ui(gui.folder('Render'), regenerateTerrain);
+    config.avatar.ui(gui.folder('Avatar').close(), updateAvatar);
 
     const terrainGeneration = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
     config.gen.ui(terrainGeneration, regenerateTerrain)

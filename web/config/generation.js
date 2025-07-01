@@ -28,6 +28,8 @@ export class GenerationConfig {
     ////////
     // UI //
 
+    #folders = [];
+
     ui(parent, regen) {
         //////////
         // Root //
@@ -53,7 +55,8 @@ export class GenerationConfig {
 
         ///////////
         // Noise //
-        const noise = parent.addFolder('Noise');
+        const noise = parent.folder('Noise');
+        this.#folders.push(noise);
         noise.range(this.noise, 'octaves', 1, 8, 1)
             .legend('Octaves')
             .onInput(regen);
@@ -72,7 +75,8 @@ export class GenerationConfig {
 
         ///////////
         // Ridge //
-        const ridge = parent.addFolder('Ridge');
+        const ridge = parent.folder('Ridge');
+        this.#folders.push(ridge);
         ridge.bool(this.noise.ridge, 'invertSignal')
             .legend('Invert signal')
             .onChange(regen);
@@ -86,13 +90,13 @@ export class GenerationConfig {
     }
 
     // Dynamically show/hide parameter folders based on the selected terrain algorithm.
-    #updateAlgorithmFolders(parent) {
+    #updateAlgorithmFolders() {
         const title2algo = {
             'Noise': ['simplex', 'octavianRidge', 'melodicRidge'],
             'Ridge': ['octavianRidge', 'melodicRidge'],
         }
 
-        for (let folder of parent.folders) {
+        for (let folder of this.#folders) {
             const mustShow = title2algo[folder.title];
             if (mustShow.includes(this.terrainAlgo)) {
                 folder.show();
