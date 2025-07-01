@@ -1,4 +1,5 @@
 import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
+
 ////////////////////
 // Free functions //
 
@@ -130,5 +131,24 @@ export function mkLayering(noise, octaves, fundamental, persistence, lacunarity)
         }
 
         return total;
+    }
+}
+
+export function highMix(lowgen, highgen, low=.25, high=.75, mid=(low+high)/2) {
+    const range = high - low;
+    return (x, y) => {
+        let highval = highgen(x, y); // In [0, 1].
+        if (highval > high) return highval; // In ]high, 1], fully the high range.
+        // highval is in [0, high].
+
+        let lowval = lowgen(x, y) * mid; // In [0, mid].
+        if (highval < low) return lowval;
+
+        // highval is in [low, high], between the high and low range, interpolation required.
+        const factor = (highval - low) / range; // In [0, 1].
+        highval = factor * high;
+        lowval = (1 - factor) * lowval;
+
+        return highval + lowval; // In [0, high].
     }
 }

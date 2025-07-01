@@ -1,5 +1,5 @@
 import { CHUNK_UNIT } from "../constants.js";
-import { mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
+import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
 
@@ -9,11 +9,11 @@ export class GenerationConfig {
         this.terrainAlgo = 'octavianRidge'; // Terrain creation algorithm.
         this.heightMultiplier = 1.0;        // Multiplier for the terrain height.
         this.noise = {
-            octaves: 6,         // Simplex Noise octaves to layer.
-            persistence: 0.65,  // Amplitude reduction per octave.
-            lacunarity: 1.5,    // Frequency increase per octave.
-            fundamental: 1.1,   // Base frequency for noise.
-            warpingStrength: 0, // Warping strength for noise coordinates.
+            octaves: 8,          // Simplex Noise octaves to layer.
+            persistence: 0.65,   // Amplitude reduction per octave.
+            lacunarity: 1.5,     // Frequency increase per octave.
+            fundamental: 1.1,    // Base frequency for noise.
+            warpingStrength: .1, // Warping strength for noise coordinates.
             ridge: {
                 invertSignal: true,  // Invert signal for ridges (1 - abs(noise)) vs valleys (abs(noise)).
                 squareSignal: false, // Square the signal to sharpen ridges/valleys.
@@ -36,10 +36,11 @@ export class GenerationConfig {
             .onChange(regen);
 
         parent.select(this, 'terrainAlgo', {
-            'Random': 'rand',
-            'Simplex': 'simplex',
             'Octavian ridge': 'octavianRidge',
-            'Melodic ridge': 'melodicRidge'
+            'Continental mix': 'continentalMix',
+            'Simplex': 'simplex',
+            'Melodic ridge': 'melodicRidge',
+            'Random': 'rand',
         }).legend('Algorithm')
             .onChange(() => {
                 this.#updateAlgorithmFolders(parent);
@@ -138,6 +139,8 @@ class HeightFieldBuilder {
             return this.#layeredOctavianRidge;
         case 'melodicRidge':
             return this.#layeredMelodicRidge;
+        case 'continentalMix':
+            return continentalMix(this.#c.seed);
         }
         return undefined;
     }
@@ -162,6 +165,12 @@ function lowhigh(config) {
 export class HeightField {
     constructor(config) {
         this.raw = new HeightFieldBuilder(config).fun;
+
+        if (config.terrainAlgo === 'continentalMix') {
+            this.high = 1; this.low = 0;
+            return;
+        }
+
         const bounds = lowhigh(config);
         this.low = bounds.low; this.high = bounds.high;
     }
@@ -186,4 +195,24 @@ export class HeightField {
             return res;
         }
     }
+}
+
+export function continentalMix(seed) {
+    let gen = new GenerationConfig();
+    gen.seed = seed;
+    gen.terrainAlgo = 'octavianRidge';
+    gen.noise.octaves = 8;
+    gen.noise.warpingStrength = .1;
+    const high = gen.heightField().mkNormalised(0, 1);
+
+    gen = new GenerationConfig();
+    gen.seed = seed + 1;
+    gen.terrainAlgo = 'simplex';
+    gen.noise.octaves = 8;
+    gen.noise.persistence = .7;
+    gen.noise.lacunarity = 1.5;
+    gen.noise.fundamental = 2;
+    const low = gen.heightField().mkNormalised(0, 1);
+
+    return highMix(low, high, .4, .8, .6);
 }
