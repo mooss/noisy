@@ -1,18 +1,33 @@
 function rgb(r, g, b) { return new THREE.Color(r/255, g/255, b/255); };
 
-const brightTerrainPalette = [
-    rgb(0, 50, 100),    // Ocean (Deep water).
-    rgb(0, 100, 150),   // Ocean (Shallow water).
-    rgb(0, 191, 255),   // Ocean (Deep Sky Blue).
-    rgb(210, 180, 140), // Continental (Sand/beach).
-    rgb(34, 139, 34),   // Continental (Grassland).
-    rgb(0, 100, 0),     // Continental (Forest).
-    rgb(139, 137, 137), // Continental (Rock/stone).
-    rgb(255, 250, 250), // Continental (Snow).
+const brightSea = [
+    rgb(0, 50, 100),    // Deep water.
+    rgb(0, 100, 150),   // Shallow water.
+    rgb(0, 191, 255),   // Shore water.
 ];
 
+const brightLow = [
+    rgb(210, 180, 140), // Sand/beach.
+    rgb(34, 139, 34),   // Grassland.
+    rgb(0, 100, 0),     // Forest.
+];
+
+const brightHills = [
+    rgb(100, 50, 0), // Low hills.
+    rgb(50, 25, 0),  // Foothills.
+];
+
+const brightMountains = [
+    rgb(139, 137, 137), // Rock/stone.
+    rgb(255, 250, 250), // Snow.
+];
+
+const brightContinent = brightLow.concat(brightHills, brightMountains);
+
+const brightTerrain = brightSea.concat(brightLow, brightMountains);
+
 // Interesting for the underside which can be used to seed continents.
-const continentalPalette = [
+const tectonic = [
     rgb(100, 200, 50), // Land.
     rgb(100, 200, 50), // Land.
     rgb(50, 100, 200), // Sea.
@@ -32,7 +47,7 @@ const blackWhite = [
     rgb(255, 255, 255), // White.
 ];
 
-const fantasyPalette = [
+const fantasy = [
     rgb(50, 50, 150),   // Deep magical water.
     rgb(100, 100, 200), // Enchanted shallow water.
     rgb(200, 150, 100), // Sunken ruins/ancient sands.
@@ -42,7 +57,7 @@ const fantasyPalette = [
     rgb(255, 255, 255), // Cloud kingdom/celestial plains.
 ];
 
-const sunsetPalette = [
+const sunset = [
     rgb(253, 94, 83),   // Coral.
     rgb(252, 186, 3),   // Gold.
     rgb(129, 3, 252),   // Purple.
@@ -50,10 +65,11 @@ const sunsetPalette = [
 ];
 
 export const palettes = {
-    'Bright terrain': brightTerrainPalette,
-    'Fantasy': fantasyPalette,
-    'Sunset': sunsetPalette,
+    'Bright terrain': brightTerrain,
+    'Bright continent': brightContinent,
+    'Fantasy': fantasy,
+    'Sunset': sunset,
     'Black & white': blackWhite,
     'Cyberpuke': cyberPuke,
-    'Continental': continentalPalette,
+    'Tectonic': tectonic,
 };
