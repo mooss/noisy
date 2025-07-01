@@ -138,6 +138,24 @@ export class GUI extends Panel {
 
         return this;
     }
+
+    /**
+     * Adds a centered title at the top of the GUI.
+     * @param {string} text - The title.
+     * @returns {this}
+     */
+    title(text) {
+        const title = spawn('div', this._elt, {
+            textAlign: 'center',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            padding: '4px 0',
+            marginBottom: '4px',
+            color: colors.text,
+        });
+        title.textContent = text;
+        return this;
+    }
 }
 
 /**
