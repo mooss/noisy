@@ -62,6 +62,8 @@ export class Terrain {
         res.geometry.scale(this.#blockSize, this.#blockSize, this.#verticalUnit);
         res.translateX(coords.x * CHUNK_UNIT);
         res.translateY(coords.y * CHUNK_UNIT);
+        res.matrixAutoUpdate = false;
+        res.updateMatrix();
         return res;
     }
 
