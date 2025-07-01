@@ -117,6 +117,7 @@ export class GUI extends Panel {
         bar.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
         bar.style.borderRadius = '2px 2px 0 0';
         bar.style.marginBottom = '4px';
+        bar.style.userSelect = 'none';
 
         // Insert the bar as the first child of the panel container.
         this._elt.insertBefore(bar, this._elt.firstChild);
