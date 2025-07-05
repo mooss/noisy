@@ -214,7 +214,11 @@ class Folder extends Panel {
 class Deck extends Panel {
     #focusedCard; // The card that is currently focused.
     _container;   // Where the parameters of the focused card are displayed.
-    _headerBar;   // Where the clickable card headers are displayed.
+
+    _headerContainer; // Contains the header and the scroll arrows.
+    _headerBar;       // Scrollable bar where the clickable card headers are displayed.
+    #leftArrow;       // Scroll indicator on the left of the bar.
+    #rightArrow;      // Scroll indicator on the right of the bar.
 
     constructor(parent) {
         super(parent);
@@ -223,10 +227,46 @@ class Deck extends Panel {
             display: 'flex',
             flexDirection: 'column',
         });
-        this._headerBar = spawn('div', this._elt, {
-            display: 'flex',
+
+        this._headerContainer = spawn('div', this._elt, {
+            position: 'relative',
             backgroundColor: colors.inputBg,
+            overflow: 'hidden',
         });
+        this._headerBar = spawn('div', this._headerContainer, {
+            display: 'flex',
+            overflowX: 'auto',
+            scrollbarWidth: 'none', // Hide scrollbar.
+            msOverflowStyle: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+        });
+
+        // Show "arrows" on the left and right of the bar to indicate scrollability.
+        const arrow = {
+            position: 'absolute',
+            width: '32px',
+            pointerEvents: 'none',
+            opacity: 0,
+            transition: 'opacity 0.2s',
+        }
+        const arrowback = (deg) => `linear-gradient(${deg}deg, rgba(20,25,35,0.9) 0%, rgba(20,25,35,0) 100%)`;
+
+        this.#leftArrow = spawn('div', this._headerContainer, Object.assign({
+            left: 0, top: 0, bottom: 0,
+            background: arrowback(90),
+        }, arrow));
+        this.#rightArrow = spawn('div', this._headerContainer, Object.assign({
+            right: 0, top: 0, bottom: 0,
+            background: arrowback(270),
+        }, arrow));
+
+        this._headerBar.addEventListener('scroll', () => this._updateArrows());
+        this._headerBar.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            this._headerBar.scrollLeft += e.deltaY * .1;
+        });
+
+        // The content of the card goes below the header bar.
         this._container = spawn('div', this._elt);
     }
 
@@ -234,7 +274,16 @@ class Deck extends Panel {
     card(name) {
         const card = new Card(this, name);
         if (!this.#focusedCard) this.focus(card); // Focus the first card.
+        this._updateArrows();
         return card;
+    }
+
+    // Enable or disable arrow visibility based on scroll position.
+    _updateArrows() {
+        const scrollLeft = this._headerBar.scrollLeft;
+        const maxScroll = this._headerBar.scrollWidth - this._headerBar.clientWidth;
+        this.#leftArrow.style.opacity = scrollLeft > 0 ? 1 : 0;
+        this.#rightArrow.style.opacity = scrollLeft < maxScroll ? 1 : 0;
     }
 
     // Focus the given card and unfocus the old one.
@@ -250,7 +299,7 @@ class Deck extends Panel {
  * Part of a Deck, essentially a focusable Panel with a title.
  */
 class Card extends Panel {
-    #deck; // The window to which the tab is attached.
+    #deck;   // The window to which the tab is attached.
     _button; // The clickable tab sitting in the header bar.
 
     constructor(deck, name) {
@@ -258,12 +307,13 @@ class Card extends Panel {
         this.#deck = deck;
 
         this._button = spawn('div', deck._headerBar, {
-            padding: '0 2px',
+            padding: '0 4px',
             textAlign: 'center',
             cursor: 'pointer',
             userSelect: 'none',
             color: colors.label,
             background: colors.inputBg,
+            whiteSpace: 'nowrap',
         });
         this._button.textContent = name;
         this._button.addEventListener('click', () => this.focus());
