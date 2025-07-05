@@ -2,6 +2,9 @@ import { Boolean, Number, Range, ReadOnly, Select } from "./parameters.js";
 import { GraphWidget } from "./widget.js";
 import { spawn, colors } from "./html.js";
 
+/////////////////
+// Foundations //
+
 /**
  * GUI panel that can display information and adjust parameters.
  */
@@ -31,6 +34,10 @@ class Panel {
 
     folder(name) {
         return new Folder(name, this._elt);
+    }
+
+    deck() {
+        return new Deck(this._elt);
     }
 
     graph() {
@@ -142,6 +149,9 @@ export class GUI extends Panel {
     }
 }
 
+////////////
+// Folder //
+
 /**
  * A collapsible folder within the GUI.
  */
@@ -192,4 +202,86 @@ class Folder extends Panel {
     hide() { this.#details.style.display = 'none'; return this; }
     open() { this.#details.open = true; return this; }
     close() { this.#details.open = false; return this; }
+}
+
+//////////////////////
+// Windows and tabs //
+
+/**
+ * An array of cards that can be focused one at a time.
+ * Meant to be used as a tabbing system.
+ */
+class Deck extends Panel {
+    #focusedCard; // The card that is currently focused.
+    _container;   // Where the parameters of the focused card are displayed.
+    _headerBar;   // Where the clickable card headers are displayed.
+
+    constructor(parent) {
+        super(parent);
+        this._elt.css({
+            marginTop: '6px',
+            display: 'flex',
+            flexDirection: 'column',
+        });
+        this._headerBar = spawn('div', this._elt, {
+            display: 'flex',
+            backgroundColor: colors.inputBg,
+        });
+        this._container = spawn('div', this._elt);
+    }
+
+    // Create a new card.
+    card(name) {
+        const card = new Card(this, name);
+        if (!this.#focusedCard) this.focus(card); // Focus the first card.
+        return card;
+    }
+
+    // Focus the given card and unfocus the old one.
+    focus(card) {
+        if (this.#focusedCard === card) return;
+        if (this.#focusedCard) this.#focusedCard.hide();
+        card.show();
+        this.#focusedCard = card;
+    }
+}
+
+/**
+ * Part of a Deck, essentially a focusable Panel with a title.
+ */
+class Card extends Panel {
+    #deck; // The window to which the tab is attached.
+    _button; // The clickable tab sitting in the header bar.
+
+    constructor(deck, name) {
+        super(deck._container);
+        this.#deck = deck;
+
+        this._button = spawn('div', deck._headerBar, {
+            padding: '0 2px',
+            textAlign: 'center',
+            cursor: 'pointer',
+            userSelect: 'none',
+            color: colors.label,
+            background: colors.inputBg,
+        });
+        this._button.textContent = name;
+        this._button.addEventListener('click', () => this.focus());
+
+        this.hide();
+    }
+
+    show() {
+        this._elt.style.display = '';
+        this._button.style.backgroundColor = colors.inputBg;
+        this._button.style.border = `2px solid ${colors.param}`;
+    }
+
+    hide() {
+        this._elt.style.display = 'none';
+        this._button.style.backgroundColor = '';
+        this._button.style.border = `1px solid ${colors.input}`;
+    }
+
+    focus() { this.#deck.focus(this) }
 }
