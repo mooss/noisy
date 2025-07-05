@@ -46,6 +46,10 @@ export class InputParam extends Param {
     // Function to format the raw value into what is to be displayed.
     // Only works for range right now.
     #format;
+    // Optional callback for the change event.
+    #onChange;
+    // Optional callback for the input event.
+    #onInput;
 
     // UI parameter attached to parent and tied to target.property.
     constructor(parent, target, property, ...args) {
@@ -56,10 +60,10 @@ export class InputParam extends Param {
             const value = this.value();
             target[property] = value;
             this.update(this.#format(value));
-            if (this._onInput) this._onInput(value);
+            if (this.#onInput) this.#onInput(value);
         })
         this.input.addEventListener('change', () => {
-            if (this._onChange) this._onChange(this.value());
+            if (this.#onChange) this.#onChange(this.value());
         });
         this.setup(target[property], ...args);
         this.update(this.#format(this.value()));
@@ -103,10 +107,10 @@ export class InputParam extends Param {
     readOnly() { this.input.disabled = true; return this; }
 
     // Registers a listener for the change event.
-    onChange(fun) { this._onChange = fun; return this; }
+    onChange(fun) { this.#onChange = fun; return this; }
 
     // Registers a listener for the input event.
-    onInput(fun) { this._onInput = fun; return this; }
+    onInput(fun) { this.#onInput = fun; return this; }
 
     // Sets the function that will format the raw value into the displayed value.
     formatter(fun) {
