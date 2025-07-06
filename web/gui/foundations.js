@@ -60,11 +60,9 @@ export class InputParam extends Param {
             const value = this.value();
             target[property] = value;
             this.update(this.#format(value));
-            if (this.#onInput) this.#onInput(value);
+            this.#onInput?.(value);
         })
-        this.input.addEventListener('change', () => {
-            if (this.#onChange) this.#onChange(this.value());
-        });
+        this.input.addEventListener('change', () => this.#onChange?.(this.value()));
         this.setup(target[property], ...args);
         this.update(this.#format(this.value()));
 

@@ -28,7 +28,7 @@ export class GenerationConfig {
     ////////
     // UI //
 
-    #folders = [];
+    #algorithmDeck; // The deck containing all the algorithm cards.
 
     ui(parent, regen) {
         //////////
@@ -37,26 +37,48 @@ export class GenerationConfig {
             .legend('Seed')
             .onChange(regen);
 
-        parent.select(this, 'terrainAlgo', {
-            'Octavian ridge': 'octavianRidge',
-            'Continental mix': 'continentalMix',
-            'Simplex': 'simplex',
-            'Melodic ridge': 'melodicRidge',
-            'Random': 'rand',
-        }).legend('Algorithm')
-            .onChange(() => {
-                this.#updateAlgorithmFolders(parent);
-                regen();
-            });
-
         parent.range(this, 'heightMultiplier', 0.1, 5.0, 0.05)
             .legend('Height multiplier')
             .onInput(regen);
 
+        /////////////////////
+        // Algorithms deck //
+        const algo = parent.deck();
+        this.#algorithmDeck = algo;
+
+        // Registers a card and make sure the correct one is focused.
+        const card = (cardTitle, terrainAlgo) => {
+            const res = algo.card(cardTitle).onClick(() => {
+                this.terrainAlgo = terrainAlgo;
+                this.#updateAlgorithmCards();
+                regen();
+            });
+
+            // The initial value of terrainAlgo is not guaranteed to be that of the first card so
+            // the correct card must be shown manually.
+            if (terrainAlgo == this.terrainAlgo) {
+                res.select();
+                res.show();
+                algo.changeFocus(res);
+            } else {
+                res.deselect();
+                res.hide();
+            }
+            return res;
+        }
+
+
+        // Because of the need to share some parameters between different algorithms, the contents
+        // of noise and ridge are all the necessary parameter, who are then hidden and shown as
+        // needed in #updateAlgorithmCards.
+        const noise = card('Simplex', 'simplex');
+        const ridge = card('Octavian ridge', 'octavianRidge');
+        card('Continental mix', 'continentalMix');
+        card('Melodic ridge', 'melodicRidge');
+        card('Random', 'rand');
+
         ///////////
         // Noise //
-        const noise = parent.folder('Noise');
-        this.#folders.push(noise);
         noise.range(this.noise, 'octaves', 1, 8, 1)
             .legend('Octaves')
             .onInput(regen);
@@ -75,8 +97,6 @@ export class GenerationConfig {
 
         ///////////
         // Ridge //
-        const ridge = parent.folder('Ridge');
-        this.#folders.push(ridge);
         ridge.bool(this.noise.ridge, 'invertSignal')
             .legend('Invert signal')
             .onChange(regen);
@@ -86,22 +106,22 @@ export class GenerationConfig {
 
         //////////////////////////////////
         // Show selected algorithm only //
-        this.#updateAlgorithmFolders(parent);
+        this.#updateAlgorithmCards();
     }
 
     // Dynamically show/hide parameter folders based on the selected terrain algorithm.
-    #updateAlgorithmFolders() {
+    #updateAlgorithmCards() {
         const title2algo = {
-            'Noise': ['simplex', 'octavianRidge', 'melodicRidge'],
-            'Ridge': ['octavianRidge', 'melodicRidge'],
+            'Simplex': ['simplex', 'octavianRidge', 'melodicRidge'],
+            'Octavian ridge': ['octavianRidge', 'melodicRidge'],
         }
 
-        for (let folder of this.#folders) {
-            const mustShow = title2algo[folder.title];
-            if (mustShow.includes(this.terrainAlgo)) {
-                folder.show();
+        for (let card of this.#algorithmDeck.cards) {
+            const mustShow = title2algo[card.name];
+            if (mustShow?.includes(this.terrainAlgo)) {
+                card.show();
             } else {
-                folder.hide();
+                card.hide();
             }
         }
     }

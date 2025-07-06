@@ -204,16 +204,17 @@ class Folder extends Panel {
     close() { this.#details.open = false; return this; }
 }
 
-//////////////////////
-// Windows and tabs //
+////////////////////
+// Cards and deck //
 
 /**
  * An array of cards that can be focused one at a time.
  * Meant to be used as a tabbing system.
  */
 class Deck extends Panel {
-    #focusedCard; // The card that is currently focused.
+    focusedCard; // The card that is currently focused.
     _container;   // Where the parameters of the focused card are displayed.
+    cards = [];        // All the Cards contained in this Deck.
 
     _headerContainer; // Contains the header and the scroll arrows.
     _headerBar;       // Scrollable bar where the clickable card headers are displayed.
@@ -273,8 +274,9 @@ class Deck extends Panel {
     // Create a new card.
     card(name) {
         const card = new Card(this, name);
-        if (!this.#focusedCard) this.focus(card); // Focus the first card.
+        if (!this.focusedCard) card.focus(); // Focus the first card.
         this._updateArrows();
+        this.cards.push(card);
         return card;
     }
 
@@ -286,12 +288,11 @@ class Deck extends Panel {
         this.#rightArrow.style.opacity = scrollLeft < maxScroll ? 1 : 0;
     }
 
-    // Focus the given card and unfocus the old one.
-    focus(card) {
-        if (this.#focusedCard === card) return;
-        if (this.#focusedCard) this.#focusedCard.hide();
-        card.show();
-        this.#focusedCard = card;
+    // Change the focused card and return the previously focused card.
+    changeFocus(card) {
+        const res = this.focusedCard;
+        this.focusedCard = card;
+        return res;
     }
 }
 
@@ -299,12 +300,15 @@ class Deck extends Panel {
  * Part of a Deck, essentially a focusable Panel with a title.
  */
 class Card extends Panel {
-    #deck;   // The window to which the tab is attached.
-    _button; // The clickable tab sitting in the header bar.
+    #deck;    // The window to which the tab is attached.
+    _button;  // The clickable tab sitting in the header bar.
+    #onClick; // Optional callback for the card click event.
+    name;     // Displayed name of the card.
 
     constructor(deck, name) {
         super(deck._container);
         this.#deck = deck;
+        this.name = name;
 
         this._button = spawn('div', deck._headerBar, {
             padding: '0 4px',
@@ -321,17 +325,35 @@ class Card extends Panel {
         this.hide();
     }
 
-    show() {
-        this._elt.style.display = '';
+    // Selects the header.
+    select() {
         this._button.style.backgroundColor = colors.inputBg;
         this._button.style.border = `2px solid ${colors.param}`;
     }
 
-    hide() {
-        this._elt.style.display = 'none';
+    // Deselects the header.
+    deselect() {
+        this.hide();
         this._button.style.backgroundColor = '';
         this._button.style.border = `1px solid ${colors.input}`;
     }
 
-    focus() { this.#deck.focus(this) }
+    // Show the content.
+    show() { this._elt.style.display = '' }
+    // Hide the content.
+    hide() { this._elt.style.display = 'none' }
+
+    focus() {
+        const old = this.#deck.changeFocus(this);
+        if (old) {
+            old.deselect();
+            old.hide();
+        }
+        this.select();
+        this.show();
+        this.#onClick?.(this);
+        return this;
+    }
+
+    onClick(fun) { this.#onClick = fun; return this; }
 }
