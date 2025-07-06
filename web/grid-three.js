@@ -37,6 +37,8 @@ function startAnimationLoop(renderer, onFrame) {
     animate();
 }
 
+const ENABLE_STATS_GRAPH = false;
+
 function main() {
     // Data, meshes and utilities.
     const terrain = new Terrain(config.chunks, config.gen, config.render);
@@ -64,32 +66,35 @@ function main() {
     // UI definition.
     const gui = new GUI({ left: '8px' }).collapsible();
     const fps = new FpsWidget(gui);
-    const heightGraph = gui.graph().legend("Sorted heights in active chunk");
-    const heightStats = gui.readOnly('').legend('Height stats');
-    const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
+
+    let updateStats = () => {};
+    if (ENABLE_STATS_GRAPH) {
+        const heightGraph = gui.graph().legend("Sorted heights in active chunk");
+        const heightStats = gui.readOnly('').legend('Height stats');
+        const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
+        updateStats = () => {
+            const heightfun = terrain.chunkHeightFun(avatar.coords.toChunk(config.chunks.nblocks))
+            const heights = [];
+            for (let i = 0; i < config.chunks.nblocks; ++i)
+                for (let j = 0; j < config.chunks.nblocks; ++j)
+                    heights.push(heightfun(i/config.chunks.nblocks, j/config.chunks.nblocks));
+            heightGraph.update(heights.sort((l, r) => { return l - r; }));
+
+            const stats = numStats(heights);
+            const min = Math.min(...heights), max = Math.max(...heights);
+            heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
+min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
+
+            zScoreGraph.update(stats.zScores);
+        }
+    }
+
     config.chunks.ui(gui.folder('Chunks'), regenerateTerrain, reloadTerrain);
     config.render.ui(gui.folder('Render'), regenerateTerrain);
     config.avatar.ui(gui.folder('Avatar').close(), updateAvatar);
 
     const terrainGeneration = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
     config.gen.ui(terrainGeneration, regenerateTerrain)
-
-    // Stats and graphs.
-    const updateStats = () => {
-        const heightfun = terrain.chunkHeightFun(avatar.coords.toChunk(config.chunks.nblocks))
-        const heights = [];
-        for (let i = 0; i < config.chunks.nblocks; ++i)
-            for (let j = 0; j < config.chunks.nblocks; ++j)
-                heights.push(heightfun(i/config.chunks.nblocks, j/config.chunks.nblocks));
-        heightGraph.update(heights.sort((l, r) => { return l - r; }));
-
-        const stats = numStats(heights);
-        const min = Math.min(...heights), max = Math.max(...heights);
-        heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
-min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
-
-        zScoreGraph.update(stats.zScores);
-    }
 
     // Final touches.
     avatar.x = .5; avatar.y = .5; avatar.z = 0; // Center of the original chunk.
