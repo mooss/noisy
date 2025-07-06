@@ -41,15 +41,25 @@ export class Coordinates {
     }
 
     /**
-     * Generates a list of coordinates within a specified radius around this block.
+     * Generates a list of coordinates within the circle of the specified radius around this block.
      *
      * @param {number} radius - The radius (in chunks or blocks) around the center.
-     * @returns {Array<Coordinates>} An array of chunk block coordinate objects.
+     * @param {function} fun - Callback function that receives each coordinate.
      */
     within(radius, fun) {
-        for (let x = this.x - radius; x <= this.x + radius; x++) {
-            for (let y = this.y - radius; y <= this.y + radius; y++) {
-                fun(new Coordinates(x, y));
+        const radiusSquared = radius * radius;
+        const minX = Math.floor(this.x - radius);
+        const maxX = Math.floor(this.x + radius);
+        const minY = Math.floor(this.y - radius);
+        const maxY = Math.floor(this.y + radius);
+
+        for (let x = minX; x <= maxX; x++) {
+            for (let y = minY; y <= maxY; y++) {
+                const dx = x - this.x;
+                const dy = y - this.y;
+                if (dx * dx + dy * dy <= radiusSquared) {
+                    fun(new Coordinates(x, y));
+                }
             }
         }
     }
