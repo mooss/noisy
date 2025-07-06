@@ -3,7 +3,7 @@ export const colors = {
     input: 'steelblue',
     inputBg: '#2D3748',
     label: 'lightskyblue',
-    param: 'orchid',
+    param: 'gold',
     text: 'lightgray',
 }
 
