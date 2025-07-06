@@ -201,7 +201,6 @@ export class HeightField {
 
     /** Returns a function mapping the height to a range approximately between low and high */
     #mapper(low, high) {
-        if (this.low == this.high) return () => high;
         return rangeMapper(this.low, this.high, low, high);
     }
 

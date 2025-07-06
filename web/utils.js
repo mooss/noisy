@@ -47,6 +47,7 @@ export function interpolateColors(colors, value) {
  */
 export function rangeMapper(fromMin, fromMax, toMin, toMax) {
     const fromSub = fromMax - fromMin, toSub = toMax - toMin;
+    if (fromSub == 0) return () => toSub / 2;
     return x => toMin + ((x - fromMin) / fromSub) * toSub;
 }
 
