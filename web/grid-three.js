@@ -10,102 +10,133 @@ import { Avatar } from './avatar.js';
 import { numStats } from './stats.js';
 import { CHUNK_UNIT } from './constants.js';
 
-const config = {
-    // Chunking system.
-    chunks: new ChunkConfig(),
+class Game {
+    static ENABLE_STATS_GRAPH = false;
+    terrain = null;
+    avatar = null;
+    renderer = null;
+    gui = null;
+    fps = null;
+    keyboard = null;
+    updateStats = () => {};
 
-    // Terrain generation.
-    gen: new GenerationConfig(),
-
-    // Player avatar.
-    avatar: new AvatarConfig(),
-
-    // Rendering.
-    render: new RenderConfig(),
-};
-
-function startAnimationLoop(renderer, onFrame) {
-    let prev = performance.now();
-
-    function animate() {
-        requestAnimationFrame(animate);
-        const now = performance.now();
-        onFrame((now - prev) / 1000);
-        prev = now;
-        renderer.render();
+    constructor() {
+        this.config = {
+            chunks: new ChunkConfig(),
+            gen: new GenerationConfig(),
+            avatar: new AvatarConfig(),
+            render: new RenderConfig(),
+        };
     }
-    animate();
-}
 
-const ENABLE_STATS_GRAPH = false;
+    start() {
+        this.terrain = new Terrain(this.config.chunks, this.config.gen, this.config.render);
+        this.avatar = new Avatar();
 
-function main() {
-    // Data, meshes and utilities.
-    const terrain = new Terrain(config.chunks, config.gen, config.render);
-    const avatar = new Avatar();
+        this.renderer = new Renderer();
+        this.renderer.addMesh(this.terrain.mesh);
+        this.renderer.addMesh(this.avatar.mesh);
 
-    // Renderer.
-    const renderer = new Renderer();
-    renderer.addMesh(terrain.mesh);
-    renderer.addMesh(avatar.mesh);
-
-    // UI callbacks.
-    const updateAvatar = () => {
-        terrain.centerOn(avatar.coords);
-        avatar.z = terrain.height(avatar.x, avatar.y) + config.avatar.heightOffset;
-        avatar.reposition(CHUNK_UNIT, config.gen.verticalUnit);
-        avatar.setScale(config.avatar.size);
+        this.setupUI();
+        this.setupAvatarPosition();
+        this.keyboard = new Keyboard();
+        this.regenerateTerrain();
+        this.startAnimationLoop();
     }
-    const regenerateTerrain = () => {
-        terrain.regen();
-        updateAvatar();
-        updateStats(); // Defined later.
-    }
-    const reloadTerrain = () => terrain.reload();
 
-    // UI definition.
-    const gui = new GUI({ left: '8px' }).collapsible();
-    const fps = new FpsWidget(gui);
+    setupUI() {
+        this.gui = new GUI({ left: '8px' }).collapsible();
+        this.fps = new FpsWidget(this.gui);
 
-    let updateStats = () => {};
-    if (ENABLE_STATS_GRAPH) {
-        const heightGraph = gui.graph().legend("Sorted heights in active chunk");
-        const heightStats = gui.readOnly('').legend('Height stats');
-        const zScoreGraph = gui.graph().legend("Z-scores of the sorted heights").close();
-        updateStats = () => {
-            const heightfun = terrain.chunkHeightFun(avatar.coords.toChunk(config.chunks.nblocks))
-            const heights = [];
-            for (let i = 0; i < config.chunks.nblocks; ++i)
-                for (let j = 0; j < config.chunks.nblocks; ++j)
-                    heights.push(heightfun(i/config.chunks.nblocks, j/config.chunks.nblocks));
-            heightGraph.update(heights.sort((l, r) => { return l - r; }));
+        if (Game.ENABLE_STATS_GRAPH) {
+            const heightGraph = this.gui.graph().legend("Sorted heights in active chunk");
+            const heightStats = this.gui.readOnly('').legend('Height stats');
+            const zScoreGraph = this.gui.graph().legend("Z-scores of the sorted heights").close();
 
-            const stats = numStats(heights);
-            const min = Math.min(...heights), max = Math.max(...heights);
-            heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
+            this.updateStats = () => {
+                const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk(this.config.chunks.nblocks))
+                const heights = [];
+                for (let i = 0; i < this.config.chunks.nblocks; ++i)
+                    for (let j = 0; j < this.config.chunks.nblocks; ++j)
+                        heights.push(heightfun(i/this.config.chunks.nblocks, j/this.config.chunks.nblocks));
+
+                heightGraph.update(heights.sort((l, r) => l - r));
+
+                const stats = numStats(heights);
+                const min = Math.min(...heights), max = Math.max(...heights);
+                heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
 min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
-            zScoreGraph.update(stats.zScores);
+                zScoreGraph.update(stats.zScores);
+            };
+        }
+
+        this.config.chunks.ui(this.gui.folder('Chunks'),
+            () => this.regenerateTerrain(),
+            () => this.reloadTerrain()
+        );
+        this.config.render.ui(this.gui.folder('Render'),
+            () => this.regenerateTerrain()
+        );
+        this.config.avatar.ui(this.gui.folder('Avatar').close(),
+            () => this.updateAvatar()
+        );
+
+        const terrainGeneration = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
+        this.config.gen.ui(terrainGeneration,
+            () => this.regenerateTerrain()
+        );
+    }
+
+    setupAvatarPosition() {
+        this.avatar.x = .5;
+        this.avatar.y = .5;
+        this.avatar.z = 0;
+    }
+
+    startAnimationLoop() {
+        let prev = performance.now();
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+            const now = performance.now();
+            this.onFrame((now - prev) / 1000);
+            prev = now;
+            this.renderer.render();
+        };
+
+        animate();
+    }
+
+    onFrame(delta) {
+        this.fps.update(delta);
+        this.keyboard.checkFocus();
+        if (this.avatar.update(delta, this.keyboard)) {
+            this.updateAvatar();
         }
     }
 
-    config.chunks.ui(gui.folder('Chunks'), regenerateTerrain, reloadTerrain);
-    config.render.ui(gui.folder('Render'), regenerateTerrain);
-    config.avatar.ui(gui.folder('Avatar').close(), updateAvatar);
+    updateAvatar() {
+        this.terrain.centerOn(this.avatar.coords);
+        this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.config.avatar.heightOffset;
+        this.avatar.reposition(CHUNK_UNIT, this.config.gen.verticalUnit);
+        this.avatar.setScale(this.config.avatar.size);
+    }
 
-    const terrainGeneration = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
-    config.gen.ui(terrainGeneration, regenerateTerrain)
+    regenerateTerrain() {
+        this.terrain.regen();
+        this.updateAvatar();
+        this.updateStats();
+    }
 
-    // Final touches.
-    avatar.x = .5; avatar.y = .5; avatar.z = 0; // Center of the original chunk.
+    reloadTerrain() {
+        this.terrain.reload();
+    }
+}
 
-    const keyboard = new Keyboard();
-    regenerateTerrain();
-    startAnimationLoop(renderer, (delta) => {
-        fps.update(delta);
-        keyboard.checkFocus();
-        if (avatar.update(delta, keyboard)) updateAvatar();
-    });
+function main() {
+    const game = new Game();
+    game.start();
 }
 
 main();
