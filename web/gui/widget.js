@@ -4,11 +4,7 @@ import { Label } from "./foundations.js";
 export class GraphWidget extends Label {
     constructor(parent) {
         super(parent);
-        this.canvas = spawn('canvas', this.box, {
-            width: '100%',
-            height: '80px',
-            backgroundColor: colors.inputBg,
-        });
+        this.canvas = spawn('canvas', this.box, Style.graphCanvas());
         this.ctx = this.canvas.getContext('2d');
 
         // Put the label on top of the graph (instead of putting it left).

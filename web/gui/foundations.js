@@ -1,18 +1,11 @@
-import { spawn, colors } from "./html.js";
+import { spawn } from "./html.js";
+import { Style } from "./style.js";
 
 export class Label {
     constructor(parent) {
         // Setup UI elements.
-        this.box = spawn('div', parent, {
-            display: 'flex',
-            alignItems: 'center',
-            padding: '4px 0 0 0',
-        });
-        this.label = spawn('label', this.box, {
-            flex: '1',
-            marginRight: '8px',
-            color: colors.label,
-        });
+        this.box = spawn('div', parent, Style.label());
+        this.label = spawn('label', this.box, Style.labelText());
     }
 
     // Sets the text content of the label.
@@ -22,17 +15,8 @@ export class Label {
 export class Param extends Label {
     constructor(parent) {
         super(parent);
-        this.valueContainer = spawn('div', this.box, { // Aligns inputs.
-            width: '110px',
-            display: 'flex',
-            color: colors.param,
-        });
-        this.input = spawn(this.tag(), this.valueContainer, {
-            color: colors.param,
-            padding: '0',
-            boxSizing: 'border-box',
-            fontSize: '10px',
-        });
+        this.valueContainer = spawn('div', this.box, Style.paramValueContainer());
+        this.input = spawn(this.tag(), this.valueContainer, Style.input());
     }
 
     // Returns the tag name for the input element.

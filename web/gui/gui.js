@@ -1,6 +1,7 @@
 import { Boolean, Number, Range, ReadOnly, Select } from "./parameters.js";
 import { GraphWidget } from "./widget.js";
-import { spawn, colors } from "./html.js";
+import { colors, spawn } from "./html.js";
+import { Style } from "./style.js";
 
 /////////////////
 // Foundations //
@@ -70,27 +71,7 @@ export class GUI extends Panel {
      * Creates a GUI instance and attach it to the document body.
      */
     constructor(...styleOverride) {
-        super(document.body, Object.assign({
-            // Top left default position.
-            position: 'absolute',
-            top: '8px',     // Distance from the top to the nearest ancestor.
-            left: '8px',    // Distance from the right of the nearest positioned ancestor.
-            zIndex: '1000', // Ensure element is on top.
-
-            // Dimensions.
-            width: '230px',
-            maxHeight: '90vh',
-
-            // Inner style.
-            padding: '4px',
-            backgroundColor: 'rgba(20, 25, 35, 0.85)',
-            color: colors.text,
-            fontSize: '12px',
-            borderRadius: '4px',
-
-            // Behavior.
-            overflowY: 'auto', // Adds a scrollbar if content overflows vertically.
-        }, ...styleOverride));
+        super(document.body, Object.assign(Style.gui(), ...styleOverride));
     }
 
     /**
@@ -102,13 +83,7 @@ export class GUI extends Panel {
     collapsible() {
         // Create the thin bar element.
         const bar = document.createElement('div');
-        bar.style.height = '4px';
-        bar.style.width = '100%';
-        bar.style.cursor = 'pointer';
-        bar.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-        bar.style.borderRadius = '2px 2px 0 0';
-        bar.style.marginBottom = '4px';
-        bar.style.userSelect = 'none';
+        Object.assign(bar.style, Style.collapsibleBar());
 
         // Insert the bar as the first child of the panel container.
         this._elt.insertBefore(bar, this._elt.firstChild);
@@ -136,14 +111,7 @@ export class GUI extends Panel {
      * @returns {this}
      */
     title(text) {
-        const title = spawn('div', this._elt, {
-            textAlign: 'center',
-            fontWeight: 'bold',
-            fontSize: '14px',
-            padding: '4px 0',
-            marginBottom: '4px',
-            color: colors.text,
-        });
+        const title = spawn('div', this._elt, Style.title());
         title.textContent = text;
         return this;
     }
@@ -229,18 +197,8 @@ class Deck extends Panel {
             flexDirection: 'column',
         });
 
-        this._headerContainer = spawn('div', this._elt, {
-            position: 'relative',
-            backgroundColor: colors.inputBg,
-            overflow: 'hidden',
-        });
-        this._headerBar = spawn('div', this._headerContainer, {
-            display: 'flex',
-            overflowX: 'auto',
-            scrollbarWidth: 'none', // Hide scrollbar.
-            msOverflowStyle: 'none',
-            '&::-webkit-scrollbar': { display: 'none' },
-        });
+        this._headerContainer = spawn('div', this._elt, Style.deckHeaderContainer());
+        this._headerBar = spawn('div', this._headerContainer, Style.deckHeaderBar());
 
         // Show "arrows" on the left and right of the bar to indicate scrollability.
         const arrow = {
@@ -310,15 +268,7 @@ class Card extends Panel {
         this.#deck = deck;
         this.name = name;
 
-        this._button = spawn('div', deck._headerBar, {
-            padding: '0 4px',
-            textAlign: 'center',
-            cursor: 'pointer',
-            userSelect: 'none',
-            color: colors.label,
-            background: colors.inputBg,
-            whiteSpace: 'nowrap',
-        });
+        this._button = spawn('div', deck._headerBar, Style.cardButton());
         this._button.textContent = name;
         this._button.addEventListener('click', () => this.focus());
 
