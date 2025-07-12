@@ -8,6 +8,7 @@ export class GenerationConfig {
         this.seed = 23;                     // Seed for deterministic terrain generation.
         this.terrainAlgo = 'octavianRidge'; // Terrain creation algorithm.
         this.heightMultiplier = 1.0;        // Multiplier for the terrain height.
+        this.terracing = 0;                 // Degree of quantization/terracing (0-1)
         this.noise = {
             octaves: 8,          // Simplex Noise octaves to layer.
             persistence: 0.65,   // Amplitude reduction per octave.
@@ -39,6 +40,10 @@ export class GenerationConfig {
 
         parent.range(this, 'heightMultiplier', 0.1, 5.0, 0.05)
             .legend('Height multiplier')
+            .onInput(regen);
+
+        parent.range(this, 'terracing', 0, .1, .01)
+            .legend('Terracing')
             .onInput(regen);
 
         /////////////////////
@@ -187,8 +192,10 @@ function lowhigh(config) {
 }
 
 export class HeightField {
+    #terracing;
     constructor(config) {
         this.raw = new HeightFieldBuilder(config).fun;
+        this.#terracing = config.terracing;
 
         if (config.terrainAlgo === 'continentalMix') {
             this.high = 1; this.low = 0;
