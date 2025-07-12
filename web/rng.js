@@ -1,4 +1,4 @@
-import { createNoise2D } from 'https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js';
+import { createNoise2D } from 'simplex-noise';
 
 ////////////////////
 // Free functions //
