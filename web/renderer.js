@@ -7,8 +7,12 @@ export class Renderer {
     #camera;
     #renderer;
     #controls;
+    #ambientLight;
+    #directionalLight;
+    #renderConf;
 
-    constructor() {
+    constructor(renderConf) {
+        this.#renderConf = renderConf;
         this.#scene = new THREE.Scene();
         this.#scene.background = new THREE.Color(0, 0, 0);
 
@@ -25,11 +29,13 @@ export class Renderer {
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.#renderer.domElement);
 
-        const ambientLight = new THREE.AmbientLight(0x808080);
-        this.#scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 4);
-        directionalLight.position.set(1, 1, 1).normalize();
-        this.#scene.add(directionalLight);
+        // The intensity of the lights will be set by updateLighting, who is meant to be called
+        // as-needed in the game loop.
+        this.#ambientLight = new THREE.AmbientLight(0x808080);
+        this.#scene.add(this.#ambientLight);
+        this.#directionalLight = new THREE.DirectionalLight(0xffffff);
+        this.#directionalLight.position.set(1, 1, 1).normalize();
+        this.#scene.add(this.#directionalLight);
 
         this.#controls = new MapControls(this.#camera, this.#renderer.domElement);
         this.#controls.enableDamping = true;
@@ -47,6 +53,11 @@ export class Renderer {
         this.#camera.aspect = window.innerWidth / window.innerHeight;
         this.#camera.updateProjectionMatrix();
         this.#renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    updateLighting() {
+        this.#ambientLight.intensity = this.#renderConf.light.ambient.intensity;
+        this.#directionalLight.intensity = this.#renderConf.light.directional.intensity;
     }
 
     render() {

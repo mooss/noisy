@@ -33,7 +33,7 @@ class Game {
         this.terrain = new Terrain(this.config.chunks, this.config.gen, this.config.render);
         this.avatar = new Avatar();
 
-        this.renderer = new Renderer();
+        this.renderer = new Renderer(this.config.render);
         this.renderer.addMesh(this.terrain.mesh);
         this.renderer.addMesh(this.avatar.mesh);
 
@@ -125,6 +125,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
     regenerateTerrain() {
         this.terrain.regen();
+        this.renderer.updateLighting();
         this.updateAvatar();
         this.updateStats();
     }

@@ -5,6 +5,10 @@ export class RenderConfig {
     constructor() {
         this.style = 'surface';              // How the terrain is rendered.
         this.paletteName = 'Bright terrain'; // Name of the color palette to use.
+        this.light = {
+            ambient: {intensity: .5},
+            directional: {intensity: 4},
+        }
     }
 
     ui(parent, update) {
@@ -16,6 +20,12 @@ export class RenderConfig {
 
         parent.select(this, 'paletteName', palettes)
             .legend('Palette').onChange(update);
+
+        parent.range(this.light.ambient, 'intensity', 0, 10, .2)
+            .legend('Ambient Light').onChange(update);
+
+        parent.range(this.light.directional, 'intensity', 0, 10, .2)
+            .legend('Directional Light').onChange(update);
     }
 
     get palette() { return palettes[this.paletteName]; }
