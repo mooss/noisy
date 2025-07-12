@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/getlantern/systray"
@@ -19,6 +20,16 @@ var content embed.FS
 
 //go:embed res/sat-icon.png
 var icon []byte
+
+// latch wraps fun to ensure it can be called only once.
+func latch(fun func()) func() {
+	called := atomic.Bool{}
+	return func() {
+		if called.CompareAndSwap(false, true) {
+			fun()
+		}
+	}
+}
 
 func main() {
 	port := "8080"
@@ -32,7 +43,7 @@ func main() {
 	}
 
 	server := &http.Server{Addr: ":" + port, Handler: http.FileServer(http.FS(root))}
-	openPage := exec.Command("xdg-open", "http://localhost:8080").Start
+	openPage := latch(func() { exec.Command("xdg-open", "http://localhost:8080").Start() })
 
 	go func() {
 		log.Printf("Starting server on :%s", port)
