@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { CHUNK_UNIT } from "./constants.js";
 import { Coordinates } from "./coordinates.js";
 

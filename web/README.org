@@ -1,5 +1,5 @@
 * Run the server
 
 #+begin_src bash
-npx serve
+npx vite
 #+end_src

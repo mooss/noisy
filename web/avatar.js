@@ -1,4 +1,5 @@
 import { Position } from "./coordinates.js";
+import * as THREE from 'three';
 
 export class Avatar {
     /** @type {Position} World position of the avatar. */

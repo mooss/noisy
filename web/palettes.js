@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 function rgb(r, g, b) { return new THREE.Color(r/255, g/255, b/255); };
 
 const brightSea = [

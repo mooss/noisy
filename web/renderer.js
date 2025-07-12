@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+import { MapControls } from 'three/addons/controls/MapControls.js';
 import { CHUNK_UNIT } from "./constants.js";
 
 export class Renderer {
@@ -29,7 +31,7 @@ export class Renderer {
         directionalLight.position.set(1, 1, 1).normalize();
         this.#scene.add(directionalLight);
 
-        this.#controls = new THREE.MapControls(this.#camera, this.#renderer.domElement);
+        this.#controls = new MapControls(this.#camera, this.#renderer.domElement);
         this.#controls.enableDamping = true;
         this.#controls.dampingFactor = 0.1;
         this.#controls.target = new THREE.Vector3(center, center, 0);

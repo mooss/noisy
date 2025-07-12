@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 /**
  * Clamps a number between a minimum and maximum value.
  *
