@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MapControls } from 'three/addons/controls/MapControls.js';
+import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CHUNK_UNIT } from "./constants.js";
 
 export class Renderer {
@@ -27,7 +27,7 @@ export class Renderer {
 
         const ambientLight = new THREE.AmbientLight(0x808080);
         this.#scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, .8);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 4);
         directionalLight.position.set(1, 1, 1).normalize();
         this.#scene.add(directionalLight);
 

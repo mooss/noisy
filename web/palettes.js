@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-function rgb(r, g, b) { return new THREE.Color(r/255, g/255, b/255); };
+function rgb(r, g, b) {
+    return new THREE.Color().setRGB(r/255, g/255, b/255, THREE.SRGBColorSpace);
+}
 
 const brightSea = [
     rgb(0, 50, 100),    // Deep water.
