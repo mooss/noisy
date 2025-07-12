@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -13,7 +14,7 @@ import (
 	"github.com/getlantern/systray"
 )
 
-//go:embed web
+//go:embed web/dist
 var content embed.FS
 
 //go:embed res/sat-icon.png
@@ -25,8 +26,13 @@ func main() {
 		port = p
 	}
 
-	server := &http.Server{Addr: ":" + port, Handler: http.FileServer(http.FS(content))}
-	openPage := exec.Command("xdg-open", "http://localhost:8080/web/grid-three.html").Start
+	root, err := fs.Sub(content, "web/dist")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	server := &http.Server{Addr: ":" + port, Handler: http.FileServer(http.FS(root))}
+	openPage := exec.Command("xdg-open", "http://localhost:8080").Start
 
 	go func() {
 		log.Printf("Starting server on :%s", port)
