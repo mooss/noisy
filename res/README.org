@@ -1,0 +1,8 @@
+#+title: Static resources
+
+* Icon
+
+To generate an icon from an arbitrary image, use:
+#+begin_src bash
+convert logo.png icon.ico
+#+end_src

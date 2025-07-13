@@ -176,7 +176,7 @@ class HeightFieldBuilder {
 }
 
 /**
- * Samples the generator with a high fundamental to compute statistically reasonable low and high
+ * Samples the generator with a low fundamental to compute statistically reasonable low and high
  * bounds.
  */
 function lowhigh(config) {
