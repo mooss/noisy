@@ -219,8 +219,14 @@ export class HeightField {
      */
     mkNormalised(min, high) {
         const mapper = this.#mapper(min, high);
+        let postprocess = mapper;
+        if (this.#terracing > 0) {
+            const step = this.#terracing * (high - min);
+            postprocess = (raw) => Math.round(mapper(raw) / step) * step;
+        }
+
         return (x, y) => {
-            const res = mapper(this.raw(x, y));
+            let res = postprocess(this.raw(x, y));
             if (res < min) return min;
             return res;
         }
