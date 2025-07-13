@@ -49,26 +49,7 @@ class Game {
         this.fps = new FpsWidget(this.gui);
 
         if (Game.ENABLE_STATS_GRAPH) {
-            const heightGraph = this.gui.graph().legend("Sorted heights in active chunk");
-            const heightStats = this.gui.readOnly('').legend('Height stats');
-            const zScoreGraph = this.gui.graph().legend("Z-scores of the sorted heights").close();
-
-            this.updateStats = () => {
-                const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk(this.config.chunks.nblocks))
-                const heights = [];
-                for (let i = 0; i < this.config.chunks.nblocks; ++i)
-                    for (let j = 0; j < this.config.chunks.nblocks; ++j)
-                        heights.push(heightfun(i/this.config.chunks.nblocks, j/this.config.chunks.nblocks));
-
-                heightGraph.update(heights.sort((l, r) => l - r));
-
-                const stats = numStats(heights);
-                const min = Math.min(...heights), max = Math.max(...heights);
-                heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
-min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
-
-                zScoreGraph.update(stats.zScores);
-            };
+            this.setupStatsGraph();
         }
 
         this.config.chunks.ui(this.gui.folder('Chunks'),
@@ -132,6 +113,29 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
     reloadTerrain() {
         this.terrain.reload();
+    }
+
+    setupStatsGraph() {
+        const heightGraph = this.gui.graph().legend("Sorted heights in active chunk");
+        const heightStats = this.gui.readOnly('').legend('Height stats');
+        const zScoreGraph = this.gui.graph().legend("Z-scores of the sorted heights").close();
+
+        this.updateStats = () => {
+            const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk(this.config.chunks.nblocks))
+            const heights = [];
+            for (let i = 0; i < this.config.chunks.nblocks; ++i)
+                for (let j = 0; j < this.config.chunks.nblocks; ++j)
+                    heights.push(heightfun(i/this.config.chunks.nblocks, j/this.config.chunks.nblocks));
+
+            heightGraph.update(heights.sort((l, r) => l - r));
+
+            const stats = numStats(heights);
+            const min = Math.min(...heights), max = Math.max(...heights);
+            heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
+min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
+
+            zScoreGraph.update(stats.zScores);
+        };
     }
 }
 
