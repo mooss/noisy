@@ -114,10 +114,17 @@ export class Terrain {
         this.reload();
     }
 
+    #within(...args) {
+        let res = Coordinates.prototype.withinSquare;
+        if (this.#conf.chunks.radiusType === 'circle')
+            res = Coordinates.prototype.withinCircle;
+        return res.bind(this.#center)(...args);
+    }
+
     reload() {
         const oldChunks = this.#chunks;
         this.#chunks = new Map();
-        this.#center.within(this.#loadRadius, (coords) => {
+        this.#within(this.#loadRadius, (coords) => {
             const chunk = oldChunks.get(coords.string());
             if (chunk === undefined) return this.#loadChunk(coords); // Load new chunk.
             // Transfer old chunk.

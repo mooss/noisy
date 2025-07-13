@@ -46,7 +46,7 @@ export class Coordinates {
      * @param {number} radius - The radius (in chunks or blocks) around the center.
      * @param {function} fun - Callback function that receives each coordinate.
      */
-    within(radius, fun) {
+    withinCircle(radius, fun) {
         const radiusSquared = radius * radius;
         const minX = Math.floor(this.x - radius);
         const maxX = Math.floor(this.x + radius);
@@ -60,6 +60,20 @@ export class Coordinates {
                 if (dx * dx + dy * dy <= radiusSquared) {
                     fun(new Coordinates(x, y));
                 }
+            }
+        }
+    }
+
+    /**
+     * Generates a list of coordinates within a specified square radius around this block.
+     *
+     * @param {number} radius - The radius (in chunks or blocks) around the center.
+     * @returns {Array<Coordinates>} An array of chunk block coordinate objects.
+     */
+    withinSquare(radius, fun) {
+        for (let x = this.x - radius; x <= this.x + radius; x++) {
+            for (let y = this.y - radius; y <= this.y + radius; y++) {
+                fun(new Coordinates(x, y));
             }
         }
     }
