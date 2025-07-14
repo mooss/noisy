@@ -1,14 +1,15 @@
-import { Renderer } from './renderer.js';
-import { FpsWidget, Keyboard } from './ui.js';
-import { Terrain } from './terrain.js';
+import * as THREE from 'three';
+import { Avatar } from './avatar.js';
 import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
 import { GenerationConfig } from './config/generation.js';
 import { RenderConfig } from './config/render.js';
-import { GUI } from './gui/gui.js';
-import { Avatar } from './avatar.js';
-import { numStats } from './stats.js';
 import { CHUNK_UNIT } from './constants.js';
+import { GUI } from './gui/gui.js';
+import { Renderer } from './renderer.js';
+import { numStats } from './stats.js';
+import { Terrain } from './terrain.js';
+import { FpsWidget, Keyboard } from './ui.js';
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
@@ -18,7 +19,7 @@ class Game {
     gui = null;
     fps = null;
     keyboard = null;
-    updateStats = () => {};
+    updateStats = () => { };
 
     constructor() {
         this.config = {
@@ -102,6 +103,10 @@ class Game {
         this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.config.avatar.heightOffset;
         this.avatar.reposition(CHUNK_UNIT, this.config.gen.verticalUnit);
         this.avatar.setScale(this.config.avatar.size);
+
+        if (this.config.avatar.cameraMode === 'Follow') {
+            this.renderer.lookAt(this.avatar.mesh.position);
+        }
     }
 
     regenerateTerrain() {
@@ -125,7 +130,7 @@ class Game {
             const heights = [];
             for (let i = 0; i < this.config.chunks.nblocks; ++i)
                 for (let j = 0; j < this.config.chunks.nblocks; ++j)
-                    heights.push(heightfun(i/this.config.chunks.nblocks, j/this.config.chunks.nblocks));
+                    heights.push(heightfun(i / this.config.chunks.nblocks, j / this.config.chunks.nblocks));
 
             heightGraph.update(heights.sort((l, r) => l - r));
 

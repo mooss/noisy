@@ -60,6 +60,13 @@ export class Renderer {
         this.#directionalLight.intensity = this.#renderConf.light.directional.intensity;
     }
 
+    // Point the camera towards target, maintaining the offset that existed between the previous
+    // target and the previous camera position.
+    lookAt(target) {
+        this.#camera.position.add(target).sub(this.#controls.target);
+        this.#controls.target.copy(target);
+    }
+
     render() {
         this.#controls.update();
         this.#renderer.render(this.#scene, this.#camera);
