@@ -1,5 +1,6 @@
-import { Position } from "./coordinates.ts";
+import { Position } from "./coordinates";
 import * as THREE from 'three';
+import { Keyboard } from './ui';
 
 export class Avatar {
     /** @type {Position} World position of the avatar. */
@@ -16,7 +17,7 @@ export class Avatar {
 
     // Change avatar position on a new frame.
     // Returns true when the avatar position changed.
-    update(dt, keyboard) {
+    update(dt: number, keyboard: Keyboard): boolean {
         let dx = 0, dy = 0;
         if (keyboard.isPressed('KeyW')) dy += this.speed;
         if (keyboard.isPressed('KeyS')) dy -= this.speed;
@@ -29,11 +30,11 @@ export class Avatar {
         return true;
     }
 
-    reposition(hscale, vscale) {
+    reposition(hscale: number, vscale: number): void {
         this.mesh.position.set(this.x * hscale, this.y * hscale, this.z * vscale);
     }
 
-    setScale(scale) {
+    setScale(scale: number): void {
         this.mesh.scale.set(scale, scale, scale);
     }
 

@@ -1,8 +1,26 @@
 import * as THREE from 'three';
-import { CHUNK_UNIT } from "./constants.ts";
-import { Coordinates } from "./coordinates.ts";
+import { CHUNK_UNIT } from "./constants";
+import { Coordinates } from "./coordinates";
+import type { ChunkConfig } from './config/chunk';
+import type { GenerationConfig } from './config/generation';
+import type { RenderConfig } from './config/render';
+import type { Position } from './coordinates';
+
+interface HeightGenerator {
+    at(x: number, y: number): number;
+    nblocks: number;
+}
+
+interface ChunkConfigs {
+    chunks: ChunkConfig;
+    gen: GenerationConfig;
+    render: RenderConfig;
+}
 
 class Chunk {
+    coords: Coordinates;
+    mesh: THREE.Mesh;
+    height: (x: number, y: number) => number;
     constructor(coords, mesh, height) {
         this.coords = coords;
         this.mesh = mesh;
@@ -24,7 +42,11 @@ export class Terrain {
      */
     height;
 
-    constructor(chunks, gen, render) {
+    constructor(
+        chunks: ChunkConfig,
+        gen: GenerationConfig,
+        render: RenderConfig
+    ) {
         this.#conf = {chunks, gen, render };
         this.regen(); // Initialize the height function.
     }

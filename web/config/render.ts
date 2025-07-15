@@ -1,4 +1,4 @@
-import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh.js';
+import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh';
 import { palettes } from '../palettes';
 
 export class RenderConfig {

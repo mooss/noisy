@@ -19,5 +19,5 @@ build:
 ################
 # Actual files #
 
-dependencies.svg: ainulindale.js
+dependencies.svg: game.ts
 	npx madge $^ -i dependencies.svg

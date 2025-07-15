@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-import { CHUNK_UNIT } from "./constants.ts";
+import { MapControls } from 'three/examples/jsm/controls/MapControls';
+import { CHUNK_UNIT } from "./constants";
+import type { RenderConfig } from './config/render';
 
 export class Renderer {
     #scene;
@@ -45,7 +46,7 @@ export class Renderer {
         window.addEventListener('resize', this.resizeWindow.bind(this), false);
     }
 
-    addMesh(mesh) {
+    addMesh(mesh: THREE.Object3D): void {
         this.#scene.add(mesh);
     }
 
@@ -62,7 +63,7 @@ export class Renderer {
 
     // Point the camera towards target, maintaining the offset that existed between the previous
     // target and the previous camera position.
-    lookAt(target) {
+    lookAt(target: THREE.Vector3): void {
         this.#camera.position.add(target).sub(this.#controls.target);
         this.#controls.target.copy(target);
     }

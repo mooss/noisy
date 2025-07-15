@@ -1,14 +1,14 @@
-import { Avatar } from './avatar.js';
-import { AvatarConfig } from './config/avatar.ts';
-import { ChunkConfig } from './config/chunk.ts';
-import { GenerationConfig } from './config/generation.ts';
-import { RenderConfig } from './config/render.ts';
-import { CHUNK_UNIT } from './constants.ts';
-import { GUI } from './gui/gui.ts';
-import { Renderer } from './renderer.js';
-import { numStats } from './stats.ts';
-import { Terrain } from './terrain.js';
-import { FpsWidget, Keyboard } from './ui.ts';
+import { Avatar } from './avatar';
+import { AvatarConfig } from './config/avatar';
+import { ChunkConfig } from './config/chunk';
+import { GenerationConfig } from './config/generation';
+import { RenderConfig } from './config/render';
+import { CHUNK_UNIT } from './constants';
+import { GUI } from './gui/gui';
+import { Renderer } from './renderer';
+import { numStats } from './stats';
+import { Terrain } from './terrain';
+import { FpsWidget, Keyboard } from './ui';
 
 class Game {
     static ENABLE_STATS_GRAPH = false;

@@ -1,5 +1,7 @@
 import * as THREE from 'three';
-import { interpolateColors } from './utils.ts';
+import { interpolateColors } from './utils';
+import type { HeightGenerator } from './terrain';
+import type { Palette } from './config/render';
 
 /**
  * Creates a hexagonal extruded prism.
@@ -7,7 +9,7 @@ import { interpolateColors } from './utils.ts';
  * @param {number} height - The height of the extrusion.
  * @returns {THREE.ExtrudeGeometry} The generated geometry.
  */
-function _createHexagonGeometry(radius, height) {
+function _createHexagonGeometry(radius: number, height: number): THREE.ExtrudeGeometry {
     const shape = new THREE.Shape();
     const sides = 6;
     const angle = (2 * Math.PI) / sides;
@@ -29,7 +31,7 @@ function _createHexagonGeometry(radius, height) {
 }
 
 // Computes the surface indices of for a square mesh.
-function surfaceIndices(size) {
+function surfaceIndices(size: number): number[] {
     const indices = [];
     for (let i = 0; i < size - 1; i++) {
         for (let j = 0; j < size - 1; j++) {
@@ -52,7 +54,7 @@ function surfaceIndices(size) {
  * @param {Array}            palette  - Color palette for height-based interpolation.
  * @returns {THREE.Mesh} The generated surface mesh.
  */
-export function createSurfaceMesh(heights, palette) {
+export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
     let { nblocks } = heights;
     const sampling = 1 / nblocks; // Distance between each vertex.
     nblocks+=1; // Create one additional row and column to overlap this mesh and the next one.
@@ -104,7 +106,7 @@ export function createSurfaceMesh(heights, palette) {
  * @param {Array}           palette - Color palette for height-based interpolation
  * @returns {THREE.Mesh} The generated prism mesh.
  */
-function createPrismMeshes(type, heights, palette) {
+function createPrismMeshes(type: 'hexagon'|'square', heights: HeightGenerator, palette: Palette): THREE.Mesh {
     const { nblocks } = heights;
     const sampling = 1 / nblocks; // Distance between each vertex.
     const isHex = type === 'hexagon';
