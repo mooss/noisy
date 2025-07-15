@@ -9,7 +9,7 @@ import { Style } from "./style";
 /**
  * GUI panel that can display information and adjust parameters.
  */
-class Panel {
+export class Panel {
     /**
      * The main container element for the panel.
      */

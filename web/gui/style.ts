@@ -7,10 +7,6 @@ interface StyleColors {
     text: string;
 }
 
-interface CSSProperties {
-    [key: string]: string | number | object;
-}
-
 export class Style {
     static colors: StyleColors = {
         border: 'grey',
@@ -61,7 +57,7 @@ export class Style {
         };
     }
 
-    static folder(isNested) {
+    static folder(isNested: boolean) {
         const left = 6;
         return {
             marginTop: '4px',
@@ -70,7 +66,7 @@ export class Style {
         };
     }
 
-    static folderSummary(isNested) {
+    static folderSummary(isNested: boolean) {
         const left = 6;
         return {
             cursor: 'pointer',
@@ -81,7 +77,7 @@ export class Style {
         };
     }
 
-    static folderContent(isNested) {
+    static folderContent(isNested: boolean) {
         const left = 6;
         return {
             borderLeft: isNested ? `3px solid ${this.colors.border}` : 'none',

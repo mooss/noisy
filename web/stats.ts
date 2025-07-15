@@ -26,7 +26,7 @@ export class NumStats {
      * The high bound is the highest value with a Z-score below threshold.
      */
     outlierBounds(threshold: number): { low: number, high: number } {
-        let lowz = Infinity, highz = -Infinity, lowi, highi;
+        let lowz = Infinity, highz = -Infinity, lowi = 0, highi = 0;
         this.zScores.forEach((zscore, i) => {
             if (zscore > -threshold && zscore < lowz) { lowz = zscore; lowi = i }
             if (zscore < threshold && zscore > highz) { highz = zscore, highi = i }

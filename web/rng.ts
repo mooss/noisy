@@ -67,7 +67,7 @@ function mkWarped(
  * @param warpStrength - The magnitude of the warp effect.
  * @returns A function that returns simplex noise at (x,y).
  */
-export function mkSimplex(seed, warpStrength) {
+export function mkSimplex(seed: number, warpStrength: number) {
     const noise = createNoise2D(createLCG(seed));
 	const warpx = createNoise2D(createLCG(seed + 1));
     return mkWarped(noise, warpx, warpStrength);
@@ -115,8 +115,14 @@ export function mkRidger(
  * @param lacunarity  - Frequency increase per octave.
  * @returns A function that returns layered noise at (x,y).
  */
-export function mkLayering(noise, octaves, fundamental, persistence, lacunarity) {
-    return (x, y) => {
+export function mkLayering(
+    noise: (x: number, y: number) => number,
+    octaves: number,
+    fundamental: number,
+    persistence: number,
+    lacunarity: number
+): (x: number, y: number) => number {
+    return (x: number, y: number) => {
         let total = 0;
         let frequency = fundamental;
         let amplitude = 1;

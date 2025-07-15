@@ -1,3 +1,6 @@
+import { ReadOnly } from './gui/parameters.js';
+import { Panel } from './gui/gui.js';
+
 class FpsCounter {
     #delta = 0; #frames = 0; #interval = .1; #fps = 0;
 
@@ -24,7 +27,7 @@ export class FpsWidget {
         this.#fpsUI = parent.readOnly(0).legend('FPS');
     }
 
-    update(delta) { this.#fpsUI.update(Math.round(this.#fps.update(delta))) }
+    update(delta: number) { this.#fpsUI.update(Math.round(this.#fps.update(delta))) }
 }
 
 export class Keyboard {
