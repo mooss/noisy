@@ -1,4 +1,4 @@
-import { Position } from "./coordinates.js";
+import { Position } from "./coordinates.ts";
 import * as THREE from 'three';
 
 export class Avatar {

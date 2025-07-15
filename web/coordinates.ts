@@ -6,34 +6,32 @@
  * the grid.
  */
 export class Coordinates {
-    /** @type {number} x - The X coordinate. */
-    x;
-    /** @type {number} y - The Y coordinate. */
-    y;
+    /** The X coordinate. */
+    x: number;
+    /** The Y coordinate. */
+    y: number;
 
     /**
-     * @param {number} x - The X coordinate.
-     * @param {number} y - The Y coordinate.
+     * @param x - The X coordinate.
+     * @param y - The Y coordinate.
      */
-    constructor(x, y) { this.x = x; this.y = y; }
+    constructor(x: number, y: number) { this.x = x; this.y = y; }
 
     /**
      * Convert global block coordinates to the coordinates of the chunk containing them.
-     *
-     * @param {number} nblocks - The number of blocks in a chunk.
-     * @returns {Coordinates} The chunk coordinates.
+     * @param nblocks - The number of blocks in a chunk.
+     * @returns The chunk coordinates.
      */
-    toChunk(nblocks) {
+    toChunk(nblocks: number): Coordinates {
         return new Coordinates(Math.floor(this.x / nblocks), Math.floor(this.y / nblocks));
     }
 
     /**
      * Convert global block coordinates to local block coordinates within their chunk.
-     *
-     * @param {number} nblocks - The number of blocks in a chunk.
-     * @returns {Coordinates} The local coordinates.
+     * @param nblocks - The number of blocks in a chunk.
+     * @returns The local coordinates.
      */
-    toLocal(nblocks) {
+    toLocal(nblocks: number): Coordinates {
         return new Coordinates(
             ((this.x % nblocks) + nblocks) % nblocks,
             ((this.y % nblocks) + nblocks) % nblocks,
@@ -42,11 +40,10 @@ export class Coordinates {
 
     /**
      * Generates a list of coordinates within the circle of the specified radius around this block.
-     *
-     * @param {number} radius - The radius (in chunks or blocks) around the center.
-     * @param {function} fun - Callback function that receives each coordinate.
+     * @param radius - The radius (in chunks or blocks) around the center.
+     * @param fun - Callback function that receives each coordinate.
      */
-    withinCircle(radius, fun) {
+    withinCircle(radius: number, fun: (coord: Coordinates) => void): void {
         const radiusSquared = radius * radius;
         const minX = Math.floor(this.x - radius);
         const maxX = Math.floor(this.x + radius);
@@ -66,11 +63,10 @@ export class Coordinates {
 
     /**
      * Generates a list of coordinates within a specified square radius around this block.
-     *
-     * @param {number} radius - The radius (in chunks or blocks) around the center.
-     * @returns {Array<Coordinates>} An array of chunk block coordinate objects.
+     * @param radius - The radius (in chunks or blocks) around the center.
+     * @param fun - Callback function that receives each coordinate.
      */
-    withinSquare(radius, fun) {
+    withinSquare(radius: number, fun: (coord: Coordinates) => void): void {
         for (let x = this.x - radius; x <= this.x + radius; x++) {
             for (let y = this.y - radius; y <= this.y + radius; y++) {
                 fun(new Coordinates(x, y));
@@ -78,33 +74,34 @@ export class Coordinates {
         }
     }
 
-    equals(other) { return this.x == other.x && this.y == other.y }
-    string() { return `${this.x},${this.y}` }
+    equals(other: Coordinates): boolean { return this.x === other.x && this.y === other.y }
+    string(): string { return `${this.x},${this.y}` }
 }
 
 /**
  * Represents 3D floating-point coordinates for points in the world, either local or global.
  */
 export class Position {
-    /** @type {number} x - The X coordinate. */
-    x;
-    /** @type {number} y - The Y coordinate. */
-    y;
-    /** @type {number} z - The Z coordinate. */
-    z;
+    /** The X coordinate. */
+    x: number;
+    /** The Y coordinate. */
+    y: number;
+    /** The Z coordinate. */
+    z: number;
 
     /**
-     * @param {number} x - The X coordinate.
-     * @param {number} y - The Y coordinate.
-     * @param {number} z - The Z coordinate.
+     * @param x - The X coordinate.
+     * @param y - The Y coordinate.
+     * @param z - The Z coordinate.
      */
-    constructor(x, y, z) { this.x = x; this.y = y; this.z = z; }
+    constructor(x: number, y: number, z: number) { this.x = x; this.y = y; this.z = z; }
 
     /**
      * Convert the position to the chunk Coordinates containing it.
      * This is just a conversion of the x and y coordinates to an int.
-     *
-     * @returns {Coordinates} The chunk coordinates.
+     * @returns The chunk coordinates.
      */
-    toChunk() { return new Coordinates(Math.floor(this.x), Math.floor(this.y)) }
+    toChunk(): Coordinates {
+        return new Coordinates(Math.floor(this.x), Math.floor(this.y));
+    }
 }
