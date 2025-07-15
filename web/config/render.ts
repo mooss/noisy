@@ -1,5 +1,5 @@
 import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh.js';
-import { palettes } from '../palettes.ts';
+import { palettes } from '../palettes';
 
 export class RenderConfig {
     constructor() {

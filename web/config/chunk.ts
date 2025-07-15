@@ -1,4 +1,4 @@
-import { CHUNK_UNIT } from "../constants.ts";
+import { CHUNK_UNIT } from "../constants";
 
 export class ChunkConfig {
     // Chunks within this distance will be unloaded when entering a new chunk.
@@ -17,8 +17,8 @@ export class ChunkConfig {
         this.#power = value;
     }
     get power() { return this.#power }
-    get nblocks() { return 2**this.power }
-    get sampling() { return 1/this.nblocks }
+    get nblocks() { return 2 ** this.power }
+    get sampling() { return 1 / this.nblocks }
     get blockSize() { return CHUNK_UNIT / this.nblocks }
 
     ui(parent, resize, load) {

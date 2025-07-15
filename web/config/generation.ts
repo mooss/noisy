@@ -1,9 +1,31 @@
-import { CHUNK_UNIT } from "../constants.ts";
-import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.ts";
-import { numStats } from "../stats.ts";
-import { clone, rangeMapper } from "../utils.ts";
+import { CHUNK_UNIT } from "../constants";
+import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng";
+import { numStats } from "../stats";
+import { clone, rangeMapper } from "../utils";
+
+type TerrainAlgorithm = 'simplex' | 'octavianRidge' | 'melodicRidge' | 'continentalMix' | 'rand';
+type RidgeStyle = 'octavian' | 'melodic';
+
+interface NoiseConfig {
+    octaves: number;
+    persistence: number;
+    lacunarity: number;
+    fundamental: number;
+    warpingStrength: number;
+    ridge: {
+        invertSignal: boolean;
+        squareSignal: boolean;
+        style: RidgeStyle;
+    };
+}
 
 export class GenerationConfig {
+    seed: number;
+    terrainAlgo: TerrainAlgorithm;
+    heightMultiplier: number;
+    terracing: number;
+    noise: NoiseConfig;
+
     constructor() {
         this.seed = 23;                     // Seed for deterministic terrain generation.
         this.terrainAlgo = 'octavianRidge'; // Terrain creation algorithm.
@@ -23,15 +45,15 @@ export class GenerationConfig {
         };
     }
 
-    heightField() { return new HeightField(this) }
-    get verticalUnit() { return (CHUNK_UNIT / 5) * this.heightMultiplier }
+    heightField(): HeightField { return new HeightField(this) }
+    get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }
 
     ////////
     // UI //
 
     #algorithmDeck; // The deck containing all the algorithm cards.
 
-    ui(parent, regen) {
+    ui(parent: any, regen: () => void): void {
         //////////
         // Root //
         parent.number(this, 'seed')

@@ -1,9 +1,8 @@
-import * as THREE from 'three';
 import { Avatar } from './avatar.js';
-import { AvatarConfig } from './config/avatar.js';
-import { ChunkConfig } from './config/chunk.js';
-import { GenerationConfig } from './config/generation.js';
-import { RenderConfig } from './config/render.js';
+import { AvatarConfig } from './config/avatar.ts';
+import { ChunkConfig } from './config/chunk.ts';
+import { GenerationConfig } from './config/generation.ts';
+import { RenderConfig } from './config/render.ts';
 import { CHUNK_UNIT } from './constants.ts';
 import { GUI } from './gui/gui.js';
 import { Renderer } from './renderer.js';
