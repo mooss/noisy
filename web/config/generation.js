@@ -1,7 +1,7 @@
-import { CHUNK_UNIT } from "../constants.js";
-import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
-import { numStats } from "../stats.js";
-import { clone, rangeMapper } from "../utils.js";
+import { CHUNK_UNIT } from "../constants.ts";
+import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.ts";
+import { numStats } from "../stats.ts";
+import { clone, rangeMapper } from "../utils.ts";
 
 export class GenerationConfig {
     constructor() {

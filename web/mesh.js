@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { interpolateColors } from './utils.js';
+import { interpolateColors } from './utils.ts';
 
 /**
  * Creates a hexagonal extruded prism.

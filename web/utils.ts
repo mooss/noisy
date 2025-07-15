@@ -3,25 +3,25 @@ import * as THREE from 'three';
 /**
  * Clamps a number between a minimum and maximum value.
  *
- * @param {number} x   - The number to clamp.
- * @param {number} min - The minimum allowed value.
- * @param {number} max - The maximum allowed value.
+ * @param x   - The number to clamp.
+ * @param min - The minimum allowed value.
+ * @param max - The maximum allowed value.
  *
- * @returns {number} The clamped number.
+ * @returns The clamped number.
  */
-export function clamp(x, min, max) {
+export function clamp(x: number, min: number, max: number): number {
     return Math.min(Math.max(x, min), max);
 }
 
 /**
  * Interpolates between colors in a palette based on a normalized value.
  *
- * @param {THREE.Color[]} colors - The color palette.
- * @param {number}        value  - A normalized value (0-1) indicating the interpolation position.
+ * @param colors - The color palette.
+ * @param value  - A normalized value (0-1) indicating the interpolation position.
  *
- * @returns {THREE.Color} The interpolated color.
+ * @returns The interpolated color.
  */
-export function interpolateColors(colors, value) {
+export function interpolateColors(colors: THREE.Color[], value: number): THREE.Color {
     if (colors.length === 0) return new THREE.Color(1, 1, 1);
     if (colors.length === 1) return colors[0].clone();
 
@@ -40,14 +40,19 @@ export function interpolateColors(colors, value) {
 /**
  * Creates a function linearly mapping between number ranges.
  *
- * @param {number} fromMin - The minimum value of the input range.
- * @param {number} fromMax - The maximum value of the input range.
- * @param {number} toMin   - The minimum value of the output range.
- * @param {number} toMax   - The maximum value of the output range.
+ * @param fromMin - The minimum value of the input range.
+ * @param fromMax - The maximum value of the input range.
+ * @param toMin   - The minimum value of the output range.
+ * @param toMax   - The maximum value of the output range.
  *
- * @returns {function(number): number} A function that maps a number from the input range to the output range.
+ * @returns A function that maps a number from the input range to the output range.
  */
-export function rangeMapper(fromMin, fromMax, toMin, toMax) {
+export function rangeMapper(
+    fromMin: number,
+    fromMax: number,
+    toMin: number,
+    toMax: number
+): (x: number) => number {
     const fromSub = fromMax - fromMin, toSub = toMax - toMin;
     if (fromSub == 0) return () => toSub / 2;
     return x => toMin + ((x - fromMin) / fromSub) * toSub;

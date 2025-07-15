@@ -1,5 +1,5 @@
-import { spawn } from "./html.js";
-import { Style } from "./style.js";
+import { spawn } from "./html.ts";
+import { Style } from "./style.ts";
 
 export class Label {
     constructor(parent) {

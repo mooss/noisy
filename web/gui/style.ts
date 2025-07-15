@@ -1,5 +1,18 @@
+interface StyleColors {
+    border: string;
+    input: string;
+    inputBg: string;
+    label: string;
+    param: string;
+    text: string;
+}
+
+interface CSSProperties {
+    [key: string]: string | number | object;
+}
+
 export class Style {
-    static colors = {
+    static colors: StyleColors = {
         border: 'grey',
         input: 'steelblue',
         inputBg: '#2D3748',
@@ -160,7 +173,6 @@ export class Style {
     static checkbox() {
         return {
             margin: 0,
-            width: 'auto',
             appearance: 'none',
             WebkitAppearance: 'none',
             width: '14px',

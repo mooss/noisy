@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CHUNK_UNIT } from "./constants.js";
+import { CHUNK_UNIT } from "./constants.ts";
 import { Coordinates } from "./coordinates.ts";
 
 class Chunk {

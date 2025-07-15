@@ -1,6 +1,6 @@
 import { Param, InputParam } from './foundations.js'
-import { spawn, colors } from "./html.js";
-import { clamp } from '../utils.js'
+import { spawn, colors } from "./html.ts";
+import { clamp } from '../utils.ts'
 
 export class Boolean extends InputParam {
     setup(initial) {

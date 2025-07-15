@@ -1,6 +1,6 @@
-import { spawn, colors } from "./html.js";
+import { spawn, colors } from "./html.ts";
 import { Label } from "./foundations.js";
-import { Style } from "./style.js";
+import { Style } from "./style.ts";
 
 export class GraphWidget extends Label {
     constructor(parent) {

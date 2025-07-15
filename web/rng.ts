@@ -7,10 +7,10 @@ import { createNoise2D } from 'simplex-noise';
  * Creates a Linear Congruential Generator (LCG) that produces pseudorandom values between 0 and 1.
  * This provides a deterministic alternative to Math.random() since it can be seeded.
  *
- * @param {number} seed The initial seed value for the generator.
- * @returns {() => number} A function that returns a pseudorandom float (1 <= res < max).
+ * @param seed The initial seed value for the generator.
+ * @returns A function that returns a pseudorandom float (1 <= res < max).
  */
-function createLCG(seed) {
+function createLCG(seed: number): () => number {
     const a = 1664525;
     const c = 1013904223;
     const m = Math.pow(2, 32);
@@ -26,10 +26,10 @@ function createLCG(seed) {
  * Returns a function that will generate a random number between given minimum and maximum values,
  * based on a provided seed.
  *
- * @param {number} seed The seed to initialize the pseudorandom number generator.
- * @returns {function(min: number, max: number): number} A function that returns a float (min <= res < max).
+ * @param seed The seed to initialize the pseudorandom number generator.
+ * @returns A function that returns a float (min <= res < max).
  */
-export function mkRng(seed) {
+export function mkRng(seed: number): (min: number, max: number) => number {
     let generator = createLCG(seed);
     return (min, max) => generator() * (max - min) + min;
 }
@@ -41,12 +41,16 @@ export function mkRng(seed) {
  * artifacts.
  * The x-y-frequency calling signature is necessary to accommodate the shift parameter.
  *
- * @param {function(number, number): number} noise    - The base noise function.
- * @param {function(number, number): number} warp     - Noise function for warping.
- * @param {number}                           strength - The magnitude of the warp effect.
- * @returns {function(number, number, number): number} The warped noise function.
+ * @param noise    - The base noise function.
+ * @param warp     - Noise function for warping.
+ * @param strength - The magnitude of the warp effect.
+ * @returns The warped noise function.
  */
-function mkWarped(noise, warp, strength) {
+function mkWarped(
+    noise: (x: number, y: number) => number,
+    warp: (x: number, y: number) => number,
+    strength: number
+): (x: number, y: number) => number {
 	return (x, y) => {
         const wp = warp(x, y);
 		return noise(
@@ -59,9 +63,9 @@ function mkWarped(noise, warp, strength) {
 /**
  * Creates a simplex noise function with domain warping.
  *
- * @param {number} seed         - The seed to initialize the pseudorandom number generator.
- * @param {number} warpStrength - The magnitude of the warp effect.
- * @returns {function(number, number): number} A function that returns simplex noise at (x,y).
+ * @param seed         - The seed to initialize the pseudorandom number generator.
+ * @param warpStrength - The magnitude of the warp effect.
+ * @returns A function that returns simplex noise at (x,y).
  */
 export function mkSimplex(seed, warpStrength) {
     const noise = createNoise2D(createLCG(seed));
@@ -72,12 +76,15 @@ export function mkSimplex(seed, warpStrength) {
 /**
  * Creates a function that transforms a noise signal into ridges.
  *
- * @param {boolean} invert - Whether to invert the signal to create ridges instead of valleys.
- * @param {boolean} square - Whether to square the signal to emphasize ridges/valleys.
- * @returns {function(number): number} A function that transforms a noise signal.
+ * @param invert - Whether to invert the signal to create ridges instead of valleys.
+ * @param square - Whether to square the signal to emphasize ridges/valleys.
+ * @returns A function that transforms a noise signal.
  */
-export function mkRidger(invert, square) {
-    return (signal) => {
+export function mkRidger(
+    invert: boolean,
+    square: boolean
+): (signal: number) => number {
+    return (signal: number) => {
         // Taking the absolute value maps [-1, 1] -> [0, 1] and makes the negative values positive,
         // thus transforming the smooth transition from positive to negative values into a sharp
         // "rebound".
@@ -101,12 +108,12 @@ export function mkRidger(invert, square) {
 /**
  * Creates a function that layers multiple octaves of noise.
  *
- * @param {function(number, number): number} noise       - The base noise function.
- * @param {number}                           octaves     - Number of octaves to layer.
- * @param {number}                           fundamental - Base frequency for noise.
- * @param {number}                           persistence - Amplitude reduction per octave.
- * @param {number}                           lacunarity  - Frequency increase per octave.
- * @returns {function(number, number): number} A function that returns layered noise at (x,y).
+ * @param noise       - The base noise function.
+ * @param octaves     - Number of octaves to layer.
+ * @param fundamental - Base frequency for noise.
+ * @param persistence - Amplitude reduction per octave.
+ * @param lacunarity  - Frequency increase per octave.
+ * @returns A function that returns layered noise at (x,y).
  */
 export function mkLayering(noise, octaves, fundamental, persistence, lacunarity) {
     return (x, y) => {
@@ -134,9 +141,15 @@ export function mkLayering(noise, octaves, fundamental, persistence, lacunarity)
     }
 }
 
-export function highMix(lowgen, highgen, low=.25, high=.75, mid=(low+high)/2) {
+export function highMix(
+    lowgen: (x: number, y: number) => number,
+    highgen: (x: number, y: number) => number,
+    low: number = .25,
+    high: number = .75,
+    mid: number = (low+high)/2,
+): (x: number, y: number) => number {
     const range = high - low;
-    return (x, y) => {
+    return (x: number, y: number) => {
         let highval = highgen(x, y); // In [0, 1].
         if (highval > high) return highval; // In ]high, 1], fully the high range.
         // highval is in [0, high].

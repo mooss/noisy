@@ -1,12 +1,12 @@
 class FpsCounter {
     #delta = 0; #frames = 0; #interval = .1; #fps = 0;
 
-    update(delta) {
+    update(delta: number): number {
         this.#frames++;
         this.#delta += delta;
 
         if (this.#delta >= this.#interval) {
-            this.#fps = (this.#frames / this.#delta).toFixed(1);
+            this.#fps = (this.#frames / this.#delta);
             this.#frames = 0;
             this.#delta = 0;
         }
@@ -16,10 +16,10 @@ class FpsCounter {
 }
 
 export class FpsWidget {
-    #fps;
-    #fpsUI;
+    #fps: FpsCounter;
+    #fpsUI: ReadOnly;
 
-    constructor(parent) {
+    constructor(parent: Panel) {
         this.#fps = new FpsCounter();
         this.#fpsUI = parent.readOnly(0).legend('FPS');
     }
@@ -28,13 +28,14 @@ export class FpsWidget {
 }
 
 export class Keyboard {
-    #pressedKeys = new Set();
+    #pressedKeys: Set<string>;
 
     constructor() {
+        this.#pressedKeys = new Set();
         document.addEventListener('keydown', (e) => this.#pressedKeys.add(e.code));
         document.addEventListener('keyup', (e) => this.#pressedKeys.delete(e.code));
     }
 
-    isPressed(code) { return this.#pressedKeys.has(code) }
-    checkFocus() { if (!document.hasFocus()) this.#pressedKeys = new Set() }
+    isPressed(code: string): boolean { return this.#pressedKeys.has(code) }
+    checkFocus(): void { if (!document.hasFocus()) this.#pressedKeys = new Set() }
 }

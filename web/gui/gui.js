@@ -1,7 +1,7 @@
 import { Boolean, Number, Range, ReadOnly, Select } from "./parameters.js";
 import { GraphWidget } from "./widget.js";
-import { colors, spawn } from "./html.js";
-import { Style } from "./style.js";
+import { colors, spawn } from "./html.ts";
+import { Style } from "./style.ts";
 
 /////////////////
 // Foundations //

@@ -1,7 +1,13 @@
-export function numStats(data) { return new NumStats(data) }
+export function numStats(data: number[]): NumStats { return new NumStats(data) }
 
 export class NumStats {
-    constructor(data) {
+    data: number[];
+    mean: number;
+    variance: number;
+    std: number;
+    zScores: number[];
+
+    constructor(data: number[]) {
         this.data = data;
 
         // Independant stats (don't depend on other stats).
@@ -19,7 +25,7 @@ export class NumStats {
      * The low bound is the lowest value with a Z-score above -threshold.
      * The high bound is the highest value with a Z-score below threshold.
      */
-    outlierBounds(threshold) {
+    outlierBounds(threshold: number): { low: number, high: number } {
         let lowz = Infinity, highz = -Infinity, lowi, highi;
         this.zScores.forEach((zscore, i) => {
             if (zscore > -threshold && zscore < lowz) { lowz = zscore; lowi = i }
