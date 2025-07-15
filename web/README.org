@@ -1,5 +1,5 @@
-* Run the server
+* Remove manually unused packaged
 
 #+begin_src bash
-npx vite
+npm prune
 #+end_src
