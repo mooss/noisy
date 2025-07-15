@@ -4,7 +4,7 @@ import { ChunkConfig } from './config/chunk.ts';
 import { GenerationConfig } from './config/generation.ts';
 import { RenderConfig } from './config/render.ts';
 import { CHUNK_UNIT } from './constants.ts';
-import { GUI } from './gui/gui.js';
+import { GUI } from './gui/gui.ts';
 import { Renderer } from './renderer.js';
 import { numStats } from './stats.ts';
 import { Terrain } from './terrain.js';

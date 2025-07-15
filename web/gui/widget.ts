@@ -1,9 +1,13 @@
-import { spawn, colors } from "./html.ts";
-import { Label } from "./foundations.js";
-import { Style } from "./style.ts";
+import { spawn, colors } from "./html";
+import { Label } from "./foundations";
+import { Style } from "./style";
 
 export class GraphWidget extends Label {
-    constructor(parent) {
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    values: number[] = [];
+
+    constructor(parent: HTMLElement) {
         super(parent);
         this.canvas = spawn('canvas', this.box, Style.graphCanvas());
         this.ctx = this.canvas.getContext('2d');

@@ -1,42 +1,54 @@
-import { spawn } from "./html.ts";
-import { Style } from "./style.ts";
+import { spawn } from "./html";
+import { Style } from "./style";
 
 export class Label {
-    constructor(parent) {
+    box: HTMLElement;
+    label: HTMLLabelElement;
+
+    constructor(parent: HTMLElement) {
         // Setup UI elements.
         this.box = spawn('div', parent, Style.label());
         this.label = spawn('label', this.box, Style.labelText());
     }
 
     // Sets the text content of the label.
-    legend(name) { this.label.textContent = name; return this; }
+    legend(name: string): this {
+        this.label.textContent = name;
+        return this;
+    }
 }
 
 export class Param extends Label {
-    constructor(parent) {
+    valueContainer: HTMLElement;
+    input: HTMLElement;
+
+    constructor(parent: HTMLElement) {
         super(parent);
         this.valueContainer = spawn('div', this.box, Style.paramValueContainer());
         this.input = spawn(this.tag(), this.valueContainer, Style.input());
     }
 
     // Returns the tag name for the input element.
-    tag() { return 'input'; }
+    tag(): string { return 'input'; }
 }
 
 // Abstract base input parameter, all concrete input parameters must implement the setup and value
 // methods.
-export class InputParam extends Param {
-    // fun(value: number) -> any
+export class InputParam<T = any> extends Param {
     // Function to format the raw value into what is to be displayed.
-    // Only works for range right now.
-    #format;
+    #format: (value: T) => any;
     // Optional callback for the change event.
-    #onChange;
+    #onChange?: (value: T) => void;
     // Optional callback for the input event.
-    #onInput;
+    #onInput?: (value: T) => void;
 
     // UI parameter attached to parent and tied to target.property.
-    constructor(parent, target, property, ...args) {
+    constructor(
+        parent: HTMLElement,
+        target: Record<string, T>,
+        property: string,
+        ...args: any[]
+    ) {
         super(parent);
         this.#format = (x) => x;
 

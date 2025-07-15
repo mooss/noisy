@@ -1,7 +1,7 @@
-import { Boolean, Number, Range, ReadOnly, Select } from "./parameters.js";
-import { GraphWidget } from "./widget.js";
-import { colors, spawn } from "./html.ts";
-import { Style } from "./style.ts";
+import { Boolean, Number, Range, ReadOnly, Select } from "./parameters";
+import { GraphWidget } from "./widget";
+import { colors, spawn } from "./html";
+import { Style } from "./style";
 
 /////////////////
 // Foundations //
@@ -12,17 +12,13 @@ import { Style } from "./style.ts";
 class Panel {
     /**
      * The main container element for the panel.
-     * @type {HTMLDivElement}
      */
-    _elt;
+    _elt: HTMLElement;
 
     /**
      * Creates a new Panel instance.
-     *
-     * @param {HTMLElement} parent  - The parent DOM element.
-     * @param {object}      [style] - CSS properties of the new element.
      */
-    constructor(parent, style) {
+    constructor(parent: HTMLElement, style?: Record<string, string | number>) {
         this._elt = spawn('div', parent, style);
     }
 

@@ -1,9 +1,9 @@
-import { Param, InputParam } from './foundations.js'
-import { spawn, colors } from "./html.ts";
-import { clamp } from '../utils.ts'
+import { Param, InputParam } from './foundations'
+import { spawn, colors } from "./html";
+import { clamp } from '../utils'
 
-export class Boolean extends InputParam {
-    setup(initial) {
+export class Boolean extends InputParam<boolean> {
+    setup(initial: boolean): void {
         this.input.css({
             margin: 0,
             width: 'auto',
@@ -36,7 +36,9 @@ export class Boolean extends InputParam {
 
         this.setInput({type: 'checkbox', checked: initial});
     }
-    value() { return this.input.checked; }
+    value(): boolean {
+        return (this.input as HTMLInputElement).checked;
+    }
 }
 
 export class Number extends InputParam {
@@ -91,7 +93,7 @@ export class Range extends InputParam {
             width: '40px',
             marginLeft: '5px',
         });
-        
+
         // Style the slider thumb as a vertical bar.
         const style = spawn('style', document.head);
         style.textContent = `
