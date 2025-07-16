@@ -1,127 +1,121 @@
-import { spawn } from "./html.js";
+import { HtmlCssElement, spawn } from "./html.js";
 import { Style } from "./style.js";
+
+export interface InputControl<PRIM> {
+    getElement(): HTMLElement;
+    value(): PRIM;
+    setValue(value: PRIM): void;
+}
 
 /**
  * Base interface for input controls that encapsulate only an HTML input element
  * and standard value get/set methods, without labels or data binding.
  */
-export abstract class InputControl<T> {
-    protected element: HTMLElement;
+abstract class InputControlImpl<PRIM, ELT extends HTMLElement> {
+    protected elt: HtmlCssElement<ELT>;
+    get element(): HtmlCssElement<ELT> { return this.elt }
+
+    constructor(tag: string, parent: HTMLElement, style: Record<string, string | number>) {
+        this.elt = spawn<ELT>(tag, parent, style);
+    }
 
     /**
      * Gets the underlying HTML element for this control.
      */
     getElement(): HTMLElement {
-        return this.element;
+        return this.elt;
     }
 
     /**
      * Gets the current value of the control.
      */
-    abstract value(): T;
+    abstract value(): PRIM;
 
     /**
      * Sets the value of the control.
      */
-    abstract setValue(value: T): void;
+    abstract setValue(value: PRIM): void;
 }
 
 /**
  * Boolean checkbox control.
  */
-export class BooleanControl extends InputControl<boolean> {
-    private input: HTMLInputElement;
-
+export class BooleanControl extends InputControlImpl<boolean, HTMLInputElement> {
     constructor(parent: HTMLElement, initial: boolean = false) {
-        super();
-        this.input = spawn('input', parent, Style.checkbox()) as HTMLInputElement;
-        this.input.type = 'checkbox';
-        this.input.checked = initial;
-        this.element = this.input;
+        super('input', parent, Style.checkbox());
+        this.elt.type = 'checkbox';
+        this.elt.checked = initial;
     }
 
-    value(): boolean {
-        return this.input.checked;
-    }
+    value(): boolean { return this.elt.checked }
 
     setValue(value: boolean): void {
-        this.input.checked = value;
+        this.elt.checked = value;
     }
 }
 
 /**
  * Number input control.
  */
-export class NumberControl extends InputControl<number> {
-    private input: HTMLInputElement;
-
+export class NumberControl extends InputControlImpl<number, HTMLInputElement> {
     constructor(parent: HTMLElement, initial: number = 0) {
-        super();
-        this.input = spawn('input', parent, Style.numberInput()) as HTMLInputElement;
-        this.input.type = 'number';
-        this.input.value = String(initial);
-        this.element = this.input;
-
-        this.input.addEventListener('wheel', (event) => {
+        super('input', parent, Style.numberInput());
+        this.elt.type = 'number';
+        this.elt.value = String(initial);
+        this.elt.addEventListener('wheel', (event) => {
             event.preventDefault();
             const delta = event.deltaY > 0 ? -1 : 1;
-            const newValue = parseFloat(this.input.value) + delta;
-            this.input.value = String(newValue);
-            this.input.dispatchEvent(new Event('change'));
+            const newValue = parseFloat(this.elt.value) + delta;
+            this.elt.value = String(newValue);
+            this.elt.dispatchEvent(new Event('change'));
         });
     }
 
     value(): number {
-        return parseFloat(this.input.value);
+        return parseFloat(this.elt.value);
     }
 
     setValue(value: number): void {
-        this.input.value = String(value);
+        this.elt.value = String(value);
     }
 }
 
 /**
  * Range slider control.
  */
-export class RangeControl extends InputControl<number> {
-    private input: HTMLInputElement;
-
+export class RangeControl extends InputControlImpl<number, HTMLInputElement> {
     constructor(parent: HTMLElement, initial: number, min: number, max: number, step: number) {
-        super();
-        this.input = spawn('input', parent, Style.rangeInput()) as HTMLInputElement;
-        this.input.type = 'range';
-        this.input.min = String(min);
-        this.input.max = String(max);
-        this.input.step = String(step);
-        this.input.value = String(initial);
-        this.element = this.input;
+        super('input', parent, Style.rangeInput());
+        this.elt.type = 'range';
+        this.elt.min = String(min);
+        this.elt.max = String(max);
+        this.elt.step = String(step);
+        this.elt.value = String(initial);
     }
 
     value(): number {
-        return parseFloat(this.input.value);
+        return parseFloat(this.elt.value);
     }
 
     setValue(value: number): void {
-        this.input.value = String(value);
+        this.elt.value = String(value);
     }
 }
 
 /**
  * Select dropdown control.
  */
-export class SelectControl extends InputControl<any> {
-    private input: HTMLSelectElement;
+export class SelectControl extends InputControlImpl<any, HTMLSelectElement> {
     private dictmode: boolean = false;
 
     constructor(parent: HTMLElement, initial: any, options: Record<string, any>) {
-        super();
-        this.input = spawn<HTMLSelectElement>('select', parent, Style.selectInput());
+        super('select', parent, Style.selectInput());
 
         const isKeyBased = Object.prototype.hasOwnProperty.call(options, initial);
         if (isKeyBased) {
             this.dictmode = true;
             for (const key of Object.keys(options)) {
-                const option = spawn<HTMLOptionElement>('option', this.input);
+                const option = spawn<HTMLOptionElement>('option', this.elt);
                 option.text = key;
                 option.value = key;
                 if (key === initial) option.selected = true;
@@ -129,32 +123,30 @@ export class SelectControl extends InputControl<any> {
         } else {
             this.dictmode = false;
             for (const [key, value] of Object.entries(options)) {
-                const option = spawn<HTMLOptionElement>('option', this.input);
+                const option = spawn<HTMLOptionElement>('option', this.elt);
                 option.text = key;
                 option.value = JSON.stringify(value);
                 if (value === initial) option.selected = true;
             }
         }
-
-        this.element = this.input;
     }
 
     value(): any {
         if (this.dictmode) {
-            return this.input.value;
+            return this.elt.value;
         }
-        return JSON.parse(this.input.value);
+        return JSON.parse(this.elt.value);
     }
 
     setValue(value: any): void {
         if (this.dictmode) {
-            this.input.value = value;
+            this.elt.value = value;
         } else {
             // For non-dict mode, we need to find the option with matching value.
-            for (let i = 0; i < this.input.options.length; i++) {
-                const option = this.input.options[i];
+            for (let i = 0; i < this.elt.options.length; i++) {
+                const option = this.elt.options[i];
                 if (JSON.parse(option.value) === value) {
-                    this.input.selectedIndex = i;
+                    this.elt.selectedIndex = i;
                     break;
                 }
             }

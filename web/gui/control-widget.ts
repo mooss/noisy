@@ -7,16 +7,16 @@ import { Style } from "./style.js";
 //TODO: finish all comments with a dot.
 
 /**
- * A widget that composes a Label and an InputControl together in the DOM,
- * orchestrating value binding, event listening, and initial layout.
+ * A widget that composes a Label and an InputControl together in the DOM, orchestrating value
+ * binding, event listening, and initial layout.
  */
-export class ControlWidget<T> {
+export class ControlWidget<PRIM> {
     private label: Label;
-    private control: InputControl<T>;
-    private target: Record<string, T>;
+    private control: InputControl<PRIM>;
+    private target: Record<string, PRIM>;
     private property: string;
-    private onChangeCallback?: (value: T) => void;
-    private onInputCallback?: (value: T) => void;
+    private onChangeCallback?: (value: PRIM) => void;
+    private onInputCallback?: (value: PRIM) => void;
 
     /**
      * Creates a new ControlWidget instance.
@@ -28,10 +28,10 @@ export class ControlWidget<T> {
      */
     constructor(
         parent: HTMLElement,
-        target: Record<string, T>,
+        target: Record<string, PRIM>,
         property: string,
         labelText: string,
-        control: InputControl<T>
+        control: InputControl<PRIM>,
     ) {
         this.target = target;
         this.property = property;
@@ -76,7 +76,7 @@ export class ControlWidget<T> {
      * @param callback Function to call when the value changes
      * @returns this for chaining
      */
-    onChange(callback: (value: T) => void): this {
+    onChange(callback: (value: PRIM) => void): this {
         this.onChangeCallback = callback;
         return this;
     }
@@ -86,7 +86,7 @@ export class ControlWidget<T> {
      * @param callback Function to call when the value changes during input
      * @returns this for chaining
      */
-    onInput(callback: (value: T) => void): this {
+    onInput(callback: (value: PRIM) => void): this {
         this.onInputCallback = callback;
         return this;
     }
@@ -95,7 +95,7 @@ export class ControlWidget<T> {
      * Gets the current value.
      * @returns The current value
      */
-    value(): T {
+    value(): PRIM {
         return this.control.value();
     }
 
@@ -104,7 +104,7 @@ export class ControlWidget<T> {
      * @param value The new value
      * @returns this for chaining
      */
-    setValue(value: T): this {
+    setValue(value: PRIM): this {
         this.control.setValue(value);
         this.target[this.property] = value;
         return this;
@@ -114,7 +114,7 @@ export class ControlWidget<T> {
      * Gets the underlying input control.
      * @returns The InputControl instance
      */
-    getControl(): InputControl<T> {
+    getControl(): InputControl<PRIM> {
         return this.control;
     }
 

@@ -10,7 +10,7 @@ export function BooleanWidget(
 ): ControlWidget<boolean> {
     const control = new BooleanControl(parent, target[property]);
 
-    const checkbox = control.getElement() as HTMLInputElement;
+    const checkbox = control.element;
     checkbox.style.margin = '0';
     checkbox.style.appearance = 'none';
     checkbox.style.width = '14px';
