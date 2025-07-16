@@ -1,12 +1,11 @@
-import { Param, InputParam } from './foundations'
-import { spawn, colors } from "./html";
-import { clamp } from '../utils'
+import { Param, InteractiveParam, InputParam } from './foundations.js'
+import { spawn, colors } from "./html.js";
+import { clamp } from '../utils.js'
 
 export class Boolean extends InputParam<boolean> {
     setup(initial: boolean): void {
         this.input.css({
             margin: 0,
-            width: 'auto',
             // Add custom styling:
             appearance: 'none',
             WebkitAppearance: 'none',
@@ -36,19 +35,18 @@ export class Boolean extends InputParam<boolean> {
 
         this.setInput({type: 'checkbox', checked: initial});
     }
-    value(): boolean {
-        return (this.input as HTMLInputElement).checked;
-    }
+
+    value(): boolean { return (this.input as any).checked }
 }
 
-export class Number extends InputParam {
-    scroll(up) {
+export class Number extends InputParam<number> {
+    scroll(up: boolean) {
         let delta = -1;
         if (up) delta = -delta;
-        this.input.value = this.value() + delta;
+        this.input.value = String(this.value() + delta);
     }
 
-    setup(initial) {
+    setup(initial: number) {
         this.input.css({
             width: '100%',
             background: 'rgba(45, 55, 72, 0.8)',
@@ -61,17 +59,17 @@ export class Number extends InputParam {
     value() { return parseFloat(this.input.value); }
 }
 
-export class Range extends InputParam {
-    scroll(up) {
+export class Range extends InputParam<number> {
+    scroll(up: boolean) {
         let delta = parseFloat(-this.input.step);
         if (up) delta = -delta;
-        this.input.value = clamp(
+        this.input.value = String(clamp(
             this.value() + delta,
             parseFloat(this.input.min), parseFloat(this.input.max),
-        );
+        ));
     }
 
-    setup(initial, min, max, step) {
+    setup(initial: number, min: number, max: number, step: number) {
         this.input.css({
             width: '100%',
             height: '16px',
@@ -115,25 +113,25 @@ export class Range extends InputParam {
         `;
     }
 
-    update(value) { this.valueSpan.textContent = value; }
+    update(value: number) { this.valueSpan.textContent = String(value) }
     value() { return parseFloat(this.input.value); }
 }
 
-export class ReadOnly extends Param {
-    constructor(parent, content) {
+export class ReadOnly extends Param<HTMLLabelElement> {
+    constructor(parent: HTMLElement, content: any) {
         super(parent);
         this.update(content);
     }
 
-    tag() { return 'label'; }
+    tag() { return 'label' }
 
-    update(content) {
-        this.input.textContent = content;
+    update(content: any) {
+        this.input.textContent = String(content);
     }
 }
 
-export class Select extends InputParam {
-    scroll(up) {
+export class Select extends InteractiveParam<any, HTMLSelectElement> {
+    scroll(up: boolean) {
         let delta = 1;
         if (up) delta = -1;
         this.input.selectedIndex = clamp(

@@ -16,20 +16,21 @@ export const colors: Colors = {
     text: 'lightgray',
 }
 
-export type HtmlCssElement = HTMLElement & {
+// A HTMLElement type extended with a css method that can update the style of the element.
+export type HtmlCssElement<T extends HTMLElement = HTMLElement> = T & {
     css(props: Record<string, string | number>): void;
 }
 
-function addCss(el: HTMLElement): HtmlCssElement {
+function addCss<T extends HTMLElement>(el: T): HtmlCssElement<T> {
   // if this element was already wrapped, return it
-  if ('css' in el) return el as HtmlCssElement;
+    if ('css' in el) return el as HtmlCssElement<T>;
 
-  (el as HtmlCssElement).css = function (props) {
+    (el as HtmlCssElement<T>).css = function (props) {
     Object.assign(this.style, props);
-    return this as HtmlCssElement;
+        return this as HtmlCssElement<T>;
   };
 
-  return el as HtmlCssElement;
+    return el as HtmlCssElement<T>;
 }
 
 /**
@@ -43,12 +44,12 @@ function addCss(el: HTMLElement): HtmlCssElement {
  *
  * @returns The newly created HTML element with css method.
  */
-export function spawn(
+export function spawn<T extends HTMLElement = HTMLElement>(
     tag: string,
     parent: HTMLElement,
     style?: Record<string, string | number>,
-): HtmlCssElement {
-    const res = addCss(document.createElement(tag));
+): HtmlCssElement<T> {
+    const res = addCss(document.createElement(tag) as T);
     if (style !== undefined) {
         res.css(style);
     }

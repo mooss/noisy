@@ -1,9 +1,9 @@
-import { spawn, colors } from "./html";
-import { Label } from "./foundations";
-import { Style } from "./style";
+import { spawn, colors, HtmlCssElement } from "./html.js";
+import { Label } from "./foundations.js";
+import { Style } from "./style.js";
 
 export class GraphWidget extends Label {
-    canvas: HTMLCanvasElement;
+    canvas: HtmlCssElement<HTMLCanvasElement>;
     ctx: CanvasRenderingContext2D;
     values: number[] = [];
 
@@ -25,29 +25,29 @@ export class GraphWidget extends Label {
         });
     }
 
-    get width() { return this.canvas.clientWidth; }
-    get height() { return this.canvas.clientHeight; }
+    get width():  number { return this.canvas.clientWidth }
+    get height(): number { return this.canvas.clientHeight }
 
     /** Updates the plot with new data points. */
-    update(values) {
+    update(values: number[]): void {
         this.values = values;
         this.#draw();
     }
 
-    #visible(show) {
+    #visible(show: boolean): void {
         this.canvas.style.display = show ? '': 'none';
         this.label.style.textDecoration = show ? 'none': 'underline';
     }
 
-    close() { this.#visible(false); return this; }
-    open() { this.#visible(true); this.#draw(); return this; }
-    opened() { return this.canvas.style.display === ''; }
+    close():  GraphWidget { this.#visible(false); return this; }
+    open():   GraphWidget { this.#visible(true); this.#draw(); return this; }
+    opened(): boolean     { return this.canvas.style.display === '' }
 
     /////////////////////////////
     // Private drawing methods //
 
     /** Draws the plot (graph and ticks). */
-    #draw() {
+    #draw(): void {
         if (this.values.length <= 1) { console.error("Cannot draw", this.values); return; }
         this.canvas.width = this.width;
         this.canvas.height = this.height;
@@ -61,7 +61,7 @@ export class GraphWidget extends Label {
     }
 
     /** Draws the graph line. */
-    #drawGraph(min, range) {
+    #drawGraph(min: number, range: number): void {
         const ctx = this.ctx;
         ctx.strokeStyle = colors.param;
         ctx.lineWidth = 1;
@@ -76,7 +76,7 @@ export class GraphWidget extends Label {
     }
 
     /** Draws horizontal tick marks and labels for the Y axis. */
-    #drawTicks(min, max, range) {
+    #drawTicks(min: number, max: number, range: number): void {
         const ctx = this.ctx;
         ctx.fillStyle = colors.label;
         ctx.font = '8px sans-serif';
@@ -103,7 +103,7 @@ export class GraphWidget extends Label {
     }
 
     /** Calculates optimal tick spacing and precision for the Y axis. */
-    #calculateTickRange(min, max) {
+    #calculateTickRange(min: number, max: number): { step: number; precision: number } {
         const range = max - min;
         const magnitude = Math.pow(10, Math.floor(Math.log10(range)));
         const step = magnitude * (range / magnitude < 2 ? 0.2 : range / magnitude < 5 ? 0.5 : 1);

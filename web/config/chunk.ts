@@ -1,4 +1,4 @@
-import { CHUNK_UNIT } from "../constants";
+import { CHUNK_UNIT } from "../constants.js";
 
 export class ChunkConfig {
     // Chunks within this distance will be unloaded when entering a new chunk.
