@@ -76,6 +76,7 @@ class Game {
     }
 
     startAnimationLoop() {
+        this.renderer.render(); // Render at least once if out of focus.
         let prev = performance.now();
 
         const animate = () => {
@@ -83,7 +84,7 @@ class Game {
             const now = performance.now();
             this.onFrame((now - prev) / 1000);
             prev = now;
-            this.renderer.render();
+            if (document.hasFocus()) this.renderer.render();
         };
 
         animate();
