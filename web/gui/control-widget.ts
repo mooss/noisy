@@ -12,7 +12,6 @@ import { Style } from "./style.js";
  */
 export class ControlWidget<PRIM> {
     private label: Label;
-    private control: InputControl<PRIM>;
     private target: Record<string, PRIM>;
     private property: string;
     private onChangeCallback?: (value: PRIM) => void;
@@ -37,7 +36,6 @@ export class ControlWidget<PRIM> {
         this.property = property;
         this.label = new Label(parent);
         this.label.legend(labelText);
-        this.control = control;
 
         const valueContainer = spawn('div', this.label.box, Style.paramValueContainer());
         valueContainer.appendChild(control.element);
@@ -87,40 +85,5 @@ export class ControlWidget<PRIM> {
     onInput(callback: (value: PRIM) => void): this {
         this.onInputCallback = callback;
         return this;
-    }
-
-    /**
-     * Gets the current value.
-     * @returns The current value
-     */
-    value(): PRIM {
-        return this.control.value;
-    }
-
-    /**
-     * Sets the value.
-     * @param value The new value
-     * @returns this for chaining
-     */
-    setValue(value: PRIM): this {
-        this.control.value = value;
-        this.target[this.property] = value;
-        return this;
-    }
-
-    /**
-     * Gets the underlying input control.
-     * @returns The InputControl instance
-     */
-    getControl(): InputControl<PRIM> {
-        return this.control;
-    }
-
-    /**
-     * Gets the underlying label.
-     * @returns The Label instance
-     */
-    getLabel(): Label {
-        return this.label;
     }
 }
