@@ -4,23 +4,12 @@ import { InputParam, InteractiveParam, Param } from './foundations.js';
 import { colors, spawn } from "./html.js";
 import { BooleanControl, NumberControl } from "./input-control.js";
 
-/**
- * Factory function that creates a boolean parameter widget.
- * @param parent The parent DOM element
- * @param target The target object to bind to
- * @param property The property name to bind to
- * @param labelText The label text
- * @returns A ControlWidget with a BooleanControl
- */
-export function Boolean(
-    parent: HTMLElement,
-    target: Record<string, boolean>,
-    property: string,
-    label: string,
+export function BooleanWidget(
+    parent: HTMLElement, target: Record<string, boolean>,
+    property: string, label: string,
 ): ControlWidget<boolean> {
     const control = new BooleanControl(parent, target[property]);
 
-    // Apply custom styling to the checkbox
     const checkbox = control.getElement() as HTMLInputElement;
     checkbox.style.margin = '0';
     checkbox.style.appearance = 'none';
@@ -31,7 +20,6 @@ export function Boolean(
     checkbox.style.position = 'relative';
     checkbox.style.cursor = 'pointer';
 
-    // Add checkmark styling using ::before pseudo-element
     const style = spawn('style', document.head);
     style.textContent = `
         input[type="checkbox"]:checked::before {
@@ -50,19 +38,9 @@ export function Boolean(
     return new ControlWidget(parent, target, property, label, control);
 }
 
-/**
- * Factory function that creates a number parameter widget.
- * @param parent The parent DOM element
- * @param target The target object to bind to
- * @param property The property name to bind to
- * @param labelText The label text
- * @returns A ControlWidget with a NumberControl
- */
-export function Number(
-    parent: HTMLElement,
-    target: Record<string, number>,
-    property: string,
-    label: string,
+export function NumberWidget(
+    parent: HTMLElement, target: Record<string, number>,
+    property: string, label: string,
 ): ControlWidget<number> {
     const control = new NumberControl(parent, target[property]);
     return new ControlWidget(parent, target, property, label, control);

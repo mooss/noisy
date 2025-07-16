@@ -1,5 +1,5 @@
 import { colors, spawn } from "./html.js";
-import { Boolean, Number, Range, ReadOnly, Select } from './parameters.js';
+import { BooleanWidget, NumberWidget, Range, ReadOnly, Select } from './parameters.js';
 import { Style } from "./style.js";
 import { GraphWidget } from "./widget.js";
 
@@ -26,7 +26,7 @@ export class Panel {
     // Parameters registration //
 
     bool(target, property, labelText?) {
-        return Boolean(this._elt, target, property, labelText);
+        return BooleanWidget(this._elt, target, property, labelText);
     }
 
     folder(name) {
@@ -42,7 +42,7 @@ export class Panel {
     }
 
     number(target, property, labelText?) {
-        return Number(this._elt, target, property, labelText);
+        return NumberWidget(this._elt, target, property, labelText);
     }
 
     range(target, property, min, max, step) {
