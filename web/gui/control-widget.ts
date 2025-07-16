@@ -40,25 +40,23 @@ export class ControlWidget<PRIM> {
         this.control = control;
 
         const valueContainer = spawn('div', this.label.box, Style.paramValueContainer());
-        valueContainer.appendChild(control.getElement());
+        valueContainer.appendChild(control.element);
 
         ////////////////////////////
         // Set up event listeners //
-        const element = control.getElement();
-
-        element.addEventListener('input', () => {
-            const value = control.value();
+        control.element.addEventListener('input', () => {
+            const value = control.value;
             this.target[this.property] = value;
             this.onInputCallback?.(value);
         });
 
-        element.addEventListener('change', () => {
-            const value = control.value();
+        control.element.addEventListener('change', () => {
+            const value = control.value;
             this.target[this.property] = value;
             this.onChangeCallback?.(value);
         });
 
-        control.setValue(target[property]); // Initial value.
+        control.value = target[property]; // Initial value.
     }
 
     /**
@@ -96,7 +94,7 @@ export class ControlWidget<PRIM> {
      * @returns The current value
      */
     value(): PRIM {
-        return this.control.value();
+        return this.control.value;
     }
 
     /**
@@ -105,7 +103,7 @@ export class ControlWidget<PRIM> {
      * @returns this for chaining
      */
     setValue(value: PRIM): this {
-        this.control.setValue(value);
+        this.control.value = value;
         this.target[this.property] = value;
         return this;
     }

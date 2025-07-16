@@ -1,15 +1,20 @@
 import { HtmlCssElement, spawn } from "./html.js";
 import { Style } from "./style.js";
 
+/**
+ * Interface required from graphical input controllers.
+ */
 export interface InputControl<PRIM> {
-    getElement(): HTMLElement;
-    value(): PRIM;
-    setValue(value: PRIM): void;
+    // Underlying HTML element for this control.
+    readonly element: HTMLElement;
+    // Current value of the control.
+    value: PRIM;
 }
 
 /**
- * Base interface for input controls that encapsulate only an HTML input element
- * and standard value get/set methods, without labels or data binding.
+ * Base implementation for graphical input controls that stores an input element and requires its
+ * concrete implementation to provide a value property in order to satisfy the InputControl<PRIM>
+ * interface.
  */
 abstract class InputControlImpl<PRIM, ELT extends HTMLElement> {
     protected elt: HtmlCssElement<ELT>;
@@ -19,22 +24,7 @@ abstract class InputControlImpl<PRIM, ELT extends HTMLElement> {
         this.elt = spawn<ELT>(tag, parent, style);
     }
 
-    /**
-     * Gets the underlying HTML element for this control.
-     */
-    getElement(): HTMLElement {
-        return this.elt;
-    }
-
-    /**
-     * Gets the current value of the control.
-     */
-    abstract value(): PRIM;
-
-    /**
-     * Sets the value of the control.
-     */
-    abstract setValue(value: PRIM): void;
+    abstract value: PRIM;
 }
 
 /**
@@ -47,11 +37,8 @@ export class BooleanControl extends InputControlImpl<boolean, HTMLInputElement> 
         this.elt.checked = initial;
     }
 
-    value(): boolean { return this.elt.checked }
-
-    setValue(value: boolean): void {
-        this.elt.checked = value;
-    }
+    get value(): boolean { return this.elt.checked }
+    set value(value: boolean) { this.elt.checked = value }
 }
 
 /**
@@ -71,13 +58,8 @@ export class NumberControl extends InputControlImpl<number, HTMLInputElement> {
         });
     }
 
-    value(): number {
-        return parseFloat(this.elt.value);
-    }
-
-    setValue(value: number): void {
-        this.elt.value = String(value);
-    }
+    get value(): number { return parseFloat(this.elt.value) }
+    set value(value: number) { this.elt.value = String(value) }
 }
 
 /**
@@ -93,13 +75,8 @@ export class RangeControl extends InputControlImpl<number, HTMLInputElement> {
         this.elt.value = String(initial);
     }
 
-    value(): number {
-        return parseFloat(this.elt.value);
-    }
-
-    setValue(value: number): void {
-        this.elt.value = String(value);
-    }
+    get value(): number { return parseFloat(this.elt.value) }
+    set value(value: number) { this.elt.value = String(value) }
 }
 
 /**
@@ -131,14 +108,14 @@ export class SelectControl extends InputControlImpl<any, HTMLSelectElement> {
         }
     }
 
-    value(): any {
+    get value(): any {
         if (this.dictmode) {
             return this.elt.value;
         }
         return JSON.parse(this.elt.value);
     }
 
-    setValue(value: any): void {
+    set value(value: any) {
         if (this.dictmode) {
             this.elt.value = value;
         } else {
