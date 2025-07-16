@@ -1,7 +1,7 @@
-import { Boolean, Number, Range, ReadOnly, Select } from "./parameters";
-import { GraphWidget } from "./widget";
-import { colors, spawn } from "./html";
-import { Style } from "./style";
+import { colors, spawn } from "./html.js";
+import { Boolean, Number, Range, ReadOnly, Select } from './parameters.js';
+import { Style } from "./style.js";
+import { GraphWidget } from "./widget.js";
 
 /////////////////
 // Foundations //
@@ -25,8 +25,8 @@ export class Panel {
     /////////////////////////////
     // Parameters registration //
 
-    bool(target, property) {
-        return new Boolean(this._elt, target, property);
+    bool(target, property, labelText?) {
+        return Boolean(this._elt, target, property, labelText);
     }
 
     folder(name) {
@@ -149,7 +149,7 @@ class Folder extends Panel {
             fontWeight: 600,
             padding: '4px 0',
             marginLeft: isNested ? `-${left}px` : '0',
-            paddingLeft: isNested ? `${left-2}px` : '0',
+            paddingLeft: isNested ? `${left - 2}px` : '0',
         }).textContent = title;
         const content = spawn('div', this.#details, {
             borderLeft: isNested ? `3px solid ${colors.border}` : 'none',

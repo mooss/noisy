@@ -1,42 +1,53 @@
-import { Param, InteractiveParam, InputParam } from './foundations.js'
-import { spawn, colors } from "./html.js";
-import { clamp } from '../utils.js'
+import { clamp } from '../utils.js';
+import { ControlWidget } from "./control-widget.js";
+import { InputParam, InteractiveParam, Param } from './foundations.js';
+import { colors, spawn } from "./html.js";
+import { BooleanControl } from "./input-control.js";
 
-export class Boolean extends InputParam<boolean> {
-    setup(initial: boolean): void {
-        this.input.css({
-            margin: 0,
-            // Add custom styling:
-            appearance: 'none',
-            WebkitAppearance: 'none',
-            width: '14px',
-            height: '14px',
-            backgroundColor: colors.inputBg,
-            border: `1px solid ${colors.input}`,
-            position: 'relative',
-            cursor: 'pointer',
-        });
+/**
+ * Factory function that creates a boolean parameter widget.
+ * @param parent The parent DOM element
+ * @param target The target object to bind to
+ * @param property The property name to bind to
+ * @param labelText The label text
+ * @returns A ControlWidget with a BooleanControl
+ */
+export function Boolean(
+    parent: HTMLElement,
+    target: Record<string, boolean>,
+    property: string,
+    label: string,
+): ControlWidget<boolean> {
+    const control = new BooleanControl(parent, target[property]);
 
-        // Add checkmark styling using ::before pseudo-element
-        const style = spawn('style', document.head);
-        style.textContent = `
-            input[type="checkbox"]:checked::before {
-                content: '';
-                position: absolute;
-                left: 4px;
-                top: 1px;
-                width: 4px;
-                height: 7px;
-                border: solid ${colors.param};
-                border-width: 0 2px 2px 0;
-                transform: rotate(45deg);
-            }
-        `;
+    // Apply custom styling to the checkbox
+    const checkbox = control.getElement() as HTMLInputElement;
+    checkbox.style.margin = '0';
+    checkbox.style.appearance = 'none';
+    checkbox.style.width = '14px';
+    checkbox.style.height = '14px';
+    checkbox.style.backgroundColor = colors.inputBg;
+    checkbox.style.border = `1px solid ${colors.input}`;
+    checkbox.style.position = 'relative';
+    checkbox.style.cursor = 'pointer';
 
-        this.setInput({type: 'checkbox', checked: initial});
-    }
+    // Add checkmark styling using ::before pseudo-element
+    const style = spawn('style', document.head);
+    style.textContent = `
+        input[type="checkbox"]:checked::before {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 1px;
+            width: 4px;
+            height: 7px;
+            border: solid ${colors.param};
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    `;
 
-    value(): boolean { return (this.input as any).checked }
+    return new ControlWidget(parent, target, property, label, control);
 }
 
 export class Number extends InputParam<number> {
@@ -53,7 +64,7 @@ export class Number extends InputParam<number> {
             border: `1px solid ${colors.input}`,
             paddingLeft: '2px',
         });
-        this.setInput({type: 'number', value: initial});
+        this.setInput({ type: 'number', value: initial });
     }
 
     value() { return parseFloat(this.input.value); }
@@ -61,7 +72,7 @@ export class Number extends InputParam<number> {
 
 export class Range extends InputParam<number> {
     scroll(up: boolean) {
-        let delta = parseFloat(-this.input.step);
+        let delta = -parseFloat(this.input.step);
         if (up) delta = -delta;
         this.input.value = String(clamp(
             this.value() + delta,
@@ -133,10 +144,10 @@ export class ReadOnly extends Param<HTMLLabelElement> {
 export class Select extends InteractiveParam<any, HTMLSelectElement> {
     scroll(up: boolean) {
         let delta = 1;
-        if (up) delta = -1;
+        if (up) delta = -delta;
         this.input.selectedIndex = clamp(
             this.input.selectedIndex + delta,
-            0, this.input.options.length -1,
+            0, this.input.options.length - 1,
         );
     }
 
