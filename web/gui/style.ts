@@ -186,6 +186,9 @@ export class Style {
             background: 'rgba(45, 55, 72, 0.8)',
             border: `1px solid ${this.colors.input}`,
             paddingLeft: '2px',
+            color: this.colors.param,
+            height: '16px',
+            boxSizing: 'border-box',
         };
     }
 

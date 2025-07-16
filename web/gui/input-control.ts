@@ -61,6 +61,14 @@ export class NumberControl extends InputControl<number> {
         this.input.type = 'number';
         this.input.value = String(initial);
         this.element = this.input;
+
+        this.input.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? -1 : 1;
+            const newValue = parseFloat(this.input.value) + delta;
+            this.input.value = String(newValue);
+            this.input.dispatchEvent(new Event('change'));
+        });
     }
 
     value(): number {

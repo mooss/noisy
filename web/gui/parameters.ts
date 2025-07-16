@@ -2,7 +2,7 @@ import { clamp } from '../utils.js';
 import { ControlWidget } from "./control-widget.js";
 import { InputParam, InteractiveParam, Param } from './foundations.js';
 import { colors, spawn } from "./html.js";
-import { BooleanControl } from "./input-control.js";
+import { BooleanControl, NumberControl } from "./input-control.js";
 
 /**
  * Factory function that creates a boolean parameter widget.
@@ -50,24 +50,22 @@ export function Boolean(
     return new ControlWidget(parent, target, property, label, control);
 }
 
-export class Number extends InputParam<number> {
-    scroll(up: boolean) {
-        let delta = -1;
-        if (up) delta = -delta;
-        this.input.value = String(this.value() + delta);
-    }
-
-    setup(initial: number) {
-        this.input.css({
-            width: '100%',
-            background: 'rgba(45, 55, 72, 0.8)',
-            border: `1px solid ${colors.input}`,
-            paddingLeft: '2px',
-        });
-        this.setInput({ type: 'number', value: initial });
-    }
-
-    value() { return parseFloat(this.input.value); }
+/**
+ * Factory function that creates a number parameter widget.
+ * @param parent The parent DOM element
+ * @param target The target object to bind to
+ * @param property The property name to bind to
+ * @param labelText The label text
+ * @returns A ControlWidget with a NumberControl
+ */
+export function Number(
+    parent: HTMLElement,
+    target: Record<string, number>,
+    property: string,
+    label: string,
+): ControlWidget<number> {
+    const control = new NumberControl(parent, target[property]);
+    return new ControlWidget(parent, target, property, label, control);
 }
 
 export class Range extends InputParam<number> {

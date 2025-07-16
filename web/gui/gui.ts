@@ -41,8 +41,8 @@ export class Panel {
         return new GraphWidget(this._elt);
     }
 
-    number(target, property) {
-        return new Number(this._elt, target, property);
+    number(target, property, labelText?) {
+        return Number(this._elt, target, property, labelText);
     }
 
     range(target, property, min, max, step) {
