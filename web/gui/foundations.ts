@@ -1,9 +1,9 @@
-import { spawn } from "./html";
-import { Style } from "./style";
+import { HtmlCssElement, spawn } from "./html.js";
+import { Style } from "./style.js";
 
 export class Label {
-    box: HTMLElement;
-    label: HTMLLabelElement;
+    box: HtmlCssElement;
+    label: HtmlCssElement;
 
     constructor(parent: HTMLElement) {
         // Setup UI elements.
@@ -19,8 +19,8 @@ export class Label {
 }
 
 export class Param extends Label {
-    valueContainer: HTMLElement;
-    input: HTMLElement;
+    valueContainer: HtmlCssElement;
+    input: HtmlCssElement;
 
     constructor(parent: HTMLElement) {
         super(parent);

@@ -16,8 +16,20 @@ export const colors: Colors = {
     text: 'lightgray',
 }
 
-interface EnhancedHTMLElement extends HTMLElement {
-    css: (attrs: Record<string, string | number>) => void;
+export type HtmlCssElement = HTMLElement & {
+    css(props: Record<string, string | number>): void;
+}
+
+function addCss(el: HTMLElement): HtmlCssElement {
+  // if this element was already wrapped, return it
+  if ('css' in el) return el as HtmlCssElement;
+
+  (el as HtmlCssElement).css = function (props) {
+    Object.assign(this.style, props);
+    return this as HtmlCssElement;
+  };
+
+  return el as HtmlCssElement;
 }
 
 /**
@@ -25,19 +37,18 @@ interface EnhancedHTMLElement extends HTMLElement {
  *
  * A `css` method is added to the element to conveniently change the stile.
  *
- * @param {string}      tag         - The HTML tag name for the new element.
- * @param {HTMLElement} parent      - The parent DOM element.
- * @param {object}      [style]     - CSS properties of the new element.
+ * @param tag     - The HTML tag name for the new element.
+ * @param parent  - The parent DOM element.
+ * @param [style] - CSS properties of the new element.
  *
- * @returns {EnhancedHTMLElement} The newly created HTML element with css method.
+ * @returns The newly created HTML element with css method.
  */
 export function spawn(
     tag: string,
     parent: HTMLElement,
     style?: Record<string, string | number>,
-): EnhancedHTMLElement {
-    const res = document.createElement(tag) as EnhancedHTMLElement;
-    res.css = function(attrs) { Object.assign(this.style, attrs); };
+): HtmlCssElement {
+    const res = addCss(document.createElement(tag));
     if (style !== undefined) {
         res.css(style);
     }
