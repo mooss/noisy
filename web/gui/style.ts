@@ -73,7 +73,7 @@ export class Style {
             fontWeight: 600,
             padding: '4px 0',
             marginLeft: isNested ? `-${left}px` : '0',
-            paddingLeft: isNested ? `${left-2}px` : '0',
+            paddingLeft: isNested ? `${left - 2}px` : '0',
         };
     }
 
@@ -220,6 +220,9 @@ export class Style {
             height: '16px',
             paddingLeft: '2px',
             boxSizing: 'border-box',
+            color: this.colors.param,
+            padding: '0',
+            fontSize: '10px',
         };
     }
 

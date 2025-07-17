@@ -1,5 +1,5 @@
 import { colors, spawn } from "./html.js";
-import { BooleanWidget, NumberWidget, RangeWidget, ReadOnlyWidget, Select } from './parameters.js';
+import { BooleanWidget, NumberWidget, RangeWidget, ReadOnlyWidget, SelectWidget } from './parameters.js';
 import { Style } from "./style.js";
 import { GraphWidget } from "./widget.js";
 
@@ -54,7 +54,7 @@ export class Panel {
     }
 
     select(target, property, options) {
-        return new Select(this._elt, target, property, options);
+        return SelectWidget(this._elt, target, property, options);
     }
 }
 

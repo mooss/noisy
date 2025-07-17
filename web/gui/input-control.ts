@@ -146,9 +146,8 @@ export class SelectControl extends InputControlImpl<any, HTMLSelectElement> {
     constructor(parent: HTMLElement, initial: any, options: Record<string, any>) {
         super('select', parent, Style.selectInput());
 
-        const isKeyBased = Object.prototype.hasOwnProperty.call(options, initial);
-        if (isKeyBased) {
-            this.dictmode = true;
+        this.dictmode = Object.prototype.hasOwnProperty.call(options, initial);
+        if (this.dictmode) {
             for (const key of Object.keys(options)) {
                 const option = spawn<HTMLOptionElement>('option', this.elt);
                 option.text = key;
@@ -156,7 +155,6 @@ export class SelectControl extends InputControlImpl<any, HTMLSelectElement> {
                 if (key === initial) option.selected = true;
             }
         } else {
-            this.dictmode = false;
             for (const [key, value] of Object.entries(options)) {
                 const option = spawn<HTMLOptionElement>('option', this.elt);
                 option.text = key;
@@ -164,6 +162,21 @@ export class SelectControl extends InputControlImpl<any, HTMLSelectElement> {
                 if (value === initial) option.selected = true;
             }
         }
+
+        // Mouse-wheel scrolling support.
+        this.elt.addEventListener('wheel', (event) => {
+            event.preventDefault();
+            const delta = event.deltaY > 0 ? 1 : -1;
+            const newIndex = clamp(
+                this.elt.selectedIndex + delta,
+                0,
+                this.elt.options.length - 1
+            );
+            if (newIndex === this.elt.selectedIndex) return;
+            this.elt.selectedIndex = newIndex;
+            this.elt.dispatchEvent(new Event('input'));
+            this.elt.dispatchEvent(new Event('change'));
+        });
     }
 
     get value(): any {

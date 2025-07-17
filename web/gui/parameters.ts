@@ -1,8 +1,7 @@
-import { clamp } from '../utils.js';
 import { ControlWidget } from "./control-widget.js";
-import { InteractiveParam, Label, Param } from './foundations.js';
+import { Label } from './foundations.js';
 import { colors, HtmlCssElement, spawn } from "./html.js";
-import { BooleanControl, NumberControl, RangeControl } from "./input-control.js";
+import { BooleanControl, NumberControl, RangeControl, SelectControl } from "./input-control.js";
 import { Style } from './style.js';
 
 export function BooleanWidget(
@@ -85,52 +84,14 @@ export function ReadOnlyWidget(parent: HTMLElement, content: any): ReadOnly {
     return new ReadOnly(parent, content);
 }
 
-export class Select extends InteractiveParam<any, HTMLSelectElement> {
-    scroll(up: boolean) {
-        let delta = 1;
-        if (up) delta = -delta;
-        this.input.selectedIndex = clamp(
-            this.input.selectedIndex + delta,
-            0, this.input.options.length - 1,
-        );
-    }
-
-    setup(initial, options) {
-        this.input.css({
-            width: '100%',
-            background: colors.inputBg,
-            border: `1px solid ${colors.input}`,
-            height: '16px',
-            paddingLeft: '2px',
-            boxSizing: 'border-box',
-        });
-
-        const isKeyBased = Object.prototype.hasOwnProperty.call(options, initial);
-        if (isKeyBased) {
-            this._dictMode = true; // Can't be private because of JS schenanigans.
-            for (const key of Object.keys(options)) {
-                const option = spawn('option', this.input);
-                option.text = key;
-                option.value = key;
-                if (key === initial) option.selected = true;
-            }
-        } else {
-            this._dictMode = false;
-            for (const [key, value] of Object.entries(options)) {
-                const option = spawn('option', this.input);
-                option.text = key;
-                option.value = JSON.stringify(value);
-                if (value === initial) option.selected = true;
-            }
-        }
-    }
-
-    tag() { return 'select'; }
-
-    value() {
-        if (this._dictMode) {
-            return this.input.value;
-        }
-        return JSON.parse(this.input.value);
-    }
+/**
+ * Factory that creates a ControlWidget wrapping a SelectControl.
+ * Replaces the former Select class.
+ */
+export function SelectWidget(
+    parent: HTMLElement, target: Record<string, any>,
+    property: string, options: Record<string, any>
+): ControlWidget<any> {
+    const control = new SelectControl(parent, target[property], options);
+    return new ControlWidget(parent, target, property, control);
 }
