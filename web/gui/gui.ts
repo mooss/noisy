@@ -1,5 +1,5 @@
 import { colors, spawn } from "./html.js";
-import { BooleanWidget, NumberWidget, Range, ReadOnly, Select } from './parameters.js';
+import { BooleanWidget, NumberWidget, RangeWidget, ReadOnly, Select } from './parameters.js';
 import { Style } from "./style.js";
 import { GraphWidget } from "./widget.js";
 
@@ -46,7 +46,7 @@ export class Panel {
     }
 
     range(target, property, min, max, step) {
-        return new Range(this._elt, target, property, min, max, step);
+        return RangeWidget(this._elt, target, property, '', min, max, step);
     }
 
     readOnly(content) {

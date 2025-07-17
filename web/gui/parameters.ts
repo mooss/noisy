@@ -1,8 +1,8 @@
 import { clamp } from '../utils.js';
 import { ControlWidget } from "./control-widget.js";
-import { InputParam, InteractiveParam, Param } from './foundations.js';
+import { InteractiveParam, Param } from './foundations.js';
 import { colors, spawn } from "./html.js";
-import { BooleanControl, NumberControl } from "./input-control.js";
+import { BooleanControl, NumberControl, RangeControl } from "./input-control.js";
 
 export function BooleanWidget(
     parent: HTMLElement, target: Record<string, boolean>,
@@ -46,62 +46,27 @@ export function NumberWidget(
     return new ControlWidget(parent, target, property, label, control);
 }
 
-export class Range extends InputParam<number> {
-    scroll(up: boolean) {
-        let delta = -parseFloat(this.input.step);
-        if (up) delta = -delta;
-        this.input.value = String(clamp(
-            this.value() + delta,
-            parseFloat(this.input.min), parseFloat(this.input.max),
-        ));
-    }
+// A number control widget with a formatter field dictating how the number can be transformed for
+// display purposes.
+export type RangeControlWidget = ControlWidget<number> & {
+    formatter: (fun: (value: number) => number) => RangeControlWidget;
+};
 
-    setup(initial: number, min: number, max: number, step: number) {
-        this.input.css({
-            width: '100%',
-            height: '16px',
-            appearance: 'none',
-            background: colors.inputBg,
-            outline: 'none',
-            cursor: 'pointer',
-            padding: '0',
-            margin: '0',
-        });
-        this.setInput({
-            type: 'range',
-            min: min,
-            max: max,
-            step: step,
-            value: initial,
-        })
-        this.valueSpan = spawn('span', this.valueContainer, {
-            width: '40px',
-            marginLeft: '5px',
-        });
+export function RangeWidget(
+    parent: HTMLElement, target: Record<string, number>,
+    property: string, label: string,
+    min: number, max: number, step: number
+): RangeControlWidget {
+    const control = new RangeControl(parent, target[property], min, max, step);
+    const widget = new ControlWidget(parent, target, property, label, control);
 
-        // Style the slider thumb as a vertical bar.
-        const style = spawn('style', document.head);
-        style.textContent = `
-            input[type="range"]::-webkit-slider-thumb {
-                appearance: none;
-                width: 4px;
-                height: 16px;
-                background: ${colors.input};
-                cursor: pointer;
-            }
-            input[type="range"]::-moz-range-thumb {
-                width: 3px;
-                height: 16px;
-                background: ${colors.input};
-                cursor: pointer;
-                border: none;
-                border-radius: 0;
-            }
-        `;
-    }
+    const result = widget as RangeControlWidget;
+    result.formatter = (fun: (value: number) => number) => {
+        control.formatter = fun;
+        return result;
+    };
 
-    update(value: number) { this.valueSpan.textContent = String(value) }
-    value() { return parseFloat(this.input.value); }
+    return result;
 }
 
 export class ReadOnly extends Param<HTMLLabelElement> {

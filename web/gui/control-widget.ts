@@ -12,8 +12,6 @@ import { Style } from "./style.js";
  */
 export class ControlWidget<PRIM> {
     private label: Label;
-    private target: Record<string, PRIM>;
-    private property: string;
     private onChangeCallback?: (value: PRIM) => void;
     private onInputCallback?: (value: PRIM) => void;
 
@@ -27,13 +25,11 @@ export class ControlWidget<PRIM> {
      */
     constructor(
         parent: HTMLElement,
-        target: Record<string, PRIM>,
-        property: string,
+        private target: Record<string, PRIM>,
+        private property: string,
         labelText: string,
-        control: InputControl<PRIM>,
+        private control: InputControl<PRIM>,
     ) {
-        this.target = target;
-        this.property = property;
         this.label = new Label(parent);
         this.label.legend(labelText);
 
@@ -43,14 +39,12 @@ export class ControlWidget<PRIM> {
         ////////////////////////////
         // Set up event listeners //
         control.element.addEventListener('input', () => {
-            const value = control.value;
-            this.target[this.property] = value;
+            const value = this.update();
             this.onInputCallback?.(value);
         });
 
         control.element.addEventListener('change', () => {
-            const value = control.value;
-            this.target[this.property] = value;
+            const value = this.update();
             this.onChangeCallback?.(value);
         });
 
@@ -85,5 +79,12 @@ export class ControlWidget<PRIM> {
     onInput(callback: (value: PRIM) => void): this {
         this.onInputCallback = callback;
         return this;
+    }
+
+    private update(): PRIM {
+        const value = this.control.value;
+        this.target[this.property] = value;
+        this.control.update(value);
+        return value;
     }
 }
