@@ -125,6 +125,26 @@ export class Style {
         };
     }
 
+    static deckArrowLeft() {
+        return {
+            ...this.deckArrow(),
+            left: '0',
+            top: '0',
+            bottom: '0',
+            background: 'linear-gradient(90deg, rgba(20,25,35,0.9) 0%, rgba(20,25,35,0) 100%)',
+        };
+    }
+
+    static deckArrowRight() {
+        return {
+            ...this.deckArrow(),
+            right: '0',
+            top: '0',
+            bottom: '0',
+            background: 'linear-gradient(270deg, rgba(20,25,35,0.9) 0%, rgba(20,25,35,0) 100%)',
+        };
+    }
+
     static cardButton() {
         return {
             padding: '0 4px',
@@ -134,6 +154,20 @@ export class Style {
             color: this.colors.label,
             background: this.colors.inputBg,
             whiteSpace: 'nowrap',
+        };
+    }
+
+    static cardHighlight() {
+        return {
+            backgroundColor: this.colors.inputBg,
+            border: `2px solid ${this.colors.param}`,
+        };
+    }
+
+    static cardLowlight() {
+        return {
+            backgroundColor: '',
+            border: `1px solid ${this.colors.input}`,
         };
     }
 
@@ -184,6 +218,25 @@ export class Style {
         };
     }
 
+    static checkboxIndicator(): string {
+        const props = {
+            content: '""',
+            position: 'absolute',
+            left: '4px',
+            top: '1px',
+            width: '4px',
+            height: '7px',
+            border: `solid ${this.colors.param}`,
+            'border-width': '0 2px 2px 0',
+            transform: 'rotate(45deg)'
+        };
+
+        const cssString = Object.entries(props)
+            .map(([key, value]) => `\n${key}:${value}`)
+            .join(';');
+        return `input[type="checkbox"]:checked::before{${cssString}}`;
+    }
+
     static numberInput() {
         return {
             width: '100%',
@@ -193,6 +246,14 @@ export class Style {
             color: this.colors.param,
             height: '16px',
             boxSizing: 'border-box',
+        };
+    }
+
+    static rangeControlContainer() {
+        return {
+            display: 'flex',
+            alignItems: 'center',
+            width: '100%',
         };
     }
 
@@ -227,6 +288,13 @@ export class Style {
             color: this.colors.param,
             padding: '0',
             fontSize: '10px',
+        };
+    }
+
+    static graphBox() {
+        return {
+            flexDirection: 'column',
+            alignItems: 'flex-start',
         };
     }
 

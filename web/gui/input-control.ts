@@ -77,7 +77,7 @@ export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
     private format: (v: number) => number = (v) => v;
 
     constructor(parent: HTMLElement, initial: number, min: number, max: number, step: number) {
-        super('div', parent, { display: 'flex', alignItems: 'center', width: '100%' });
+        super('div', parent, Style.rangeControlContainer());
 
         this.slider = spawn<HTMLInputElement>('input', this.elt, Style.rangeInput());
         this.slider.type = 'range';

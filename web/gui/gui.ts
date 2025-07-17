@@ -1,4 +1,4 @@
-import { colors, HtmlCssElement, spawn } from "./html.js";
+import { HtmlCssElement, spawn } from "./html.js";
 import { BooleanWidget, NumberWidget, RangeWidget, ReadOnlyWidget, SelectWidget } from './parameters.js';
 import { Style } from "./style.js";
 import { GraphWidget } from "./widget.js";
@@ -130,24 +130,9 @@ class Folder extends Panel {
         super(parent);
 
         const isNested = parent.closest('details') !== null;
-        const left = 6;
-
-        this.#details = spawn('details', parent, {
-            marginTop: '4px',
-            padding: '0',
-            paddingLeft: isNested ? `${left}px` : '0',
-        });
-        spawn('summary', this.#details, {
-            cursor: 'pointer',
-            fontWeight: 600,
-            padding: '4px 0',
-            marginLeft: isNested ? `-${left}px` : '0',
-            paddingLeft: isNested ? `${left - 2}px` : '0',
-        }).textContent = title;
-        const content = spawn('div', this.#details, {
-            borderLeft: isNested ? `3px solid ${colors.border}` : 'none',
-            paddingLeft: isNested ? `${left}px` : '0',
-        });
+        this.#details = spawn('details', parent, Style.folder(isNested));
+        spawn('summary', this.#details, Style.folderSummary(isNested)).textContent = title;
+        const content = spawn('div', this.#details, Style.folderContent(isNested));
 
         this.#details.open = true;
         this._elt.style.paddingLeft = '0';
@@ -179,33 +164,14 @@ class Deck extends Panel {
 
     constructor(parent: HTMLElement) {
         super(parent);
-        this._elt.css({
-            marginTop: '6px',
-            display: 'flex',
-            flexDirection: 'column',
-        });
+        this._elt.css(Style.deck());
 
         this.headerContainer = spawn('div', this._elt, Style.deckHeaderContainer());
         this.headerBar = spawn('div', this.headerContainer, Style.deckHeaderBar());
 
         // Show "arrows" on the left and right of the bar to indicate scrollability.
-        const arrow = {
-            position: 'absolute',
-            width: '32px',
-            pointerEvents: 'none',
-            opacity: 0,
-            transition: 'opacity 0.2s',
-        }
-        const arrowback = (deg: number) => `linear-gradient(${deg}deg, rgba(20,25,35,0.9) 0%, rgba(20,25,35,0) 100%)`;
-
-        this.leftArrow = spawn('div', this.headerContainer, Object.assign({
-            left: 0, top: 0, bottom: 0,
-            background: arrowback(90),
-        }, arrow));
-        this.rightArrow = spawn('div', this.headerContainer, Object.assign({
-            right: 0, top: 0, bottom: 0,
-            background: arrowback(270),
-        }, arrow));
+        this.leftArrow = spawn('div', this.headerContainer, Style.deckArrowLeft());
+        this.rightArrow = spawn('div', this.headerContainer, Style.deckArrowRight());
 
         this.headerBar.addEventListener('scroll', () => this._updateArrows());
         this.headerBar.addEventListener('wheel', (e: WheelEvent) => {
@@ -248,7 +214,7 @@ class Deck extends Panel {
 class Card extends Panel {
     name: string;                             // Displayed name of the card.
     private _deck: Deck;                      // The window to which the tab is attached.
-    private _button: HTMLElement;             // The clickable tab sitting in the header bar.
+    private _button: HtmlCssElement;             // The clickable tab sitting in the header bar.
     private _onClick: ((card: Card) => void); // Callback for the card click event.
 
     constructor(deck: Deck, name: string) {
@@ -265,14 +231,12 @@ class Card extends Panel {
 
     // Highlight the header, putting an accent color on its border.
     highlight() {
-        this._button.style.backgroundColor = colors.inputBg;
-        this._button.style.border = `2px solid ${colors.param}`;
+        this._button.css(Style.cardHighlight());
     }
 
     // Lowlight the header, enforcing a plain border.
     lowlight() {
-        this._button.style.backgroundColor = '';
-        this._button.style.border = `1px solid ${colors.input}`;
+        this._button.css(Style.cardLowlight());
     }
 
     // Show the content.

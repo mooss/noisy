@@ -13,10 +13,8 @@ export class GraphWidget extends Label {
         this.ctx = this.canvas.getContext('2d');
 
         // Put the label on top of the graph (instead of putting it left).
-        this.box.style.flexDirection = 'column';
-        this.box.style.alignItems = 'flex-start';
-        this.label.style.marginBottom = '4px';
-        this.label.style.cursor = 'pointer';
+        this.box.css(Style.graphBox());
+        this.label.css(Style.graphLabel());
 
         // Toggle graph visibility when label is clicked
         this.label.addEventListener('click', () => {

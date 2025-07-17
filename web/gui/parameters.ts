@@ -1,6 +1,6 @@
 import { ControlWidget } from "./control-widget.js";
 import { Label } from './foundations.js';
-import { colors, HtmlCssElement, spawn } from "./html.js";
+import { HtmlCssElement, spawn } from "./html.js";
 import { BooleanControl, NumberControl, RangeControl, SelectControl } from "./input-control.js";
 import { Style } from './style.js';
 
@@ -10,29 +10,9 @@ export function BooleanWidget(
     const control = new BooleanControl(parent, target[property]);
 
     const checkbox = control.element;
-    checkbox.style.margin = '0';
-    checkbox.style.appearance = 'none';
-    checkbox.style.width = '14px';
-    checkbox.style.height = '14px';
-    checkbox.style.backgroundColor = colors.inputBg;
-    checkbox.style.border = `1px solid ${colors.input}`;
-    checkbox.style.position = 'relative';
-    checkbox.style.cursor = 'pointer';
-
+    checkbox.css(Style.checkbox());
     const style = spawn('style', document.head);
-    style.textContent = `
-        input[type="checkbox"]:checked::before {
-            content: '';
-            position: absolute;
-            left: 4px;
-            top: 1px;
-            width: 4px;
-            height: 7px;
-            border: solid ${colors.param};
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
-        }
-    `;
+    style.textContent = Style.checkboxIndicator();
 
     return new ControlWidget(parent, target, property, control);
 }
