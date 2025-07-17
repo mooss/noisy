@@ -3,9 +3,6 @@ import { InputControl } from "./input-control.js";
 import { spawn } from "./html.js";
 import { Style } from "./style.js";
 
-//TODO: align params in doc.
-//TODO: finish all comments with a dot.
-
 /**
  * A widget that composes a Label and an InputControl together in the DOM, orchestrating value
  * binding, event listening, and initial layout.
@@ -17,11 +14,12 @@ export class ControlWidget<PRIM> {
 
     /**
      * Creates a new ControlWidget instance.
-     * @param parent The parent DOM element
-     * @param target The target object to bind to
-     * @param property The property name to bind to
-     * @param labelText The label text
-     * @param control The InputControl instance to use
+     *
+     * @param parent    - The parent DOM element.
+     * @param target    - The target object to bind to.
+     * @param property  - The property name to bind to.
+     * @param labelText - The label text.
+     * @param control   - The InputControl instance to use.
      */
     constructor(
         parent: HTMLElement,
@@ -52,8 +50,9 @@ export class ControlWidget<PRIM> {
 
     /**
      * Sets the label text.
-     * @param text The new label text
-     * @returns this for chaining
+     *
+     * @param text - The new label text.
+     * @returns this for chaining.
      */
     legend(text: string): this {
         this.label.legend(text);
@@ -62,8 +61,9 @@ export class ControlWidget<PRIM> {
 
     /**
      * Registers a callback for change events.
-     * @param callback Function to call when the value changes
-     * @returns this for chaining
+     *
+     * @param callback - Function to call when the value changes.
+     * @returns this for chaining.
      */
     onChange(callback: (value: PRIM) => void): this {
         this.onChangeCallback = callback;
@@ -72,8 +72,9 @@ export class ControlWidget<PRIM> {
 
     /**
      * Registers a callback for input events.
-     * @param callback Function to call when the value changes during input
-     * @returns this for chaining
+     *
+     * @param callback - Function to call when the value changes during input.
+     * @returns this for chaining.
      */
     onInput(callback: (value: PRIM) => void): this {
         this.onInputCallback = callback;

@@ -7,8 +7,8 @@ interface StyleColors {
     text: string;
 }
 
-export interface StyleRecord {
-  [k: string]: string | number | StyleRecord;
+export interface CssProperties {
+  [k: string]: string | number | CssProperties;
 }
 
 export class Style {
@@ -21,7 +21,7 @@ export class Style {
         text: 'lightgray',
     };
 
-    static gui() {
+    static gui(): CssProperties {
         return {
             position: 'absolute',
             top: '8px',
@@ -38,7 +38,7 @@ export class Style {
         };
     }
 
-    static collapsibleBar() {
+    static collapsibleBar(): CssProperties {
         return {
             height: '4px',
             width: '100%',
@@ -50,7 +50,7 @@ export class Style {
         };
     }
 
-    static title() {
+    static title(): CssProperties {
         return {
             textAlign: 'center',
             fontWeight: 'bold',
@@ -61,7 +61,7 @@ export class Style {
         };
     }
 
-    static folder(isNested: boolean) {
+    static folder(isNested: boolean): CssProperties {
         const left = 6;
         return {
             marginTop: '4px',
@@ -70,7 +70,7 @@ export class Style {
         };
     }
 
-    static folderSummary(isNested: boolean) {
+    static folderSummary(isNested: boolean): CssProperties {
         const left = 6;
         return {
             cursor: 'pointer',
@@ -81,7 +81,7 @@ export class Style {
         };
     }
 
-    static folderContent(isNested: boolean) {
+    static folderContent(isNested: boolean): CssProperties {
         const left = 6;
         return {
             borderLeft: isNested ? `3px solid ${this.colors.border}` : 'none',
@@ -89,7 +89,7 @@ export class Style {
         };
     }
 
-    static deck() {
+    static deck(): CssProperties {
         return {
             marginTop: '6px',
             display: 'flex',
@@ -97,7 +97,7 @@ export class Style {
         };
     }
 
-    static deckHeaderContainer() {
+    static deckHeaderContainer(): CssProperties {
         return {
             position: 'relative',
             backgroundColor: this.colors.inputBg,
@@ -105,7 +105,7 @@ export class Style {
         };
     }
 
-    static deckHeaderBar() {
+    static deckHeaderBar(): CssProperties {
         return {
             display: 'flex',
             overflowX: 'auto',
@@ -115,7 +115,7 @@ export class Style {
         };
     }
 
-    static deckArrow() {
+    static deckArrow(): CssProperties {
         return {
             position: 'absolute',
             width: '32px',
@@ -125,7 +125,7 @@ export class Style {
         };
     }
 
-    static deckArrowLeft() {
+    static deckArrowLeft(): CssProperties {
         return {
             ...this.deckArrow(),
             left: '0',
@@ -135,7 +135,7 @@ export class Style {
         };
     }
 
-    static deckArrowRight() {
+    static deckArrowRight(): CssProperties {
         return {
             ...this.deckArrow(),
             right: '0',
@@ -145,7 +145,7 @@ export class Style {
         };
     }
 
-    static cardButton() {
+    static cardButton(): CssProperties {
         return {
             padding: '0 4px',
             textAlign: 'center',
@@ -157,21 +157,21 @@ export class Style {
         };
     }
 
-    static cardHighlight() {
+    static cardHighlight(): CssProperties {
         return {
             backgroundColor: this.colors.inputBg,
             border: `2px solid ${this.colors.param}`,
         };
     }
 
-    static cardLowlight() {
+    static cardLowlight(): CssProperties {
         return {
             backgroundColor: '',
             border: `1px solid ${this.colors.input}`,
         };
     }
 
-    static label() {
+    static label(): CssProperties {
         return {
             display: 'flex',
             alignItems: 'center',
@@ -179,7 +179,7 @@ export class Style {
         };
     }
 
-    static labelText() {
+    static labelText(): CssProperties {
         return {
             flex: '1',
             marginRight: '8px',
@@ -187,7 +187,7 @@ export class Style {
         };
     }
 
-    static paramValueContainer() {
+    static paramValueContainer(): CssProperties {
         return {
             width: '110px',
             display: 'flex',
@@ -195,7 +195,7 @@ export class Style {
         };
     }
 
-    static input() {
+    static input(): CssProperties {
         return {
             color: this.colors.param,
             padding: '0',
@@ -204,7 +204,7 @@ export class Style {
         };
     }
 
-    static checkbox() {
+    static checkbox(): CssProperties {
         return {
             margin: 0,
             appearance: 'none',
@@ -237,7 +237,7 @@ export class Style {
         return `input[type="checkbox"]:checked::before{${cssString}}`;
     }
 
-    static numberInput() {
+    static numberInput(): CssProperties {
         return {
             width: '100%',
             background: 'rgba(45, 55, 72, 0.8)',
@@ -249,7 +249,7 @@ export class Style {
         };
     }
 
-    static rangeControlContainer() {
+    static rangeControlContainer(): CssProperties {
         return {
             display: 'flex',
             alignItems: 'center',
@@ -257,7 +257,7 @@ export class Style {
         };
     }
 
-    static rangeInput() {
+    static rangeInput(): CssProperties {
         return {
             width: '100%',
             height: '16px',
@@ -270,14 +270,14 @@ export class Style {
         };
     }
 
-    static rangeValueSpan() {
+    static rangeValueSpan(): CssProperties {
         return {
             width: '40px',
             marginLeft: '5px',
         };
     }
 
-    static selectInput() {
+    static selectInput(): CssProperties {
         return {
             width: '100%',
             background: this.colors.inputBg,
@@ -291,14 +291,14 @@ export class Style {
         };
     }
 
-    static graphBox() {
+    static graphBox(): CssProperties {
         return {
             flexDirection: 'column',
             alignItems: 'flex-start',
         };
     }
 
-    static graphCanvas() {
+    static graphCanvas(): CssProperties {
         return {
             width: '100%',
             height: '80px',
@@ -306,7 +306,7 @@ export class Style {
         };
     }
 
-    static graphLabel() {
+    static graphLabel(): CssProperties {
         return {
             marginBottom: '4px',
             cursor: 'pointer',

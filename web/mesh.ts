@@ -1,13 +1,13 @@
 import * as THREE from 'three';
-import { interpolateColors } from './utils';
-import type { HeightGenerator } from './terrain';
-import type { Palette } from './config/render';
+import { interpolateColors } from './utils.js';
+import type { HeightGenerator } from './terrain.js';
+import { Palette } from './palettes.js';
 
 /**
  * Creates a hexagonal extruded prism.
- * @param {number} radius - The radius of the hexagon.
- * @param {number} height - The height of the extrusion.
- * @returns {THREE.ExtrudeGeometry} The generated geometry.
+ * @param radius - The radius of the hexagon.
+ * @param height - The height of the extrusion.
+ * @returns The generated geometry.
  */
 function _createHexagonGeometry(radius: number, height: number): THREE.ExtrudeGeometry {
     const shape = new THREE.Shape();
@@ -50,9 +50,9 @@ function surfaceIndices(size: number): number[] {
 /**
  * Creates a surface mesh from a height field.
  *
- * @param {HeightGenerator}  heights  - Terrain data.
- * @param {Array}            palette  - Color palette for height-based interpolation.
- * @returns {THREE.Mesh} The generated surface mesh.
+ * @param heights - Terrain data.
+ * @param palette - Color palette for height-based interpolation.
+ * @returns The generated surface mesh.
  */
 export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
     let { nblocks } = heights;
@@ -101,10 +101,10 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
 /**
  * Creates prism meshes (hexagonal or square) from a height field.
  *
- * @param {string}          type    - Shape of the prism ('hexagon' or 'square').
- * @param {HeightGenerator} heights - Terrain data.
- * @param {Array}           palette - Color palette for height-based interpolation
- * @returns {THREE.Mesh} The generated prism mesh.
+ * @param type    - Shape of the prism ('hexagon' or 'square').
+ * @param heights - Terrain data.
+ * @param palette - Color palette for height-based interpolation
+ * @returns The generated prism mesh.
  */
 function createPrismMeshes(type: 'hexagon'|'square', heights: HeightGenerator, palette: Palette): THREE.Mesh {
     const { nblocks } = heights;
@@ -163,10 +163,10 @@ function createPrismMeshes(type: 'hexagon'|'square', heights: HeightGenerator, p
     return new THREE.Mesh(mergedGeometry, new THREE.MeshStandardMaterial({ vertexColors: true }));
 }
 
-export function createHexagonMesh(heights, palette) {
+export function createHexagonMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
     return createPrismMeshes('hexagon', heights, palette);
 }
 
-export function createSquareMesh(heights, palette) {
+export function createSquareMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
     return createPrismMeshes('square', heights, palette);
 }

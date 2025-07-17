@@ -1,17 +1,31 @@
-import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh';
-import { palettes } from '../palettes';
+import * as THREE from 'three';
+import { Panel } from '../gui/gui.js';
+import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh.js';
+import { palettes } from '../palettes.js';
+import { HeightGenerator } from '../terrain.js';
+
+interface LightConfig {
+    ambient: { intensity: number };
+    directional: { intensity: number };
+}
+
+type RenderStyle = 'surface' | 'quadPrism' | 'hexPrism';
 
 export class RenderConfig {
+    style: RenderStyle;
+    paletteName: string;
+    light: LightConfig;
+
     constructor() {
         this.style = 'surface';              // How the terrain is rendered.
         this.paletteName = 'Bright terrain'; // Name of the color palette to use.
         this.light = {
-            ambient: {intensity: .5},
-            directional: {intensity: 4},
+            ambient: { intensity: .5 },
+            directional: { intensity: 4 },
         }
     }
 
-    ui(parent, update) {
+    ui(parent: Panel, update: () => void): void {
         parent.select(this, 'style', {
             'Surface': 'surface',
             'Squares': 'quadPrism',
@@ -28,16 +42,15 @@ export class RenderConfig {
             .legend('Directional Light').onChange(update);
     }
 
-    get palette() { return palettes[this.paletteName]; }
-    mesh(heights) {
+    get palette(): THREE.Color[] { return palettes[this.paletteName]; }
+    mesh(heights: HeightGenerator): THREE.Mesh {
         switch (this.style) {
-        case 'hexPrism':
-            return createHexagonMesh(heights, this.palette);
-        case 'quadPrism':
-            return createSquareMesh(heights, this.palette);
-        case 'surface':
-            return createSurfaceMesh(heights, this.palette);
+            case 'hexPrism':
+                return createHexagonMesh(heights, this.palette);
+            case 'quadPrism':
+                return createSquareMesh(heights, this.palette);
+            case 'surface':
+                return createSurfaceMesh(heights, this.palette);
         }
-        throw new Error(`Unknown render style ${style}`);
     }
 }

@@ -1,24 +1,31 @@
-import { Avatar } from './avatar';
-import { AvatarConfig } from './config/avatar';
-import { ChunkConfig } from './config/chunk';
-import { GenerationConfig } from './config/generation';
-import { RenderConfig } from './config/render';
-import { CHUNK_UNIT } from './constants';
-import { GUI } from './gui/gui';
-import { Renderer } from './renderer';
-import { numStats } from './stats';
-import { Terrain } from './terrain';
-import { FpsWidget, Keyboard } from './ui';
+import { Avatar } from './avatar.js';
+import { AvatarConfig } from './config/avatar.js';
+import { ChunkConfig } from './config/chunk.js';
+import { GenerationConfig } from './config/generation.js';
+import { RenderConfig } from './config/render.js';
+import { CHUNK_UNIT } from './constants.js';
+import { GUI } from './gui/gui.js';
+import { Renderer } from './renderer.js';
+import { numStats } from './stats.js';
+import { Terrain } from './terrain.js';
+import { FpsWidget, Keyboard } from './ui.js';
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
-    terrain = null;
-    avatar = null;
-    renderer = null;
-    gui = null;
-    fps = null;
-    keyboard = null;
-    updateStats = () => { };
+    terrain: Terrain;
+    avatar: Avatar;
+    renderer: Renderer;
+    gui: GUI;
+    fps: FpsWidget;
+    keyboard: Keyboard;
+    updateStats: () => void = () => { };
+
+    config: {
+        chunks: ChunkConfig;
+        gen: GenerationConfig;
+        avatar: AvatarConfig;
+        render: RenderConfig;
+    };
 
     constructor() {
         this.config = {
@@ -29,7 +36,7 @@ class Game {
         };
     }
 
-    start() {
+    start(): void {
         this.terrain = new Terrain(this.config.chunks, this.config.gen, this.config.render);
         this.avatar = new Avatar();
 
@@ -44,7 +51,7 @@ class Game {
         this.startAnimationLoop();
     }
 
-    setupUI() {
+    setupUI(): void {
         this.gui = new GUI({ left: '8px' }).collapsible();
         this.fps = new FpsWidget(this.gui);
 
@@ -69,17 +76,17 @@ class Game {
         );
     }
 
-    setupAvatarPosition() {
+    setupAvatarPosition(): void {
         this.avatar.x = .5;
         this.avatar.y = .5;
         this.avatar.z = 0;
     }
 
-    startAnimationLoop() {
+    startAnimationLoop(): void {
         this.renderer.render(); // Render at least once if out of focus.
         let prev = performance.now();
 
-        const animate = () => {
+        const animate = (): void => {
             requestAnimationFrame(animate);
             const now = performance.now();
             this.onFrame((now - prev) / 1000);
@@ -90,7 +97,7 @@ class Game {
         animate();
     }
 
-    onFrame(delta) {
+    onFrame(delta: number): void {
         this.fps.update(delta);
         this.keyboard.checkFocus();
         if (this.avatar.update(delta, this.keyboard)) {
@@ -98,7 +105,7 @@ class Game {
         }
     }
 
-    updateAvatar() {
+    updateAvatar(): void {
         this.terrain.centerOn(this.avatar.coords);
         this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.config.avatar.heightOffset;
         this.avatar.reposition(CHUNK_UNIT, this.config.gen.verticalUnit);
@@ -109,25 +116,25 @@ class Game {
         }
     }
 
-    regenerateTerrain() {
+    regenerateTerrain(): void {
         this.terrain.regen();
         this.renderer.updateLighting();
         this.updateAvatar();
         this.updateStats();
     }
 
-    reloadTerrain() {
+    reloadTerrain(): void {
         this.terrain.reload();
     }
 
-    setupStatsGraph() {
+    setupStatsGraph(): void {
         const heightGraph = this.gui.graph().legend("Sorted heights in active chunk");
         const heightStats = this.gui.readOnly('').legend('Height stats');
         const zScoreGraph = this.gui.graph().legend("Z-scores of the sorted heights").close();
 
-        this.updateStats = () => {
-            const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk(this.config.chunks.nblocks))
-            const heights = [];
+        this.updateStats = (): void => {
+            const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk());
+            const heights: number[] = [];
             for (let i = 0; i < this.config.chunks.nblocks; ++i)
                 for (let j = 0; j < this.config.chunks.nblocks; ++j)
                     heights.push(heightfun(i / this.config.chunks.nblocks, j / this.config.chunks.nblocks));
@@ -144,7 +151,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     }
 }
 
-function main() {
+function main(): void {
     const game = new Game();
     game.start();
 }

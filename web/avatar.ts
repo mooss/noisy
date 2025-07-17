@@ -1,13 +1,12 @@
-import { Position } from "./coordinates";
+import { Position } from "./coordinates.js";
 import * as THREE from 'three';
-import { Keyboard } from './ui';
+import { Keyboard } from './ui.js';
 
 export class Avatar {
-    /** @type {Position} World position of the avatar. */
-    coords = new Position();
-    /** @type {THREE.Mesh} */
-    mesh;
-    speed = .5; // Units per second.
+    // World position of the avatar.
+    coords: Position = new Position(0, 0, 0);
+    mesh: THREE.Mesh;
+    speed: number = .5; // Units per second.
 
     constructor() {
         const geometry = new THREE.SphereGeometry(1, 32, 32);
@@ -38,10 +37,10 @@ export class Avatar {
         this.mesh.scale.set(scale, scale, scale);
     }
 
-    get x() { return this.coords.x; }
-    get y() { return this.coords.y; }
-    get z() { return this.coords.z; }
-    set x(value) { this.coords.x = value; }
-    set y(value) { this.coords.y = value; }
-    set z(value) { this.coords.z = value; }
+    get x(): number { return this.coords.x; }
+    get y(): number { return this.coords.y; }
+    get z(): number { return this.coords.z; }
+    set x(value: number) { this.coords.x = value; }
+    set y(value: number) { this.coords.y = value; }
+    set z(value: number) { this.coords.z = value; }
 }

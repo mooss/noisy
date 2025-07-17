@@ -3,9 +3,9 @@ import { Label } from "./foundations.js";
 import { Style } from "./style.js";
 
 export class GraphWidget extends Label {
-    canvas: HtmlCssElement<HTMLCanvasElement>;
-    ctx: CanvasRenderingContext2D;
-    values: number[] = [];
+    private canvas: HtmlCssElement<HTMLCanvasElement>;
+    private ctx: CanvasRenderingContext2D;
+    private values: number[] = [];
 
     constructor(parent: HTMLElement) {
         super(parent);
@@ -18,34 +18,34 @@ export class GraphWidget extends Label {
 
         // Toggle graph visibility when label is clicked
         this.label.addEventListener('click', () => {
-            this.#visible(!this.opened())
-            if (this.opened()) this.#draw();
+            this.visible(!this.opened())
+            if (this.opened()) this.draw();
         });
     }
 
-    get width():  number { return this.canvas.clientWidth }
-    get height(): number { return this.canvas.clientHeight }
+    private get width():  number { return this.canvas.clientWidth }
+    private get height(): number { return this.canvas.clientHeight }
 
     /** Updates the plot with new data points. */
     update(values: number[]): void {
         this.values = values;
-        this.#draw();
+        this.draw();
     }
 
-    #visible(show: boolean): void {
+    visible(show: boolean): void {
         this.canvas.style.display = show ? '': 'none';
         this.label.style.textDecoration = show ? 'none': 'underline';
     }
 
-    close():  GraphWidget { this.#visible(false); return this; }
-    open():   GraphWidget { this.#visible(true); this.#draw(); return this; }
+    close():  GraphWidget { this.visible(false); return this; }
+    open():   GraphWidget { this.visible(true); this.draw(); return this; }
     opened(): boolean     { return this.canvas.style.display === '' }
 
     /////////////////////////////
     // Private drawing methods //
 
     /** Draws the plot (graph and ticks). */
-    #draw(): void {
+    private draw(): void {
         if (this.values.length <= 1) { console.error("Cannot draw", this.values); return; }
         this.canvas.width = this.width;
         this.canvas.height = this.height;
@@ -54,12 +54,12 @@ export class GraphWidget extends Label {
         const range = max - min || 1;
 
         this.ctx.clearRect(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
-        this.#drawTicks(min, max, range);
-        this.#drawGraph(min, range);
+        this.drawTicks(min, max, range);
+        this.drawGraph(min, range);
     }
 
     /** Draws the graph line. */
-    #drawGraph(min: number, range: number): void {
+    private drawGraph(min: number, range: number): void {
         const ctx = this.ctx;
         ctx.strokeStyle = colors.param;
         ctx.lineWidth = 1;
@@ -74,14 +74,14 @@ export class GraphWidget extends Label {
     }
 
     /** Draws horizontal tick marks and labels for the Y axis. */
-    #drawTicks(min: number, max: number, range: number): void {
+    private drawTicks(min: number, max: number, range: number): void {
         const ctx = this.ctx;
         ctx.fillStyle = colors.label;
         ctx.font = '8px sans-serif';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
 
-        const tickRange = this.#calculateTickRange(min, max);
+        const tickRange = this.calculateTickRange(min, max);
         const step = tickRange.step;
         let tick = Math.ceil(min / step) * step;
 
@@ -101,7 +101,7 @@ export class GraphWidget extends Label {
     }
 
     /** Calculates optimal tick spacing and precision for the Y axis. */
-    #calculateTickRange(min: number, max: number): { step: number; precision: number } {
+    private calculateTickRange(min: number, max: number): { step: number; precision: number } {
         const range = max - min;
         const magnitude = Math.pow(10, Math.floor(Math.log10(range)));
         const step = magnitude * (range / magnitude < 2 ? 0.2 : range / magnitude < 5 ? 0.5 : 1);

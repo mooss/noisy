@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-type Palette = THREE.Color[];
+export type Palette = THREE.Color[];
 
 function rgb(r: number, g: number, b: number): THREE.Color {
     return new THREE.Color().setRGB(r/255, g/255, b/255, THREE.SRGBColorSpace);

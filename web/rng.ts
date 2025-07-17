@@ -67,7 +67,7 @@ function mkWarped(
  * @param warpStrength - The magnitude of the warp effect.
  * @returns A function that returns simplex noise at (x,y).
  */
-export function mkSimplex(seed: number, warpStrength: number) {
+export function mkSimplex(seed: number, warpStrength: number): (x: number, y: number) => number {
     const noise = createNoise2D(createLCG(seed));
 	const warpx = createNoise2D(createLCG(seed + 1));
     return mkWarped(noise, warpx, warpStrength);

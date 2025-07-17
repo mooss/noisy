@@ -1,18 +1,13 @@
-import type { Panel } from '../gui/gui';
-import type { InputParam } from '../gui/parameters';
+import type { Panel } from '../gui/gui.js';
 
 type CameraMode = 'Follow' | 'Free';
 
 export class AvatarConfig {
-    size: number;              // Avatar sphere radius (cell size multiplier).
-    heightOffset: number;      // How high above the terrain the avatar floats (cell size multiplier).
-    cameraMode: CameraMode;    // Camera mode: 'Free' or 'Follow'.
+    size: number = 3;                  // Avatar sphere radius (cell size multiplier).
+    heightOffset: number = 0;          // How high above the terrain the avatar floats (cell size multiplier).
+    cameraMode: CameraMode = 'Follow'; // Camera mode: 'Free' or 'Follow'.
 
-    constructor() {
-        this.size = 3;
-        this.heightOffset = 0;
-        this.cameraMode = 'Follow';
-    }
+    constructor() { }
 
     ui(parent: Panel, update: () => void): void {
         parent.range(this, 'size', 1, 10, 1)

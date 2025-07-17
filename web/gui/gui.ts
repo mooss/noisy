@@ -1,6 +1,7 @@
+import { ControlWidget } from "./control-widget.js";
 import { HtmlCssElement, spawn } from "./html.js";
-import { BooleanWidget, NumberWidget, RangeWidget, ReadOnlyWidget, SelectWidget } from './parameters.js';
-import { Style } from "./style.js";
+import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, ReadOnly, ReadOnlyWidget, SelectWidget } from './parameters.js';
+import { Style, CssProperties } from "./style.js";
 import { GraphWidget } from "./widget.js";
 
 /////////////////
@@ -13,47 +14,51 @@ export class Panel {
     /**
      * The main container element for the panel.
      */
-    _elt: HtmlCssElement;
+    _elt: HtmlCssElement<HTMLDivElement>;
 
     /**
      * Creates a new Panel instance.
      */
-    constructor(parent: HTMLElement, style?: Record<string, string | number>) {
+    constructor(parent: HTMLElement, style?: CssProperties) {
         this._elt = spawn('div', parent, style);
     }
 
     /////////////////////////////
     // Parameters registration //
 
-    bool(target: Record<string, boolean>, property: string) {
+    bool(target: Record<string, any>, property: string): ControlWidget<boolean> {
         return BooleanWidget(this._elt, target, property);
     }
 
-    folder(name: string) {
+    folder(name: string): Folder {
         return new Folder(name, this._elt);
     }
 
-    deck() {
+    deck(): Deck {
         return new Deck(this._elt);
     }
 
-    graph() {
+    graph(): GraphWidget {
         return new GraphWidget(this._elt);
     }
 
-    number(target: Record<string, number>, property: string) {
+    number(target: Record<string, any>, property: string): ControlWidget<number> {
         return NumberWidget(this._elt, target, property);
     }
 
-    range(target: Record<string, number>, property: string, min: number, max: number, step: number) {
+    range(
+        target: Record<string, any>, property: string, min: number, max: number, step: number,
+    ): RangeControlWidget {
         return RangeWidget(this._elt, target, property, min, max, step);
     }
 
-    readOnly(content: any) {
+    readOnly(content: any): ReadOnly {
         return ReadOnlyWidget(this._elt, content);
     }
 
-    select(target: Record<string, any>, property: string, options: Record<string, any>) {
+    select(
+        target: Record<string, any>, property: string, options: Record<string, any>,
+    ): ControlWidget<any> {
         return SelectWidget(this._elt, target, property, options);
     }
 }
@@ -139,10 +144,10 @@ class Folder extends Panel {
         content.appendChild(this._elt); // Doesn't display properly without this.
     }
 
-    show() { this.#details.style.display = ''; return this; }
-    hide() { this.#details.style.display = 'none'; return this; }
-    open() { this.#details.open = true; return this; }
-    close() { this.#details.open = false; return this; }
+    show(): this { this.#details.style.display = ''; return this; }
+    hide(): this { this.#details.style.display = 'none'; return this; }
+    open(): this { this.#details.open = true; return this; }
+    close(): this { this.#details.open = false; return this; }
 }
 
 ////////////////////
@@ -152,7 +157,7 @@ class Folder extends Panel {
  * An array of cards that can be focused one at a time.
  * Meant to be used as a tabbing system.
  */
-class Deck extends Panel {
+export class Deck extends Panel {
     focusedCard: Card        // The card that is currently focused.
     _container: HTMLElement; // Where the parameters of the focused card are displayed.
     cards: Card[] = [];      // All the Cards contained in this Deck.
@@ -184,7 +189,7 @@ class Deck extends Panel {
     }
 
     // Create a new card.
-    card(name: string) {
+    card(name: string): Card {
         const card = new Card(this, name);
         if (!this.focusedCard) card.focus(); // Focus the first card.
         this._updateArrows();
@@ -201,7 +206,7 @@ class Deck extends Panel {
     }
 
     // Change the focused card and return the previously focused card.
-    changeFocus(card: Card) {
+    changeFocus(card: Card): Card {
         const res = this.focusedCard;
         this.focusedCard = card;
         return res;
@@ -212,10 +217,10 @@ class Deck extends Panel {
  * Part of a Deck, essentially a focusable Panel with a title.
  */
 class Card extends Panel {
-    name: string;                             // Displayed name of the card.
-    private _deck: Deck;                      // The window to which the tab is attached.
-    private _button: HtmlCssElement;             // The clickable tab sitting in the header bar.
-    private _onClick: ((card: Card) => void); // Callback for the card click event.
+    name: string;                           // Displayed name of the card.
+    private _deck: Deck;                    // The window to which the tab is attached.
+    private _button: HtmlCssElement;        // The clickable tab sitting in the header bar.
+    private _onClick: (card: Card) => void; // Callback for the card click event.
 
     constructor(deck: Deck, name: string) {
         super(deck._container);
@@ -230,21 +235,21 @@ class Card extends Panel {
     }
 
     // Highlight the header, putting an accent color on its border.
-    highlight() {
+    highlight(): void {
         this._button.css(Style.cardHighlight());
     }
 
     // Lowlight the header, enforcing a plain border.
-    lowlight() {
+    lowlight(): void {
         this._button.css(Style.cardLowlight());
     }
 
     // Show the content.
-    show() { this._elt.style.display = '' }
+    show(): void { this._elt.style.display = '' }
     // Hide the content.
-    hide() { this._elt.style.display = 'none' }
+    hide(): void { this._elt.style.display = 'none' }
 
-    focus() {
+    focus(): Card {
         const old = this._deck.changeFocus(this);
         if (old) {
             old.lowlight();
@@ -256,5 +261,5 @@ class Card extends Panel {
         return this;
     }
 
-    onClick(fun: (card: Card) => void) { this._onClick = fun; return this; }
+    onClick(fun: (card: Card) => void): this { this._onClick = fun; return this; }
 }
