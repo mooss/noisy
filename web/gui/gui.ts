@@ -254,14 +254,14 @@ class Deck extends Panel {
  * Part of a Deck, essentially a focusable Panel with a title.
  */
 class Card extends Panel {
-    #deck;    // The window to which the tab is attached.
-    _button;  // The clickable tab sitting in the header bar.
-    #onClick; // Optional callback for the card click event.
-    name;     // Displayed name of the card.
+    name: string;                             // Displayed name of the card.
+    private _deck: Deck;                      // The window to which the tab is attached.
+    private _button: HTMLElement;             // The clickable tab sitting in the header bar.
+    private _onClick: ((card: Card) => void); // Callback for the card click event.
 
-    constructor(deck, name) {
+    constructor(deck: Deck, name: string) {
         super(deck._container);
-        this.#deck = deck;
+        this._deck = deck;
         this.name = name;
 
         this._button = spawn('div', deck._headerBar, Style.cardButton());
@@ -271,15 +271,14 @@ class Card extends Panel {
         this.hide();
     }
 
-    // Selects the header.
-    select() {
+    // Highlight the header, putting an accent color on its border.
+    highlight() {
         this._button.style.backgroundColor = colors.inputBg;
         this._button.style.border = `2px solid ${colors.param}`;
     }
 
-    // Deselects the header.
-    deselect() {
-        this.hide();
+    // Lowlight the header, enforcing a plain border.
+    lowlight() {
         this._button.style.backgroundColor = '';
         this._button.style.border = `1px solid ${colors.input}`;
     }
@@ -290,16 +289,16 @@ class Card extends Panel {
     hide() { this._elt.style.display = 'none' }
 
     focus() {
-        const old = this.#deck.changeFocus(this);
+        const old = this._deck.changeFocus(this);
         if (old) {
-            old.deselect();
+            old.lowlight();
             old.hide();
         }
-        this.select();
+        this.highlight();
         this.show();
-        this.#onClick?.(this);
+        this._onClick?.(this);
         return this;
     }
 
-    onClick(fun) { this.#onClick = fun; return this; }
+    onClick(fun: (card: Card) => void) { this._onClick = fun; return this; }
 }

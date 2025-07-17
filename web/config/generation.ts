@@ -84,15 +84,15 @@ export class GenerationConfig {
             // The initial value of terrainAlgo is not guaranteed to be that of the first card so
             // the correct card must be shown manually.
             if (terrainAlgo == this.terrainAlgo) {
-                res.select();
+                res.highlight();
                 res.show();
                 algo.changeFocus(res);
             } else {
-                res.deselect();
+                res.lowlight();
                 res.hide();
             }
             return res;
-        }
+        };
 
 
         // Because of the need to share some parameters between different algorithms, the contents
