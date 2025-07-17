@@ -25,8 +25,8 @@ export class Panel {
     /////////////////////////////
     // Parameters registration //
 
-    bool(target, property, labelText?) {
-        return BooleanWidget(this._elt, target, property, labelText);
+    bool(target, property) {
+        return BooleanWidget(this._elt, target, property);
     }
 
     folder(name) {
@@ -41,12 +41,12 @@ export class Panel {
         return new GraphWidget(this._elt);
     }
 
-    number(target, property, labelText?) {
-        return NumberWidget(this._elt, target, property, labelText);
+    number(target, property) {
+        return NumberWidget(this._elt, target, property);
     }
 
     range(target, property, min, max, step) {
-        return RangeWidget(this._elt, target, property, '', min, max, step);
+        return RangeWidget(this._elt, target, property, min, max, step);
     }
 
     readOnly(content) {

@@ -6,8 +6,7 @@ import { BooleanControl, NumberControl, RangeControl } from "./input-control.js"
 import { Style } from './style.js';
 
 export function BooleanWidget(
-    parent: HTMLElement, target: Record<string, boolean>,
-    property: string, label: string,
+    parent: HTMLElement, target: Record<string, boolean>, property: string,
 ): ControlWidget<boolean> {
     const control = new BooleanControl(parent, target[property]);
 
@@ -36,15 +35,14 @@ export function BooleanWidget(
         }
     `;
 
-    return new ControlWidget(parent, target, property, label, control);
+    return new ControlWidget(parent, target, property, control);
 }
 
 export function NumberWidget(
-    parent: HTMLElement, target: Record<string, number>,
-    property: string, label: string,
+    parent: HTMLElement, target: Record<string, number>, property: string,
 ): ControlWidget<number> {
     const control = new NumberControl(parent, target[property]);
-    return new ControlWidget(parent, target, property, label, control);
+    return new ControlWidget(parent, target, property, control);
 }
 
 // A number control widget with a formatter field dictating how the number can be transformed for
@@ -54,12 +52,11 @@ export type RangeControlWidget = ControlWidget<number> & {
 };
 
 export function RangeWidget(
-    parent: HTMLElement, target: Record<string, number>,
-    property: string, label: string,
+    parent: HTMLElement, target: Record<string, number>, property: string,
     min: number, max: number, step: number
 ): RangeControlWidget {
     const control = new RangeControl(parent, target[property], min, max, step);
-    const widget = new ControlWidget(parent, target, property, label, control);
+    const widget = new ControlWidget(parent, target, property, control);
 
     const result = widget as RangeControlWidget;
     result.formatter = (fun: (value: number) => number) => {

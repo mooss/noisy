@@ -27,11 +27,9 @@ export class ControlWidget<PRIM> {
         parent: HTMLElement,
         private target: Record<string, PRIM>,
         private property: string,
-        labelText: string,
         private control: InputControl<PRIM>,
     ) {
         this.label = new Label(parent);
-        this.label.legend(labelText);
 
         const valueContainer = spawn('div', this.label.box, Style.paramValueContainer());
         valueContainer.appendChild(control.element);
@@ -49,6 +47,7 @@ export class ControlWidget<PRIM> {
         });
 
         control.value = target[property]; // Initial value.
+        this.update();
     }
 
     /**
