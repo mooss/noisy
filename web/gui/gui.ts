@@ -1,4 +1,4 @@
-import { colors, spawn } from "./html.js";
+import { colors, HtmlCssElement, spawn } from "./html.js";
 import { BooleanWidget, NumberWidget, RangeWidget, ReadOnlyWidget, SelectWidget } from './parameters.js';
 import { Style } from "./style.js";
 import { GraphWidget } from "./widget.js";
@@ -13,7 +13,7 @@ export class Panel {
     /**
      * The main container element for the panel.
      */
-    _elt: HTMLElement;
+    _elt: HtmlCssElement;
 
     /**
      * Creates a new Panel instance.
@@ -25,11 +25,11 @@ export class Panel {
     /////////////////////////////
     // Parameters registration //
 
-    bool(target, property) {
+    bool(target: Record<string, boolean>, property: string) {
         return BooleanWidget(this._elt, target, property);
     }
 
-    folder(name) {
+    folder(name: string) {
         return new Folder(name, this._elt);
     }
 
@@ -41,19 +41,19 @@ export class Panel {
         return new GraphWidget(this._elt);
     }
 
-    number(target, property) {
+    number(target: Record<string, number>, property: string) {
         return NumberWidget(this._elt, target, property);
     }
 
-    range(target, property, min, max, step) {
+    range(target: Record<string, number>, property: string, min: number, max: number, step: number) {
         return RangeWidget(this._elt, target, property, min, max, step);
     }
 
-    readOnly(content) {
+    readOnly(content: any) {
         return ReadOnlyWidget(this._elt, content);
     }
 
-    select(target, property, options) {
+    select(target: Record<string, any>, property: string, options: Record<string, any>) {
         return SelectWidget(this._elt, target, property, options);
     }
 }
@@ -66,7 +66,7 @@ export class GUI extends Panel {
     /**
      * Creates a GUI instance and attach it to the document body.
      */
-    constructor(...styleOverride) {
+    constructor(...styleOverride: Record<string, string | number>[]) {
         super(document.body, Object.assign(Style.gui(), ...styleOverride));
     }
 
@@ -74,9 +74,8 @@ export class GUI extends Panel {
      * Adds a very thin bar at the top of the GUI that toggles collapsing/unrolling the panel when
      * clicked.
      * It must be called only once.
-     * @returns {this}
      */
-    collapsible() {
+    collapsible(): this {
         // Create the thin bar element.
         const bar = document.createElement('div');
         Object.assign(bar.style, Style.collapsibleBar());
@@ -89,7 +88,7 @@ export class GUI extends Panel {
         bar.addEventListener('click', () => {
             isCollapsed = !isCollapsed;
             for (let i = 0; i < this._elt.children.length; i++) {
-                const child = this._elt.children[i];
+                const child = this._elt.children[i] as HTMLElement;
                 if (child !== bar) {
                     // This only collapses the root of each elements, thus not affecting the
                     // visibility of things like folders.
@@ -103,10 +102,9 @@ export class GUI extends Panel {
 
     /**
      * Adds a centered title at the top of the GUI.
-     * @param {string} text - The title.
-     * @returns {this}
+     * @param text - The title.
      */
-    title(text) {
+    title(text: string): this {
         const title = spawn('div', this._elt, Style.title());
         title.textContent = text;
         return this;
@@ -120,20 +118,15 @@ export class GUI extends Panel {
  * A collapsible folder within the GUI.
  */
 class Folder extends Panel {
-    title;
-
-    /**
-     * The details HTML element that wraps the folder content.
-     * @type {HTMLDetailsElement}
-     */
-    #details;
+    /** The details HTML element that wraps the folder content. */
+    #details: HTMLDetailsElement;
 
     /**
      * Creates a new Folder instance.
-     * @param {HTMLElement} parent  - The parent DOM element.
-     * @param {string}      title   - The title of the folder.
+     * @param title - The title of the folder.
+     * @param parent - The parent DOM element.
      */
-    constructor(title, parent) {
+    constructor(title: string, parent: HTMLElement) {
         super(parent);
 
         const isNested = parent.closest('details') !== null;
@@ -157,7 +150,6 @@ class Folder extends Panel {
         });
 
         this.#details.open = true;
-        this.title = title;
         this._elt.style.paddingLeft = '0';
         content.appendChild(this._elt); // Doesn't display properly without this.
     }
@@ -176,16 +168,16 @@ class Folder extends Panel {
  * Meant to be used as a tabbing system.
  */
 class Deck extends Panel {
-    focusedCard; // The card that is currently focused.
-    _container;   // Where the parameters of the focused card are displayed.
-    cards = [];        // All the Cards contained in this Deck.
+    focusedCard: Card        // The card that is currently focused.
+    _container: HTMLElement; // Where the parameters of the focused card are displayed.
+    cards: Card[] = [];      // All the Cards contained in this Deck.
 
-    _headerContainer; // Contains the header and the scroll arrows.
-    _headerBar;       // Scrollable bar where the clickable card headers are displayed.
-    #leftArrow;       // Scroll indicator on the left of the bar.
-    #rightArrow;      // Scroll indicator on the right of the bar.
+    private headerContainer: HTMLElement; // Contains the header and the scroll arrows.
+    headerBar: HTMLElement;               // Scrollable bar where the clickable card headers are displayed.
+    private leftArrow: HTMLElement;       // Scroll indicator on the left of the bar.
+    private rightArrow: HTMLElement;      // Scroll indicator on the right of the bar.
 
-    constructor(parent) {
+    constructor(parent: HTMLElement) {
         super(parent);
         this._elt.css({
             marginTop: '6px',
@@ -193,8 +185,8 @@ class Deck extends Panel {
             flexDirection: 'column',
         });
 
-        this._headerContainer = spawn('div', this._elt, Style.deckHeaderContainer());
-        this._headerBar = spawn('div', this._headerContainer, Style.deckHeaderBar());
+        this.headerContainer = spawn('div', this._elt, Style.deckHeaderContainer());
+        this.headerBar = spawn('div', this.headerContainer, Style.deckHeaderBar());
 
         // Show "arrows" on the left and right of the bar to indicate scrollability.
         const arrow = {
@@ -204,21 +196,21 @@ class Deck extends Panel {
             opacity: 0,
             transition: 'opacity 0.2s',
         }
-        const arrowback = (deg) => `linear-gradient(${deg}deg, rgba(20,25,35,0.9) 0%, rgba(20,25,35,0) 100%)`;
+        const arrowback = (deg: number) => `linear-gradient(${deg}deg, rgba(20,25,35,0.9) 0%, rgba(20,25,35,0) 100%)`;
 
-        this.#leftArrow = spawn('div', this._headerContainer, Object.assign({
+        this.leftArrow = spawn('div', this.headerContainer, Object.assign({
             left: 0, top: 0, bottom: 0,
             background: arrowback(90),
         }, arrow));
-        this.#rightArrow = spawn('div', this._headerContainer, Object.assign({
+        this.rightArrow = spawn('div', this.headerContainer, Object.assign({
             right: 0, top: 0, bottom: 0,
             background: arrowback(270),
         }, arrow));
 
-        this._headerBar.addEventListener('scroll', () => this._updateArrows());
-        this._headerBar.addEventListener('wheel', (e) => {
+        this.headerBar.addEventListener('scroll', () => this._updateArrows());
+        this.headerBar.addEventListener('wheel', (e: WheelEvent) => {
             e.preventDefault();
-            this._headerBar.scrollLeft += e.deltaY * .1;
+            this.headerBar.scrollLeft += e.deltaY * .1;
         });
 
         // The content of the card goes below the header bar.
@@ -226,7 +218,7 @@ class Deck extends Panel {
     }
 
     // Create a new card.
-    card(name) {
+    card(name: string) {
         const card = new Card(this, name);
         if (!this.focusedCard) card.focus(); // Focus the first card.
         this._updateArrows();
@@ -235,15 +227,15 @@ class Deck extends Panel {
     }
 
     // Enable or disable arrow visibility based on scroll position.
-    _updateArrows() {
-        const scrollLeft = this._headerBar.scrollLeft;
-        const maxScroll = this._headerBar.scrollWidth - this._headerBar.clientWidth;
-        this.#leftArrow.style.opacity = scrollLeft > 0 ? 1 : 0;
-        this.#rightArrow.style.opacity = scrollLeft < maxScroll ? 1 : 0;
+    private _updateArrows() {
+        const scrollLeft = this.headerBar.scrollLeft;
+        const maxScroll = this.headerBar.scrollWidth - this.headerBar.clientWidth;
+        this.leftArrow.style.opacity = String(scrollLeft > 0 ? 1 : 0);
+        this.rightArrow.style.opacity = String(scrollLeft < maxScroll ? 1 : 0);
     }
 
     // Change the focused card and return the previously focused card.
-    changeFocus(card) {
+    changeFocus(card: Card) {
         const res = this.focusedCard;
         this.focusedCard = card;
         return res;
@@ -264,7 +256,7 @@ class Card extends Panel {
         this._deck = deck;
         this.name = name;
 
-        this._button = spawn('div', deck._headerBar, Style.cardButton());
+        this._button = spawn('div', deck.headerBar, Style.cardButton());
         this._button.textContent = name;
         this._button.addEventListener('click', () => this.focus());
 

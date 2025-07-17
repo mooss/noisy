@@ -1,3 +1,5 @@
+import { StyleRecord } from "./style.js";
+
 interface Colors {
     border: string;
     input: string;
@@ -18,7 +20,7 @@ export const colors: Colors = {
 
 // A HTMLElement type extended with a css method that can update the style of the element.
 export type HtmlCssElement<T extends HTMLElement = HTMLElement> = T & {
-    css(props: Record<string, string | number>): void;
+    css(props: StyleRecord): void;
 }
 
 function addCss<T extends HTMLElement>(el: T): HtmlCssElement<T> {
@@ -47,7 +49,7 @@ function addCss<T extends HTMLElement>(el: T): HtmlCssElement<T> {
 export function spawn<T extends HTMLElement = HTMLElement>(
     tag: string,
     parent: HTMLElement,
-    style?: Record<string, string | number>,
+    style?: StyleRecord,
 ): HtmlCssElement<T> {
     const res = addCss(document.createElement(tag) as T);
     if (style !== undefined) {

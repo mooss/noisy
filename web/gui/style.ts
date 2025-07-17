@@ -7,6 +7,10 @@ interface StyleColors {
     text: string;
 }
 
+export interface StyleRecord {
+  [k: string]: string | number | StyleRecord;
+}
+
 export class Style {
     static colors: StyleColors = {
         border: 'grey',
