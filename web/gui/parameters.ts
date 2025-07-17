@@ -1,8 +1,9 @@
 import { clamp } from '../utils.js';
 import { ControlWidget } from "./control-widget.js";
-import { InteractiveParam, Param } from './foundations.js';
-import { colors, spawn } from "./html.js";
+import { InteractiveParam, Label, Param } from './foundations.js';
+import { colors, HtmlCssElement, spawn } from "./html.js";
 import { BooleanControl, NumberControl, RangeControl } from "./input-control.js";
+import { Style } from './style.js';
 
 export function BooleanWidget(
     parent: HTMLElement, target: Record<string, boolean>,
@@ -69,17 +70,22 @@ export function RangeWidget(
     return result;
 }
 
-export class ReadOnly extends Param<HTMLLabelElement> {
+export class ReadOnly extends Label {
+    private value: HtmlCssElement;
+
     constructor(parent: HTMLElement, content: any) {
         super(parent);
+        this.value = spawn('div', this.box, Style.paramValueContainer());
         this.update(content);
     }
 
-    tag() { return 'label' }
-
     update(content: any) {
-        this.input.textContent = String(content);
+        this.value.textContent = String(content);
     }
+}
+
+export function ReadOnlyWidget(parent: HTMLElement, content: any): ReadOnly {
+    return new ReadOnly(parent, content);
 }
 
 export class Select extends InteractiveParam<any, HTMLSelectElement> {
