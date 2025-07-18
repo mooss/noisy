@@ -1,4 +1,4 @@
-import { CssProperties } from "./style.js";
+import { Facet } from "./style.js";
 
 interface Colors {
     border: string;
@@ -20,17 +20,13 @@ export const colors: Colors = {
 
 // A HTMLElement type extended with a css method that can update the style of the element.
 export type HtmlCssElement<T extends HTMLElement = HTMLElement> = T & {
-    css(props: CssProperties): void;
+    css(props: Facet): void;
 }
 
 function addCss<T extends HTMLElement>(el: T): HtmlCssElement<T> {
-  // if this element was already wrapped, return it
-    if ('css' in el) return el as HtmlCssElement<T>;
-
     (el as HtmlCssElement<T>).css = function (props) {
-    Object.assign(this.style, props);
-        return this as HtmlCssElement<T>;
-  };
+        Object.assign(this.style, props.properties.merged());
+    };
 
     return el as HtmlCssElement<T>;
 }
@@ -49,7 +45,7 @@ function addCss<T extends HTMLElement>(el: T): HtmlCssElement<T> {
 export function spawn<T extends HTMLElement = HTMLElement>(
     tag: string,
     parent: HTMLElement,
-    style?: CssProperties,
+    style?: Facet,
 ): HtmlCssElement<T> {
     const res = addCss(document.createElement(tag) as T);
     if (style !== undefined) {

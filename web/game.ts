@@ -52,7 +52,7 @@ class Game {
     }
 
     setupUI(): void {
-        this.gui = new GUI({ left: '8px' }).collapsible();
+        this.gui = new GUI(GUI.POSITION_LEFT).collapsible();
         this.fps = new FpsWidget(this.gui);
 
         if (Game.ENABLE_STATS_GRAPH) {

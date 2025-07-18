@@ -1,7 +1,8 @@
+import { clone } from "../utils.js";
 import { ControlWidget } from "./control-widget.js";
 import { HtmlCssElement, spawn } from "./html.js";
 import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, ReadOnly, ReadOnlyWidget, SelectWidget } from './parameters.js';
-import { Style, CssProperties } from "./style.js";
+import { Facet, LemonCloak } from "./style.js";
 import { GraphWidget } from "./widget.js";
 
 /////////////////
@@ -19,7 +20,7 @@ export class Panel {
     /**
      * Creates a new Panel instance.
      */
-    constructor(parent: HTMLElement, style?: CssProperties) {
+    constructor(parent: HTMLElement, style?: Facet) {
         this._elt = spawn('div', parent, style);
     }
 
@@ -67,12 +68,12 @@ export class Panel {
  * Main element of the graphical user interface.
  */
 export class GUI extends Panel {
-    static POSITION_RIGHT = { right: '8px', left: 'auto' };
-    /**
-     * Creates a GUI instance and attach it to the document body.
-     */
-    constructor(...styleOverride: Record<string, string | number>[]) {
-        super(document.body, Object.assign(Style.gui(), ...styleOverride));
+    static POSITION_RIGHT = new Facet('gui-right', { right: '8px', left: 'auto' });
+    static POSITION_LEFT = new Facet('gui-left', { left: '8px', right: 'auto' });
+
+    /** Creates a GUI instance and attach it to the document body. */
+    constructor(...appearanceOverride: Facet[]) {
+        super(document.body, clone(LemonCloak.gui).merge(...appearanceOverride));
     }
 
     /**
@@ -83,7 +84,7 @@ export class GUI extends Panel {
     collapsible(): this {
         // Create the thin bar element.
         const bar = document.createElement('div');
-        Object.assign(bar.style, Style.collapsibleBar());
+        Object.assign(bar.style, LemonCloak.collapsibleBar);
 
         // Insert the bar as the first child of the panel container.
         this._elt.insertBefore(bar, this._elt.firstChild);
@@ -110,7 +111,7 @@ export class GUI extends Panel {
      * @param text - The title.
      */
     title(text: string): this {
-        const title = spawn('div', this._elt, Style.title());
+        const title = spawn('div', this._elt, LemonCloak.title);
         title.textContent = text;
         return this;
     }
@@ -135,9 +136,9 @@ class Folder extends Panel {
         super(parent);
 
         const isNested = parent.closest('details') !== null;
-        this.#details = spawn('details', parent, Style.folder(isNested));
-        spawn('summary', this.#details, Style.folderSummary(isNested)).textContent = title;
-        const content = spawn('div', this.#details, Style.folderContent(isNested));
+        this.#details = spawn('details', parent, LemonCloak.folder(isNested));
+        spawn('summary', this.#details, LemonCloak.folderSummary(isNested)).textContent = title;
+        const content = spawn('div', this.#details, LemonCloak.folderContent(isNested));
 
         this.#details.open = true;
         this._elt.style.paddingLeft = '0';
@@ -169,14 +170,14 @@ export class Deck extends Panel {
 
     constructor(parent: HTMLElement) {
         super(parent);
-        this._elt.css(Style.deck());
+        this._elt.css(LemonCloak.deck);
 
-        this.headerContainer = spawn('div', this._elt, Style.deckHeaderContainer());
-        this.headerBar = spawn('div', this.headerContainer, Style.deckHeaderBar());
+        this.headerContainer = spawn('div', this._elt, LemonCloak.deckHeaderContainer);
+        this.headerBar = spawn('div', this.headerContainer, LemonCloak.deckHeaderBar);
 
         // Show "arrows" on the left and right of the bar to indicate scrollability.
-        this.leftArrow = spawn('div', this.headerContainer, Style.deckArrowLeft());
-        this.rightArrow = spawn('div', this.headerContainer, Style.deckArrowRight());
+        this.leftArrow = spawn('div', this.headerContainer, LemonCloak.deckArrowLeft);
+        this.rightArrow = spawn('div', this.headerContainer, LemonCloak.deckArrowRight);
 
         this.headerBar.addEventListener('scroll', () => this._updateArrows());
         this.headerBar.addEventListener('wheel', (e: WheelEvent) => {
@@ -227,7 +228,7 @@ class Card extends Panel {
         this._deck = deck;
         this.name = name;
 
-        this._button = spawn('div', deck.headerBar, Style.cardButton());
+        this._button = spawn('div', deck.headerBar, LemonCloak.cardButton);
         this._button.textContent = name;
         this._button.addEventListener('click', () => this.focus());
 
@@ -235,14 +236,10 @@ class Card extends Panel {
     }
 
     // Highlight the header, putting an accent color on its border.
-    highlight(): void {
-        this._button.css(Style.cardHighlight());
-    }
+    highlight(): void { this._button.css(LemonCloak.cardHighlight) }
 
     // Lowlight the header, enforcing a plain border.
-    lowlight(): void {
-        this._button.css(Style.cardLowlight());
-    }
+    lowlight(): void { this._button.css(LemonCloak.cardLowlight) }
 
     // Show the content.
     show(): void { this._elt.style.display = '' }
