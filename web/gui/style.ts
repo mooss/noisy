@@ -184,16 +184,17 @@ export class Appearance {
         });
 
         const left = 6;
-        this.folder = (nested: boolean) => new Facet('folder', {
+        const nestedstr = (nested: boolean) => nested ? 'nested' : 'toplevel';
+        this.folder = (nested: boolean) => new Facet(`${nestedstr(nested)}-folder`, {
             marginTop: '4px',
             padding: '0',
             paddingLeft: nested ? `${left}px` : '0',
         });
-        this.folderContent = (nested: boolean) => new Facet('folder-content', {
+        this.folderContent = (nested: boolean) => new Facet(`${nestedstr(nested)}-folder-content`, {
             borderLeft: nested ? `3px solid ${this.colors.border}` : 'none',
             paddingLeft: nested ? `${left}px` : '0',
         });
-        this.folderSummary = (nested: boolean) => new Facet('folder-summary', {
+        this.folderSummary = (nested: boolean) => new Facet(`${nestedstr(nested)}-folder-summary`, {
             cursor: 'pointer',
             fontWeight: 600,
             padding: '4px 0',
