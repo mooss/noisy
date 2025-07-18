@@ -12,7 +12,9 @@ export interface CssProperties {
 }
 
 export class SingleFacet {
-    constructor(public name: string, public properties: CssProperties) { }
+    constructor(public name: string, public properties: CssProperties, prefix?: string) {
+        if (prefix !== undefined) this.name = prefix + '-' + this.name;
+    }
 }
 
 export type MultiCssProperties = CssProperties[] & { merged(): CssProperties };
@@ -20,12 +22,12 @@ export type MultiCssProperties = CssProperties[] & { merged(): CssProperties };
 export class Facet {
     facets: SingleFacet[] = []; // Public to make sure it is cloneable.
 
-    constructor(className: string, properties: CssProperties) {
+    constructor(className: string, properties: CssProperties, public prefix?: string) {
         this.add(className, properties);
     }
 
     add(className: string, properties: CssProperties) {
-        this.facets.push(new SingleFacet(className, properties));
+        this.facets.push(new SingleFacet(className, properties, this.prefix));
     }
 
     merge(...facets: Facet[]): this {
@@ -90,8 +92,8 @@ export class Appearance {
         text: 'lightgray',
     };
 
-    constructor() {
-        this.cardButton = new Facet('card-button', {
+    constructor(private prefix: string) {
+        this.cardButton = this.mk('card-button', {
             padding: '0 4px',
             textAlign: 'center',
             cursor: 'pointer',
@@ -100,16 +102,16 @@ export class Appearance {
             background: this.colors.inputBg,
             whiteSpace: 'nowrap',
         });
-        this.cardHighlight = new Facet('card-highlight', {
+        this.cardHighlight = this.mk('card-highlight', {
             backgroundColor: this.colors.inputBg,
             border: `2px solid ${this.colors.param}`,
         });
-        this.cardLowlight = new Facet('card-lowlight', {
+        this.cardLowlight = this.mk('card-lowlight', {
             backgroundColor: '',
             border: `1px solid ${this.colors.input}`,
         });
 
-        this.checkbox = new Facet('checkbox', {
+        this.checkbox = this.mk('checkbox', {
             margin: 0,
             appearance: 'none',
             WebkitAppearance: 'none',
@@ -134,7 +136,7 @@ export class Appearance {
             .join(';');
         this.checkboxIndicator = `input[type="checkbox"]:checked::before{${cbicss}}`;
 
-        this.collapsibleBar = new Facet('collapsible-bar', {
+        this.collapsibleBar = this.mk('collapsible-bar', {
             height: '4px',
             width: '100%',
             cursor: 'pointer',
@@ -144,7 +146,7 @@ export class Appearance {
             userSelect: 'none',
         });
 
-        this.deck = new Facet('deck', {
+        this.deck = this.mk('deck', {
             marginTop: '6px',
             display: 'flex',
             flexDirection: 'column',
@@ -156,28 +158,28 @@ export class Appearance {
             opacity: 0,
             transition: 'opacity 0.2s',
         };
-        this.deckArrowLeft = new Facet('deck-arrow-left', {
+        this.deckArrowLeft = this.mk('deck-arrow-left', {
             ...deckArrow,
             left: '0',
             top: '0',
             bottom: '0',
             background: 'linear-gradient(90deg, rgba(20,25,35,0.9) 0%, rgba(20,25,35,0) 100%)',
         });
-        this.deckArrowRight = new Facet('deck-arrow-right', {
+        this.deckArrowRight = this.mk('deck-arrow-right', {
             ...deckArrow,
             right: '0',
             top: '0',
             bottom: '0',
             background: 'linear-gradient(270deg, rgba(20,25,35,0.9) 0%, rgba(20,25,35,0) 100%)',
         });
-        this.deckHeaderBar = new Facet('deck-header-bar', {
+        this.deckHeaderBar = this.mk('deck-header-bar', {
             display: 'flex',
             overflowX: 'auto',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             '&::-webkit-scrollbar': { display: 'none' },
         });
-        this.deckHeaderContainer = new Facet('deck-header-container', {
+        this.deckHeaderContainer = this.mk('deck-header-container', {
             position: 'relative',
             backgroundColor: this.colors.inputBg,
             overflow: 'hidden',
@@ -185,16 +187,16 @@ export class Appearance {
 
         const left = 6;
         const nestedstr = (nested: boolean) => nested ? 'nested' : 'toplevel';
-        this.folder = (nested: boolean) => new Facet(`${nestedstr(nested)}-folder`, {
+        this.folder = (nested: boolean) => this.mk(`${nestedstr(nested)}-folder`, {
             marginTop: '4px',
             padding: '0',
             paddingLeft: nested ? `${left}px` : '0',
         });
-        this.folderContent = (nested: boolean) => new Facet(`${nestedstr(nested)}-folder-content`, {
+        this.folderContent = (nested: boolean) => this.mk(`${nestedstr(nested)}-folder-content`, {
             borderLeft: nested ? `3px solid ${this.colors.border}` : 'none',
             paddingLeft: nested ? `${left}px` : '0',
         });
-        this.folderSummary = (nested: boolean) => new Facet(`${nestedstr(nested)}-folder-summary`, {
+        this.folderSummary = (nested: boolean) => this.mk(`${nestedstr(nested)}-folder-summary`, {
             cursor: 'pointer',
             fontWeight: 600,
             padding: '4px 0',
@@ -202,21 +204,21 @@ export class Appearance {
             paddingLeft: nested ? `${left - 2}px` : '0',
         });
 
-        this.graphBox = new Facet('graph-box', {
+        this.graphBox = this.mk('graph-box', {
             flexDirection: 'column',
             alignItems: 'flex-start',
         });
-        this.graphCanvas = new Facet('graph-canvas', {
+        this.graphCanvas = this.mk('graph-canvas', {
             width: '100%',
             height: '80px',
             backgroundColor: this.colors.inputBg,
         });
-        this.graphLabel = new Facet('graph-label', {
+        this.graphLabel = this.mk('graph-label', {
             marginBottom: '4px',
             cursor: 'pointer',
         });
 
-        this.gui = new Facet('gui', {
+        this.gui = this.mk('gui', {
             position: 'absolute',
             top: '8px',
             left: '8px',
@@ -230,25 +232,25 @@ export class Appearance {
             borderRadius: '4px',
             overflowY: 'auto',
         });
-        this.input = new Facet('input', {
+        this.input = this.mk('input', {
             color: this.colors.param,
             padding: '0',
             boxSizing: 'border-box',
             fontSize: '10px',
         });
 
-        this.label = new Facet('label', {
+        this.label = this.mk('label', {
             display: 'flex',
             alignItems: 'center',
             padding: '4px 0 0 0',
         });
-        this.labelText = new Facet('label-text', {
+        this.labelText = this.mk('label-text', {
             flex: '1',
             marginRight: '8px',
             color: this.colors.label,
         });
 
-        this.numberInput = new Facet('number-input', {
+        this.numberInput = this.mk('number-input', {
             width: '100%',
             background: 'rgba(45, 55, 72, 0.8)',
             border: `1px solid ${this.colors.input}`,
@@ -257,18 +259,18 @@ export class Appearance {
             height: '16px',
             boxSizing: 'border-box',
         });
-        this.paramValueContainer = new Facet('param-value-container', {
+        this.paramValueContainer = this.mk('param-value-container', {
             width: '110px',
             display: 'flex',
             color: this.colors.param,
         });
 
-        this.rangeControlContainer = new Facet('range-control-container', {
+        this.rangeControlContainer = this.mk('range-control-container', {
             display: 'flex',
             alignItems: 'center',
             width: '100%',
         });
-        this.rangeInput = new Facet('range-input', {
+        this.rangeInput = this.mk('range-input', {
             width: '100%',
             height: '16px',
             appearance: 'none',
@@ -278,12 +280,12 @@ export class Appearance {
             padding: '0',
             margin: '0',
         });
-        this.rangeValueSpan = new Facet('range-value-span', {
+        this.rangeValueSpan = this.mk('range-value-span', {
             width: '40px',
             marginLeft: '5px',
         });
 
-        this.selectInput = new Facet('select-input', {
+        this.selectInput = this.mk('select-input', {
             width: '100%',
             background: this.colors.inputBg,
             border: `1px solid ${this.colors.input}`,
@@ -294,7 +296,7 @@ export class Appearance {
             padding: '0',
             fontSize: '10px',
         });
-        this.title = new Facet('title', {
+        this.title = this.mk('title', {
             textAlign: 'center',
             fontWeight: 'bold',
             fontSize: '14px',
@@ -303,7 +305,11 @@ export class Appearance {
             color: this.colors.text,
         });
     }
+
+    private mk(name: string, properties: CssProperties): Facet {
+        return new Facet(name, properties, this.prefix);
+    }
 }
 
 // Placeholder appearance until finding a proper way to pass an appearance around in GUI code.
-export const LemonCloak = new Appearance();
+export const LemonCloak = new Appearance('lem');
