@@ -4,11 +4,7 @@ import type { GenerationConfig } from './config/generation.js';
 import type { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from "./constants.js";
 import { Coordinates, Position } from "./coordinates.js";
-
-export interface HeightGenerator {
-    at(x: number, y: number): number;
-    nblocks: number;
-}
+import type { HeightGenerator } from './height-generator.js';
 
 class Chunk {
     coords: Coordinates;

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { Panel } from '../gui/gui.js';
 import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh.js';
 import { palettes } from '../palettes.js';
-import { HeightGenerator } from '../terrain.js';
+import type { HeightGenerator } from '../height-generator.js';
 
 interface LightConfig {
     ambient: { intensity: number };

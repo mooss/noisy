@@ -19,5 +19,7 @@ build:
 ################
 # Actual files #
 
-dependencies.svg: game.ts
-	npx madge $^ -i dependencies.svg
+TS_FILES := $(shell git ls-files '**/*.ts' '*.ts')
+
+dependencies.svg: $(TS_FILES)
+	npx madge game.ts -i dependencies.svg
