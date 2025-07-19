@@ -209,7 +209,7 @@ class HeightFieldBuilder {
                     persistence: .65,
                     lacunarity: 1.5,
                 });
-                return neoSimplex.fun();
+                return neoSimplex.build();
         }
     }
 }
