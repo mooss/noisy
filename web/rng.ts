@@ -10,7 +10,7 @@ import { createNoise2D } from 'simplex-noise';
  * @param seed The initial seed value for the generator.
  * @returns A function that returns a pseudorandom float (1 <= res < max).
  */
-function createLCG(seed: number): () => number {
+export function createLCG(seed: number): () => number {
     const a = 1664525;
     const c = 1013904223;
     const m = Math.pow(2, 32);

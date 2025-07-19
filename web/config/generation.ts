@@ -3,8 +3,9 @@ import { Deck, Panel } from "../gui/gui.js";
 import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
+import { HeightFun, Layered, Simplex } from "./noise.js";
 
-type TerrainAlgorithm = 'simplex' | 'octavianRidge' | 'melodicRidge' | 'continentalMix' | 'rand';
+type TerrainAlgorithm = 'simplex' | 'octavianRidge' | 'melodicRidge' | 'continentalMix' | 'rand' | 'neoSimplex';
 type RidgeStyle = 'octavian' | 'melodic';
 
 interface NoiseConfig {
@@ -101,6 +102,7 @@ export class GenerationConfig {
         // needed in #updateAlgorithmCards.
         const noise = card('Simplex', 'simplex');
         const ridge = card('Octavian ridge', 'octavianRidge');
+        card('Neo simplex', 'neoSimplex');
         card('Continental mix', 'continentalMix');
         card('Melodic ridge', 'melodicRidge');
         card('Random', 'rand');
@@ -139,9 +141,13 @@ export class GenerationConfig {
 
     // Dynamically show/hide parameter folders based on the selected terrain algorithm.
     private updateAlgorithmCards(): void {
+        if (this.terrainAlgo === 'neoSimplex') {
+            return;
+        }
         const title2algo = {
             'Simplex': ['simplex', 'octavianRidge', 'melodicRidge'],
             'Octavian ridge': ['octavianRidge', 'melodicRidge'],
+            'Neo simplex': ['neoSimplex'],
         }
 
         for (let card of this.#algorithmDeck.cards) {
@@ -158,32 +164,32 @@ export class GenerationConfig {
 class HeightFieldBuilder {
     constructor(private c: GenerationConfig) { }
 
-    private layered(noise: (x: number, y: number) => number): (x: number, y: number) => number {
+    private layered(noise: HeightFun): HeightFun {
         return mkLayering(
             noise, this.c.noise.octaves, this.c.noise.fundamental,
             this.c.noise.persistence, this.c.noise.lacunarity
         )
     }
 
-    private get simplex(): (x: number, y: number) => number {
+    private get simplex(): HeightFun {
         return mkSimplex(this.c.seed, this.c.noise.warpingStrength)
     }
     private get ridger(): (n: number) => number {
         return mkRidger(this.c.noise.ridge.invertSignal, this.c.noise.ridge.squareSignal);
     }
-    private get layeredSimplex(): (x: number, y: number) => number {
+    private get layeredSimplex(): HeightFun {
         return this.layered(this.simplex)
     }
-    private get layeredOctavianRidge(): (x: number, y: number) => number {
+    private get layeredOctavianRidge(): HeightFun {
         const rid = this.ridger, sim = this.simplex;
         return this.layered((x, y) => { return rid(sim(x, y)) });
     }
-    private get layeredMelodicRidge(): (x: number, y: number) => number {
+    private get layeredMelodicRidge(): HeightFun {
         const rid = this.ridger, lay = this.layered(this.simplex);
         return (x, y) => { return rid(lay(x, y)) };
     }
 
-    get fun(): (x: number, y: number) => number {
+    get fun(): HeightFun {
         switch (this.c.terrainAlgo) {
             case 'simplex':
                 return this.layeredSimplex;
@@ -196,6 +202,14 @@ class HeightFieldBuilder {
                 return this.layeredMelodicRidge;
             case 'continentalMix':
                 return continentalMix(this.c.seed);
+            case 'neoSimplex':
+                const neoSimplex = new Layered(new Simplex({seed: 23}), {
+                    fundamental: 1.1,
+                    octaves: 8,
+                    persistence: .65,
+                    lacunarity: 1.5,
+                });
+                return neoSimplex.fun();
         }
     }
 }
@@ -218,7 +232,7 @@ function lowhigh(config: GenerationConfig): { low: number, high: number } {
 
 export class HeightField {
     private terracing: number;
-    raw: (x: number, y: number) => number;
+    raw: HeightFun;
     low: number;
     high: number;
 
@@ -246,7 +260,7 @@ export class HeightField {
      *
      * @return {function(number, number) number} The normalised height function.
      */
-    mkNormalised(min: number, high: number): (x: number, y: number) => number {
+    mkNormalised(min: number, high: number): HeightFun {
         const mapper = this.mapper(min, high);
         let postprocess = mapper;
         if (this.terracing > 0) {
@@ -262,7 +276,7 @@ export class HeightField {
     }
 }
 
-export function continentalMix(seed: number): (x: number, y: number) => number {
+export function continentalMix(seed: number): HeightFun {
     let gen = new GenerationConfig();
     gen.seed = seed;
     gen.terrainAlgo = 'octavianRidge';
