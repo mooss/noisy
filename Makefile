@@ -2,6 +2,7 @@
 
 build:
 	go build -o webserver main.go
+	make -C web build
 
 clean:
 	rm -f webserver
