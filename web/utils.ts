@@ -59,7 +59,7 @@ export function rangeMapper(
 }
 
 /** Deep clones an instance, does not clone private fields. */
-export function clone(instance: any): any {
+export function clone<T>(instance: T): T {
     const data = structuredClone(instance);
     const empty = Object.create(instance.constructor.prototype);
     return Object.assign(empty, data);
