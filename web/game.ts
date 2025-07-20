@@ -39,17 +39,22 @@ class Game {
     start(): void {
         this.terrain = new Terrain(this.config.chunks, this.config.gen, this.config.render);
         this.avatar = new Avatar();
+        this.avatar.x = .5;
+        this.avatar.y = .5;
+        this.avatar.z = 0;
 
         this.renderer = new Renderer(this.config.render);
         this.renderer.addMesh(this.terrain.mesh);
         this.renderer.addMesh(this.avatar.mesh);
 
         this.setupUI();
-        this.setupAvatarPosition();
         this.keyboard = new Keyboard();
         this.regenerateTerrain();
         this.startAnimationLoop();
     }
+
+    ////////
+    // UI //
 
     setupUI(): void {
         this.gui = new GUI(GUI.POSITION_LEFT).collapsible();
@@ -76,11 +81,31 @@ class Game {
         );
     }
 
-    setupAvatarPosition(): void {
-        this.avatar.x = .5;
-        this.avatar.y = .5;
-        this.avatar.z = 0;
+    setupStatsGraph(): void {
+        const heightGraph = this.gui.graph().legend("Sorted heights in active chunk");
+        const heightStats = this.gui.readOnly('').legend('Height stats');
+        const zScoreGraph = this.gui.graph().legend("Z-scores of the sorted heights").close();
+
+        this.updateStats = (): void => {
+            const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk());
+            const heights: number[] = [];
+            for (let i = 0; i < this.config.chunks.nblocks; ++i)
+                for (let j = 0; j < this.config.chunks.nblocks; ++j)
+                    heights.push(heightfun(i / this.config.chunks.nblocks, j / this.config.chunks.nblocks));
+
+            heightGraph.update(heights.sort((l, r) => l - r));
+
+            const stats = numStats(heights);
+            const min = Math.min(...heights), max = Math.max(...heights);
+            heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
+min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
+
+            zScoreGraph.update(stats.zScores);
+        };
     }
+
+    ///////////////
+    // Game loop //
 
     startAnimationLoop(): void {
         this.renderer.render(); // Render at least once if out of focus.
@@ -105,6 +130,9 @@ class Game {
         }
     }
 
+    /////////////////////
+    // Update graphics //
+
     updateAvatar(): void {
         this.terrain.centerOn(this.avatar.coords);
         this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.config.avatar.heightOffset;
@@ -125,29 +153,6 @@ class Game {
 
     reloadTerrain(): void {
         this.terrain.reload();
-    }
-
-    setupStatsGraph(): void {
-        const heightGraph = this.gui.graph().legend("Sorted heights in active chunk");
-        const heightStats = this.gui.readOnly('').legend('Height stats');
-        const zScoreGraph = this.gui.graph().legend("Z-scores of the sorted heights").close();
-
-        this.updateStats = (): void => {
-            const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk());
-            const heights: number[] = [];
-            for (let i = 0; i < this.config.chunks.nblocks; ++i)
-                for (let j = 0; j < this.config.chunks.nblocks; ++j)
-                    heights.push(heightfun(i / this.config.chunks.nblocks, j / this.config.chunks.nblocks));
-
-            heightGraph.update(heights.sort((l, r) => l - r));
-
-            const stats = numStats(heights);
-            const min = Math.min(...heights), max = Math.max(...heights);
-            heightStats.update(`mean: ${stats.mean.toFixed(2)}, std: ${stats.std.toFixed(2)}
-min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
-
-            zScoreGraph.update(stats.zScores);
-        };
     }
 }
 
