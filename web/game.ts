@@ -136,7 +136,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     updateAvatar(): void {
         this.terrain.centerOn(this.avatar.coords);
         this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.config.avatar.heightOffset;
-        this.avatar.reposition(CHUNK_UNIT, this.config.gen.verticalUnit);
+        this.avatar.reposition(CHUNK_UNIT, this.config.render.verticalUnit);
         this.avatar.setScale(this.config.avatar.size);
 
         if (this.config.avatar.cameraMode === 'Follow') {

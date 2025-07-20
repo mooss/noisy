@@ -1,4 +1,3 @@
-import { CHUNK_UNIT } from "../constants.js";
 import { Deck, Panel } from "../gui/gui.js";
 import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
 import { numStats } from "../stats.js";
@@ -26,14 +25,12 @@ interface MkNormalisedI { mkNormalised(low: number, high: number): HeightFun }
 export class GenerationConfig {
     seed: number;
     terrainAlgo: TerrainAlgorithm;
-    heightMultiplier: number;
     terracing: number;
     noise: NoiseConfig;
 
     constructor() {
         this.seed = 23;                     // Seed for deterministic terrain generation.
         this.terrainAlgo = 'octavianRidge'; // Terrain creation algorithm.
-        this.heightMultiplier = 1.0;        // Multiplier for the terrain height.
         this.terracing = 0;                 // Degree of quantization/terracing (0-1)
         this.noise = {
             octaves: 8,          // Simplex Noise octaves to layer.
@@ -63,7 +60,6 @@ export class GenerationConfig {
         const postprocessed = new HeightPostProcess(neoSimplex, {terracing: .07})
         return postprocessed;
     }
-    get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }
 
     ////////
     // UI //
@@ -76,10 +72,6 @@ export class GenerationConfig {
         parent.number(this, 'seed')
             .legend('Seed')
             .onChange(regen);
-
-        parent.range(this, 'heightMultiplier', 0.1, 5.0, 0.05)
-            .legend('Height multiplier')
-            .onInput(regen);
 
         parent.range(this, 'terracing', 0, .1, .01)
             .legend('Terracing')

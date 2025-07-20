@@ -3,6 +3,7 @@ import { Panel } from '../gui/gui.js';
 import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh.js';
 import { palettes } from '../palettes.js';
 import type { HeightGenerator } from '../height-generator.js';
+import { CHUNK_UNIT } from '../constants.js';
 
 interface LightConfig {
     ambient: { intensity: number };
@@ -15,6 +16,7 @@ export class RenderConfig {
     style: RenderStyle;
     paletteName: string;
     light: LightConfig;
+    heightMultiplier: number = 1; // Multiplier for the terrain height.
 
     constructor() {
         this.style = 'surface';              // How the terrain is rendered.
@@ -25,24 +27,30 @@ export class RenderConfig {
         }
     }
 
-    ui(parent: Panel, update: () => void): void {
+    ui(parent: Panel, regen: () => void): void {
         parent.select(this, 'style', {
             'Surface': 'surface',
             'Squares': 'quadPrism',
             'Hexagons': 'hexPrism',
-        }).legend('Shape').onChange(update);
+        }).legend('Shape').onChange(regen);
 
         parent.select(this, 'paletteName', palettes)
-            .legend('Palette').onChange(update);
+            .legend('Palette').onChange(regen);
 
         parent.range(this.light.ambient, 'intensity', 0, 10, .2)
-            .legend('Ambient Light').onChange(update);
+            .legend('Ambient Light').onChange(regen);
 
         parent.range(this.light.directional, 'intensity', 0, 10, .2)
-            .legend('Directional Light').onChange(update);
+            .legend('Directional Light').onChange(regen);
+
+        parent.range(this, 'heightMultiplier', 0.1, 5.0, 0.05)
+            .legend('Height multiplier')
+            .onInput(regen);
     }
 
-    get palette(): THREE.Color[] { return palettes[this.paletteName]; }
+    get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }
+    get palette(): THREE.Color[] { return palettes[this.paletteName] }
+
     mesh(heights: HeightGenerator): THREE.Mesh {
         switch (this.style) {
             case 'hexPrism':

@@ -44,7 +44,7 @@ export class Terrain {
     }
 
     private get blockSize() { return this.conf.chunks.blockSize }
-    private get verticalUnit() { return this.conf.gen.verticalUnit }
+    private get verticalUnit() { return this.conf.render.verticalUnit }
     private get nblocks() { return this.conf.chunks.nblocks }
     private get loadRadius() { return this.conf.chunks.loadRadius }
 
