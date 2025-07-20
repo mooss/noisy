@@ -1,22 +1,47 @@
 import { createNoise2D } from "simplex-noise";
 import { createLCG } from "../rng.js";
+import { numStats } from "../stats.js";
+import { rangeMapper } from "../utils.js";
 
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type HeightFun = (x: number, y: number) => number;
 
-export abstract class HeightFieldBuilder2 {
+interface HeightFieldBuilderI {
+    /** Returns a raw height function. */
+    build(): HeightFun;
+
+    /** The estimated low bound of the HeightFunction. */
+    get low(): number;
+
+    /** The estimated high bound of the HeightFunction. */
+    get high(): number;
+
+    /**
+     * Returns a height function roughly normalised through linear interpolation between the
+     * estimated low and high bound.
+     */
+    mkNormalised(low: number, high: number): HeightFun;
+}
+
+export abstract class HeightFieldBuilder2 implements HeightFieldBuilderI {
     abstract build(): HeightFun;
+    abstract get low(): number;
+    abstract get high(): number;
+    mkNormalised(low: number, high: number): HeightFun {
+        const mapper = rangeMapper(this.low, this.high, low, high);
+        const fun = this.build();
+        return (x, y) => { return mapper(fun(x, y)); }
+    }
 }
 
 export interface SimplexI { seed: number }
 export class Simplex extends HeightFieldBuilder2 {
     seed: number;
 
-    constructor(fields: SimplexI) {
-        super(); Object.assign(this, fields);
-    }
-
+    constructor(fields: SimplexI) { super(); Object.assign(this, fields); }
     build(): HeightFun { return createNoise2D(createLCG(this.seed)) }
+    get low(): number { return -1 }
+    get high(): number { return 1 }
 }
 
 export interface LayeredI {
@@ -24,23 +49,34 @@ export interface LayeredI {
     octaves: number;
     persistence: number;
     lacunarity: number;
+    samplingFundamental: number;
 }
-export class Layered<Noise extends HeightFieldBuilder2> extends HeightFieldBuilder2 {
+export class Layered <Noise extends HeightFieldBuilder2> extends HeightFieldBuilder2 {
     fundamental: number;
     octaves: number;
     persistence: number;
     lacunarity: number;
+    samplingFundamental: number;
+    bounds: heightStats;
 
-    constructor(public base: Noise, fields: LayeredI) {
+    constructor(public base: Noise, fields: LayeredI, sampling: HeightSamplerI) {
         super();
         Object.assign(this, fields);
+        this.bounds = heightStats(this.sampler(), sampling);
     }
 
-    build(): HeightFun {
+    get low(): number { return this.bounds.low }
+    get high(): number { return this.bounds.high }
+
+    private sampler(): HeightFun {
+        return this.build(this.samplingFundamental);
+    }
+
+    build(fundamental: number = this.fundamental): HeightFun {
         const fun = this.base.build();
         return (x: number, y: number): number => {
             let res = 0;
-            let frequency = this.fundamental;
+            let frequency = fundamental;
             let amplitude = 1;
 
             for (let oct = 0; oct < this.octaves; oct++) {
@@ -62,4 +98,25 @@ export class Layered<Noise extends HeightFieldBuilder2> extends HeightFieldBuild
             return res;
         }
     }
+
+}
+
+//////////////
+// Sampling //
+
+interface heightStats { low: number; high: number; }
+
+interface HeightSamplerI {
+    // Number of points to sample on both the x and y dimensions.
+    size: number;
+    // Z-score threshold to identify data outliers.
+    threshold: number;
+}
+
+function heightStats(gen: HeightFun, sampling: HeightSamplerI): heightStats {
+    const heights = [];
+    for (let x = 0; x < sampling.size; ++x)
+        for (let y = 0; y < sampling.size; ++y)
+            heights.push(gen(x, y));
+    return numStats(heights).outlierBounds(sampling.threshold);
 }

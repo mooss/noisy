@@ -21,6 +21,8 @@ interface NoiseConfig {
     };
 }
 
+interface MkNormalisedI { mkNormalised(low: number, high: number): HeightFun }
+
 export class GenerationConfig {
     seed: number;
     terrainAlgo: TerrainAlgorithm;
@@ -47,7 +49,19 @@ export class GenerationConfig {
         };
     }
 
-    heightField(): HeightField { return new HeightField(this) }
+    heightField(): MkNormalisedI {
+        if (this.terrainAlgo !== 'neoSimplex')
+            return new HeightField(this);
+
+        const neoSimplex = new Layered(new Simplex({ seed: 23 }), {
+            fundamental: 1.1,
+            octaves: 8,
+            persistence: .65,
+            lacunarity: 1.5,
+            samplingFundamental: 3,
+        }, { size: 100, threshold: 4 });
+        return neoSimplex;
+    }
     get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }
 
     ////////
@@ -202,14 +216,6 @@ class HeightFieldBuilder {
                 return this.layeredMelodicRidge;
             case 'continentalMix':
                 return continentalMix(this.c.seed);
-            case 'neoSimplex':
-                const neoSimplex = new Layered(new Simplex({seed: 23}), {
-                    fundamental: 1.1,
-                    octaves: 8,
-                    persistence: .65,
-                    lacunarity: 1.5,
-                });
-                return neoSimplex.build();
         }
     }
 }
