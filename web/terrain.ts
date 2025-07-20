@@ -74,7 +74,7 @@ export class Terrain {
             at: this.chunkHeightFun(coords),
             nblocks: this.nblocks,
         });
-        res.geometry.scale(this.blockSize, this.blockSize, this.verticalUnit);
+        res.scale.set(this.blockSize, this.blockSize, this.verticalUnit);
         res.translateX(coords.x * CHUNK_UNIT);
         res.translateY(coords.y * CHUNK_UNIT);
         res.matrixAutoUpdate = false;
@@ -116,6 +116,30 @@ export class Terrain {
         return chunk;
     }
 
+    reload(): void {
+        const oldChunks = this.chunks;
+        this.chunks = new Map();
+        this.within(this.loadRadius, (coords: Coordinates) => {
+            const chunk = oldChunks.get(coords.string());
+            if (chunk === undefined) return this.loadChunk(coords); // Load new chunk.
+            // Transfer old chunk.
+            this.chunks.set(coords.string(), chunk);
+            oldChunks.delete(coords.string());
+        });
+
+        // The remaining old chunks can be thrown away.
+        oldChunks.forEach((chunk) => this.removeMesh(chunk.mesh));
+        oldChunks.clear(); // Don't wait for GC, there might be lots of memory in here.
+    }
+
+    /** Resets the scale of all loaded meshes. */
+    rescaleMesh() {
+        this.rangeActive((chk) => {
+            chk.mesh.scale.set(this.blockSize, this.blockSize, this.verticalUnit);
+            chk.mesh.updateMatrix();
+        });
+    }
+
     private center: Coordinates = undefined;
 
     /**
@@ -133,22 +157,6 @@ export class Terrain {
         if (this.conf.chunks.radiusType === 'circle')
             res = Coordinates.prototype.withinCircle;
         return res.bind(this.center)(...args);
-    }
-
-    reload(): void {
-        const oldChunks = this.chunks;
-        this.chunks = new Map();
-        this.within(this.loadRadius, (coords: Coordinates) => {
-            const chunk = oldChunks.get(coords.string());
-            if (chunk === undefined) return this.loadChunk(coords); // Load new chunk.
-            // Transfer old chunk.
-            this.chunks.set(coords.string(), chunk);
-            oldChunks.delete(coords.string());
-        });
-
-        // The remaining old chunks can be thrown away.
-        oldChunks.forEach((chunk) => this.removeMesh(chunk.mesh));
-        oldChunks.clear(); // Don't wait for GC, there might be lots of memory in here.
     }
 
     /**

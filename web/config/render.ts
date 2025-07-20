@@ -27,7 +27,7 @@ export class RenderConfig {
         }
     }
 
-    ui(parent: Panel, regen: () => void): void {
+    ui(parent: Panel, regen: () => void, rerender: () => void): void {
         parent.select(this, 'style', {
             'Surface': 'surface',
             'Squares': 'quadPrism',
@@ -38,14 +38,14 @@ export class RenderConfig {
             .legend('Palette').onChange(regen);
 
         parent.range(this.light.ambient, 'intensity', 0, 10, .2)
-            .legend('Ambient Light').onChange(regen);
+            .legend('Ambient Light').onChange(rerender);
 
         parent.range(this.light.directional, 'intensity', 0, 10, .2)
-            .legend('Directional Light').onChange(regen);
+            .legend('Directional Light').onChange(rerender);
 
         parent.range(this, 'heightMultiplier', 0.1, 5.0, 0.05)
             .legend('Height multiplier')
-            .onInput(regen);
+            .onInput(rerender);
     }
 
     get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }

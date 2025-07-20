@@ -38,6 +38,7 @@ class Game {
 
     start(): void {
         this.terrain = new Terrain(this.config.chunks, this.config.gen, this.config.render);
+        this.keyboard = new Keyboard();
         this.avatar = new Avatar();
         this.avatar.x = .5;
         this.avatar.y = .5;
@@ -48,7 +49,6 @@ class Game {
         this.renderer.addMesh(this.avatar.mesh);
 
         this.setupUI();
-        this.keyboard = new Keyboard();
         this.regenerateTerrain();
         this.startAnimationLoop();
     }
@@ -66,13 +66,14 @@ class Game {
 
         this.config.chunks.ui(this.gui.folder('Chunks'),
             () => this.regenerateTerrain(),
-            () => this.reloadTerrain()
+            () => this.reloadTerrain(),
         );
         this.config.render.ui(this.gui.folder('Render'),
-            () => this.regenerateTerrain()
+            () => this.regenerateTerrain(),
+            () => this.updateRender(),
         );
         this.config.avatar.ui(this.gui.folder('Avatar').close(),
-            () => this.updateAvatar()
+            () => this.updateAvatar(),
         );
 
         const terrainGeneration = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
@@ -153,6 +154,12 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
     reloadTerrain(): void {
         this.terrain.reload();
+    }
+
+    updateRender(): void {
+        this.renderer.updateLighting();
+        this.terrain.rescaleMesh();
+        this.updateAvatar();
     }
 }
 
