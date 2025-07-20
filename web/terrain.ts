@@ -41,7 +41,6 @@ export class Terrain {
         render: RenderConfig
     ) {
         this.conf = { chunks, gen, render };
-        this.regen(); // Initialize the height function.
     }
 
     private get blockSize() { return this.conf.chunks.blockSize }
