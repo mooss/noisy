@@ -3,7 +3,7 @@ import { Deck, Panel } from "../gui/gui.js";
 import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
-import { HeightFun, Layered, Simplex } from "./noise.js";
+import { HeightFun, HeightPostProcess, Layered, Simplex } from "./noise.js";
 
 type TerrainAlgorithm = 'simplex' | 'octavianRidge' | 'melodicRidge' | 'continentalMix' | 'rand' | 'neoSimplex';
 type RidgeStyle = 'octavian' | 'melodic';
@@ -60,7 +60,8 @@ export class GenerationConfig {
             lacunarity: 1.5,
             samplingFundamental: 3,
         }, { size: 100, threshold: 4 });
-        return neoSimplex;
+        const postprocessed = new HeightPostProcess(neoSimplex, {terracing: .07})
+        return postprocessed;
     }
     get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }
 

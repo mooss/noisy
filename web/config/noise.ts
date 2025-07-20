@@ -34,14 +34,17 @@ export abstract class HeightFieldBuilder2 implements HeightFieldBuilderI {
     }
 }
 
+///////////
+// Noise //
+
 export interface SimplexI { seed: number }
 export class Simplex extends HeightFieldBuilder2 {
     seed: number;
 
     constructor(fields: SimplexI) { super(); Object.assign(this, fields); }
-    build(): HeightFun { return createNoise2D(createLCG(this.seed)) }
     get low(): number { return -1 }
     get high(): number { return 1 }
+    build(): HeightFun { return createNoise2D(createLCG(this.seed)) }
 }
 
 export interface LayeredI {
@@ -99,6 +102,29 @@ export class Layered <Noise extends HeightFieldBuilder2> extends HeightFieldBuil
         }
     }
 
+}
+
+/////////////////////
+// Post-processing //
+
+interface HeightPostProcessI {
+    terracing: number;
+}
+export class HeightPostProcess<Noise extends HeightFieldBuilder2> extends HeightFieldBuilder2 {
+    terracing: number;
+
+    constructor(public base: Noise, fields: HeightPostProcessI) { super(); Object.assign(this, fields) }
+
+    get low(): number { return this.base.low }
+    get high(): number { return this.base.high }
+    build(): HeightFun {
+        const basefun = this.base.build();
+        if (this.terracing > 0) {
+            const step = this.terracing * (this.high - this.low);
+            return (x, y) => Math.round(basefun(x, y) / step) * step;
+        }
+        return basefun;
+    }
 }
 
 //////////////
