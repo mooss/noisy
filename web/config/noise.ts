@@ -127,17 +127,17 @@ function layerNoise(noise: NoiseFun, layers: LayersI): NoiseFun {
 }
 
 interface LayerSamplingI extends NoiseSamplerI { fundamental: number }
-export class LayeredI {
-    noise: NoiseMaker;
+export class LayeredI<Noise extends NoiseMaker> {
+    noise: Noise;
     layers: LayersI;
     sampling: LayerSamplingI;
 }
-export class Layered extends NoiseMaker {
-    p: LayeredI;
+export class Layered<Noise extends NoiseMaker> extends NoiseMaker {
+    p: LayeredI<Noise>;
 
     bounds: noiseStats;
 
-    constructor(public params: LayeredI) {
+    constructor(public params: LayeredI<Noise>) {
         super();
         this.p = params;
         this.recompute();
