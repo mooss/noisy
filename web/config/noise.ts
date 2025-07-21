@@ -27,6 +27,7 @@ export abstract class NoiseMaker implements NoiseMakerI {
     abstract make(): NoiseFun;
     abstract get low(): number;
     abstract get high(): number;
+
     mkNormalised(low: number, high: number): NoiseFun {
         const mapper = rangeMapper(this.low, this.high, low, high);
         const fun = this.make();
@@ -119,17 +120,17 @@ function layerNoise(noise: NoiseFun, layers: LayersI): NoiseFun {
 }
 
 interface LayerSamplingI extends NoiseSamplerI { fundamental: number }
-export class LayeredI<Noise extends NoiseMaker> {
-    noise: Noise;
+export class LayeredI {
+    noise: NoiseMaker;
     layers: LayersI;
     sampling: LayerSamplingI;
 }
-export class Layered<Noise extends NoiseMaker> extends NoiseMaker {
-    p: LayeredI<Noise>;
+export class Layered extends NoiseMaker {
+    p: LayeredI;
 
     bounds: noiseStats;
 
-    constructor(public params: LayeredI<Noise>) {
+    constructor(public params: LayeredI) {
         super();
         this.p = params;
         this.resample();
@@ -174,8 +175,8 @@ export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker {
 type NoiseAlgorithm = 'simplex' | 'ridge';
 
 interface NoisePickerI {
-    layeredSimplex: LayeredI<Simplex>;
-    octavianRidge: LayeredI<Ridge>;
+    layeredSimplex: LayeredI;
+    octavianRidge: LayeredI;
     postProcess: NoisePostProcessI;
     algorithm: NoiseAlgorithm;
 }
