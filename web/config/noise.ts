@@ -59,12 +59,12 @@ function noiseStats(gen: NoiseFun, sampling: NoiseSamplerI): noiseStats {
 
 export interface SimplexI { seed: number }
 export class Simplex extends NoiseMaker {
-    seed: number;
+    p: SimplexI;
 
-    constructor(fields: SimplexI) { super(); Object.assign(this, fields); }
+    constructor(params: SimplexI) { super(); this.p = params; }
     get low(): number { return -1 }
     get high(): number { return 1 }
-    make(): NoiseFun { return createNoise2D(createLCG(this.seed)) }
+    make(): NoiseFun { return createNoise2D(createLCG(this.p.seed)) }
 }
 
 export interface RidgeI extends SimplexI {
@@ -72,13 +72,13 @@ export interface RidgeI extends SimplexI {
     square: boolean;
 }
 export class Ridge extends NoiseMaker {
-    f: RidgeI;
-    constructor(fields: RidgeI) { super(); this.f = fields; }
+    p: RidgeI;
+    constructor(params: RidgeI) { super(); this.p = params; }
     get low(): number { return 0 }
     get high(): number { return 1 }
     make(): NoiseFun {
-        const simplex = new Simplex(this.f).make();
-        const ridger = mkRidger(this.f.invert, this.f.square);
+        const simplex = new Simplex(this.p).make();
+        const ridger = mkRidger(this.p.invert, this.p.square);
         return (x, y) => ridger(simplex(x, y));
     }
 }
@@ -124,27 +124,24 @@ export class LayeredI<Noise extends NoiseMaker> {
     layers: LayersI;
     sampling: LayerSamplingI;
 }
-
 export class Layered<Noise extends NoiseMaker> extends NoiseMaker {
-    layers: LayersI;
-    noise: Noise;
-    sampling: LayerSamplingI;
+    p: LayeredI<Noise>;
 
     bounds: noiseStats;
 
-    constructor(public fields: LayeredI<Noise>) {
+    constructor(public params: LayeredI<Noise>) {
         super();
-        Object.assign(this, fields);
+        this.p = params;
         this.resample();
     }
 
     get low(): number { return this.bounds.low }
     get high(): number { return this.bounds.high }
-    resample(): void { this.bounds = noiseStats(this.sampler(), this.sampling) }
-    make(): NoiseFun { return layerNoise(this.noise.make(), this.layers) }
+    resample(): void { this.bounds = noiseStats(this.sampler(), this.p.sampling) }
+    make(): NoiseFun { return layerNoise(this.p.noise.make(), this.p.layers) }
     private sampler(): NoiseFun {
-        const layers = clone(this.layers); layers.fundamental = 1;
-        return layerNoise(this.noise.make(), layers);
+        const layers = clone(this.p.layers); layers.fundamental = 1;
+        return layerNoise(this.p.noise.make(), layers);
     }
 }
 
@@ -157,7 +154,7 @@ interface NoisePostProcessI {
 export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker {
     terracing: number;
 
-    constructor(public base: Noise, fields: NoisePostProcessI) { super(); Object.assign(this, fields); }
+    constructor(public base: Noise, params: NoisePostProcessI) { super(); Object.assign(this, params); }
 
     get low(): number { return this.base.low }
     get high(): number { return this.base.high }
@@ -184,30 +181,30 @@ interface NoisePickerI {
 }
 
 export class NoisePicker extends NoiseMaker {
-    f: NoisePickerI; // Fields.
+    p: NoisePickerI;
     current: NoiseMaker;
 
-    constructor(fields: NoisePickerI) {
+    constructor(params: NoisePickerI) {
         super();
-        this.f = fields;
+        this.p = params;
         this.rebuild();
     }
 
     set algorithm(algo: NoiseAlgorithm) {
-        this.f.algorithm = algo;
+        this.p.algorithm = algo;
         this.rebuild();
     }
 
     rebuild(): void {
-        this.current = new NoisePostProcess(this.mk(), this.f.postProcess);
+        this.current = new NoisePostProcess(this.mk(), this.p.postProcess);
     }
 
     private mk(): NoiseMaker {
-        switch (this.f.algorithm) {
+        switch (this.p.algorithm) {
             case 'simplex':
-                return new Layered(this.f.layeredSimplex);
+                return new Layered(this.p.layeredSimplex);
             case 'ridge':
-                return new Layered(this.f.octavianRidge);
+                return new Layered(this.p.octavianRidge);
         }
     }
 
