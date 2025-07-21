@@ -17,29 +17,29 @@ export interface NoiseMakerI {
     get high(): number;
 
     /**
-     * Returns a noise function roughly normalised through linear interpolation between the
-     * estimated low and high bound.
-     */
-    mkNormalised(low: number, high: number): NoiseFun;
-
-    /**
      * Recomputes the noise parameters, which may be costly but necessary when important parameters
      * have changed.
      */
     recompute(): void;
+
+    /**
+     * Returns a noise function roughly normalised through linear interpolation between the
+     * estimated low and high bound.
+     */
+    mkNormalised(low: number, high: number): NoiseFun;
 }
 
 export abstract class NoiseMaker implements NoiseMakerI {
     abstract make(): NoiseFun;
     abstract get low(): number;
     abstract get high(): number;
+    recompute(): void { }
 
     mkNormalised(low: number, high: number): NoiseFun {
         const mapper = rangeMapper(this.low, this.high, low, high);
         const fun = this.make();
         return (x, y) => { return mapper(fun(x, y)); }
     }
-    recompute(): void {  }
 }
 
 //////////////
@@ -179,46 +179,34 @@ export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker {
 ///////////////////
 // Global config //
 
-type NoiseAlgorithm = 'simplex' | 'ridge';
-
 interface NoisePickerI {
-    layeredSimplex: LayeredI;
-    octavianRidge: LayeredI;
+    /**
+     * The list of algorithms that can be picked.
+     * Must not be empty.
+     */
+    algorithms: Record<string, NoiseMaker>;
+
     postProcess: NoisePostProcessI;
-    algorithm: NoiseAlgorithm;
 }
 
 export class NoisePicker extends NoiseMaker {
     p: NoisePickerI;
-    current: NoiseMaker;
+    private algokey: string;
 
-    constructor(params: NoisePickerI) {
+    constructor(params: NoisePickerI, initial: string = Object.keys(params.algorithms)[0]) {
         super();
         this.p = params;
-        this.rebuild();
+        this.algokey = initial;
     }
 
-    set algorithm(algo: NoiseAlgorithm) {
-        this.p.algorithm = algo;
-        this.rebuild();
+    get algorithm(): NoiseMaker { return this.p.algorithms[this.algokey] };
+    set algorithm(algo: string) {
+        this.algokey = algo;
+        this.recompute();
     }
 
-    rebuild(): void {
-        const maker = this.mk();
-        maker.recompute();
-        this.current = new NoisePostProcess(maker, this.p.postProcess);
-    }
-
-    private mk(): NoiseMaker {
-        switch (this.p.algorithm) {
-            case 'simplex':
-                return new Layered(this.p.layeredSimplex);
-            case 'ridge':
-                return new Layered(this.p.octavianRidge);
-        }
-    }
-
-    get low(): number { return this.current.low }
-    get high(): number { return this.current.high }
-    make(): NoiseFun { return this.current.make() }
+    make(): NoiseFun { return new NoisePostProcess(this.algorithm, this.p.postProcess).make() }
+    get low(): number { return this.algorithm.low }
+    get high(): number { return this.algorithm.high }
+    recompute(): void { this.algorithm.recompute() }
 }
