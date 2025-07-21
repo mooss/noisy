@@ -6,7 +6,7 @@ import { clone, rangeMapper } from "../utils.js";
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;
 
-export interface NoiseBuilderI {
+export interface NoiseMakerI {
     /** Returns a raw noise function. */
     make(): NoiseFun;
 
@@ -23,7 +23,7 @@ export interface NoiseBuilderI {
     mkNormalised(low: number, high: number): NoiseFun;
 }
 
-export abstract class NoiseMaker implements NoiseBuilderI {
+export abstract class NoiseMaker implements NoiseMakerI {
     abstract make(): NoiseFun;
     abstract get low(): number;
     abstract get high(): number;
@@ -150,4 +150,46 @@ export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker {
         }
         return basefun;
     }
+}
+
+///////////////////
+// Global config //
+
+type NoiseAlgorithm = 'simplex';
+
+interface NoisePickerI {
+    layeredSimplex: LayeredI<Simplex>;
+    postProcess: NoisePostProcessI;
+    algorithm: NoiseAlgorithm;
+}
+
+export class NoisePicker extends NoiseMaker {
+    f: NoisePickerI; // Fields.
+    current: NoiseMaker;
+
+    constructor(fields: NoisePickerI) {
+        super();
+        this.f = fields;
+        this.rebuild();
+    }
+
+    set algorithm(algo: NoiseAlgorithm) {
+        this.f.algorithm = algo;
+        this.rebuild();
+    }
+
+    rebuild(): void {
+        this.current = new NoisePostProcess(this.mk(), this.f.postProcess);
+    }
+
+    private mk(): NoiseMaker {
+        switch (this.f.algorithm) {
+            case 'simplex':
+                return new Layered(this.f.layeredSimplex);
+        }
+    }
+
+    get low(): number { return this.current.low }
+    get high(): number { return this.current.high }
+    make(): NoiseFun { return this.current.make() }
 }
