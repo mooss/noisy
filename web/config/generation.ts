@@ -2,7 +2,7 @@ import { Deck, Panel } from "../gui/gui.js";
 import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
-import { NoiseFun, Simplex, NoisePicker } from "./noise.js";
+import { NoiseFun, Simplex, NoisePicker, Ridge } from "./noise.js";
 
 type TerrainAlgorithm = 'simplex' | 'octavianRidge' | 'melodicRidge' | 'continentalMix' | 'rand' | 'neoSimplex';
 type RidgeStyle = 'octavian' | 'melodic';
@@ -61,8 +61,18 @@ export class GenerationConfig {
                 },
                 sampling: { size: 100, threshold: 4, fundamental: 3 },
             },
+            octavianRidge: {
+                noise: new Ridge({invert: true, square: false, seed: 23}),
+                layers: {
+                    fundamental: .5,
+                    octaves: 8,
+                    persistence: .65,
+                    lacunarity: 1.5,
+                },
+                sampling: { size: 100, threshold: 4, fundamental: 3 },
+            },
             postProcess: { terracing: .07 },
-            algorithm: 'simplex',
+            algorithm: 'ridge',
         })
         return picker;
     }

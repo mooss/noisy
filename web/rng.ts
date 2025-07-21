@@ -98,7 +98,7 @@ export function mkRidger(
         // Inverting the elevation makes the rebound occur at the top, creating ridges instead of
         // valleys.
         if (invert) {
-            signal = - signal;
+            signal = 1 - signal;
         }
 
         return signal;

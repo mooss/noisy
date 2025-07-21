@@ -1,5 +1,5 @@
 import { createNoise2D } from "simplex-noise";
-import { createLCG } from "../rng.js";
+import { createLCG, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
 
@@ -66,6 +66,25 @@ export class Simplex extends NoiseMaker {
     get high(): number { return 1 }
     make(): NoiseFun { return createNoise2D(createLCG(this.seed)) }
 }
+
+export interface RidgeI extends SimplexI {
+    invert: boolean;
+    square: boolean;
+}
+export class Ridge extends NoiseMaker {
+    f: RidgeI;
+    constructor(fields: RidgeI) { super(); this.f = fields; }
+    get low(): number { return 0 }
+    get high(): number { return 1 }
+    make(): NoiseFun {
+        const simplex = new Simplex(this.f).make();
+        const ridger = mkRidger(this.f.invert, this.f.square);
+        return (x, y) => ridger(simplex(x, y));
+    }
+}
+
+//////////////
+// Layering //
 
 export interface LayersI {
     fundamental: number;
@@ -155,10 +174,11 @@ export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker {
 ///////////////////
 // Global config //
 
-type NoiseAlgorithm = 'simplex';
+type NoiseAlgorithm = 'simplex' | 'ridge';
 
 interface NoisePickerI {
     layeredSimplex: LayeredI<Simplex>;
+    octavianRidge: LayeredI<Ridge>;
     postProcess: NoisePostProcessI;
     algorithm: NoiseAlgorithm;
 }
@@ -186,6 +206,8 @@ export class NoisePicker extends NoiseMaker {
         switch (this.f.algorithm) {
             case 'simplex':
                 return new Layered(this.f.layeredSimplex);
+            case 'ridge':
+                return new Layered(this.f.octavianRidge);
         }
     }
 
