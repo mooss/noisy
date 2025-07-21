@@ -1,5 +1,5 @@
 import { createNoise2D } from "simplex-noise";
-import { createLCG, mkRidger } from "../rng.js";
+import { createLCG, highMix, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
 
@@ -154,6 +154,36 @@ export class Layered<Noise extends NoiseMaker> extends NoiseMaker {
     }
 }
 
+///////////////
+// Noise mix //
+
+interface ContinentalMixI<Low extends NoiseMaker, High extends NoiseMaker> {
+    bass: Low;
+    treble: High;
+    threshold: {
+        low: number;
+        mid: number;
+        high: number;
+    }
+}
+export class ContinentalMix<Low extends NoiseMaker = NoiseMaker, High extends NoiseMaker = NoiseMaker> extends NoiseMaker {
+    bass: NoiseFun;
+    treble: NoiseFun;
+
+    constructor(public p: ContinentalMixI<Low, High>) { super() }
+
+    get low(): number { return 0 }
+    get high(): number { return 1 }
+    recompute(): void {
+        this.treble = this.p.treble.normalised(0, 1);
+        this.bass = this.p.bass.normalised(0, 1);
+    }
+    make(): NoiseFun {
+        const thsh = this.p.threshold;
+        return highMix(this.bass, this.treble, thsh.low, thsh.high, thsh.mid);
+    }
+}
+
 /////////////////////
 // Post-processing //
 
@@ -179,11 +209,7 @@ export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker {
 // Global config //
 
 export interface NoisePickerI {
-    /**
-     * The list of algorithms that can be picked.
-     */
     algorithms: Record<string, NoiseMaker>;
-
     postProcess: NoisePostProcessI;
 }
 

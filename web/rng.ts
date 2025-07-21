@@ -1,5 +1,7 @@
 import { createNoise2D } from 'simplex-noise';
 
+type NoiseFun = (x: number, y: number) => number;
+
 ////////////////////
 // Free functions //
 
@@ -47,10 +49,10 @@ export function mkRng(seed: number): (min: number, max: number) => number {
  * @returns The warped noise function.
  */
 function mkWarped(
-    noise: (x: number, y: number) => number,
-    warp: (x: number, y: number) => number,
+    noise: NoiseFun,
+    warp: NoiseFun,
     strength: number
-): (x: number, y: number) => number {
+): NoiseFun {
 	return (x, y) => {
         const wp = warp(x, y);
 		return noise(
@@ -67,7 +69,7 @@ function mkWarped(
  * @param warpStrength - The magnitude of the warp effect.
  * @returns A function that returns simplex noise at (x,y).
  */
-export function mkSimplex(seed: number, warpStrength: number): (x: number, y: number) => number {
+export function mkSimplex(seed: number, warpStrength: number): NoiseFun {
     const noise = createNoise2D(createLCG(seed));
 	const warpx = createNoise2D(createLCG(seed + 1));
     return mkWarped(noise, warpx, warpStrength);
@@ -116,12 +118,12 @@ export function mkRidger(
  * @returns A function that returns layered noise at (x,y).
  */
 export function mkLayering(
-    noise: (x: number, y: number) => number,
+    noise: NoiseFun,
     octaves: number,
     fundamental: number,
     persistence: number,
     lacunarity: number
-): (x: number, y: number) => number {
+): NoiseFun {
     return (x: number, y: number) => {
         let total = 0;
         let frequency = fundamental;
@@ -148,19 +150,19 @@ export function mkLayering(
 }
 
 export function highMix(
-    lowgen: (x: number, y: number) => number,
-    highgen: (x: number, y: number) => number,
+    bass: NoiseFun,
+    treble: NoiseFun,
     low: number = .25,
     high: number = .75,
     mid: number = (low+high)/2,
-): (x: number, y: number) => number {
+): NoiseFun {
     const range = high - low;
     return (x: number, y: number) => {
-        let highval = highgen(x, y); // In [0, 1].
+        let highval = treble(x, y); // In [0, 1].
         if (highval > high) return highval; // In ]high, 1], fully the high range.
         // highval is in [0, high].
 
-        let lowval = lowgen(x, y) * mid; // In [0, mid].
+        let lowval = bass(x, y) * mid; // In [0, mid].
         if (highval < low) return lowval;
 
         // highval is in [low, high], between the high and low range, interpolation required.
