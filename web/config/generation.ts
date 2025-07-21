@@ -2,7 +2,7 @@ import { Deck, Panel } from "../gui/gui.js";
 import { highMix, mkLayering, mkRidger, mkRng, mkSimplex } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
-import { HeightFun, HeightPostProcess, Layered, Simplex } from "./noise.js";
+import { HeightFun, HeightPostProcess, Layered, Simplex } from "./height.js";
 
 type TerrainAlgorithm = 'simplex' | 'octavianRidge' | 'melodicRidge' | 'continentalMix' | 'rand' | 'neoSimplex';
 type RidgeStyle = 'octavian' | 'melodic';
@@ -50,14 +50,18 @@ export class GenerationConfig {
         if (this.terrainAlgo !== 'neoSimplex')
             return new HeightField(this);
 
-        const neoSimplex = new Layered(new Simplex({ seed: 23 }), {
-            fundamental: 1.1,
-            octaves: 8,
-            persistence: .65,
-            lacunarity: 1.5,
-            samplingFundamental: 3,
-        }, { size: 100, threshold: 4 });
-        const postprocessed = new HeightPostProcess(neoSimplex, {terracing: .07})
+        const neoSimplex = new Layered({
+            noise: new Simplex({ seed: 23 }),
+            layers: {
+                fundamental: 1.1,
+                octaves: 8,
+                persistence: .65,
+                lacunarity: 1.5,
+            },
+            sampling: { size: 100, threshold: 4, fundamental: 3},
+        });
+
+        const postprocessed = new HeightPostProcess(neoSimplex, { terracing: .07 })
         return postprocessed;
     }
 
