@@ -21,6 +21,12 @@ export interface NoiseMakerI {
      * estimated low and high bound.
      */
     mkNormalised(low: number, high: number): NoiseFun;
+
+    /**
+     * Recomputes the noise parameters, which may be costly but necessary when important parameters
+     * have changed.
+     */
+    recompute(): void;
 }
 
 export abstract class NoiseMaker implements NoiseMakerI {
@@ -33,6 +39,7 @@ export abstract class NoiseMaker implements NoiseMakerI {
         const fun = this.make();
         return (x, y) => { return mapper(fun(x, y)); }
     }
+    recompute(): void {  }
 }
 
 //////////////
@@ -133,12 +140,12 @@ export class Layered extends NoiseMaker {
     constructor(public params: LayeredI) {
         super();
         this.p = params;
-        this.resample();
+        this.recompute();
     }
 
     get low(): number { return this.bounds.low }
     get high(): number { return this.bounds.high }
-    resample(): void { this.bounds = noiseStats(this.sampler(), this.p.sampling) }
+    recompute(): void { this.bounds = noiseStats(this.sampler(), this.p.sampling) }
     make(): NoiseFun { return layerNoise(this.p.noise.make(), this.p.layers) }
     private sampler(): NoiseFun {
         const layers = clone(this.p.layers); layers.fundamental = 1;
@@ -197,7 +204,9 @@ export class NoisePicker extends NoiseMaker {
     }
 
     rebuild(): void {
-        this.current = new NoisePostProcess(this.mk(), this.p.postProcess);
+        const maker = this.mk();
+        maker.recompute();
+        this.current = new NoisePostProcess(maker, this.p.postProcess);
     }
 
     private mk(): NoiseMaker {
