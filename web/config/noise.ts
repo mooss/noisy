@@ -29,7 +29,7 @@ export interface NoiseMakerI {
     mkNormalised(low: number, high: number): NoiseFun;
 }
 
-export abstract class NoiseMaker implements NoiseMakerI {
+abstract class NoiseMaker implements NoiseMakerI {
     abstract make(): NoiseFun;
     abstract get low(): number;
     abstract get high(): number;
@@ -179,10 +179,9 @@ export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker {
 ///////////////////
 // Global config //
 
-interface NoisePickerI {
+export interface NoisePickerI {
     /**
      * The list of algorithms that can be picked.
-     * Must not be empty.
      */
     algorithms: Record<string, NoiseMaker>;
 
@@ -191,17 +190,25 @@ interface NoisePickerI {
 
 export class NoisePicker extends NoiseMaker {
     p: NoisePickerI;
-    private algokey: string;
+    private algoname: string;
 
-    constructor(params: NoisePickerI, initial: string = Object.keys(params.algorithms)[0]) {
+    constructor(params: NoisePickerI, initial: string = undefined) {
         super();
         this.p = params;
-        this.algokey = initial;
+        let algos = Object.keys(params.algorithms);
+        if (initial === undefined && algos.length != 0)
+            initial = algos[0];
+        this.algoname = initial;
     }
 
-    get algorithm(): NoiseMaker { return this.p.algorithms[this.algokey] };
+    register(name: string, algo: NoiseMaker): void {
+        this.p.algorithms[name] = algo;
+        if (this.algoname === undefined) this.algoname = name;
+    }
+
+    get algorithm(): NoiseMaker { return this.p.algorithms[this.algoname] };
     set algorithm(algo: string) {
-        this.algokey = algo;
+        this.algoname = algo;
         this.recompute();
     }
 
