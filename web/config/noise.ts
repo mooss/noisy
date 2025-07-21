@@ -26,7 +26,7 @@ export interface NoiseMakerI {
      * Returns a noise function roughly normalised through linear interpolation between the
      * estimated low and high bound.
      */
-    mkNormalised(low: number, high: number): NoiseFun;
+    normalised(low: number, high: number): NoiseFun;
 }
 
 abstract class NoiseMaker implements NoiseMakerI {
@@ -35,7 +35,7 @@ abstract class NoiseMaker implements NoiseMakerI {
     abstract get high(): number;
     recompute(): void { }
 
-    mkNormalised(low: number, high: number): NoiseFun {
+    normalised(low: number, high: number): NoiseFun {
         const mapper = rangeMapper(this.low, this.high, low, high);
         const fun = this.make();
         return (x, y) => { return mapper(fun(x, y)); }

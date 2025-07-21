@@ -57,7 +57,7 @@ export class Terrain {
 
     /** Regenerates the heights and updates the mesh of all active chunks. */
     regen(): void {
-        this.height = this.conf.noise.mkNormalised(.01, 1);
+        this.height = this.conf.noise.normalised(.01, 1);
         this.rangeActive(this.updateMesh.bind(this));
     }
 
