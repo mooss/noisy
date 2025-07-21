@@ -148,7 +148,8 @@ export class Layered<Noise extends NoiseMaker> extends NoiseMaker {
     recompute(): void { this.bounds = noiseStats(this.sampler(), this.p.sampling) }
     make(): NoiseFun { return layerNoise(this.p.noise.make(), this.p.layers) }
     private sampler(): NoiseFun {
-        const layers = clone(this.p.layers); layers.fundamental = 1;
+        const layers = clone(this.p.layers);
+        layers.fundamental = this.p.sampling.fundamental;
         return layerNoise(this.p.noise.make(), layers);
     }
 }
@@ -160,16 +161,14 @@ interface NoisePostProcessI {
     terracing: number;
 }
 export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker {
-    terracing: number;
-
-    constructor(public base: Noise, params: NoisePostProcessI) { super(); Object.assign(this, params); }
+    constructor(public base: Noise, public p: NoisePostProcessI) { super() }
 
     get low(): number { return this.base.low }
     get high(): number { return this.base.high }
     make(): NoiseFun {
         const basefun = this.base.make();
-        if (this.terracing > 0) {
-            const step = this.terracing * (this.high - this.low);
+        if (this.p.terracing > 0) {
+            const step = this.p.terracing * (this.high - this.low);
             return (x, y) => Math.round(basefun(x, y) / step) * step;
         }
         return basefun;

@@ -1,7 +1,7 @@
 import { Avatar } from './avatar.js';
 import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
-import { GenerationConfig } from './config/generation.js';
+import { NoisePicker } from './config/noise.js';
 import { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from './constants.js';
 import { GUI } from './gui/gui.js';
@@ -9,6 +9,7 @@ import { Renderer } from './renderer.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
+import { noiseGenerationUI } from './ui/noise.js';
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
@@ -22,22 +23,22 @@ class Game {
 
     config: {
         chunks: ChunkConfig;
-        gen: GenerationConfig;
         avatar: AvatarConfig;
         render: RenderConfig;
+        noise: NoisePicker;
     };
 
     constructor() {
         this.config = {
             chunks: new ChunkConfig(),
-            gen: new GenerationConfig(),
             avatar: new AvatarConfig(),
             render: new RenderConfig(),
+            noise: new NoisePicker({ postProcess: { terracing: .07 }, algorithms: {} }),
         };
     }
 
     start(): void {
-        this.terrain = new Terrain(this.config.chunks, this.config.gen, this.config.render);
+        this.terrain = new Terrain(this.config.chunks, this.config.noise, this.config.render);
         this.keyboard = new Keyboard();
         this.avatar = new Avatar();
         this.avatar.x = .5;
@@ -77,9 +78,7 @@ class Game {
         );
 
         const terrainGeneration = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
-        this.config.gen.ui(terrainGeneration,
-            () => this.regenerateTerrain()
-        );
+        noiseGenerationUI(terrainGeneration, this.config.noise, this);
     }
 
     setupStatsGraph(): void {

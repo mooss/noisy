@@ -1,10 +1,9 @@
 import * as THREE from 'three';
 import type { ChunkConfig } from './config/chunk.js';
-import type { GenerationConfig } from './config/generation.js';
+import { NoisePicker } from './config/noise.js';
 import type { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from "./constants.js";
 import { Coordinates, Position } from "./coordinates.js";
-import type { HeightGenerator } from './height-generator.js';
 
 class Chunk {
     coords: Coordinates;
@@ -22,7 +21,7 @@ export class Terrain {
     /** References to the relevant configurations */
     private conf: {
         chunks: ChunkConfig;
-        gen: GenerationConfig;
+        noise: NoisePicker,
         render: RenderConfig;
     };
 
@@ -37,10 +36,10 @@ export class Terrain {
 
     constructor(
         chunks: ChunkConfig,
-        gen: GenerationConfig,
+        noise: NoisePicker,
         render: RenderConfig
     ) {
-        this.conf = { chunks, gen, render };
+        this.conf = { chunks, noise, render };
     }
 
     private get blockSize() { return this.conf.chunks.blockSize }
@@ -58,7 +57,7 @@ export class Terrain {
 
     /** Regenerates the heights and updates the mesh of all active chunks. */
     regen(): void {
-        this.height = this.conf.gen.heightField().mkNormalised(.01, 1);
+        this.height = this.conf.noise.mkNormalised(.01, 1);
         this.rangeActive(this.updateMesh.bind(this));
     }
 

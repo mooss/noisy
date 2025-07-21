@@ -217,7 +217,7 @@ export class Deck extends Panel {
 /**
  * Part of a Deck, essentially a focusable Panel with a title.
  */
-class Card extends Panel {
+export class Card extends Panel {
     name: string;                           // Displayed name of the card.
     private _deck: Deck;                    // The window to which the tab is attached.
     private _button: HtmlCssElement;        // The clickable tab sitting in the header bar.
