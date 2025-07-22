@@ -2,44 +2,56 @@ import { ContinentalMix, Layered, NoiseMakerI, NoisePicker, Ridge, Simplex } fro
 import { Card, Deck, Panel } from "../gui/gui.js";
 import { clone } from "../utils.js";
 
+export interface NoiseMakerUI extends NoiseMakerI {
+    bind(root: Panel, cb: NoiseCallback): void;
+}
+
 ////////////////
 // Algorithms //
 
-type binder<Noise extends NoiseMakerI> = (root: Panel, noise: Noise, cb: NoiseCallback) => void;
-
-export function simplexUI(root: Panel, noise: Simplex, cb: NoiseCallback) {
-    root.number(noise.p, 'seed').legend('Seed').onChange(cb.regen);
+export class SimplexUI extends Simplex {
+    bind(root: Panel, cb: NoiseCallback) {
+        root.number(this.p, 'seed').legend('Seed').onChange(cb.regen);
+    }
 }
 
-export function ridgeUI(root: Panel, noise: Ridge, cb: NoiseCallback) {
-    root.number(noise.p, 'seed').legend('Seed').onChange(cb.regen);
-    root.bool(noise.p, 'invert').legend('Invert').onChange(cb.regen);
-    root.bool(noise.p, 'square').legend('Square').onChange(cb.regen);
+export class RidgeUI extends Ridge {
+    bind(root: Panel, cb: NoiseCallback) {
+        root.number(this.p, 'seed').legend('Seed').onChange(cb.regen);
+        root.bool(this.p, 'invert').legend('Invert').onChange(cb.regen);
+        root.bool(this.p, 'square').legend('Square').onChange(cb.regen);
+    }
 }
 
-export function continentalMixUI(root: Panel, noise: ContinentalMix, cb: NoiseCallback) {
-    root.range(noise.p.threshold, 'low', 0, 1, .02).legend('Low').onChange(cb.regen);
-    root.range(noise.p.threshold, 'mid', 0, 1, .02).legend('Mid').onChange(cb.regen);
-    root.range(noise.p.threshold, 'high', 0, 1, .02).legend('High').onChange(cb.regen);
+export class ContinentalMixUI<
+    Low extends NoiseMakerUI, High extends NoiseMakerUI
+> extends ContinentalMix<Low, High> {
+    bind(root: Panel, cb: NoiseCallback) {
+        this.p.bass.bind(root.folder('Bass'), cb);
+        this.p.treble.bind(root.folder('Treble'), cb);
+        root.range(this.p.threshold, 'low', 0, 1, .02).legend('Low').onChange(cb.regen);
+        root.range(this.p.threshold, 'mid', 0, 1, .02).legend('Mid').onChange(cb.regen);
+        root.range(this.p.threshold, 'high', 0, 1, .02).legend('High').onChange(cb.regen);
+    }
 }
 
-export function layersUI<Noise extends NoiseMakerI>(
-    card: Panel, laysim: Layered<Noise>, bind: binder<Noise>, cb: NoiseCallback,
-) {
-    const noisef = card.folder('Noise');
-    bind(noisef, laysim.p.noise, cb);
+export class LayeredUI<Noise extends NoiseMakerUI> extends Layered<Noise> {
+    bind(root: Panel, cb: NoiseCallback) {
+        const noisef = root.folder('Noise');
+        this.p.noise.bind(noisef, cb);
 
-    const lay = laysim.p.layers;
-    noisef.range(lay, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb.regen);
-    noisef.range(lay, 'octaves', 1, 8, 1).legend('Octaves').onInput(cb.regen);
-    noisef.range(lay, 'persistence', .1, 1, .05).legend('Persistence').onInput(cb.regen);
-    noisef.range(lay, 'lacunarity', 1.1, 4, .1).legend('Lacunarity').onInput(cb.regen);
+        const lay = this.p.layers;
+        noisef.range(lay, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb.regen);
+        noisef.range(lay, 'octaves', 1, 8, 1).legend('Octaves').onInput(cb.regen);
+        noisef.range(lay, 'persistence', .1, 1, .05).legend('Persistence').onInput(cb.regen);
+        noisef.range(lay, 'lacunarity', 1.1, 4, .1).legend('Lacunarity').onInput(cb.regen);
 
-    const samplingf = card.folder('Sampling');
-    const sam = laysim.p.sampling;
-    samplingf.range(sam, 'size', 10, 100, 10).legend('Size').onInput(cb.regen);
-    samplingf.range(sam, 'threshold', 2, 5, .2).legend('Threshold').onInput(cb.regen);
-    samplingf.range(sam, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb.regen);
+        const samplingf = root.folder('Sampling');
+        const sam = this.p.sampling;
+        samplingf.range(sam, 'size', 10, 100, 10).legend('Size').onInput(cb.regen);
+        samplingf.range(sam, 'threshold', 2, 5, .2).legend('Threshold').onInput(cb.regen);
+        samplingf.range(sam, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb.regen);
+    }
 }
 
 //////////////////
@@ -61,23 +73,23 @@ export function noiseGenerationUI(
     };
     const c = clone;
 
-    const simplex = new Layered({
-        noise: new Simplex(c(f.base)),
+    const simplex = new LayeredUI({
+        noise: new SimplexUI(c(f.base)),
         layers: c(f.layers),
         sampling: c(f.sampling),
     });
-    layersUI(ui.register(simplex, 'Simplex'), simplex, simplexUI, ui.cb);
+    simplex.bind(ui.register(simplex, 'Simplex'), ui.cb);
 
-    const ridge = new Layered({
-        noise: new Ridge(c(f.base)),
+    const ridge = new LayeredUI({
+        noise: new RidgeUI(c(f.base)),
         layers: c(f.layers),
         sampling: c(f.sampling),
     });
-    layersUI(ui.register(ridge, 'Ridge'), ridge, ridgeUI, ui.cb);
+    ridge.bind(ui.register(ridge, 'Ridge'), ui.cb);
 
-    const comix = new ContinentalMix({
-        bass: new Layered({
-            noise: new Simplex(c(f.base)),
+    const comix = new ContinentalMixUI({
+        bass: new LayeredUI({
+            noise: new SimplexUI(c(f.base)),
             layers: {
                 fundamental: 1.1,
                 octaves: 7,
@@ -86,8 +98,8 @@ export function noiseGenerationUI(
             },
             sampling: c(f.sampling),
         }),
-        treble: new Layered({
-            noise: new Ridge(c(f.base)),
+        treble: new LayeredUI({
+            noise: new RidgeUI(c(f.base)),
             layers: {
                 fundamental: .4,
                 octaves: 8,
@@ -96,12 +108,10 @@ export function noiseGenerationUI(
             },
             sampling: c(f.sampling),
         }),
-        threshold: {low: .28, mid: .64, high: .56},
+        threshold: { low: .28, mid: .64, high: .56 },
     });
     const conui = ui.register(comix, 'Continental mix');
-    layersUI(conui.folder('Bass'), comix.p.bass, simplexUI, ui.cb);
-    layersUI(conui.folder('Treble'), comix.p.treble, ridgeUI, ui.cb);
-    continentalMixUI(conui, comix, ui.cb);
+    comix.bind(conui, ui.cb)
 }
 
 type callback = () => void;
