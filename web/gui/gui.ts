@@ -83,9 +83,7 @@ export class GUI extends Panel {
      */
     collapsible(): this {
         // Create the thin bar element.
-        const bar = document.createElement('div');
-        Object.assign(bar.style, LemonCloak.collapsibleBar);
-
+        const bar = spawn('div', this._elt, LemonCloak.collapsibleBar);
         // Insert the bar as the first child of the panel container.
         this._elt.insertBefore(bar, this._elt.firstChild);
 
