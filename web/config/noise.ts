@@ -6,7 +6,9 @@ import { clone, rangeMapper } from "../utils.js";
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;
 
-export interface NoiseMakerI {
+export interface NoiseMakerI<Params = any> {
+    p: Params;
+
     /** Returns a raw noise function. */
     make(): NoiseFun;
 
@@ -29,7 +31,10 @@ export interface NoiseMakerI {
     normalised(low: number, high: number): NoiseFun;
 }
 
-abstract class NoiseMaker implements NoiseMakerI {
+abstract class NoiseMaker<Params = any> implements NoiseMakerI<Params> {
+    p: Params;
+    constructor(params: Params) { this.p = params }
+
     abstract make(): NoiseFun;
     abstract get low(): number;
     abstract get high(): number;
@@ -66,10 +71,7 @@ function noiseStats(gen: NoiseFun, sampling: NoiseSamplerI): noiseStats {
 // Noise //
 
 export interface SimplexI { seed: number }
-export class Simplex extends NoiseMaker {
-    p: SimplexI;
-
-    constructor(params: SimplexI) { super(); this.p = params; }
+export class Simplex extends NoiseMaker<SimplexI> {
     get low(): number { return -1 }
     get high(): number { return 1 }
     make(): NoiseFun { return createNoise2D(createLCG(this.p.seed)) }
@@ -79,9 +81,7 @@ export interface RidgeI extends SimplexI {
     invert: boolean;
     square: boolean;
 }
-export class Ridge extends NoiseMaker {
-    p: RidgeI;
-    constructor(params: RidgeI) { super(); this.p = params; }
+export class Ridge extends NoiseMaker<RidgeI> {
     get low(): number { return 0 }
     get high(): number { return 1 }
     make(): NoiseFun {
@@ -132,14 +132,11 @@ export class LayeredI<Noise extends NoiseMaker> {
     layers: LayersI;
     sampling: LayerSamplingI;
 }
-export class Layered<Noise extends NoiseMaker> extends NoiseMaker {
-    p: LayeredI<Noise>;
-
+export class Layered<Noise extends NoiseMaker> extends NoiseMaker<LayeredI<Noise>> {
     bounds: noiseStats;
 
-    constructor(public params: LayeredI<Noise>) {
-        super();
-        this.p = params;
+    constructor(params: LayeredI<Noise>) {
+        super(params);
         this.recompute();
     }
 
@@ -157,27 +154,25 @@ export class Layered<Noise extends NoiseMaker> extends NoiseMaker {
 ///////////////
 // Noise mix //
 
-interface ContinentalMixI<Low extends NoiseMaker, High extends NoiseMaker> {
-    bass: Low;
-    treble: High;
+interface ContinentalMixI<I extends NoiseMakerI> {
+    bass: I;
+    treble: I;
     threshold: {
         low: number;
         mid: number;
         high: number;
     }
 }
-export class ContinentalMix<Low extends NoiseMaker = NoiseMaker, High extends NoiseMaker = NoiseMaker> extends NoiseMaker {
+export class ContinentalMix<I extends NoiseMakerI> extends NoiseMaker<ContinentalMixI<I>> {
     bass: NoiseFun;
     treble: NoiseFun;
 
-    constructor(public p: ContinentalMixI<Low, High>) { super() }
-
-    get low(): number { return 0 }
-    get high(): number { return 1 }
     recompute(): void {
         this.treble = this.p.treble.normalised(0, 1);
         this.bass = this.p.bass.normalised(0, 1);
     }
+    get low(): number { return 0 }
+    get high(): number { return 1 }
     make(): NoiseFun {
         const thsh = this.p.threshold;
         return highMix(this.bass, this.treble, thsh.low, thsh.high, thsh.mid);
@@ -190,8 +185,10 @@ export class ContinentalMix<Low extends NoiseMaker = NoiseMaker, High extends No
 interface NoisePostProcessI {
     terracing: number;
 }
-export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker {
-    constructor(public base: Noise, public p: NoisePostProcessI) { super() }
+export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker<NoisePostProcessI> {
+    constructor(public base: Noise, params: NoisePostProcessI) {
+        super(params);
+    }
 
     get low(): number { return this.base.low }
     get high(): number { return this.base.high }
@@ -213,13 +210,11 @@ export interface NoisePickerI {
     postProcess: NoisePostProcessI;
 }
 
-export class NoisePicker extends NoiseMaker {
-    p: NoisePickerI;
+export class NoisePicker extends NoiseMaker<NoisePickerI> {
     private algoname: string;
 
     constructor(params: NoisePickerI, initial: string = undefined) {
-        super();
-        this.p = params;
+        super(params);
         let algos = Object.keys(params.algorithms);
         if (initial === undefined && algos.length != 0)
             initial = algos[0];

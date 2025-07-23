@@ -23,9 +23,7 @@ export class RidgeUI extends Ridge {
     }
 }
 
-export class ContinentalMixUI<
-    Low extends NoiseMakerUI, High extends NoiseMakerUI
-> extends ContinentalMix<Low, High> {
+export class ContinentalMixUI extends ContinentalMix<NoiseMakerUI> {
     bind(root: Panel, cb: NoiseCallback) {
         this.p.bass.bind(root.folder('Bass'), cb);
         this.p.treble.bind(root.folder('Treble'), cb);
