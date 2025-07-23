@@ -229,6 +229,7 @@ export class Card extends Panel {
         this._button = spawn('div', deck.headerBar, LemonCloak.cardButton);
         this._button.textContent = name;
         this._button.addEventListener('click', () => this.focus());
+        this.lowlight(); // Spawns the border.
 
         this.hide();
     }

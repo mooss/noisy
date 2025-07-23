@@ -148,7 +148,6 @@ export class Appearance {
 
         this.deck = this.mk('deck', {
             marginTop: '6px',
-            display: 'flex',
             flexDirection: 'column',
         });
         const deckArrow = {
@@ -181,7 +180,6 @@ export class Appearance {
         });
         this.deckHeaderContainer = this.mk('deck-header-container', {
             position: 'relative',
-            backgroundColor: this.colors.inputBg,
             overflow: 'hidden',
         });
 

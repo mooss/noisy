@@ -65,7 +65,7 @@ function layeredUI(layered: Layered<any>, root: Panel, cb: NoiseCallback) {
     noisef.range(lay, 'persistence', .1, 1, .05).legend('Persistence').onInput(cb.regen);
     noisef.range(lay, 'lacunarity', 1.1, 4, .1).legend('Lacunarity').onInput(cb.regen);
 
-    const samplingf = root.folder('Sampling');
+    const samplingf = root.folder('Sampling').close();
     const sam = layered.p.sampling;
     samplingf.range(sam, 'size', 10, 100, 10).legend('Size').onInput(cb.regen);
     samplingf.range(sam, 'threshold', 2, 5, .2).legend('Threshold').onInput(cb.regen);
