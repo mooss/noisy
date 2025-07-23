@@ -3,11 +3,77 @@ import { createLCG, highMix, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
 
+type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'NoisePostProcess'
+    | 'NoisePicker';
+interface NoiseMetaI {
+    class: NoiseClass;
+}
+interface EncodedNoise {
+    meta: NoiseMetaI;
+    params: any;
+}
+
+/**
+ * Recursively encode an object by calling the encode method on all its value, leaving the values as
+ * is when there is no encode method.
+ */
+function encode(obj: any): Object {
+    if (typeof obj.encode === 'function') {
+        return obj.encode();
+    }
+
+    const entries = Object.entries(obj);
+    if(entries.length == 0) return obj;
+
+    const res = {};
+    for (const [prop, value] of entries) {
+        res[prop] = encode(value);
+    }
+
+    return res;
+}
+
+export function decodeNoise(encoded: any): NoiseMakerI {
+    return decodeNoiseImpl(encoded) as NoiseMakerI;
+}
+
+// Instanciates the recursive entanglement of noise and parameters specifications.
+export function decodeNoiseImpl(encoded: any): any {
+    const rec = (): any => decodeNoiseImpl(encoded.params);
+
+    switch (encoded?.meta?.class as NoiseClass) {
+        case 'Simplex':
+            return new Simplex(rec());
+        case 'Layered':
+            return new Layered(rec());
+        case 'Ridge':
+            return new Ridge(rec());
+        case 'ContinentalMix':
+            return new ContinentalMix(rec());
+        case 'NoisePostProcess':
+            return new NoisePostProcess(rec());
+        case 'NoisePicker':
+            return new NoisePicker(rec());
+        default:
+    }
+
+    // No meta class, therefore not a noise class but only parameters.
+    const entries = Object.entries(encoded);
+    if(entries.length == 0) return encoded;
+
+    const res = {};
+    for (const [prop, value] of entries) {
+        res[prop] = decodeNoiseImpl(value);
+    }
+    return res;
+}
+
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;
 
 export interface NoiseMakerI<Params = any> {
     p: Params;
+    readonly class: NoiseClass;
 
     /** Returns a raw noise function. */
     make(): NoiseFun;
@@ -24,6 +90,9 @@ export interface NoiseMakerI<Params = any> {
      */
     recompute(): void;
 
+    /** Returns an EncodedNoise instance that can be used to recreate the noise class. */
+    encode(): EncodedNoise;
+
     /**
      * Returns a noise function roughly normalised through linear interpolation between the
      * estimated low and high bound.
@@ -33,12 +102,17 @@ export interface NoiseMakerI<Params = any> {
 
 abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params> {
     p: Params;
+    abstract readonly class: NoiseClass;
     constructor(params: Params) { this.p = params }
 
     abstract make(): NoiseFun;
     abstract get low(): number;
     abstract get high(): number;
     recompute(): void { }
+
+    encode(): EncodedNoise {
+        return { meta: { class: this.class }, params: encode(this.p) };
+    }
 
     normalised(low: number, high: number): NoiseFun {
         const mapper = rangeMapper(this.low, this.high, low, high);
@@ -72,6 +146,7 @@ function noiseStats(gen: NoiseFun, sampling: NoiseSamplerI): noiseStats {
 
 export interface SimplexI { seed: number }
 export class Simplex extends NoiseMakerBase<SimplexI> {
+    get class(): NoiseClass { return 'Simplex' };
     get low(): number { return -1 }
     get high(): number { return 1 }
     make(): NoiseFun { return createNoise2D(createLCG(this.p.seed)) }
@@ -82,6 +157,7 @@ export interface RidgeI extends SimplexI {
     square: boolean;
 }
 export class Ridge extends NoiseMakerBase<RidgeI> {
+    get class(): NoiseClass { return 'Ridge' };
     get low(): number { return 0 }
     get high(): number { return 1 }
     make(): NoiseFun {
@@ -133,6 +209,7 @@ export class LayeredI<Noise extends NoiseMakerI> {
     sampling: LayerSamplingI;
 }
 export class Layered<Noise extends NoiseMakerI> extends NoiseMakerBase<LayeredI<Noise>> {
+    get class(): NoiseClass { return 'Layered' };
     bounds: noiseStats;
 
     constructor(params: LayeredI<Noise>) {
@@ -164,6 +241,7 @@ interface ContinentalMixI<I extends NoiseMakerI> {
     }
 }
 export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<ContinentalMixI<I>> {
+    get class(): NoiseClass { return 'ContinentalMix' };
     bass: NoiseFun;
     treble: NoiseFun;
 
@@ -183,17 +261,15 @@ export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<Contin
 // Post-processing //
 
 interface NoisePostProcessI {
+    noise: NoiseMakerI;
     terracing: number;
 }
-export class NoisePostProcess<Noise extends NoiseMakerI> extends NoiseMakerBase<NoisePostProcessI> {
-    constructor(public base: Noise, params: NoisePostProcessI) {
-        super(params);
-    }
-
-    get low(): number { return this.base.low }
-    get high(): number { return this.base.high }
+export class NoisePostProcess extends NoiseMakerBase<NoisePostProcessI> {
+    get class(): NoiseClass { return 'NoisePostProcess' };
+    get low(): number { return this.p.noise.low }
+    get high(): number { return this.p.noise.high }
     make(): NoiseFun {
-        const basefun = this.base.make();
+        const basefun = this.p.noise.make();
         if (this.p.terracing > 0) {
             const step = this.p.terracing * (this.high - this.low);
             return (x, y) => Math.round(basefun(x, y) / step) * step;
@@ -209,8 +285,8 @@ export interface NoisePickerI {
     algorithms: Record<string, NoiseMakerI>;
     postProcess: NoisePostProcessI;
 }
-
 export class NoisePicker extends NoiseMakerBase<NoisePickerI> {
+    get class(): NoiseClass { return 'NoisePicker' };
     private algoname: string;
 
     constructor(params: NoisePickerI, initial: string = undefined) {
@@ -232,7 +308,11 @@ export class NoisePicker extends NoiseMakerBase<NoisePickerI> {
         this.recompute();
     }
 
-    make(): NoiseFun { return new NoisePostProcess(this.algorithm, this.p.postProcess).make() }
+    make(): NoiseFun {
+        const post = clone(this.p.postProcess);
+        post.noise = this.algorithm;
+        return new NoisePostProcess(post).make();
+    }
     get low(): number { return this.algorithm.low }
     get high(): number { return this.algorithm.high }
     recompute(): void { this.algorithm.recompute() }

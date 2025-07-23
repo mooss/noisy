@@ -33,7 +33,7 @@ class Game {
             chunks: new ChunkConfig(),
             avatar: new AvatarConfig(),
             render: new RenderConfig(),
-            noise: new NoisePicker({ postProcess: { terracing: .07 }, algorithms: {} }),
+            noise: new NoisePicker({ postProcess: { terracing: .07, noise: null }, algorithms: {} }),
         };
     }
 
