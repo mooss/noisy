@@ -31,7 +31,7 @@ export interface NoiseMakerI<Params = any> {
     normalised(low: number, high: number): NoiseFun;
 }
 
-abstract class NoiseMaker<Params = any> implements NoiseMakerI<Params> {
+abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params> {
     p: Params;
     constructor(params: Params) { this.p = params }
 
@@ -71,7 +71,7 @@ function noiseStats(gen: NoiseFun, sampling: NoiseSamplerI): noiseStats {
 // Noise //
 
 export interface SimplexI { seed: number }
-export class Simplex extends NoiseMaker<SimplexI> {
+export class Simplex extends NoiseMakerBase<SimplexI> {
     get low(): number { return -1 }
     get high(): number { return 1 }
     make(): NoiseFun { return createNoise2D(createLCG(this.p.seed)) }
@@ -81,7 +81,7 @@ export interface RidgeI extends SimplexI {
     invert: boolean;
     square: boolean;
 }
-export class Ridge extends NoiseMaker<RidgeI> {
+export class Ridge extends NoiseMakerBase<RidgeI> {
     get low(): number { return 0 }
     get high(): number { return 1 }
     make(): NoiseFun {
@@ -127,12 +127,12 @@ function layerNoise(noise: NoiseFun, layers: LayersI): NoiseFun {
 }
 
 interface LayerSamplingI extends NoiseSamplerI { fundamental: number }
-export class LayeredI<Noise extends NoiseMaker> {
+export class LayeredI<Noise extends NoiseMakerI> {
     noise: Noise;
     layers: LayersI;
     sampling: LayerSamplingI;
 }
-export class Layered<Noise extends NoiseMaker> extends NoiseMaker<LayeredI<Noise>> {
+export class Layered<Noise extends NoiseMakerI> extends NoiseMakerBase<LayeredI<Noise>> {
     bounds: noiseStats;
 
     constructor(params: LayeredI<Noise>) {
@@ -163,7 +163,7 @@ interface ContinentalMixI<I extends NoiseMakerI> {
         high: number;
     }
 }
-export class ContinentalMix<I extends NoiseMakerI> extends NoiseMaker<ContinentalMixI<I>> {
+export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<ContinentalMixI<I>> {
     bass: NoiseFun;
     treble: NoiseFun;
 
@@ -185,7 +185,7 @@ export class ContinentalMix<I extends NoiseMakerI> extends NoiseMaker<Continenta
 interface NoisePostProcessI {
     terracing: number;
 }
-export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker<NoisePostProcessI> {
+export class NoisePostProcess<Noise extends NoiseMakerI> extends NoiseMakerBase<NoisePostProcessI> {
     constructor(public base: Noise, params: NoisePostProcessI) {
         super(params);
     }
@@ -206,11 +206,11 @@ export class NoisePostProcess<Noise extends NoiseMaker> extends NoiseMaker<Noise
 // Global config //
 
 export interface NoisePickerI {
-    algorithms: Record<string, NoiseMaker>;
+    algorithms: Record<string, NoiseMakerI>;
     postProcess: NoisePostProcessI;
 }
 
-export class NoisePicker extends NoiseMaker<NoisePickerI> {
+export class NoisePicker extends NoiseMakerBase<NoisePickerI> {
     private algoname: string;
 
     constructor(params: NoisePickerI, initial: string = undefined) {
@@ -221,12 +221,12 @@ export class NoisePicker extends NoiseMaker<NoisePickerI> {
         this.algoname = initial;
     }
 
-    register(name: string, algo: NoiseMaker): void {
+    register(name: string, algo: NoiseMakerI): void {
         this.p.algorithms[name] = algo;
         if (this.algoname === undefined) this.algoname = name;
     }
 
-    get algorithm(): NoiseMaker { return this.p.algorithms[this.algoname] };
+    get algorithm(): NoiseMakerI { return this.p.algorithms[this.algoname] };
     set algorithm(algo: string) {
         this.algoname = algo;
         this.recompute();
