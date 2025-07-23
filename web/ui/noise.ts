@@ -37,11 +37,9 @@ function noiseUI(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
             root.range(noise.p.threshold, 'mid', 0, 1, .02).legend('Mid').onChange(cb.regen);
             root.range(noise.p.threshold, 'high', 0, 1, .02).legend('High').onChange(cb.regen);
             return;
-        case 'NoisePostProcess':
-            root.range(noise.p.postProcess, 'terracing', 0, .1, .01).legend('Terracing').onInput(cb.regen);
-            return;
         case 'NoisePicker':
             const pick = noise as NoisePicker;
+            root.range(pick.p.postProcess, 'terracing', 0, .1, .01).legend('Terracing').onInput(cb.regen);
             const algos = pick.p.algorithms;
             const deck = root.deck();
             for (const key in algos) {
