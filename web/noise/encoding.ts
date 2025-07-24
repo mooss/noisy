@@ -1,3 +1,4 @@
+import { mapEntries } from "../utils.js";
 import { ContinentalMix, Layered, NoiseMap, NoisePostProcess, Ridge, Simplex } from "./algorithms.js";
 import { NoiseClass, NoiseMakerI } from "./foundations.js";
 
@@ -12,15 +13,7 @@ export function encodeNoise(obj: any): Object {
         return { meta: { class: obj.class }, params: encodeNoise(obj.p) }
     }
 
-    const entries = Object.entries(obj);
-    if (entries.length == 0) return obj;
-
-    const res = {};
-    for (const [prop, value] of entries) {
-        res[prop] = encodeNoise(value);
-    }
-
-    return res;
+    return mapEntries(encodeNoise, obj);
 }
 
 /**
@@ -50,13 +43,5 @@ export function decodeNoiseImpl(encoded: any): any {
         default:
     }
 
-    // No meta class, therefore not a noise class but only parameters.
-    const entries = Object.entries(encoded);
-    if (entries.length == 0) return encoded;
-
-    const res = {};
-    for (const [prop, value] of entries) {
-        res[prop] = decodeNoiseImpl(value);
-    }
-    return res;
+    return mapEntries(decodeNoiseImpl, encoded);
 }

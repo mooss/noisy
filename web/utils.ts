@@ -64,3 +64,18 @@ export function clone<T>(instance: T): T {
     const empty = Object.create(instance.constructor.prototype);
     return Object.assign(empty, data);
 }
+
+/**
+ * Maps fun to each entry of obj, creating a new object when the object has entries, otherwise obj
+ * is returned as-is.
+ */
+export function mapEntries(fun: (x: any) => any, obj: any): any {
+    const entries = Object.entries(obj);
+    if (entries.length == 0) return obj;
+
+    const res = {};
+    for (const [prop, value] of entries) {
+        res[prop] = fun(value);
+    }
+    return res;
+}
