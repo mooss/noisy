@@ -1,4 +1,5 @@
 import { Panel } from "../gui/gui.js";
+import { foreachEntries } from "../utils.js";
 import { Layered, NoiseMap } from "./algorithms.js";
 import { NoiseMakerI } from "./foundations.js";
 
@@ -40,7 +41,6 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
             return;
         case 'Map':
             const pick = noise as NoiseMap;
-            root.range(pick.p.postProcess, 'terracing', 0, .1, .01).legend('Terracing').onInput(cb.regen);
             const algos = pick.p.algorithms;
             const deck = root.deck();
             for (const key in algos) {
@@ -51,7 +51,13 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
                 noiseUI_impl(algos[key], card, cb);
             }
             return;
+        case 'Terracing':
+            root.range(noise.p, 'interval', 0, .1, .01).legend('Terracing').onInput(cb.regen);
+            noiseUI_impl(noise.p.wrapped, root, cb);
+            return;
     }
+    console.warn('Unsupported noise class:', noise.class, 'recursing anyway');
+    foreachEntries((_, value) => noiseUI_impl(value as NoiseMakerI, root, cb), noise);
 }
 
 function layeredUI(layered: Layered<any>, root: Panel, cb: NoiseCallback) {

@@ -4,7 +4,7 @@ import { ChunkConfig } from './config/chunk.js';
 import { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from './constants.js';
 import { GUI } from './gui/gui.js';
-import { NoiseMap } from './noise/algorithms.js';
+import { NoiseMakerI } from './noise/foundations.js';
 import { noiseAlgorithms } from './noise/init.js';
 import { noiseUI } from './noise/ui.js';
 import { Renderer } from './renderer.js';
@@ -26,7 +26,7 @@ class Game {
         chunks: ChunkConfig;
         avatar: AvatarConfig;
         render: RenderConfig;
-        noise: NoiseMap;
+        noise: NoiseMakerI;
     };
 
     constructor() {

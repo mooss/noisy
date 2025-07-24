@@ -1,6 +1,6 @@
 import { rangeMapper } from "../utils.js";
 
-export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map';
+export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map' | 'Terracing';
 
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;
@@ -9,14 +9,14 @@ export interface NoiseMakerI<Params = any> {
     p: Params;
     readonly class: NoiseClass;
 
-    /** Returns a raw noise function. */
-    make(): NoiseFun;
-
     /** The estimated low bound of the noise function. */
     get low(): number;
 
     /** The estimated high bound of the noise function. */
     get high(): number;
+
+    /** Returns a raw noise function. */
+    make(): NoiseFun;
 
     /**
      * Recomputes the noise parameters, which may be costly but necessary when important parameters

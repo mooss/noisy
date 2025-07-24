@@ -1,6 +1,7 @@
 import { mapEntries } from "../utils.js";
-import { ContinentalMix, Layered, NoiseMap, NoisePostProcess, Ridge, Simplex } from "./algorithms.js";
+import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
 import { NoiseClass, NoiseMakerI } from "./foundations.js";
+import { Terracing } from "./processing.js";
 
 /**
  * Recursively encode an object by calling the encode method on all its value, leaving the values as
@@ -27,7 +28,10 @@ export function decodeNoiseImpl(encoded: any): any {
     if (encoded == null) return;
     const rec = (): any => decodeNoiseImpl(encoded.params);
 
-    switch (encoded?.meta?.class as NoiseClass) {
+    const cls = encoded?.meta?.class;
+    if (typeof cls !== 'string') return mapEntries(decodeNoiseImpl, encoded);
+
+    switch (cls as NoiseClass) {
         case 'Simplex':
             return new Simplex(rec());
         case 'Layered':
@@ -36,12 +40,11 @@ export function decodeNoiseImpl(encoded: any): any {
             return new Ridge(rec());
         case 'ContinentalMix':
             return new ContinentalMix(rec());
-        case 'PostProcess':
-            return new NoisePostProcess(rec());
         case 'Map':
             return new NoiseMap(rec());
+        case 'Terracing':
+            return new Terracing(rec());
         default:
+            console.error('Found unknown class when decoding:', cls);
     }
-
-    return mapEntries(decodeNoiseImpl, encoded);
 }

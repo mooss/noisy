@@ -157,33 +157,11 @@ export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<Contin
     }
 }
 
-/////////////////////
-// Post-processing //
-
-interface NoisePostProcessI {
-    noise: NoiseMakerI;
-    terracing: number;
-}
-export class NoisePostProcess extends NoiseMakerBase<NoisePostProcessI> {
-    get class(): NoiseClass { return 'PostProcess' };
-    get low(): number { return this.p.noise.low }
-    get high(): number { return this.p.noise.high }
-    make(): NoiseFun {
-        const basefun = this.p.noise.make();
-        if (this.p.terracing > 0) {
-            const step = this.p.terracing * (this.high - this.low);
-            return (x, y) => Math.round(basefun(x, y) / step) * step;
-        }
-        return basefun;
-    }
-}
-
 ///////////////////
 // Global config //
 
 export interface NoiseMapI {
     algorithms: Record<string, NoiseMakerI>;
-    postProcess: NoisePostProcessI;
 }
 export class NoiseMap extends NoiseMakerBase<NoiseMapI> {
     get class(): NoiseClass { return 'Map' };
@@ -209,9 +187,7 @@ export class NoiseMap extends NoiseMakerBase<NoiseMapI> {
     }
 
     make(): NoiseFun {
-        const post = clone(this.p.postProcess);
-        post.noise = this.algorithm;
-        return new NoisePostProcess(post).make();
+        return this.algorithm.make()
     }
     get low(): number { return this.algorithm.low }
     get high(): number { return this.algorithm.high }

@@ -65,17 +65,28 @@ export function clone<T>(instance: T): T {
     return Object.assign(empty, data);
 }
 
+export function isObject(variable: any) {
+    return typeof variable === 'object' && variable !== null;
+}
+
 /**
  * Maps fun to each entry of obj, creating a new object when the object has entries, otherwise obj
  * is returned as-is.
  */
 export function mapEntries(fun: (x: any) => any, obj: any): any {
-    const entries = Object.entries(obj);
-    if (entries.length == 0) return obj;
-
+    if (!isObject(obj)) return obj;
     const res = {};
-    for (const [prop, value] of entries) {
+    for (const [prop, value] of Object.entries(obj)) {
         res[prop] = fun(value);
     }
     return res;
+}
+
+/** Calls fun on each entry of obj, does nothing when obj does not have any entry. */
+export function foreachEntries(fun: (key: string, value: unknown) => void, obj: any): void {
+    if (!isObject(obj)) return;
+
+    for (const [prop, value] of Object.entries(obj)) {
+        fun(prop, value);
+    }
 }

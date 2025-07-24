@@ -1,9 +1,10 @@
 import { clone } from "../utils.js";
 import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
 import { decodeNoise, encodeNoise } from "./encoding.js";
+import { NoiseMakerI } from "./foundations.js";
+import { Terracing } from "./processing.js";
 
-export function noiseAlgorithms(): NoiseMap {
-    const res = new NoiseMap({ postProcess: { terracing: .07, noise: null }, algorithms: {} });
+export function noiseAlgorithms(): NoiseMakerI {
     const f = {
         base: { invert: true, square: false, seed: 23 },
         layers: {
@@ -52,11 +53,16 @@ export function noiseAlgorithms(): NoiseMap {
         threshold: { low: .28, mid: .64, high: .56 },
     });
 
-    res.register('Simplex', simplex);
-    res.register('Ridge', ridge);
-    res.register('Continental mix', comix);
-    res.recompute();
+    const map = new NoiseMap({
+        algorithms: {
+            'Simplex': simplex,
+            'Ridge': ridge,
+            'Continental mix': comix,
+        }
+    });
+    map.recompute();
 
-    // Do a round of encoding and decoding on the NoiseMap to make sure it works.
-    return decodeNoise(encodeNoise(res)) as NoiseMap;
+    const res = new Terracing({ interval: .06, wrapped: map });
+    // Live test encoding and decoding.
+    return decodeNoise(encodeNoise(res));
 }
