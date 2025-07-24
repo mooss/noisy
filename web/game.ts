@@ -1,15 +1,16 @@
 import { Avatar } from './avatar.js';
 import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
-import { NoiseMap } from './config/noise.js';
+import { NoiseMap } from './noise/algorithms.js';
 import { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from './constants.js';
 import { GUI } from './gui/gui.js';
+import { noiseAlgorithms } from './noise/init.js';
+import { noiseUI } from './noise/ui.js';
 import { Renderer } from './renderer.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
-import { noiseGenerationUI } from './ui/noise.js';
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
@@ -33,7 +34,7 @@ class Game {
             chunks: new ChunkConfig(),
             avatar: new AvatarConfig(),
             render: new RenderConfig(),
-            noise: new NoiseMap({ postProcess: { terracing: .07, noise: null }, algorithms: {} }),
+            noise: noiseAlgorithms(),
         };
     }
 
@@ -78,7 +79,7 @@ class Game {
         );
 
         const terrainGeneration = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
-        noiseGenerationUI(terrainGeneration, this.config.noise, this);
+        noiseUI(this.config.noise, terrainGeneration, this);
     }
 
     setupStatsGraph(): void {

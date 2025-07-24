@@ -1,6 +1,5 @@
-import { ContinentalMix, Layered, NoiseMakerI, NoiseMap, Ridge, Simplex } from "../config/noise.js";
 import { Panel } from "../gui/gui.js";
-import { clone } from "../utils.js";
+import { Layered, NoiseMakerI, NoiseMap } from "./algorithms.js";
 
 interface NoiseCallbackI {
     regenerateTerrain(): void;
@@ -15,10 +14,11 @@ class NoiseCallback {
     }
 }
 
-////////////////
-// Algorithms //
+export function noiseUI(noise: NoiseMakerI, root: Panel, callbacks: NoiseCallbackI) {
+    noiseUI_impl(noise, root, new NoiseCallback(callbacks, noise));
+}
 
-function noiseUI(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
+function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
     switch (noise.class) {
         case 'Simplex':
             root.number(noise.p, 'seed').legend('Seed').onChange(cb.regen);
@@ -31,8 +31,8 @@ function noiseUI(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
         case 'Layered':
             return layeredUI(noise as any, root, cb);
         case 'ContinentalMix':
-            noiseUI(noise.p.bass, root.folder('Bass'), cb);
-            noiseUI(noise.p.treble, root.folder('Treble'), cb);
+            noiseUI_impl(noise.p.bass, root.folder('Bass'), cb);
+            noiseUI_impl(noise.p.treble, root.folder('Treble'), cb);
             root.range(noise.p.threshold, 'low', 0, 1, .02).legend('Low').onChange(cb.regen);
             root.range(noise.p.threshold, 'mid', 0, 1, .02).legend('Mid').onChange(cb.regen);
             root.range(noise.p.threshold, 'high', 0, 1, .02).legend('High').onChange(cb.regen);
@@ -47,7 +47,7 @@ function noiseUI(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
                     pick.algorithm = key;
                     cb.regen();
                 });
-                noiseUI(algos[key], card, cb);
+                noiseUI_impl(algos[key], card, cb);
             }
             return;
     }
@@ -55,7 +55,7 @@ function noiseUI(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
 
 function layeredUI(layered: Layered<any>, root: Panel, cb: NoiseCallback) {
     const noisef = root.folder('Noise');
-    noiseUI(layered.p.noise, noisef, cb);
+    noiseUI_impl(layered.p.noise, noisef, cb);
 
     const lay = layered.p.layers;
     noisef.range(lay, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb.regen);
@@ -69,65 +69,3 @@ function layeredUI(layered: Layered<any>, root: Panel, cb: NoiseCallback) {
     samplingf.range(sam, 'threshold', 2, 5, .2).legend('Threshold').onInput(cb.regen);
     samplingf.range(sam, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb.regen);
 }
-
-//////////////////
-// Global panel //
-
-export function noiseGenerationUI(
-    root: Panel, picker: NoiseMap, callbacks: NoiseCallbackI,
-) {
-    const f = {
-        base: { invert: true, square: false, seed: 23 },
-        layers: {
-            fundamental: .7,
-            octaves: 8,
-            persistence: .65,
-            lacunarity: 1.5,
-        },
-        sampling: { size: 50, threshold: 4, fundamental: 3 },
-    };
-    const c = clone;
-
-    const simplex = new Layered({
-        noise: new Simplex(c(f.base)),
-        layers: c(f.layers),
-        sampling: c(f.sampling),
-    });
-
-    const ridge = new Layered({
-        noise: new Ridge(c(f.base)),
-        layers: c(f.layers),
-        sampling: c(f.sampling),
-    });
-
-    const comix = new ContinentalMix({
-        bass: new Layered({
-            noise: new Simplex(c(f.base)),
-            layers: {
-                fundamental: 1.1,
-                octaves: 7,
-                persistence: .65,
-                lacunarity: 1.5,
-            },
-            sampling: c(f.sampling),
-        }),
-        treble: new Layered({
-            noise: new Ridge(c(f.base)),
-            layers: {
-                fundamental: .4,
-                octaves: 8,
-                persistence: .6,
-                lacunarity: 1.6,
-            },
-            sampling: c(f.sampling),
-        }),
-        threshold: { low: .28, mid: .64, high: .56 },
-    });
-
-    picker.register('Simplex', simplex);
-    picker.register('Ridge', ridge);
-    picker.register('Continental mix', comix);
-    picker.recompute();
-    noiseUI(picker, root, new NoiseCallback(callbacks, picker));
-}
-

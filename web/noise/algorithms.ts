@@ -3,72 +3,10 @@ import { createLCG, highMix, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
 
-type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map';
-interface NoiseMetaI {
-    class: NoiseClass;
-}
-interface EncodedNoise {
-    meta: NoiseMetaI;
-    params: any;
-}
+////////////////
+// Primitives //
 
-/**
- * Recursively encode an object by calling the encode method on all its value, leaving the values as
- * is when there is no encode method.
- */
-function encode(obj: any): Object {
-    if (obj == null) return;
-
-    if (typeof obj.encode === 'function') {
-        return obj.encode();
-    }
-
-    const entries = Object.entries(obj);
-    if (entries.length == 0) return obj;
-
-    const res = {};
-    for (const [prop, value] of entries) {
-        res[prop] = encode(value);
-    }
-
-    return res;
-}
-
-export function decodeNoise(encoded: any): NoiseMakerI {
-    return decodeNoiseImpl(encoded) as NoiseMakerI;
-}
-
-// Instanciates the recursive entanglement of noise and parameters specifications.
-export function decodeNoiseImpl(encoded: any): any {
-    if (encoded == null) return;
-    const rec = (): any => decodeNoiseImpl(encoded.params);
-
-    switch (encoded?.meta?.class as NoiseClass) {
-        case 'Simplex':
-            return new Simplex(rec());
-        case 'Layered':
-            return new Layered(rec());
-        case 'Ridge':
-            return new Ridge(rec());
-        case 'ContinentalMix':
-            return new ContinentalMix(rec());
-        case 'PostProcess':
-            return new NoisePostProcess(rec());
-        case 'Map':
-            return new NoiseMap(rec());
-        default:
-    }
-
-    // No meta class, therefore not a noise class but only parameters.
-    const entries = Object.entries(encoded);
-    if (entries.length == 0) return encoded;
-
-    const res = {};
-    for (const [prop, value] of entries) {
-        res[prop] = decodeNoiseImpl(value);
-    }
-    return res;
-}
+export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map';
 
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;
@@ -93,7 +31,7 @@ export interface NoiseMakerI<Params = any> {
     recompute(): void;
 
     /** Returns an EncodedNoise instance that can be used to recreate the noise class. */
-    encode(): EncodedNoise;
+    // encode(): any;
 
     /**
      * Returns a noise function roughly normalised through linear interpolation between the
@@ -112,9 +50,6 @@ abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params> {
     abstract get high(): number;
     recompute(): void { }
 
-    encode(): EncodedNoise {
-        return { meta: { class: this.class }, params: encode(this.p) };
-    }
 
     normalised(low: number, high: number): NoiseFun {
         const mapper = rangeMapper(this.low, this.high, low, high);
