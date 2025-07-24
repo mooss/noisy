@@ -183,6 +183,8 @@ export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<Contin
     treble: NoiseFun;
 
     recompute(): void {
+        this.p.treble.recompute();
+        this.p.bass.recompute();
         this.treble = this.p.treble.normalised(0, 1);
         this.bass = this.p.bass.normalised(0, 1);
     }
