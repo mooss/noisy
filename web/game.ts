@@ -1,10 +1,10 @@
 import { Avatar } from './avatar.js';
 import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
-import { NoiseMap } from './noise/algorithms.js';
 import { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from './constants.js';
 import { GUI } from './gui/gui.js';
+import { NoiseMap } from './noise/algorithms.js';
 import { noiseAlgorithms } from './noise/init.js';
 import { noiseUI } from './noise/ui.js';
 import { Renderer } from './renderer.js';

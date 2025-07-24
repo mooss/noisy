@@ -1,4 +1,5 @@
-import { ContinentalMix, Layered, NoiseClass, NoiseMakerI, NoiseMap, NoisePostProcess, Ridge, Simplex } from "./algorithms.js";
+import { ContinentalMix, Layered, NoiseMap, NoisePostProcess, Ridge, Simplex } from "./algorithms.js";
+import { NoiseClass, NoiseMakerI } from "./foundations.js";
 
 /**
  * Recursively encode an object by calling the encode method on all its value, leaving the values as
@@ -22,11 +23,13 @@ export function encodeNoise(obj: any): Object {
     return res;
 }
 
+/**
+ * Instanciates the recursive entanglement of noise and parameters specifications.
+ */
 export function decodeNoise(encoded: any): NoiseMakerI {
     return decodeNoiseImpl(encoded) as NoiseMakerI;
 }
 
-// Instanciates the recursive entanglement of noise and parameters specifications.
 export function decodeNoiseImpl(encoded: any): any {
     if (encoded == null) return;
     const rec = (): any => decodeNoiseImpl(encoded.params);

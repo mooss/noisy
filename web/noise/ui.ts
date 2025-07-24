@@ -1,5 +1,6 @@
 import { Panel } from "../gui/gui.js";
-import { Layered, NoiseMakerI, NoiseMap } from "./algorithms.js";
+import { Layered, NoiseMap } from "./algorithms.js";
+import { NoiseMakerI } from "./foundations.js";
 
 interface NoiseCallbackI {
     regenerateTerrain(): void;

@@ -1,5 +1,5 @@
-import { Layered, Ridge, ContinentalMix, NoiseMap, Simplex } from "./algorithms.js";
 import { clone } from "../utils.js";
+import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
 import { decodeNoise, encodeNoise } from "./encoding.js";
 
 export function noiseAlgorithms(): NoiseMap {

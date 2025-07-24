@@ -1,44 +1,11 @@
 import { createNoise2D } from "simplex-noise";
 import { createLCG, highMix, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
-import { clone, rangeMapper } from "../utils.js";
+import { clone } from "../utils.js";
+import { NoiseClass, NoiseFun, NoiseMakerI, normaliseNoiseMaker } from "./foundations.js";
 
 ////////////////
 // Primitives //
-
-export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map';
-
-/** A height function, takes (x,y) coordinates and returns a height. */
-export type NoiseFun = (x: number, y: number) => number;
-
-export interface NoiseMakerI<Params = any> {
-    p: Params;
-    readonly class: NoiseClass;
-
-    /** Returns a raw noise function. */
-    make(): NoiseFun;
-
-    /** The estimated low bound of the noise function. */
-    get low(): number;
-
-    /** The estimated high bound of the noise function. */
-    get high(): number;
-
-    /**
-     * Recomputes the noise parameters, which may be costly but necessary when important parameters
-     * have changed.
-     */
-    recompute(): void;
-
-    /** Returns an EncodedNoise instance that can be used to recreate the noise class. */
-    // encode(): any;
-
-    /**
-     * Returns a noise function roughly normalised through linear interpolation between the
-     * estimated low and high bound.
-     */
-    normalised(low: number, high: number): NoiseFun;
-}
 
 abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params> {
     p: Params;
@@ -49,13 +16,7 @@ abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params> {
     abstract get low(): number;
     abstract get high(): number;
     recompute(): void { }
-
-
-    normalised(low: number, high: number): NoiseFun {
-        const mapper = rangeMapper(this.low, this.high, low, high);
-        const fun = this.make();
-        return (x, y) => { return mapper(fun(x, y)); }
-    }
+    normalised(low: number, high: number): NoiseFun { return normaliseNoiseMaker(this, low, high) }
 }
 
 //////////////
