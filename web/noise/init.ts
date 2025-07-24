@@ -1,4 +1,4 @@
-import { clone } from "../utils.js";
+import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
 import { decodeNoise, encodeNoise } from "./encoding.js";
 import { NoiseMakerI } from "./foundations.js";

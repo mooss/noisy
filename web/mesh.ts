@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { interpolateColors } from './utils.js';
 import type { HeightGenerator } from './height-generator.js';
 import { Palette } from './palettes.js';
+import { interpolateColors } from './utils/graphics.js';
 
 /**
  * Creates a hexagonal extruded prism.

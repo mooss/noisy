@@ -1,5 +1,5 @@
 import { Panel } from "../gui/gui.js";
-import { foreachEntries } from "../utils.js";
+import { foreachEntries } from "../utils/objects.js";
 import { Layered, NoiseMap } from "./algorithms.js";
 import { NoiseMakerI } from "./foundations.js";
 

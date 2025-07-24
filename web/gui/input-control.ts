@@ -1,4 +1,4 @@
-import { clamp } from "../utils.js";
+import { clamp } from "../utils/maths.js";
 import { HtmlCssElement, spawn } from "./html.js";
 import { Facet, LemonCloak } from "./style.js";
 

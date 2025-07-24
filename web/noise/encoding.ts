@@ -1,4 +1,4 @@
-import { mapEntries } from "../utils.js";
+import { mapValues } from "../utils/objects.js";
 import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
 import { NoiseClass, NoiseMakerI } from "./foundations.js";
 import { Terracing } from "./processing.js";
@@ -14,7 +14,7 @@ export function encodeNoise(obj: any): Object {
         return { meta: { class: obj.class }, params: encodeNoise(obj.p) }
     }
 
-    return mapEntries(encodeNoise, obj);
+    return mapValues(encodeNoise, obj);
 }
 
 /**
@@ -29,7 +29,7 @@ export function decodeNoiseImpl(encoded: any): any {
     const rec = (): any => decodeNoiseImpl(encoded.params);
 
     const cls = encoded?.meta?.class;
-    if (typeof cls !== 'string') return mapEntries(decodeNoiseImpl, encoded);
+    if (typeof cls !== 'string') return mapValues(decodeNoiseImpl, encoded);
 
     switch (cls as NoiseClass) {
         case 'Simplex':

@@ -1,7 +1,7 @@
 import { createNoise2D } from "simplex-noise";
 import { createLCG, highMix, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
-import { clone } from "../utils.js";
+import { clone } from "../utils/objects.js";
 import { NoiseClass, NoiseFun, NoiseMakerI, normaliseNoiseMaker } from "./foundations.js";
 
 ////////////////

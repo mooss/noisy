@@ -1,4 +1,4 @@
-import { rangeMapper } from "../utils.js";
+import { rangeMapper } from "../utils/maths.js";
 
 export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map' | 'Terracing';
 

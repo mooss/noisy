@@ -1,4 +1,4 @@
-import { clone } from "../utils.js";
+import { clone } from "../utils/objects.js";
 import { ControlWidget } from "./control-widget.js";
 import { HtmlCssElement, spawn } from "./html.js";
 import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, ReadOnly, ReadOnlyWidget, SelectWidget } from './parameters.js';
