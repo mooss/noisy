@@ -1,4 +1,4 @@
-import { ContinentalMix, Layered, NoiseMakerI, NoisePicker, Ridge, Simplex } from "../config/noise.js";
+import { ContinentalMix, Layered, NoiseMakerI, NoiseMap, Ridge, Simplex } from "../config/noise.js";
 import { Panel } from "../gui/gui.js";
 import { clone } from "../utils.js";
 
@@ -37,8 +37,8 @@ function noiseUI(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
             root.range(noise.p.threshold, 'mid', 0, 1, .02).legend('Mid').onChange(cb.regen);
             root.range(noise.p.threshold, 'high', 0, 1, .02).legend('High').onChange(cb.regen);
             return;
-        case 'NoisePicker':
-            const pick = noise as NoisePicker;
+        case 'Map':
+            const pick = noise as NoiseMap;
             root.range(pick.p.postProcess, 'terracing', 0, .1, .01).legend('Terracing').onInput(cb.regen);
             const algos = pick.p.algorithms;
             const deck = root.deck();
@@ -74,7 +74,7 @@ function layeredUI(layered: Layered<any>, root: Panel, cb: NoiseCallback) {
 // Global panel //
 
 export function noiseGenerationUI(
-    root: Panel, picker: NoisePicker, callbacks: NoiseCallbackI,
+    root: Panel, picker: NoiseMap, callbacks: NoiseCallbackI,
 ) {
     const f = {
         base: { invert: true, square: false, seed: 23 },

@@ -3,8 +3,7 @@ import { createLCG, highMix, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone, rangeMapper } from "../utils.js";
 
-type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'NoisePostProcess'
-    | 'NoisePicker';
+type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map';
 interface NoiseMetaI {
     class: NoiseClass;
 }
@@ -18,12 +17,14 @@ interface EncodedNoise {
  * is when there is no encode method.
  */
 function encode(obj: any): Object {
+    if (obj == null) return;
+
     if (typeof obj.encode === 'function') {
         return obj.encode();
     }
 
     const entries = Object.entries(obj);
-    if(entries.length == 0) return obj;
+    if (entries.length == 0) return obj;
 
     const res = {};
     for (const [prop, value] of entries) {
@@ -39,6 +40,7 @@ export function decodeNoise(encoded: any): NoiseMakerI {
 
 // Instanciates the recursive entanglement of noise and parameters specifications.
 export function decodeNoiseImpl(encoded: any): any {
+    if (encoded == null) return;
     const rec = (): any => decodeNoiseImpl(encoded.params);
 
     switch (encoded?.meta?.class as NoiseClass) {
@@ -50,16 +52,16 @@ export function decodeNoiseImpl(encoded: any): any {
             return new Ridge(rec());
         case 'ContinentalMix':
             return new ContinentalMix(rec());
-        case 'NoisePostProcess':
+        case 'PostProcess':
             return new NoisePostProcess(rec());
-        case 'NoisePicker':
-            return new NoisePicker(rec());
+        case 'Map':
+            return new NoiseMap(rec());
         default:
     }
 
     // No meta class, therefore not a noise class but only parameters.
     const entries = Object.entries(encoded);
-    if(entries.length == 0) return encoded;
+    if (entries.length == 0) return encoded;
 
     const res = {};
     for (const [prop, value] of entries) {
@@ -265,7 +267,7 @@ interface NoisePostProcessI {
     terracing: number;
 }
 export class NoisePostProcess extends NoiseMakerBase<NoisePostProcessI> {
-    get class(): NoiseClass { return 'NoisePostProcess' };
+    get class(): NoiseClass { return 'PostProcess' };
     get low(): number { return this.p.noise.low }
     get high(): number { return this.p.noise.high }
     make(): NoiseFun {
@@ -281,30 +283,30 @@ export class NoisePostProcess extends NoiseMakerBase<NoisePostProcessI> {
 ///////////////////
 // Global config //
 
-export interface NoisePickerI {
+export interface NoiseMapI {
     algorithms: Record<string, NoiseMakerI>;
     postProcess: NoisePostProcessI;
 }
-export class NoisePicker extends NoiseMakerBase<NoisePickerI> {
-    get class(): NoiseClass { return 'NoisePicker' };
-    private algoname: string;
+export class NoiseMap extends NoiseMakerBase<NoiseMapI> {
+    get class(): NoiseClass { return 'Map' };
+    private current: string;
 
-    constructor(params: NoisePickerI, initial: string = undefined) {
+    constructor(params: NoiseMapI, initial: string = undefined) {
         super(params);
         let algos = Object.keys(params.algorithms);
         if (initial === undefined && algos.length != 0)
             initial = algos[0];
-        this.algoname = initial;
+        this.current = initial;
     }
 
     register(name: string, algo: NoiseMakerI): void {
         this.p.algorithms[name] = algo;
-        if (this.algoname === undefined) this.algoname = name;
+        if (this.current === undefined) this.current = name;
     }
 
-    get algorithm(): NoiseMakerI { return this.p.algorithms[this.algoname] };
+    get algorithm(): NoiseMakerI { return this.p.algorithms[this.current] };
     set algorithm(algo: string) {
-        this.algoname = algo;
+        this.current = algo;
         this.recompute();
     }
 

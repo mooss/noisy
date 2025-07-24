@@ -1,7 +1,7 @@
 import { Avatar } from './avatar.js';
 import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
-import { NoisePicker } from './config/noise.js';
+import { NoiseMap } from './config/noise.js';
 import { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from './constants.js';
 import { GUI } from './gui/gui.js';
@@ -25,7 +25,7 @@ class Game {
         chunks: ChunkConfig;
         avatar: AvatarConfig;
         render: RenderConfig;
-        noise: NoisePicker;
+        noise: NoiseMap;
     };
 
     constructor() {
@@ -33,7 +33,7 @@ class Game {
             chunks: new ChunkConfig(),
             avatar: new AvatarConfig(),
             render: new RenderConfig(),
-            noise: new NoisePicker({ postProcess: { terracing: .07, noise: null }, algorithms: {} }),
+            noise: new NoiseMap({ postProcess: { terracing: .07, noise: null }, algorithms: {} }),
         };
     }
 

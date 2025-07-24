@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { ChunkConfig } from './config/chunk.js';
-import { NoisePicker } from './config/noise.js';
+import { NoiseMap } from './config/noise.js';
 import type { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from "./constants.js";
 import { Coordinates, Position } from "./coordinates.js";
@@ -21,7 +21,7 @@ export class Terrain {
     /** References to the relevant configurations */
     private conf: {
         chunks: ChunkConfig;
-        noise: NoisePicker,
+        noise: NoiseMap,
         render: RenderConfig;
     };
 
@@ -36,7 +36,7 @@ export class Terrain {
 
     constructor(
         chunks: ChunkConfig,
-        noise: NoisePicker,
+        noise: NoiseMap,
         render: RenderConfig
     ) {
         this.conf = { chunks, noise, render };
