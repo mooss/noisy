@@ -1,5 +1,3 @@
-import { createNoise2D } from 'simplex-noise';
-
 type NoiseFun = (x: number, y: number) => number;
 
 ////////////////////
@@ -37,45 +35,6 @@ export function mkRng(seed: number): (min: number, max: number) => number {
 }
 
 /**
- * Creates a warped simplex noise function.
- *
- * Domain warping displaces the input coordinates using another noise function, hiding linear
- * artifacts.
- * The x-y-frequency calling signature is necessary to accommodate the shift parameter.
- *
- * @param noise    - The base noise function.
- * @param warp     - Noise function for warping.
- * @param strength - The magnitude of the warp effect.
- * @returns The warped noise function.
- */
-function mkWarped(
-    noise: NoiseFun,
-    warp: NoiseFun,
-    strength: number
-): NoiseFun {
-	return (x, y) => {
-        const wp = warp(x, y);
-		return noise(
-			x + wp * strength,
-			y + wp * strength + 10,
-		)
-	}
-}
-
-/**
- * Creates a simplex noise function with domain warping.
- *
- * @param seed         - The seed to initialize the pseudorandom number generator.
- * @param warpStrength - The magnitude of the warp effect.
- * @returns A function that returns simplex noise at (x,y).
- */
-export function mkSimplex(seed: number, warpStrength: number): NoiseFun {
-    const noise = createNoise2D(createLCG(seed));
-	const warpx = createNoise2D(createLCG(seed + 1));
-    return mkWarped(noise, warpx, warpStrength);
-}
-
-/**
  * Creates a function that transforms a noise signal into ridges.
  *
  * @param invert - Whether to invert the signal to create ridges instead of valleys.
@@ -104,48 +63,6 @@ export function mkRidger(
         }
 
         return signal;
-    }
-}
-
-/**
- * Creates a function that layers multiple octaves of noise.
- *
- * @param noise       - The base noise function.
- * @param octaves     - Number of octaves to layer.
- * @param fundamental - Base frequency for noise.
- * @param persistence - Amplitude reduction per octave.
- * @param lacunarity  - Frequency increase per octave.
- * @returns A function that returns layered noise at (x,y).
- */
-export function mkLayering(
-    noise: NoiseFun,
-    octaves: number,
-    fundamental: number,
-    persistence: number,
-    lacunarity: number
-): NoiseFun {
-    return (x: number, y: number) => {
-        let total = 0;
-        let frequency = fundamental;
-        let amplitude = 1;
-
-        for (let oct = 0; oct < octaves; oct++) {
-            // The noise is shifted with the octave index to avoid the artifact that occurs at the
-            // origin when layering noise.
-            // This artifact is probably due to the fact that the same base noise value is
-            // accumulated at the origin, thus reinforcing the directionality that can occur in raw
-            // noise.
-            // I don't know where this idea that simplex has no directional artifacts because they
-            // are very much visible in this project.
-            let octave = noise(x * frequency + oct, y * frequency + oct + 10);
-            total += octave * amplitude;
-
-            // Update amplitude and frequency for the next octave.
-            amplitude *= persistence;
-            frequency *= lacunarity;
-        }
-
-        return total;
     }
 }
 
