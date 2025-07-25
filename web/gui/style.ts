@@ -44,6 +44,9 @@ export class Facet {
 }
 
 export class Appearance {
+    button: Facet;
+    buttonBar: Facet;
+
     cardButton: Facet;
     cardHighlight: Facet;
     cardLowlight: Facet;
@@ -93,6 +96,28 @@ export class Appearance {
     };
 
     constructor(private prefix: string) {
+        this.button = this.mk('button', {
+            padding: '4px 8px',
+            backgroundColor: this.colors.inputBg,
+            border: `1px solid ${this.colors.input}`,
+            color: this.colors.label,
+            cursor: 'pointer',
+            userSelect: 'none',
+            fontSize: '10px',
+            borderRadius: '2px',
+            transition: 'all 0.2s',
+            '&:hover': {
+                backgroundColor: this.colors.input,
+                color: this.colors.text,
+            },
+        });
+        this.buttonBar = this.mk('button-bar', {
+            display: 'flex',
+            gap: '4px',
+            marginTop: '4px',
+            flexWrap: 'wrap',
+        });
+
         this.cardButton = this.mk('card-button', {
             padding: '0 4px',
             textAlign: 'center',

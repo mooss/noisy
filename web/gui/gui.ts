@@ -4,6 +4,7 @@ import { HtmlCssElement, spawn } from "./html.js";
 import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, ReadOnly, ReadOnlyWidget, SelectWidget } from './parameters.js';
 import { Facet, LemonCloak } from "./style.js";
 import { GraphWidget } from "./widget.js";
+import { ButtonBar } from "./buttons.js";
 
 /////////////////
 // Foundations //
@@ -37,6 +38,10 @@ export class Panel {
 
     deck(): Deck {
         return new Deck(this._elt);
+    }
+
+    buttonBar(): ButtonBar {
+        return new ButtonBar(this._elt);
     }
 
     graph(): GraphWidget {
