@@ -1,3 +1,4 @@
+import { Codec, Lexon64 } from "../utils/encoding.js";
 import { mapValues } from "../utils/objects.js";
 import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
 import { NoiseClass, NoiseMakerI } from "./foundations.js";
@@ -46,5 +47,24 @@ export function decodeNoiseImpl(encoded: any): any {
             return new Terracing(rec());
         default:
             console.error('Found unknown class when decoding:', cls);
+    }
+}
+
+export class NoiseCodec {
+    codec: Codec<any, string>;
+
+    constructor(reference: NoiseMakerI) {
+        this.codec = new Lexon64(
+            encodeNoise(reference),
+            'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ',
+        );
+    }
+
+    encode(document: NoiseMakerI): string {
+        return this.codec.encode(encodeNoise(document));
+    }
+
+    decode(document: string): NoiseMakerI {
+        return decodeNoise(this.codec.decode(document));
     }
 }

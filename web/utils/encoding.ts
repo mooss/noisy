@@ -10,6 +10,11 @@ function translateTree(data: Object, lexicon: Map<any, any>): any {
     return grow(translate, translate, data);
 }
 
+export interface Codec<From, To> {
+    encode(document: From): To;
+    decode(document: To): From;
+}
+
 export class Lexicon {
     private forward = new Map<any, string>();
     private backward = new Map<string, any>();
@@ -22,11 +27,9 @@ export class Lexicon {
             return String(lk).localeCompare(String(rk), 'en-US');
         });
         const combos = mapit((x) => x.join(''), combinations(alphabet));
-        console.log(counter);
 
         for (const [term] of counter) {
             const compressed = combos.next().value;
-            console.log(':COMPRESSION', term, '=>', compressed);
             this.forward.set(term, compressed);
             this.backward.set(compressed, term);
         }
@@ -40,4 +43,20 @@ export class Lexicon {
 
     /** Encodes and decodes the document, hopefully resulting in the same document. */
     roundtrip(document: any): any { return this.decode(this.encode(document)) }
+}
+
+/** Compression utility using a lexicon, JSON and Base64. */
+export class Lexon64 {
+    private lex: Lexicon;
+    constructor(source: Object, alphabet: string) {
+        this.lex = new Lexicon(source, alphabet);
+    }
+
+    encode(document: any): string {
+        return btoa(JSON.stringify(this.lex.encode(document)));
+    }
+
+    decode(document: string): string {
+        return this.lex.decode(JSON.parse(atob(document)));
+    }
 }
