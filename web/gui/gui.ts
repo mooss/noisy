@@ -156,7 +156,7 @@ class Folder extends Panel {
  * An array of cards that can be focused one at a time.
  * Meant to be used as a tabbing system.
  */
-export class Deck extends Panel {
+export class Deck {
     focusedCard: Card        // The card that is currently focused.
     _container: HTMLElement; // Where the parameters of the focused card are displayed.
     cards: Card[] = [];      // All the Cards contained in this Deck.
@@ -165,10 +165,10 @@ export class Deck extends Panel {
     headerBar: HTMLElement;               // Scrollable bar where the clickable card headers are displayed.
     private leftArrow: HTMLElement;       // Scroll indicator on the left of the bar.
     private rightArrow: HTMLElement;      // Scroll indicator on the right of the bar.
+    private _elt: HTMLElement;
 
     constructor(parent: HTMLElement) {
-        super(parent);
-        this._elt.css(LemonCloak.deck);
+        this._elt = spawn('div', parent, LemonCloak.deck);
 
         this.headerContainer = spawn('div', this._elt, LemonCloak.deckHeaderContainer);
         this.headerBar = spawn('div', this.headerContainer, LemonCloak.deckHeaderBar);
