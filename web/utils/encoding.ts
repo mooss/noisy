@@ -2,25 +2,17 @@ import { combinations, mapit } from "./iteration.js";
 import { sortedMap } from "./maps.js";
 import { countNodes, grow } from "./tree.js";
 
-function translateTree(data: Object, lexicon: Map<any, any>): any {
-    const translate = (item: any): any => {
-        if (lexicon.has(item)) return lexicon.get(item);
-        return item;
-    }
-    return grow(translate, translate, data);
-}
-
 export interface Codec<From, To> {
     encode(document: From): To;
     decode(document: To): From;
 }
 
 export class Lexicon {
-    private forward = new Map<any, string>();
-    private backward = new Map<string, any>();
+    protected forward = new Map<any, string>();
+    protected backward = new Map<string, any>();
 
-    constructor(source: Object, alphabet: string) {
-        const counter = sortedMap(countNodes(source), ([lk, lv], [rk, rv]) => {
+    constructor(reference: Object, alphabet: string) {
+        const counter = sortedMap(countNodes(reference), ([lk, lv], [rk, rv]) => {
             const res = rv - lv;
             if (res != 0) return res;
             // Hopefully deterministic across all machines.
@@ -36,10 +28,37 @@ export class Lexicon {
     }
 
     /** Encodes the source using the valid parts of the lexicon */
-    encode(document: any): any { return translateTree(document, this.forward) }
+    encode(document: any): any {
+        const translate = (item: any) => {
+            if (this.forward.has(item)) return this.forward.get(item);
+
+            // It's possible to have strings that:
+            //  1. Were not in the reference document that established the lexicon.
+            //  2. Are in the document to encode.
+            //  3. Are part of the construsted lexicon.
+            //
+            // Such strings would be incorrectly decoded if left untouched, so a string starting
+            // with = is used to symbolize that what follows is a literal strings, not something to
+            // lookup.
+            if (typeof item == 'string' && (this.backward.has(item) || item.startsWith('=')))
+                return '=' + item;
+
+            return item;
+        }
+        return grow(translate, translate, document);
+    }
 
     /** Decodes the document using the backward lexicon */
-    decode(document: any): any { return translateTree(document, this.backward) }
+    decode(document: any): any {
+        const translate = (item: any) => {
+            if (this.backward.has(item)) return this.backward.get(item);
+            // Handle the special case where the = prefix has been used to encode a literal string.
+            if (typeof item == 'string' && item.length > 0 && item[0] === '=')
+                return item.slice(1);
+            return item;
+        }
+        return grow(translate, translate, document);
+    }
 
     /** Encodes and decodes the document, hopefully resulting in the same document. */
     roundtrip(document: any): any { return this.decode(this.encode(document)) }
