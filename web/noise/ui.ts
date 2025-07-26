@@ -48,6 +48,7 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
                     pick.algorithm = key;
                     cb.regen();
                 });
+                if(key === pick.p.current) card.focus();
                 noiseUI_impl(algos[key], card, cb);
             }
             return;
