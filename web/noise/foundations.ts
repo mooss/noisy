@@ -34,6 +34,27 @@ export interface NoiseMakerI<Params = any> {
     normalised(low: number, high: number): NoiseFun;
 }
 
+export abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params> {
+    p: Params;
+    abstract readonly class: NoiseClass;
+    constructor(params: Params) { this.p = params }
+
+    abstract make(): NoiseFun;
+    abstract get low(): number;
+    abstract get high(): number;
+    recompute(): void { }
+    normalised(low: number, high: number): NoiseFun { return normaliseNoiseMaker(this, low, high) }
+}
+
+/** Recursively encode a nested Record of Encoder. */
+export function recode(obj: any): any {
+    if (obj?.encode && typeof obj.encode === 'function')
+        return obj.encode();
+    if (obj && typeof obj === 'object')
+        return mapValues(recode, obj);
+    return obj;
+}
+
 export function normaliseNoiseMaker(noise: NoiseMakerI, low: number, high: number): NoiseFun {
     const mapper = rangeMapper(noise.low, noise.high, low, high);
     const fun = noise.make();

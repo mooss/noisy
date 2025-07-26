@@ -1,18 +1,9 @@
-import { NoiseClass, NoiseFun, NoiseMakerI, normaliseNoiseMaker } from "./foundations.js";
+import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
 
-abstract class NoiseWrapper<Params = any> implements NoiseMakerI {
-    p: Params & { wrapped: NoiseMakerI };
-    abstract readonly class: NoiseClass;
-
-    constructor(params: Params & { wrapped: NoiseMakerI }) {
-        this.p = params
-    }
-
+abstract class NoiseWrapper<Params = any> extends NoiseMakerBase<Params & { wrapped: NoiseMakerI }> {
     get low(): number { return this.p.wrapped.low }
     get high(): number { return this.p.wrapped.high }
-    abstract make(): NoiseFun;
     recompute(): void { this.p.wrapped.recompute() }
-    normalised(low: number, high: number): NoiseFun { return normaliseNoiseMaker(this, low, high) }
 }
 
 interface TerracingI { interval: number }
@@ -25,3 +16,4 @@ export class Terracing extends NoiseWrapper<TerracingI> {
         return (x, y) => Math.round(fun(x, y) / step) * step;
     }
 }
+

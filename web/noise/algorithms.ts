@@ -2,22 +2,7 @@ import { createNoise2D } from "simplex-noise";
 import { createLCG, highMix, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone } from "../utils/objects.js";
-import { NoiseClass, NoiseFun, NoiseMakerI, normaliseNoiseMaker } from "./foundations.js";
-
-////////////////
-// Primitives //
-
-abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params> {
-    p: Params;
-    abstract readonly class: NoiseClass;
-    constructor(params: Params) { this.p = params }
-
-    abstract make(): NoiseFun;
-    abstract get low(): number;
-    abstract get high(): number;
-    recompute(): void { }
-    normalised(low: number, high: number): NoiseFun { return normaliseNoiseMaker(this, low, high) }
-}
+import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
 
 //////////////
 // Sampling //
