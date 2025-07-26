@@ -16,4 +16,3 @@ export class Terracing extends NoiseWrapper<TerracingI> {
         return (x, y) => Math.round(fun(x, y) / step) * step;
     }
 }
-

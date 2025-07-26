@@ -1,11 +1,15 @@
+import { Ctor, recode, Registry, SelfEncoded, SelfEncoder } from "../encoding/self-encoder.js";
 import { rangeMapper } from "../utils/maths.js";
+
+/////////////////
+// Noisemaking //
 
 export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map' | 'Terracing';
 
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;
 
-export interface NoiseMakerI<Params = any> {
+export interface NoiseMakerI<Params = any> extends SelfEncoder {
     p: Params;
     readonly class: NoiseClass;
 
@@ -43,20 +47,20 @@ export abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params
     abstract get low(): number;
     abstract get high(): number;
     recompute(): void { }
-    normalised(low: number, high: number): NoiseFun { return normaliseNoiseMaker(this, low, high) }
+    encode(): SelfEncoded { return { meta: { class: this.class }, params: recode(this.p) } }
+
+    normalised(low: number, high: number): NoiseFun {
+        const mapper = rangeMapper(this.low, this.high, low, high);
+        const fun = this.make();
+        return (x, y) => { return mapper(fun(x, y)) }
+    }
 }
 
-/** Recursively encode a nested Record of Encoder. */
-export function recode(obj: any): any {
-    if (obj?.encode && typeof obj.encode === 'function')
-        return obj.encode();
-    if (obj && typeof obj === 'object')
-        return mapValues(recode, obj);
-    return obj;
-}
+//////////////
+// Encoding //
 
-export function normaliseNoiseMaker(noise: NoiseMakerI, low: number, high: number): NoiseFun {
-    const mapper = rangeMapper(noise.low, noise.high, low, high);
-    const fun = noise.make();
-    return (x, y) => { return mapper(fun(x, y)); }
+const NoiseRegistry = new Registry<NoiseMakerI>();
+export function register(name: string, ctor: Ctor<NoiseMakerI>) {
+    if (!NoiseRegistry.register(name, ctor))
+        console.error(`Duplicated noise registration attempt for ${name}.`);
 }

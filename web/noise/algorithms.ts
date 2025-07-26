@@ -2,7 +2,7 @@ import { createNoise2D } from "simplex-noise";
 import { createLCG, highMix, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone } from "../utils/objects.js";
-import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
+import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI, register } from "./foundations.js";
 
 //////////////
 // Sampling //
@@ -34,6 +34,7 @@ export class Simplex extends NoiseMakerBase<SimplexI> {
     get high(): number { return 1 }
     make(): NoiseFun { return createNoise2D(createLCG(this.p.seed)) }
 }
+register('Simplex', Simplex);
 
 export interface RidgeI extends SimplexI {
     invert: boolean;
@@ -49,6 +50,7 @@ export class Ridge extends NoiseMakerBase<RidgeI> {
         return (x, y) => ridger(simplex(x, y));
     }
 }
+register('Ridge', Ridge);
 
 //////////////
 // Layering //
@@ -110,6 +112,7 @@ export class Layered<Noise extends NoiseMakerI> extends NoiseMakerBase<LayeredI<
         return layerNoise(this.p.noise.make(), layers);
     }
 }
+register('Layered', Layered<any>);
 
 ///////////////
 // Noise mix //
@@ -142,6 +145,7 @@ export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<Contin
         return highMix(this.bass, this.treble, thsh.low, thsh.high, thsh.mid);
     }
 }
+register('ContinentalMix', ContinentalMix);
 
 ///////////////////
 // Global config //
@@ -174,3 +178,5 @@ export class NoiseMap extends NoiseMakerBase<NoiseMapI> {
     get high(): number { return this.algorithm.high }
     recompute(): void { this.algorithm.recompute() }
 }
+register('Map', NoiseMap);
+

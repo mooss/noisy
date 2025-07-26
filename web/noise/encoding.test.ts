@@ -29,7 +29,7 @@ describe('NoiseCodec', () => {
                     algorithms: {
                         'test': new Simplex({seed: 42})
                     }
-                }, 'test')
+                })
             });
             const decoded = codec.roundtrip(terraced);
 
@@ -102,7 +102,7 @@ describe('NoiseCodec', () => {
                     'test1': new Simplex({ seed: 1 }),
                     'test2': new Ridge({ seed: 2, invert: true, square: false })
                 }
-            }, 'test1');
+            });
             const decoded = codec.roundtrip(map);
 
             expect(decoded).toBeInstanceOf(NoiseMap);

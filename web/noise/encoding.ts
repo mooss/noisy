@@ -5,20 +5,6 @@ import { NoiseClass, NoiseMakerI } from "./foundations.js";
 import { Terracing } from "./processing.js";
 
 /**
- * Recursively encode an object by calling the encode method on all its value, leaving the values as
- * is when there is no encode method.
- */
-export function encodeNoise(obj: any): Object {
-    if (obj == null) return;
-
-    if (typeof obj?.class === 'string') {
-        return { meta: { class: obj.class }, params: encodeNoise(obj.p) }
-    }
-
-    return mapValues(encodeNoise, obj);
-}
-
-/**
  * Instanciates the recursive entanglement of noise and parameters specifications.
  */
 export function decodeNoise(encoded: any): NoiseMakerI {
@@ -56,13 +42,13 @@ export class NoiseCodec extends CodecABC<NoiseMakerI, string> {
     constructor(reference: NoiseMakerI) {
         super();
         this.codec = new Lexon64(
-            encodeNoise(reference),
+            reference.encode(),
             'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ',
         );
     }
 
     encode(document: NoiseMakerI): string {
-        return this.codec.encode(encodeNoise(document));
+        return this.codec.encode(document.encode());
     }
 
     decode(document: string): NoiseMakerI {
