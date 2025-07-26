@@ -5,6 +5,7 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
+    "@types/node": "^24.1.0",
     "@types/three": "^0.178.1",
     "jest": "^30.0.5",
     "ts-jest": "^29.4.0",

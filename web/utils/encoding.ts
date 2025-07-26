@@ -65,6 +65,9 @@ export class Lexicon {
     roundtrip(document: any): any { return this.decode(this.encode(document)) }
 }
 
+function utfbtoa(data: string): string { return Buffer.from(data, 'utf8').toString('base64') }
+function utfatob(data: string): string { return Buffer.from(data, 'base64').toString('utf8') }
+
 /** Compression utility using a lexicon, JSON and Base64. */
 export class Lexon64 {
     private lex: Lexicon;
@@ -73,10 +76,10 @@ export class Lexon64 {
     }
 
     encode(document: any): string {
-        return btoa(JSON.stringify(this.lex.encode(document)));
+        return utfbtoa(JSON.stringify(this.lex.encode(document)));
     }
 
     decode(document: string): string {
-        return this.lex.decode(JSON.parse(atob(document)));
+        return this.lex.decode(JSON.parse(utfatob(document)));
     }
 }
