@@ -5,16 +5,27 @@ import { countNodes, grow } from "./tree.js";
 export interface Codec<From, To> {
     encode(document: From): To;
     decode(document: To): From;
+    /** Encodes and decodes the document, hopefully resulting in the same document. */
+    roundtrip(document: From): From;
+}
+
+export abstract class CodecABC<From, To> implements Codec<From, To> {
+    abstract encode(document: From): To;
+    abstract decode(document: To): From;
+    roundtrip(document: From): From {
+        return this.decode(this.encode(document));
+    }
 }
 
 /**
  * Encodes and decodes a document using a Lexicon generated from a reference document.
  */
-export class Lexicon {
+export class Lexicon extends CodecABC<any, any> {
     protected forward = new Map<any, string>();
     protected backward = new Map<string, any>();
 
     constructor(reference: Object, alphabet: string) {
+        super();
         const counter = sortedMap(countNodes(reference), ([lk, lv], [rk, rv]) => {
             const res = rv - lv;
             if (res != 0) return res;
@@ -60,18 +71,16 @@ export class Lexicon {
         }
         return grow(translate, translate, document);
     }
-
-    /** Encodes and decodes the document, hopefully resulting in the same document. */
-    roundtrip(document: any): any { return this.decode(this.encode(document)) }
 }
 
 function utfbtoa(data: string): string { return Buffer.from(data, 'utf8').toString('base64') }
 function utfatob(data: string): string { return Buffer.from(data, 'base64').toString('utf8') }
 
 /** Compression utility using a lexicon, JSON and Base64. */
-export class Lexon64 {
+export class Lexon64 extends CodecABC<any, string> {
     private lex: Lexicon;
     constructor(source: Object, alphabet: string) {
+        super();
         this.lex = new Lexicon(source, alphabet);
     }
 
@@ -79,7 +88,7 @@ export class Lexon64 {
         return utfbtoa(JSON.stringify(this.lex.encode(document)));
     }
 
-    decode(document: string): string {
+    decode(document: string): any {
         return this.lex.decode(JSON.parse(utfatob(document)));
     }
 }

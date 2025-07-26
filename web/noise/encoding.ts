@@ -1,4 +1,4 @@
-import { Codec, Lexon64 } from "../utils/encoding.js";
+import { Codec, CodecABC, Lexon64 } from "../utils/encoding.js";
 import { mapValues } from "../utils/objects.js";
 import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
 import { NoiseClass, NoiseMakerI } from "./foundations.js";
@@ -50,10 +50,11 @@ export function decodeNoiseImpl(encoded: any): any {
     }
 }
 
-export class NoiseCodec {
+export class NoiseCodec extends CodecABC<NoiseMakerI, string> {
     codec: Codec<any, string>;
 
     constructor(reference: NoiseMakerI) {
+        super();
         this.codec = new Lexon64(
             encodeNoise(reference),
             'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ',
