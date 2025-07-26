@@ -152,6 +152,7 @@ export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<Contin
     get low(): number { return 0 }
     get high(): number { return 1 }
     make(): NoiseFun {
+        if (this.bass === undefined || this.treble === undefined) this.recompute();
         const thsh = this.p.threshold;
         return highMix(this.bass, this.treble, thsh.low, thsh.high, thsh.mid);
     }

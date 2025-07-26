@@ -44,11 +44,12 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: NoiseCallback) {
             const algos = pick.p.algorithms;
             const deck = root.deck();
             for (const key in algos) {
-                const card = deck.card(key).onClick(() => {
+                const card = deck.card(key);
+                if(key === pick.p.current) card.focus();
+                card.onClick(() => {
                     pick.algorithm = key;
                     cb.regen();
                 });
-                if(key === pick.p.current) card.focus();
                 noiseUI_impl(algos[key], card, cb);
             }
             return;
