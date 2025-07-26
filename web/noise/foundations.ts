@@ -1,4 +1,4 @@
-import { Ctor, recode, Registry, SelfEncoded, SelfEncoder } from "../encoding/self-encoder.js";
+import { Ctor, encrec, Registry, SelfEncoded, SelfEncoder } from "../encoding/self-encoder.js";
 import { rangeMapper } from "../utils/maths.js";
 
 /////////////////
@@ -47,7 +47,7 @@ export abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params
     abstract get low(): number;
     abstract get high(): number;
     recompute(): void { }
-    encode(): SelfEncoded { return { meta: { class: this.class }, params: recode(this.p) } }
+    encode(): SelfEncoded { return { meta: { class: this.class }, params: encrec(this.p) } }
 
     normalised(low: number, high: number): NoiseFun {
         const mapper = rangeMapper(this.low, this.high, low, high);
@@ -59,7 +59,7 @@ export abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params
 //////////////
 // Encoding //
 
-const NoiseRegistry = new Registry<NoiseMakerI>();
+export const NoiseRegistry = new Registry<NoiseMakerI>();
 export function register(name: string, ctor: Ctor<NoiseMakerI>) {
     if (!NoiseRegistry.register(name, ctor))
         console.error(`Duplicated noise registration attempt for ${name}.`);

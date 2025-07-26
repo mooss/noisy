@@ -1,40 +1,5 @@
 import { Codec, CodecABC, Lexon64 } from "../utils/encoding.js";
-import { mapValues } from "../utils/objects.js";
-import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
-import { NoiseClass, NoiseMakerI } from "./foundations.js";
-import { Terracing } from "./processing.js";
-
-/**
- * Instanciates the recursive entanglement of noise and parameters specifications.
- */
-export function decodeNoise(encoded: any): NoiseMakerI {
-    return decodeNoiseImpl(encoded) as NoiseMakerI;
-}
-
-export function decodeNoiseImpl(encoded: any): any {
-    if (encoded == null) return;
-    const rec = (): any => decodeNoiseImpl(encoded.params);
-
-    const cls = encoded?.meta?.class;
-    if (typeof cls !== 'string') return mapValues(decodeNoiseImpl, encoded);
-
-    switch (cls as NoiseClass) {
-        case 'Simplex':
-            return new Simplex(rec());
-        case 'Layered':
-            return new Layered(rec());
-        case 'Ridge':
-            return new Ridge(rec());
-        case 'ContinentalMix':
-            return new ContinentalMix(rec());
-        case 'Map':
-            return new NoiseMap(rec());
-        case 'Terracing':
-            return new Terracing(rec());
-        default:
-            console.error('Found unknown class when decoding:', cls);
-    }
-}
+import { NoiseMakerI, NoiseRegistry } from "./foundations.js";
 
 export class NoiseCodec extends CodecABC<NoiseMakerI, string> {
     codec: Codec<any, string>;
@@ -52,6 +17,6 @@ export class NoiseCodec extends CodecABC<NoiseMakerI, string> {
     }
 
     decode(document: string): NoiseMakerI {
-        return decodeNoise(this.codec.decode(document));
+        return NoiseRegistry.decode(this.codec.decode(document));
     }
 }

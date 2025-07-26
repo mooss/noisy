@@ -7,14 +7,28 @@ export interface SelfEncoded {
 export interface SelfEncoder {
     encode(): SelfEncoded;
 }
+export interface Creator<Type> {
+    create(name: string, params: any): Type;
+}
 
-/** Recursively encode a nested Record of Encoder. */
-export function recode(obj: any): any {
+/** Recursively encodes a nested record of self-encoders. */
+export function encrec(obj: any): any {
     if (obj?.encode && typeof obj.encode === 'function')
         return obj.encode();
     if (obj && typeof obj === 'object')
-        return mapValues(recode, obj);
+        return mapValues(encrec, obj);
     return obj;
+}
+
+/** Recursively decodes a nested record of self-encoded data. */
+export function decrec<Type>(data: any, creator: Creator<Type>): Type | undefined {
+    return decrec_impl(data, creator) as Type;
+}
+
+export function decrec_impl<Type>(data: any, creator: Creator<Type>): any {
+    if (typeof data?.meta?.class !== 'string' || data?.params === undefined)
+        return mapValues((nested: any) => decrec_impl(nested, creator), data);
+    return creator.create(data.meta.class, decrec_impl(data.params, creator));
 }
 
 export type Ctor<Type, Params = any> = new (params: Params) => Type;
@@ -38,4 +52,5 @@ export class Registry<Type extends SelfEncoder> {
     }
 
     registered(name: string): boolean { return this.classes.has(name) }
+    decode(data: any): Type | undefined { return decrec(data, this) }
 }

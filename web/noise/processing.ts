@@ -1,4 +1,4 @@
-import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
+import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI, register } from "./foundations.js";
 
 abstract class NoiseWrapper<Params = any> extends NoiseMakerBase<Params & { wrapped: NoiseMakerI }> {
     get low(): number { return this.p.wrapped.low }
@@ -16,3 +16,4 @@ export class Terracing extends NoiseWrapper<TerracingI> {
         return (x, y) => Math.round(fun(x, y) / step) * step;
     }
 }
+register('Terracing', Terracing);
