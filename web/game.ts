@@ -3,8 +3,8 @@ import { AvatarConfig } from './config/avatar.js';
 import { ChunkConfig } from './config/chunk.js';
 import { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from './constants.js';
-import { GUI } from './gui/gui.js';
-import { NoiseCodec } from './noise/encoding.js';
+import { GUI, Panel } from './gui/gui.js';
+import { encodeNoise, NoiseCodec } from './noise/encoding.js';
 import { NoiseMakerI } from './noise/foundations.js';
 import { noiseAlgorithms } from './noise/init.js';
 import { noiseUI } from './noise/ui.js';
@@ -12,14 +12,15 @@ import { Renderer } from './renderer.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
+import { test } from './utils/compression-test.js';
 import { Codec } from './utils/encoding.js';
+import { toClipBoard } from './utils/utils.js';
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
     terrain: Terrain;
     avatar: Avatar;
     renderer: Renderer;
-    gui: GUI;
     fps: FpsWidget;
     keyboard: Keyboard;
     updateStats: () => void = () => { };
@@ -41,10 +42,11 @@ class Game {
             render: new RenderConfig(),
             noise: noiseAlgorithms(),
         };
-        this.noiseCodec = new NoiseCodec(this.config.noise);
     }
 
     start(): void {
+        this.loadTerrainParams();
+
         this.terrain = new Terrain(this.config.chunks, this.config.noise, this.config.render);
         this.keyboard = new Keyboard();
         this.avatar = new Avatar();
@@ -61,37 +63,62 @@ class Game {
         this.startAnimationLoop();
     }
 
+    /** Create the noise codec and potentially load GET parameters. */
+    loadTerrainParams(): void {
+        this.noiseCodec = new NoiseCodec(this.config.noise);
+        const encoded = new URLSearchParams(window.location.search).get('q');
+        if (encoded?.length > 0) {
+            this.config.noise = this.noiseCodec.decode(encoded);
+        }
+    }
+
     ////////
     // UI //
 
     setupUI(): void {
-        this.gui = new GUI(GUI.POSITION_LEFT).collapsible();
-        this.fps = new FpsWidget(this.gui);
+        const gui = new GUI(GUI.POSITION_LEFT).collapsible();
+        this.setupActions(gui);
+
+        this.fps = new FpsWidget(gui);
 
         if (Game.ENABLE_STATS_GRAPH) {
-            this.setupStatsGraph();
+            this.setupStatsGraph(gui);
         }
 
-        this.config.chunks.ui(this.gui.folder('Chunks'),
+        this.config.chunks.ui(gui.folder('Chunks'),
             () => this.regenerateTerrain(),
             () => this.reloadTerrain(),
         );
-        this.config.render.ui(this.gui.folder('Render'),
+        this.config.render.ui(gui.folder('Render'),
             () => this.regenerateTerrain(),
             () => this.updateRender(),
         );
-        this.config.avatar.ui(this.gui.folder('Avatar').close(),
+        this.config.avatar.ui(gui.folder('Avatar').close(),
             () => this.updateAvatar(),
         );
 
-        const terrainGeneration = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
-        noiseUI(this.config.noise, terrainGeneration, this);
+        const tergen = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
+        noiseUI(this.config.noise, tergen, this);
     }
 
-    setupStatsGraph(): void {
-        const heightGraph = this.gui.graph().legend("Sorted heights in active chunk");
-        const heightStats = this.gui.readOnly('').legend('Height stats');
-        const zScoreGraph = this.gui.graph().legend("Z-scores of the sorted heights").close();
+    setupActions(root: Panel): void {
+        const actions = root.buttonBar();
+        const copy = actions.button('COPY URL');
+        const encoded = () => this.noiseCodec.encode(this.config.noise);
+        copy.onClick(() => {
+            const url = new URL(window.location.href);
+            url.search = '?q=' + encoded();
+            const link = encodeURI(url.toString());
+            toClipBoard(link);
+            // Update the URL bar to enshrine the current state into the page.
+            window.history.pushState({ path: link }, '', link);
+        });
+    }
+
+    setupStatsGraph(root: Panel): void {
+        const heightGraph = root.graph().legend("Sorted heights in active chunk");
+        const heightStats = root.readOnly('').legend('Height stats');
+        const zScoreGraph = root.graph().legend("Z-scores of the sorted heights").close();
 
         this.updateStats = (): void => {
             const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk());
