@@ -7,6 +7,9 @@ export interface Codec<From, To> {
     decode(document: To): From;
 }
 
+/**
+ * Encodes and decodes a document using a Lexicon generated from a reference document.
+ */
 export class Lexicon {
     protected forward = new Map<any, string>();
     protected backward = new Map<string, any>();
@@ -27,7 +30,6 @@ export class Lexicon {
         }
     }
 
-    /** Encodes the source using the valid parts of the lexicon */
     encode(document: any): any {
         const translate = (item: any) => {
             if (this.forward.has(item)) return this.forward.get(item);
@@ -48,7 +50,6 @@ export class Lexicon {
         return grow(translate, translate, document);
     }
 
-    /** Decodes the document using the backward lexicon */
     decode(document: any): any {
         const translate = (item: any) => {
             if (this.backward.has(item)) return this.backward.get(item);
