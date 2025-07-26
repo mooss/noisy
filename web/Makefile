@@ -8,7 +8,7 @@ setup:
 
 update-modules:
 	npm install --save three simplex-noise
-	npm install --save-dev vite @types/three @types/node jest @types/jest ts-jest
+	npm install --save-dev vite @types/three jest @types/jest ts-jest
 
 serve:
 	npx vite

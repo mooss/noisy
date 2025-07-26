@@ -73,10 +73,29 @@ export class Lexicon extends CodecABC<any, any> {
     }
 }
 
-function utfbtoa(data: string): string { return Buffer.from(data, 'utf8').toString('base64') }
-function utfatob(data: string): string { return Buffer.from(data, 'base64').toString('utf8') }
+/** btoa alternative that doesn't choke on unicode. */
+function utfbtoa(data: string): string {
+    const encoder = new TextEncoder();
+    const uint8Array = encoder.encode(data);
+    let binaryString = '';
+    uint8Array.forEach(byte => {
+        binaryString += String.fromCharCode(byte);
+    });
+    return btoa(binaryString);
+}
 
-/** Compression utility using a lexicon, JSON and Base64. */
+/** atob alternative that doesn't choke on unicode. */
+function utfatob(data: string): string {
+    const binaryString = atob(data);
+    const uint8Array = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
+    }
+    const decoder = new TextDecoder();
+    return decoder.decode(uint8Array);
+}
+
+/** Compression utility using a lexicon, JSON and base64. */
 export class Lexon64 extends CodecABC<any, string> {
     private lex: Lexicon;
     constructor(source: Object, alphabet: string) {
