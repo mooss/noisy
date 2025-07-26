@@ -162,27 +162,22 @@ export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<Contin
 
 export interface NoiseMapI {
     algorithms: Record<string, NoiseMakerI>;
+    current?: string;
 }
 export class NoiseMap extends NoiseMakerBase<NoiseMapI> {
     get class(): NoiseClass { return 'Map' };
-    private current: string;
-
-    constructor(params: NoiseMapI, initial: string = undefined) {
-        super(params);
-        let algos = Object.keys(params.algorithms);
-        if (initial === undefined && algos.length != 0)
-            initial = algos[0];
-        this.current = initial;
-    }
 
     register(name: string, algo: NoiseMakerI): void {
         this.p.algorithms[name] = algo;
-        if (this.current === undefined) this.current = name;
     }
 
-    get algorithm(): NoiseMakerI { return this.p.algorithms[this.current] };
+    get algorithm(): NoiseMakerI {
+        if (this.p.current === undefined)
+            this.p.current = Object.keys(this.p.algorithms)[0];
+        return this.p.algorithms[this.p.current];
+    };
     set algorithm(algo: string) {
-        this.current = algo;
+        this.p.current = algo;
         this.recompute();
     }
 
