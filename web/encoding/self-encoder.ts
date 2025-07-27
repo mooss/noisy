@@ -15,25 +15,22 @@ export interface Creator<Type> {
 export function encrec(obj: any): any {
     if (obj?.encode && typeof obj.encode === 'function')
         return obj.encode();
+    if (typeof obj?.class === 'string')
+        return { params: { ...mapValues(encrec, obj) }, meta: { class: obj.class } }
     if (obj && typeof obj === 'object')
         return mapValues(encrec, obj);
     return obj;
 }
 
-/** Recursively decodes a nested record of self-encoded data. */
-export function decrec<Type>(data: any, creator: Creator<Type>): Type | undefined {
-    return decrec_impl(data, creator) as Type;
-}
-
-export function decrec_impl<Type>(data: any, creator: Creator<Type>): any {
+export function decrec<Type>(data: any, creator: Creator<Type>): any {
     if (typeof data?.meta?.class !== 'string' || data?.params === undefined)
-        return mapValues((nested: any) => decrec_impl(nested, creator), data);
-    return creator.create(data.meta.class, decrec_impl(data.params, creator));
+        return mapValues((nested: any) => decrec(nested, creator), data);
+    return creator.create(data.meta.class, decrec(data.params, creator));
 }
 
 export type Ctor<Type, Params = any> = new (params: Params) => Type;
 
-export class Registry<Type extends SelfEncoder> {
+export class Registry<Type> {
     private classes = new Map<string, Ctor<Type>>;
 
     /**
@@ -46,11 +43,11 @@ export class Registry<Type extends SelfEncoder> {
         return true;
     }
 
-    create(name: string, params: any): Type | undefined {
+    create(name: string, params: any): any {
         const ructor = this.classes.get(name);
-        return ructor ? new ructor(params) : undefined;
+        return ructor ? new ructor(params) : params;
     }
 
     registered(name: string): boolean { return this.classes.has(name) }
-    decode(data: any): Type | undefined { return decrec(data, this) }
+    decode(data: any): any { return decrec(data, this) }
 }

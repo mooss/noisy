@@ -1,5 +1,6 @@
 import { CHUNK_UNIT } from "../constants.js";
 import { Panel } from "../gui/gui.js";
+import { AutoAssign } from "../utils/objects.js";
 
 interface ChunkCallbackI {
     regenerateTerrain(): void;
@@ -23,18 +24,22 @@ export function chunksUI(conf: ChunkConfig, root: Panel, callbacks: ChunkCallbac
     root.range(conf, 'loadRadius', 0, 8, 1).legend('Load radius').onInput(cb.reload);
 }
 
-export class ChunkConfig {
+abstract class ChunkConfigP extends AutoAssign<ChunkConfigP> {
     // Chunks within this distance will be unloaded when entering a new chunk.
-    loadRadius: number = 1;
+    declare loadRadius: number;
     // Shape of the loaded area around the center chunk.
-    radiusType: 'square' | 'circle' = 'square';
+    declare radiusType: 'square' | 'circle';
     // Power of the chunk (one side is 2^n + 1).
-    _power: number = 5;
+    declare _power: number;
     // The previous value of this.size.
-    previousSize: number = undefined;
+    declare previousSize: number;
     // Chunks beyond this distance *plus* the load radius will be unloaded when entering a new chunk.
     // unloadRadius: number = 2;
+}
 
+// export class ChunkConfig extends ChunkConfigP {
+export class ChunkConfig extends ChunkConfigP {
+    get class(): string { return 'ChunkConfig' }
     set power(value: number) {
         this.previousSize = this.nblocks;
         this._power = value;

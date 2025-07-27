@@ -36,7 +36,12 @@ class Game {
 
     constructor() {
         this.config = {
-            chunks: new ChunkConfig(),
+            chunks: new ChunkConfig({
+                _power: 6,
+                loadRadius: 1,
+                radiusType: 'square',
+                previousSize: undefined,
+            }),
             avatar: new AvatarConfig(),
             render: new RenderConfig(),
             noise: noiseAlgorithms(),
