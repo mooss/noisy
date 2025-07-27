@@ -3,7 +3,7 @@
         "lib": ["es2022", "DOM", "DOM.Iterable"],
         "target": "es2022",
         "moduleResolution": "node16",
-        "types": ["three", "jest", "node"],
+        "types": ["three", "jest", "node", "lz-string"],
         "esModuleInterop": true,
     },
 }

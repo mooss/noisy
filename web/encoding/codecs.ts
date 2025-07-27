@@ -1,3 +1,4 @@
+import { compressToBase64, decompressFromBase64 } from "lz-string";
 import { combinations, mapit } from "../utils/iteration.js";
 import { sortedMap } from "../utils/maps.js";
 import { countNodes, grow } from "../utils/tree.js";
@@ -72,26 +73,20 @@ export class Lexicon extends CodecABC<any, any> {
     }
 }
 
-/** btoa alternative that doesn't choke on unicode. */
-function utfbtoa(data: string): string {
-    const encoder = new TextEncoder();
-    const uint8Array = encoder.encode(data);
-    let binaryString = '';
-    uint8Array.forEach(byte => {
-        binaryString += String.fromCharCode(byte);
-    });
-    return btoa(binaryString);
+function tr(source: string, from: string, to: string): string {
+    return source.split('').map((chr: string) => {
+        const idx = from.indexOf(chr);
+        if (from.includes(chr)) return to[idx];
+        return chr;
+    }).join('');
 }
 
-/** atob alternative that doesn't choke on unicode. */
-function utfatob(data: string): string {
-    const binaryString = atob(data);
-    const uint8Array = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-        uint8Array[i] = binaryString.charCodeAt(i);
-    }
-    const decoder = new TextDecoder();
-    return decoder.decode(uint8Array);
+function base64ToGet(b64: string) {
+    return tr(b64, '+/=', '-_.');
+}
+
+function getToBase64(url: string) {
+    return tr(url, '-_.', '+/=');
 }
 
 /** Compression utility using a lexicon, JSON and base64. */
@@ -103,11 +98,11 @@ export class Lexon64 extends CodecABC<any, string> {
     }
 
     encode(document: any): string {
-        return utfbtoa(JSON.stringify(this.lex.encode(document)));
+        return base64ToGet(compressToBase64(JSON.stringify(this.lex.encode(document))));
     }
 
     decode(document: string): any {
-        return this.lex.decode(JSON.parse(utfatob(document)));
+        return this.lex.decode(JSON.parse(decompressFromBase64(getToBase64(document))));
     }
 }
 

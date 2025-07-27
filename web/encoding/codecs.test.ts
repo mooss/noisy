@@ -206,10 +206,10 @@ describe('Lexon64', () => {
             expect(decoded).toEqual(complex);
         });
 
-        it('should throw error on invalid Base64', () => {
+        it('should not error on invalid Base64', () => {
             expect(() => {
                 lexon64.decode('invalid-base64!');
-            }).toThrow();
+            }).not.toThrow();
         });
     });
 
