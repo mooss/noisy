@@ -4,7 +4,7 @@ import { ChunkConfig } from './config/chunk.js';
 import { RenderConfig } from './config/render.js';
 import { CHUNK_UNIT } from './constants.js';
 import { GUI, Panel } from './gui/gui.js';
-import { NoiseCodec } from './noise/encoding.js';
+import { NoiseCodec } from './encoding/noise.js';
 import { NoiseMakerI } from './noise/foundations.js';
 import { noiseAlgorithms } from './noise/init.js';
 import { noiseUI } from './noise/ui.js';
@@ -12,7 +12,7 @@ import { Renderer } from './renderer.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
-import { Codec } from './utils/encoding.js';
+import { Codec } from './encoding/codecs.js';
 import { toClipBoard } from './utils/utils.js';
 
 class Game {

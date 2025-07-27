@@ -1,5 +1,5 @@
-import { Codec, CodecABC, Lexon64 } from "../utils/encoding.js";
-import { NoiseMakerI, NoiseRegistry } from "./foundations.js";
+import { Codec, CodecABC, Lexon64 } from "./codecs.js";
+import { NoiseMakerI, NoiseRegistry } from "../noise/foundations.js";
 
 export class NoiseCodec extends CodecABC<NoiseMakerI, string> {
     codec: Codec<any, string>;

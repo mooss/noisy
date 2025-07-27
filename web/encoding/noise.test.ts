@@ -1,8 +1,8 @@
-import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from './algorithms.js';
-import { NoiseCodec } from './encoding.js';
-import { NoiseMakerI } from './foundations.js';
-import { noiseAlgorithms } from './init.js';
-import { Terracing } from './processing.js';
+import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from '../noise/algorithms.js';
+import { NoiseCodec } from './noise.js';
+import { NoiseMakerI } from '../noise/foundations.js';
+import { noiseAlgorithms } from '../noise/init.js';
+import { Terracing } from '../noise/processing.js';
 
 describe('NoiseCodec', () => {
     let reference: NoiseMakerI;

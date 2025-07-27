@@ -1,6 +1,6 @@
-import { combinations, mapit } from "./iteration.js";
-import { sortedMap } from "./maps.js";
-import { countNodes, grow } from "./tree.js";
+import { combinations, mapit } from "../utils/iteration.js";
+import { sortedMap } from "../utils/maps.js";
+import { countNodes, grow } from "../utils/tree.js";
 
 export interface Codec<From, To> {
     encode(document: From): To;

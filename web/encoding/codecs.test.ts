@@ -1,4 +1,4 @@
-import { Lexicon, Lexon64 } from './encoding.js';
+import { Lexicon, Lexon64 } from "./codecs.js";
 
 describe('Lexicon', () => {
     let lexicon: Lexicon;
