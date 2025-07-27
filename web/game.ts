@@ -10,7 +10,7 @@ import { noiseUI } from './noise/ui.js';
 import { Renderer } from './renderer.js';
 import { AvatarState, avatarUI } from './state/avatar.js';
 import { ChunkState, chunksUI } from './state/chunk.js';
-import { RenderState } from './state/render.js';
+import { RenderState, renderUI } from './state/render.js';
 import { StateCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
@@ -49,10 +49,18 @@ class Game {
                 heightOffset: 0,
                 cameraMode: 'Follow',
             }),
-            render: new RenderState(),
+            render: new RenderState({
+                style: 'surface',
+                paletteName: 'Bright terrain',
+                light: {
+                    ambient: { intensity: .5 },
+                    directional: { intensity: 4 },
+                },
+                heightMultiplier: 1,
+            }),
             noise: noiseAlgorithms(),
         };
-        this.state.chunks = StateRegistry.decode(encrec(this.state.chunks));
+        this.state = StateRegistry.decode(encrec(this.state));
     }
 
     start(): void {
@@ -94,10 +102,7 @@ class Game {
 
         const cb = new StateCallbacks(this);
         chunksUI(this.state.chunks, gui.folder('Chunks'), cb);
-        this.state.render.ui(gui.folder('Render'),
-            () => this.recomputeTerrain(),
-            () => this.updateRender(),
-        );
+        renderUI(this.state.render, gui.folder('Render'), cb);
         avatarUI(this.state.avatar, gui.folder('Avatar').close(), cb);
 
         const tergen = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();

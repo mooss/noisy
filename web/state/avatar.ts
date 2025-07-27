@@ -6,9 +6,9 @@ type CameraMode = 'Follow' | 'Free';
 
 export class AvatarState extends AutoAssign<AvatarState> {
     class(): string { return 'AvatarState' }
-    size: number;           // Avatar sphere radius (cell size multiplier).
-    heightOffset: number;   // How high above the terrain the avatar floats (cell size multiplier).
-    cameraMode: CameraMode; // Camera mode: 'Free' or 'Follow'.
+    declare size: number;           // Avatar sphere radius (cell size multiplier).
+    declare heightOffset: number;   // How high above the terrain the avatar floats (cell size multiplier).
+    declare cameraMode: CameraMode; // Camera mode: 'Free' or 'Follow'.
 }
 register('AvatarState', AvatarState);
 

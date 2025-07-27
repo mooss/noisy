@@ -1,9 +1,11 @@
 import * as THREE from 'three';
+import { CHUNK_UNIT } from '../constants.js';
 import { Panel } from '../gui/gui.js';
+import type { HeightGenerator } from '../height-generator.js';
 import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh.js';
 import { palettes } from '../palettes.js';
-import type { HeightGenerator } from '../height-generator.js';
-import { CHUNK_UNIT } from '../constants.js';
+import { AutoAssign } from '../utils/objects.js';
+import { register, StateCallbacks } from './state.js';
 
 interface LightConfig {
     ambient: { intensity: number };
@@ -12,42 +14,15 @@ interface LightConfig {
 
 type RenderStyle = 'surface' | 'quadPrism' | 'hexPrism';
 
-export class RenderState {
-    style: RenderStyle;
-    paletteName: string;
-    light: LightConfig;
-    heightMultiplier: number = 1; // Multiplier for the terrain height.
+class RenderStateP extends AutoAssign<RenderStateP> {
+    declare style: RenderStyle;
+    declare paletteName: string;
+    declare light: LightConfig;
+    declare heightMultiplier: number; // Multiplier for the terrain height.
+}
 
-    constructor() {
-        this.style = 'surface';              // How the terrain is rendered.
-        this.paletteName = 'Bright terrain'; // Name of the color palette to use.
-        this.light = {
-            ambient: { intensity: .5 },
-            directional: { intensity: 4 },
-        }
-    }
-
-    ui(parent: Panel, regen: () => void, rerender: () => void): void {
-        parent.select(this, 'style', {
-            'Surface': 'surface',
-            'Squares': 'quadPrism',
-            'Hexagons': 'hexPrism',
-        }).legend('Shape').onChange(regen);
-
-        parent.select(this, 'paletteName', palettes)
-            .legend('Palette').onChange(regen);
-
-        parent.range(this.light.ambient, 'intensity', 0, 10, .2)
-            .legend('Ambient Light').onChange(rerender);
-
-        parent.range(this.light.directional, 'intensity', 0, 10, .2)
-            .legend('Directional Light').onChange(rerender);
-
-        parent.range(this, 'heightMultiplier', 0.1, 5.0, 0.05)
-            .legend('Height multiplier')
-            .onInput(rerender);
-    }
-
+export class RenderState extends RenderStateP {
+    readonly class: string = 'RenderState';
     get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }
     get palette(): THREE.Color[] { return palettes[this.paletteName] }
 
@@ -61,4 +36,26 @@ export class RenderState {
                 return createSurfaceMesh(heights, this.palette);
         }
     }
+}
+register('RenderState', RenderState);
+
+export function renderUI(state: RenderState, root: Panel, cb: StateCallbacks) {
+    root.select(state, 'style', {
+        'Surface': 'surface',
+        'Squares': 'quadPrism',
+        'Hexagons': 'hexPrism',
+    }).legend('Shape').onChange(cb.terrain.recompute);
+
+    root.select(state, 'paletteName', palettes)
+        .legend('Palette').onChange(cb.terrain.recompute);
+
+    root.range(state.light.ambient, 'intensity', 0, 10, .2)
+        .legend('Ambient Light').onChange(cb.render.update);
+
+    root.range(state.light.directional, 'intensity', 0, 10, .2)
+        .legend('Directional Light').onChange(cb.render.update);
+
+    root.range(state, 'heightMultiplier', 0.1, 5.0, 0.05)
+        .legend('Height multiplier')
+        .onInput(cb.render.update);
 }

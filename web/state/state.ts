@@ -10,6 +10,7 @@ interface StateCallbacksI {
     recomputeTerrain(): void;
     ensureTerrainLoaded(): void;
     updateAvatar(): void;
+    updateRender(): void;
 }
 export class StateCallbacks {
     constructor(private cb: StateCallbacksI) { };
@@ -19,5 +20,8 @@ export class StateCallbacks {
     }
     readonly avatar = {
         update: () => this.cb.updateAvatar(),
+    }
+    readonly render = {
+        update: () => this.cb.updateRender(),
     }
 }
