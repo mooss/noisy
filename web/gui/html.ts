@@ -24,8 +24,13 @@ export type HtmlCssElement<T extends HTMLElement = HTMLElement> = T & {
 }
 
 function addCss<T extends HTMLElement>(el: T): HtmlCssElement<T> {
-    (el as HtmlCssElement<T>).css = function (props) {
-        Object.assign(this.style, props.properties.merged());
+    (el as HtmlCssElement<T>).css = function (style: Facet) {
+        // Add all classes from the Facet to the element.
+        if (style && style.classes) {
+            for (const cls of style.classes) {
+                this.classList.add(cls);
+            }
+        }
     };
 
     return el as HtmlCssElement<T>;

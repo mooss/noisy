@@ -11,9 +11,45 @@ export interface CssProperties {
     [k: string]: string | number | CssProperties;
 }
 
+function camelToKebab(str: string): string {
+    return str.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase());
+}
+
+function cssPropertiesToString(props: CssProperties): string {
+    return Object.entries(props)
+        .filter(([k, v]) => typeof v !== 'object' || k.startsWith('&'))
+        .map(([k, v]) => {
+            if (typeof v === 'object') return '';
+            return `${camelToKebab(k)}:${v};`;
+        })
+        .join('');
+}
+
+function injectFacetCss(className: string, props: CssProperties, prefix: string) {
+    const fullClass = prefix ? `${prefix}-${className}` : className;
+    let css = `.${fullClass}{${cssPropertiesToString(props)}}`;
+
+    // Handle pseudo-classes (e.g. &:hover, &:active).
+    for (const [k, v] of Object.entries(props)) {
+        if (k.startsWith('&') && typeof v === 'object') {
+            const pseudo = k.slice(1); // e.g. ':hover', ':active.
+            css += `\n.${fullClass}${pseudo}{${cssPropertiesToString(v as CssProperties)}}`;
+        }
+    }
+
+    // Do not inject twice.
+    if (!document.getElementById(`facet-style-${fullClass}`)) {
+        const style = document.createElement('style');
+        style.id = `facet-style-${fullClass}`;
+        style.textContent = css;
+        document.head.appendChild(style);
+    }
+}
+
 export class SingleFacet {
     constructor(public name: string, public properties: CssProperties, prefix?: string) {
         if (prefix !== undefined) this.name = prefix + '-' + this.name;
+        injectFacetCss(this.name, this.properties, undefined);
     }
 }
 
