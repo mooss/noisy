@@ -14,7 +14,7 @@ import { StateCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
-import { toClipBoard } from './utils/utils.js';
+import { download, toClipBoard } from './utils/utils.js';
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
@@ -63,7 +63,7 @@ class Game {
     }
 
     start(): void {
-        this.loadTerrainParams();
+        this.loadUrlParams();
 
         this.terrain = new Terrain(this.state.chunks, this.state.noise, this.state.render);
         this.keyboard = new Keyboard();
@@ -82,8 +82,8 @@ class Game {
     }
 
     /** Create the noise codec and potentially load GET parameters. */
-    loadTerrainParams(): void {
-        const alphabet  = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';
+    loadUrlParams(): void {
+        const alphabet = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';
         const urlCodec = new Lexon64(encrec(this.state), alphabet);
         this.codec = new AutoCodec(urlCodec, StateRegistry);
         const encoded = new URLSearchParams(window.location.search).get('q');
@@ -113,7 +113,9 @@ class Game {
     setupActions(root: Panel): void {
         const actions = root.buttonBar();
         const copy = actions.button('COPY URL');
+        const save = actions.button('SAVE');
         const encoded = () => this.codec.encode(this.state);
+
         copy.onClick(() => {
             const url = new URL(window.location.href);
             url.search = '?q=' + encoded();
@@ -121,6 +123,11 @@ class Game {
             toClipBoard(link);
             // Update the URL bar to enshrine the current state into the page.
             window.history.pushState({ path: link }, '', link);
+        });
+
+        save.onClick(() => {
+            const state = JSON.stringify(encrec(this.state), null, 2);
+            download(state, 'tergen-state.json', { type: 'application/json' });
         });
     }
 
