@@ -13,8 +13,8 @@ export class GraphWidget extends Label {
         this.ctx = this.canvas.getContext('2d');
 
         // Put the label on top of the graph (instead of putting it left).
-        this.box.css(LemonCloak.graphBox);
-        this.label.css(LemonCloak.graphLabel);
+        this.box.addFacet(LemonCloak.graphBox);
+        this.label.addFacet(LemonCloak.graphLabel);
 
         // Toggle graph visibility when label is clicked
         this.label.addEventListener('click', () => {

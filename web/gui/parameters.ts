@@ -11,7 +11,7 @@ export function BooleanWidget(
     const control = new BooleanControl(parent, target[property]);
 
     const checkbox = control.element;
-    checkbox.css(LemonCloak.checkbox);
+    checkbox.addFacet(LemonCloak.checkbox);
     const style = spawn('style', document.head);
     style.textContent = LemonCloak.checkboxIndicator;
 

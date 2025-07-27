@@ -240,10 +240,16 @@ export class Card extends Panel {
     }
 
     // Highlight the header, putting an accent color on its border.
-    highlight(): void { this._button.css(LemonCloak.cardHighlight) }
+    highlight(): void {
+        this._button.addFacet(LemonCloak.cardHighlight);
+        this._button.removeFacet(LemonCloak.cardLowlight);
+    }
 
     // Lowlight the header, enforcing a plain border.
-    lowlight(): void { this._button.css(LemonCloak.cardLowlight) }
+    lowlight(): void {
+        this._button.addFacet(LemonCloak.cardLowlight);
+        this._button.removeFacet(LemonCloak.cardHighlight);
+    }
 
     // Show the content.
     show(): void { this._elt.style.display = '' }

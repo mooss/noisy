@@ -20,17 +20,16 @@ export const colors: Colors = {
 
 // A HTMLElement type extended with a css method that can update the style of the element.
 export type HtmlCssElement<T extends HTMLElement = HTMLElement> = T & {
-    css(props: Facet): void;
+    addFacet(props: Facet): void;
+    removeFacet(props: Facet): void;
 }
 
 function addCss<T extends HTMLElement>(el: T): HtmlCssElement<T> {
-    (el as HtmlCssElement<T>).css = function (style: Facet) {
-        // Add all classes from the Facet to the element.
-        if (style && style.classes) {
-            for (const cls of style.classes) {
-                this.classList.add(cls);
-            }
-        }
+    (el as HtmlCssElement<T>).addFacet = function(style: Facet) {
+        this.classList.add(...style.classes);
+    };
+    (el as HtmlCssElement<T>).removeFacet = function(style: Facet) {
+        this.classList.remove(...style.classes);
     };
 
     return el as HtmlCssElement<T>;
@@ -54,7 +53,7 @@ export function spawn<T extends HTMLElement = HTMLElement>(
 ): HtmlCssElement<T> {
     const res = addCss(document.createElement(tag) as T);
     if (style !== undefined) {
-        res.css(style);
+        res.addFacet(style);
     }
 
     parent.appendChild(res);
