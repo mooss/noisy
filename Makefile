@@ -1,8 +1,8 @@
 .PHONY: build run clean dist setup
 
 build:
-	go build -o webserver main.go
 	make -C web build
+	go build -o webserver main.go
 
 clean:
 	rm -f webserver
