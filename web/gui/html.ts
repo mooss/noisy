@@ -1,23 +1,5 @@
 import { Facet } from "./style.js";
 
-interface Colors {
-    border: string;
-    input: string;
-    inputBg: string;
-    label: string;
-    param: string;
-    text: string;
-}
-
-export const colors: Colors = {
-    border: 'grey',
-    input: 'steelblue',
-    inputBg: '#2D3748',
-    label: 'lightskyblue',
-    param: 'gold',
-    text: 'lightgray',
-}
-
 // A HTMLElement type extended with a css method that can update the style of the element.
 export type HtmlCssElement<T extends HTMLElement = HTMLElement> = T & {
     addFacet(props: Facet): void;

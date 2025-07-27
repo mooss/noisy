@@ -1,6 +1,8 @@
-import { spawn, colors, HtmlCssElement } from "./html.js";
+import { spawn, HtmlCssElement } from "./html.js";
 import { Label } from "./foundations.js";
 import { LemonCloak } from "./style.js";
+
+const colors = LemonCloak.colors;
 
 export class GraphWidget extends Label {
     private canvas: HtmlCssElement<HTMLCanvasElement>;
