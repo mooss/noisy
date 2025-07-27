@@ -1,7 +1,7 @@
 import { Avatar } from './avatar.js';
-import { AvatarConfig } from './config/avatar.js';
-import { ChunkConfig, chunksUI } from './config/chunk.js';
-import { RenderConfig } from './config/render.js';
+import { AvatarState } from './state/avatar.js';
+import { ChunkState, chunksUI } from './state/chunk.js';
+import { RenderState } from './state/render.js';
 import { CHUNK_UNIT } from './constants.js';
 import { Codec } from './encoding/codecs.js';
 import { NoiseCodec } from './encoding/noise.js';
@@ -25,9 +25,9 @@ class Game {
     updateStats: () => void = () => { };
 
     config: {
-        chunks: ChunkConfig;
-        avatar: AvatarConfig;
-        render: RenderConfig;
+        chunks: ChunkState;
+        avatar: AvatarState;
+        render: RenderState;
         noise: NoiseMakerI;
     };
 
@@ -36,14 +36,14 @@ class Game {
 
     constructor() {
         this.config = {
-            chunks: new ChunkConfig({
+            chunks: new ChunkState({
                 _power: 6,
                 loadRadius: 1,
                 radiusType: 'square',
                 previousSize: undefined,
             }),
-            avatar: new AvatarConfig(),
-            render: new RenderConfig(),
+            avatar: new AvatarState(),
+            render: new RenderState(),
             noise: noiseAlgorithms(),
         };
     }

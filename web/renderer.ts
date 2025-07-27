@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
-import type { RenderConfig } from './config/render.js';
+import type { RenderState } from './state/render.js';
 import { CHUNK_UNIT } from "./constants.js";
 
 export class Renderer {
@@ -10,9 +10,9 @@ export class Renderer {
     private controls: MapControls;
     private ambientLight: THREE.AmbientLight;
     private directionalLight: THREE.DirectionalLight;
-    private renderConf: RenderConfig;
+    private renderConf: RenderState;
 
-    constructor(renderConf: RenderConfig) {
+    constructor(renderConf: RenderState) {
         this.renderConf = renderConf;
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0, 0, 0);

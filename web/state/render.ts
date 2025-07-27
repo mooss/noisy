@@ -12,7 +12,7 @@ interface LightConfig {
 
 type RenderStyle = 'surface' | 'quadPrism' | 'hexPrism';
 
-export class RenderConfig {
+export class RenderState {
     style: RenderStyle;
     paletteName: string;
     light: LightConfig;

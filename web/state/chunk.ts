@@ -12,7 +12,7 @@ class ChunkCallback {
     get reload(): () => void { return () => this.cb.reloadTerrain() }
 }
 
-export function chunksUI(conf: ChunkConfig, root: Panel, callbacks: ChunkCallbackI) {
+export function chunksUI(conf: ChunkState, root: Panel, callbacks: ChunkCallbackI) {
     const cb = new ChunkCallback(callbacks);
     root.range(conf, 'power', 1, 8, 1).legend('Blocks in a chunk')
         .onInput(cb.resize)
@@ -24,7 +24,7 @@ export function chunksUI(conf: ChunkConfig, root: Panel, callbacks: ChunkCallbac
     root.range(conf, 'loadRadius', 0, 8, 1).legend('Load radius').onInput(cb.reload);
 }
 
-abstract class ChunkConfigP extends AutoAssign<ChunkConfigP> {
+abstract class ChunkStateP extends AutoAssign<ChunkStateP> {
     // Chunks within this distance will be unloaded when entering a new chunk.
     declare loadRadius: number;
     // Shape of the loaded area around the center chunk.
@@ -37,9 +37,8 @@ abstract class ChunkConfigP extends AutoAssign<ChunkConfigP> {
     // unloadRadius: number = 2;
 }
 
-// export class ChunkConfig extends ChunkConfigP {
-export class ChunkConfig extends ChunkConfigP {
-    get class(): string { return 'ChunkConfig' }
+export class ChunkState extends ChunkStateP {
+    get class(): string { return 'ChunkState' }
     set power(value: number) {
         this.previousSize = this.nblocks;
         this._power = value;

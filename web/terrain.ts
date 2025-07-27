@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import type { ChunkConfig } from './config/chunk.js';
-import type { RenderConfig } from './config/render.js';
+import type { ChunkState } from './state/chunk.js';
+import type { RenderState } from './state/render.js';
 import { CHUNK_UNIT } from "./constants.js";
 import { Coordinates, Position } from "./coordinates.js";
 import { NoiseMakerI } from './noise/foundations.js';
@@ -20,9 +20,9 @@ class Chunk {
 export class Terrain {
     /** References to the relevant configurations */
     private conf: {
-        chunks: ChunkConfig;
+        chunks: ChunkState;
         noise: NoiseMakerI,
-        render: RenderConfig;
+        render: RenderState;
     };
 
     /**
@@ -35,9 +35,9 @@ export class Terrain {
     height: (x: number, y: number) => number;
 
     constructor(
-        chunks: ChunkConfig,
+        chunks: ChunkState,
         noise: NoiseMakerI,
-        render: RenderConfig
+        render: RenderState
     ) {
         this.conf = { chunks, noise, render };
     }
