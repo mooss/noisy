@@ -1,21 +1,26 @@
 import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from '../noise/algorithms.js';
-import { NoiseCodec } from './noise.js';
 import { NoiseMakerI } from '../noise/foundations.js';
 import { noiseAlgorithms } from '../noise/init.js';
 import { Terracing } from '../noise/processing.js';
+import { StateRegistry } from '../state/state.js';
+import { AutoCodec, Lexon64 } from './codecs.js';
 
 describe('NoiseCodec', () => {
     let reference: NoiseMakerI;
-    let codec: NoiseCodec;
+    let codec: AutoCodec<string>;
 
     beforeEach(() => {
         reference = noiseAlgorithms();
-        codec = new NoiseCodec(reference);
+        const strCodec = new Lexon64(
+            reference.encode(),
+            'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ',
+        );
+        codec = new AutoCodec(strCodec, StateRegistry);
     });
 
     describe('constructor', () => {
         it('should create a codec instance', () => {
-            expect(codec).toBeInstanceOf(NoiseCodec);
+            expect(codec).toBeInstanceOf(AutoCodec);
             expect(codec.encode).toBeDefined();
             expect(codec.decode).toBeDefined();
         });
@@ -27,7 +32,7 @@ describe('NoiseCodec', () => {
                 interval: 0.1,
                 wrapped: new NoiseMap({
                     algorithms: {
-                        'test': new Simplex({seed: 42})
+                        'test': new Simplex({ seed: 42 })
                     }
                 })
             });

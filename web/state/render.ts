@@ -22,7 +22,7 @@ class RenderStateP extends AutoAssign<RenderStateP> {
 }
 
 export class RenderState extends RenderStateP {
-    readonly class: string = 'RenderState';
+    class(): string { return 'RenderState' };
     get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }
     get palette(): THREE.Color[] { return palettes[this.paletteName] }
 

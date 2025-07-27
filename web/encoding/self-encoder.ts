@@ -1,5 +1,8 @@
 import { mapValues } from "../utils/objects.js";
 
+////////////////
+// Primitives //
+
 export interface SelfEncoded {
     meta: { class: string };
     params: any;
@@ -7,9 +10,9 @@ export interface SelfEncoded {
 export interface SelfEncoder {
     encode(): SelfEncoded;
 }
-export interface Creator<Type> {
-    create(name: string, params: any): Type;
-}
+
+//////////////
+// Encoding //
 
 function classof(obj: any): string | undefined {
     const cls = obj?.class;
@@ -28,6 +31,13 @@ export function encrec(obj: any): any {
     if (obj && typeof obj === 'object')
         return mapValues(encrec, obj);
     return obj;
+}
+
+//////////////
+// Decoding //
+
+export interface Creator<Type> {
+    create(name: string, params: any): Type;
 }
 
 export function decrec<Type>(data: any, creator: Creator<Type>): any {

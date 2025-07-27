@@ -1,7 +1,6 @@
 import { Avatar } from './avatar.js';
 import { CHUNK_UNIT } from './constants.js';
-import { Codec } from './encoding/codecs.js';
-import { NoiseCodec } from './encoding/noise.js';
+import { AutoCodec, Codec, Lexon64 } from './encoding/codecs.js';
 import { encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
 import { NoiseMakerI } from './noise/foundations.js';
@@ -34,7 +33,7 @@ class Game {
     };
 
     /** Encoder/decoder of noise state to a URL-friendly string. */
-    noiseCodec: Codec<NoiseMakerI, string>;
+    codec: Codec<any, string>;
 
     constructor() {
         this.state = {
@@ -84,10 +83,12 @@ class Game {
 
     /** Create the noise codec and potentially load GET parameters. */
     loadTerrainParams(): void {
-        this.noiseCodec = new NoiseCodec(this.state.noise);
+        const alphabet  = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';
+        const urlCodec = new Lexon64(encrec(this.state), alphabet);
+        this.codec = new AutoCodec(urlCodec, StateRegistry);
         const encoded = new URLSearchParams(window.location.search).get('q');
         if (encoded?.length > 0) {
-            this.state.noise = this.noiseCodec.decode(encoded);
+            this.state = this.codec.decode(encoded);
         }
     }
 
@@ -112,7 +113,7 @@ class Game {
     setupActions(root: Panel): void {
         const actions = root.buttonBar();
         const copy = actions.button('COPY URL');
-        const encoded = () => this.noiseCodec.encode(this.state.noise);
+        const encoded = () => this.codec.encode(this.state);
         copy.onClick(() => {
             const url = new URL(window.location.href);
             url.search = '?q=' + encoded();

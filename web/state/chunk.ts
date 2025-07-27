@@ -17,7 +17,7 @@ abstract class ChunkStateP extends AutoAssign<ChunkStateP> {
 }
 
 export class ChunkState extends ChunkStateP {
-    readonly class: string = 'ChunkState';
+    class(): string { return 'ChunkState' }
     set power(value: number) {
         this.previousSize = this.nblocks;
         this._power = value;

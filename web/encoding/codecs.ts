@@ -1,6 +1,7 @@
 import { combinations, mapit } from "../utils/iteration.js";
 import { sortedMap } from "../utils/maps.js";
 import { countNodes, grow } from "../utils/tree.js";
+import { Creator, decrec, encrec } from "./self-encoder.js";
 
 export interface Codec<From, To> {
     encode(document: From): To;
@@ -12,9 +13,7 @@ export interface Codec<From, To> {
 export abstract class CodecABC<From, To> implements Codec<From, To> {
     abstract encode(document: From): To;
     abstract decode(document: To): From;
-    roundtrip(document: From): From {
-        return this.decode(this.encode(document));
-    }
+    roundtrip(document: From): From { return this.decode(this.encode(document)) }
 }
 
 /**
@@ -110,4 +109,10 @@ export class Lexon64 extends CodecABC<any, string> {
     decode(document: string): any {
         return this.lex.decode(JSON.parse(utfatob(document)));
     }
+}
+
+export class AutoCodec<To> extends CodecABC<any, To> {
+    constructor(private wrapped: Codec<any, To>, private creator: Creator<any>) { super() }
+    encode(document: any): To { return this.wrapped.encode(encrec(document)) }
+    decode(document: To): any { return decrec(this.wrapped.decode(document), this.creator) }
 }
