@@ -11,12 +11,20 @@ export interface Creator<Type> {
     create(name: string, params: any): Type;
 }
 
+function classof(obj: any): string | undefined {
+    const cls = obj?.class;
+    if (typeof cls === 'string') return cls;
+    if (typeof cls == 'function') return obj.class();
+    return undefined;
+}
+
 /** Recursively encodes a nested record of self-encoders. */
 export function encrec(obj: any): any {
     if (obj?.encode && typeof obj.encode === 'function')
         return obj.encode();
-    if (typeof obj?.class === 'string')
-        return { params: { ...mapValues(encrec, obj) }, meta: { class: obj.class } }
+    const cls = classof(obj);
+    if (typeof cls === 'string')
+        return { params: { ...mapValues(encrec, obj) }, meta: { class: cls } }
     if (obj && typeof obj === 'object')
         return mapValues(encrec, obj);
     return obj;

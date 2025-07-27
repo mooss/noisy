@@ -8,10 +8,10 @@ import { NoiseMakerI } from './noise/foundations.js';
 import { noiseAlgorithms } from './noise/init.js';
 import { noiseUI } from './noise/ui.js';
 import { Renderer } from './renderer.js';
-import { AvatarState } from './state/avatar.js';
+import { AvatarState, avatarUI } from './state/avatar.js';
 import { ChunkState, chunksUI } from './state/chunk.js';
 import { RenderState } from './state/render.js';
-import { StateRegistry } from './state/state.js';
+import { StateCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
@@ -26,7 +26,7 @@ class Game {
     keyboard: Keyboard;
     updateStats: () => void = () => { };
 
-    config: {
+    state: {
         chunks: ChunkState;
         avatar: AvatarState;
         render: RenderState;
@@ -37,45 +37,49 @@ class Game {
     noiseCodec: Codec<NoiseMakerI, string>;
 
     constructor() {
-        this.config = {
+        this.state = {
             chunks: new ChunkState({
                 _power: 6,
                 loadRadius: 1,
                 radiusType: 'square',
                 previousSize: undefined,
             }),
-            avatar: new AvatarState(),
+            avatar: new AvatarState({
+                size: 3,
+                heightOffset: 0,
+                cameraMode: 'Follow',
+            }),
             render: new RenderState(),
             noise: noiseAlgorithms(),
         };
-        this.config.chunks = StateRegistry.decode(encrec(this.config.chunks));
+        this.state.chunks = StateRegistry.decode(encrec(this.state.chunks));
     }
 
     start(): void {
         this.loadTerrainParams();
 
-        this.terrain = new Terrain(this.config.chunks, this.config.noise, this.config.render);
+        this.terrain = new Terrain(this.state.chunks, this.state.noise, this.state.render);
         this.keyboard = new Keyboard();
         this.avatar = new Avatar();
         this.avatar.x = .5;
         this.avatar.y = .5;
         this.avatar.z = 0;
 
-        this.renderer = new Renderer(this.config.render);
+        this.renderer = new Renderer(this.state.render);
         this.renderer.addMesh(this.terrain.mesh);
         this.renderer.addMesh(this.avatar.mesh);
 
         this.setupUI();
-        this.regenerateTerrain();
+        this.recomputeTerrain();
         this.startAnimationLoop();
     }
 
     /** Create the noise codec and potentially load GET parameters. */
     loadTerrainParams(): void {
-        this.noiseCodec = new NoiseCodec(this.config.noise);
+        this.noiseCodec = new NoiseCodec(this.state.noise);
         const encoded = new URLSearchParams(window.location.search).get('q');
         if (encoded?.length > 0) {
-            this.config.noise = this.noiseCodec.decode(encoded);
+            this.state.noise = this.noiseCodec.decode(encoded);
         }
     }
 
@@ -85,30 +89,25 @@ class Game {
     setupUI(): void {
         const gui = new GUI(GUI.POSITION_LEFT).collapsible();
         this.setupActions(gui);
-
         this.fps = new FpsWidget(gui);
+        if (Game.ENABLE_STATS_GRAPH) this.setupStatsGraph(gui);
 
-        if (Game.ENABLE_STATS_GRAPH) {
-            this.setupStatsGraph(gui);
-        }
-
-        chunksUI(this.config.chunks, gui.folder('Chunks'), this);
-        this.config.render.ui(gui.folder('Render'),
-            () => this.regenerateTerrain(),
+        const cb = new StateCallbacks(this);
+        chunksUI(this.state.chunks, gui.folder('Chunks'), cb);
+        this.state.render.ui(gui.folder('Render'),
+            () => this.recomputeTerrain(),
             () => this.updateRender(),
         );
-        this.config.avatar.ui(gui.folder('Avatar').close(),
-            () => this.updateAvatar(),
-        );
+        avatarUI(this.state.avatar, gui.folder('Avatar').close(), cb);
 
         const tergen = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
-        noiseUI(this.config.noise, tergen, this);
+        noiseUI(this.state.noise, tergen, cb);
     }
 
     setupActions(root: Panel): void {
         const actions = root.buttonBar();
         const copy = actions.button('COPY URL');
-        const encoded = () => this.noiseCodec.encode(this.config.noise);
+        const encoded = () => this.noiseCodec.encode(this.state.noise);
         copy.onClick(() => {
             const url = new URL(window.location.href);
             url.search = '?q=' + encoded();
@@ -127,9 +126,9 @@ class Game {
         this.updateStats = (): void => {
             const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk());
             const heights: number[] = [];
-            for (let i = 0; i < this.config.chunks.nblocks; ++i)
-                for (let j = 0; j < this.config.chunks.nblocks; ++j)
-                    heights.push(heightfun(i / this.config.chunks.nblocks, j / this.config.chunks.nblocks));
+            for (let i = 0; i < this.state.chunks.nblocks; ++i)
+                for (let j = 0; j < this.state.chunks.nblocks; ++j)
+                    heights.push(heightfun(i / this.state.chunks.nblocks, j / this.state.chunks.nblocks));
 
             heightGraph.update(heights.sort((l, r) => l - r));
 
@@ -173,24 +172,24 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
     updateAvatar(): void {
         this.terrain.centerOn(this.avatar.coords);
-        this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.config.avatar.heightOffset;
-        this.avatar.reposition(CHUNK_UNIT, this.config.render.verticalUnit);
-        this.avatar.setScale(this.config.avatar.size);
+        this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.state.avatar.heightOffset;
+        this.avatar.reposition(CHUNK_UNIT, this.state.render.verticalUnit);
+        this.avatar.setScale(this.state.avatar.size);
 
-        if (this.config.avatar.cameraMode === 'Follow') {
+        if (this.state.avatar.cameraMode === 'Follow') {
             this.renderer.lookAt(this.avatar.mesh.position);
         }
     }
 
-    regenerateTerrain(): void {
-        this.terrain.regen();
+    recomputeTerrain(): void {
+        this.terrain.recompute();
         this.renderer.updateLighting();
         this.updateAvatar();
         this.updateStats();
     }
 
-    reloadTerrain(): void {
-        this.terrain.reload();
+    ensureTerrainLoaded(): void {
+        this.terrain.ensureLoaded();
     }
 
     updateRender(): void {

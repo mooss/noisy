@@ -28,13 +28,18 @@ export function foreachEntries(fun: (key: string, value: any) => void, obj: any)
         fun(prop, value);
 }
 
+type PropertiesOf<T> = {
+  [K in keyof T]: T[K] extends Function ? never : K
+}[keyof T];
+type Properties<T> = Pick<T, PropertiesOf<T>>;
+
 /**
  * A class whose constructor takes only one parameter of type T and assign all its fields to itself.
  * Meant to be used with a data class that contains only declarations and is itself extended by a
  * class that implements the logic and other potential addition fields.
  */
 export class AutoAssign<T> {
-    constructor(fields: T) {
+    constructor(fields: Properties<T>) {
         if (!isObject(fields)) return;
         for (const [prop, value] of Object.entries(fields)) {
             (this as any)[prop] = value;

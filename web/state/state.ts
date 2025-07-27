@@ -5,3 +5,19 @@ export function register(name: string, ctor: Ctor<any>) {
     if (!StateRegistry.register(name, ctor))
         console.error(`Duplicated state registration attempt for ${name}`);
 }
+
+interface StateCallbacksI {
+    recomputeTerrain(): void;
+    ensureTerrainLoaded(): void;
+    updateAvatar(): void;
+}
+export class StateCallbacks {
+    constructor(private cb: StateCallbacksI) { };
+    readonly terrain = {
+        recompute: () => this.cb.recomputeTerrain(),
+        ensureLoaded: () => this.cb.ensureTerrainLoaded(),
+    }
+    readonly avatar = {
+        update: () => this.cb.updateAvatar(),
+    }
+}

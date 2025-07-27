@@ -55,8 +55,8 @@ export class Terrain {
         return (x, y) => this.height(x + chunkCoords.x, y + chunkCoords.y);
     }
 
-    /** Regenerates the heights and updates the mesh of all active chunks. */
-    regen(): void {
+    /** Recomputes the height function and updates the mesh of all active chunks. */
+    recompute(): void {
         this.height = this.conf.noise.normalised(.01, 1);
         this.rangeActive(this.updateMesh.bind(this));
     }
@@ -115,7 +115,8 @@ export class Terrain {
         return chunk;
     }
 
-    reload(): void {
+    /** Loads all the chunks in the load radius that are not yet loaded. */
+    ensureLoaded(): void {
         const oldChunks = this.chunks;
         this.chunks = new Map();
         this.within(this.loadRadius, (coords: Coordinates) => {
@@ -148,7 +149,7 @@ export class Terrain {
         const chunkCoords = worldPosition.toChunk();
         if (this.center != undefined && chunkCoords.equals(this.center)) return;
         this.center = chunkCoords;
-        this.reload();
+        this.ensureLoaded();
     }
 
     private within(...args: Parameters<Coordinates['withinSquare']>) {
