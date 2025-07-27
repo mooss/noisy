@@ -33,7 +33,7 @@ export class Button {
     private _onClick?: (() => void);
 
     constructor(parent: HTMLElement, label: string) {
-        this._elt = spawn('div', parent, LemonCloak.button);
+        this._elt = spawn('button', parent, LemonCloak.button);
         this._elt.textContent = label;
         this._elt.addEventListener('click', () => this._onClick?.());
     }

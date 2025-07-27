@@ -145,6 +145,14 @@ export class Appearance {
             '&:hover': {
                 backgroundColor: this.colors.input,
                 color: this.colors.text,
+                filter: 'brightness(1.2)',
+                transform: 'scale(1.05)',
+            },
+            '&:active': {
+                backgroundColor: this.colors.param,
+                color: this.colors.inputBg,
+                filter: 'brightness(0.8)',
+                transform: 'scale(0.95)',
             },
         });
         this.buttonBar = this.mk('button-bar', {
