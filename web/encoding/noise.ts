@@ -1,5 +1,6 @@
 import { Codec, CodecABC, Lexon64 } from "./codecs.js";
-import { NoiseMakerI, NoiseRegistry } from "../noise/foundations.js";
+import { NoiseMakerI } from "../noise/foundations.js";
+import { StateRegistry } from "../state/state.js";
 
 export class NoiseCodec extends CodecABC<NoiseMakerI, string> {
     codec: Codec<any, string>;
@@ -17,6 +18,6 @@ export class NoiseCodec extends CodecABC<NoiseMakerI, string> {
     }
 
     decode(document: string): NoiseMakerI {
-        return NoiseRegistry.decode(this.codec.decode(document));
+        return StateRegistry.decode(this.codec.decode(document));
     }
 }

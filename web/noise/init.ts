@@ -1,6 +1,6 @@
 import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
-import { NoiseMakerI, NoiseRegistry } from "./foundations.js";
+import { NoiseMakerI } from "./foundations.js";
 import { Terracing } from "./processing.js";
 
 export function noiseAlgorithms(): NoiseMakerI {
@@ -61,7 +61,5 @@ export function noiseAlgorithms(): NoiseMakerI {
     });
     map.recompute();
 
-    const res = new Terracing({ interval: .06, wrapped: map });
-    // Live test encoding and decoding.
-    return NoiseRegistry.decode(res.encode());
+    return new Terracing({ interval: .06, wrapped: map });
 }

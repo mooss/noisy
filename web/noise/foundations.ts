@@ -1,4 +1,4 @@
-import { Ctor, encrec, Registry, SelfEncoded, SelfEncoder } from "../encoding/self-encoder.js";
+import { encrec, SelfEncoded, SelfEncoder } from "../encoding/self-encoder.js";
 import { rangeMapper } from "../utils/maths.js";
 
 /////////////////
@@ -54,13 +54,4 @@ export abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params
         const fun = this.make();
         return (x, y) => { return mapper(fun(x, y)) }
     }
-}
-
-//////////////
-// Encoding //
-
-export const NoiseRegistry = new Registry<NoiseMakerI>();
-export function register(name: string, ctor: Ctor<NoiseMakerI>) {
-    if (!NoiseRegistry.register(name, ctor))
-        console.error(`Duplicated noise registration attempt for ${name}.`);
 }

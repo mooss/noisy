@@ -2,7 +2,8 @@ import { createNoise2D } from "simplex-noise";
 import { createLCG, highMix, mkRidger } from "../rng.js";
 import { numStats } from "../stats.js";
 import { clone } from "../utils/objects.js";
-import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI, register } from "./foundations.js";
+import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
+import { register } from "../state/state.js";
 
 //////////////
 // Sampling //

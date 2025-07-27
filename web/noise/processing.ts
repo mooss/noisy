@@ -1,4 +1,5 @@
-import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI, register } from "./foundations.js";
+import { register } from "../state/state.js";
+import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
 
 abstract class NoiseWrapper<Params = any> extends NoiseMakerBase<Params & { wrapped: NoiseMakerI }> {
     get low(): number { return this.p.wrapped.low }
