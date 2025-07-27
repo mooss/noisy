@@ -5,6 +5,7 @@ import { RenderState } from './state/render.js';
 import { CHUNK_UNIT } from './constants.js';
 import { Codec } from './encoding/codecs.js';
 import { NoiseCodec } from './encoding/noise.js';
+import { encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
 import { NoiseMakerI } from './noise/foundations.js';
 import { noiseAlgorithms } from './noise/init.js';
@@ -14,6 +15,7 @@ import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
 import { toClipBoard } from './utils/utils.js';
+import { StateRegistry } from './state/state.js';
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
@@ -46,6 +48,7 @@ class Game {
             render: new RenderState(),
             noise: noiseAlgorithms(),
         };
+        this.config.chunks = StateRegistry.decode(encrec(this.config.chunks));
     }
 
     start(): void {

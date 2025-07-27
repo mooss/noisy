@@ -1,6 +1,7 @@
 import { CHUNK_UNIT } from "../constants.js";
 import { Panel } from "../gui/gui.js";
 import { AutoAssign } from "../utils/objects.js";
+import { register } from "./state.js";
 
 interface ChunkCallbackI {
     regenerateTerrain(): void;
@@ -38,7 +39,7 @@ abstract class ChunkStateP extends AutoAssign<ChunkStateP> {
 }
 
 export class ChunkState extends ChunkStateP {
-    get class(): string { return 'ChunkState' }
+    readonly class: string = 'ChunkState';
     set power(value: number) {
         this.previousSize = this.nblocks;
         this._power = value;
@@ -48,3 +49,4 @@ export class ChunkState extends ChunkStateP {
     get sampling(): number { return 1 / this.nblocks }
     get blockSize(): number { return CHUNK_UNIT / this.nblocks }
 }
+register('ChunkState', ChunkState);
