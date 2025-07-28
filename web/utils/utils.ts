@@ -17,3 +17,19 @@ export function download(data: any, filename: string, options?: BlobPropertyBag)
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
+
+export function dragAndDrop(onFile: (file: File) => void) {
+    document.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+    });
+
+    document.addEventListener('drop', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (event.dataTransfer?.files.length) {
+            onFile(event.dataTransfer.files[0]);
+        }
+    });
+}

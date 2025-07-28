@@ -1,7 +1,7 @@
 import { Avatar } from './avatar.js';
 import { CHUNK_UNIT } from './constants.js';
 import { AutoCodec, Codec, Lexon64 } from './encoding/codecs.js';
-import { encrec } from './encoding/self-encoder.js';
+import { decrec, encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
 import { NoiseMakerI } from './noise/foundations.js';
 import { noiseAlgorithms } from './noise/init.js';
@@ -14,7 +14,9 @@ import { StateCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
-import { download, toClipBoard } from './utils/utils.js';
+import { download, dragAndDrop, toClipBoard } from './utils/utils.js';
+
+const STATE_STORAGE_KEY = 'load-state';
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
@@ -59,11 +61,10 @@ class Game {
             }),
             noise: noiseAlgorithms(),
         };
-        this.state = StateRegistry.decode(encrec(this.state));
     }
 
     start(): void {
-        this.loadUrlParams();
+        this.prepareState();
 
         this.terrain = new Terrain(this.state.chunks, this.state.noise, this.state.render);
         this.keyboard = new Keyboard();
@@ -81,11 +82,21 @@ class Game {
         this.startAnimationLoop();
     }
 
-    /** Create the noise codec and potentially load GET parameters. */
-    loadUrlParams(): void {
+    /** Create the noise codec and potentially load state from session storage or GET parameters. */
+    prepareState(): void {
         const alphabet = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';
         const urlCodec = new Lexon64(encrec(this.state), alphabet);
         this.codec = new AutoCodec(urlCodec, StateRegistry);
+        this.state = StateRegistry.decode(encrec(this.state)); // Live encoding/decoding test.
+
+        const reload = sessionStorage.getItem(STATE_STORAGE_KEY);
+        if (reload) {
+            sessionStorage.removeItem(STATE_STORAGE_KEY);
+            this.state = decrec(JSON.parse(reload), StateRegistry);
+            this.saveStateToUrl();
+            return;
+        }
+
         const encoded = new URLSearchParams(window.location.search).get('q');
         if (encoded?.length > 0) {
             this.state = this.codec.decode(encoded);
@@ -110,25 +121,41 @@ class Game {
         noiseUI(this.state.noise, tergen, cb);
     }
 
+    saveStateToUrl(): string {
+        const url = new URL(window.location.href);
+        url.search = '?q=' + this.codec.encode(this.state);
+        const link = encodeURI(url.toString());
+        // Update the URL bar to enshrine the current state into the page.
+        window.history.pushState({ path: link }, '', link);
+        return link;
+    }
+
     setupActions(root: Panel): void {
         const actions = root.buttonBar();
         const copy = actions.button('COPY URL');
-        const save = actions.button('SAVE');
-        const encoded = () => this.codec.encode(this.state);
-
-        copy.onClick(() => {
-            const url = new URL(window.location.href);
-            url.search = '?q=' + encoded();
-            const link = encodeURI(url.toString());
-            toClipBoard(link);
-            // Update the URL bar to enshrine the current state into the page.
-            window.history.pushState({ path: link }, '', link);
-        });
+        const save = actions.button('DOWNLOAD');
+        copy.onClick(() => toClipBoard(this.saveStateToUrl()));
 
         save.onClick(() => {
             const state = JSON.stringify(encrec(this.state), null, 2);
             download(state, 'tergen-state.json', { type: 'application/json' });
         });
+
+        dragAndDrop((file) => {
+            if (file.type === 'application/json') {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const res = e.target?.result;
+                    if (typeof res === 'string') {
+                        sessionStorage.setItem(STATE_STORAGE_KEY, res);
+                        window.location.reload();
+                    }
+                };
+                reader.readAsText(file);
+            } else {
+                console.warn(`Unsupported file type for drag and drop: ${file.type}`);
+            }
+        })
     }
 
     setupStatsGraph(root: Panel): void {
