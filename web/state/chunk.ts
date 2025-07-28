@@ -36,6 +36,6 @@ export function chunksUI(conf: ChunkState, root: Panel, cb: StateCallbacks) {
     root.select(conf, 'radiusType', {
         'Square': 'square',
         'Circle': 'circle',
-    }).legend('Radius Type').onChange(cb.terrain.ensureLoaded);
+    }).legend('Radius type').onChange(cb.terrain.ensureLoaded);
     root.range(conf, 'loadRadius', 0, 8, 1).legend('Load radius').onInput(cb.terrain.ensureLoaded);
 }

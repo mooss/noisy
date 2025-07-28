@@ -160,6 +160,7 @@ export class Appearance {
             userSelect: 'none',
             borderRadius: '2px',
             transition: 'all 0.1s',
+            fontVariantCaps: 'small-caps',
             '&:hover': {
                 backgroundColor: 'rgba(100, 149, 237, 0.13)',
                 borderColor: this.colors.input,

@@ -116,7 +116,7 @@ class Game {
         renderUI(this.state.render, gui.folder('Render'), cb);
         avatarUI(this.state.avatar, gui.folder('Avatar').close(), cb);
 
-        const tergen = new GUI(GUI.POSITION_RIGHT).title('Terrain generation').collapsible();
+        const tergen = new GUI(GUI.POSITION_RIGHT).title('Terrain Generation').collapsible();
         noiseUI(this.state.noise, tergen, cb);
     }
 
@@ -131,8 +131,8 @@ class Game {
 
     setupActions(root: Panel): void {
         const actions = root.buttonBar();
-        const copy = actions.button('COPY URL');
-        const save = actions.button('DOWNLOAD');
+        const copy = actions.button('Copy url');
+        const save = actions.button('Download');
         copy.onClick(() => toClipBoard(this.saveStateToUrl()));
 
         save.onClick(() => {

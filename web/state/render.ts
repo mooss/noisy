@@ -50,10 +50,10 @@ export function renderUI(state: RenderState, root: Panel, cb: StateCallbacks) {
         .legend('Palette').onChange(cb.terrain.recompute);
 
     root.range(state.light.ambient, 'intensity', 0, 10, .2)
-        .legend('Ambient Light').onChange(cb.render.update);
+        .legend('Ambient light').onChange(cb.render.update);
 
     root.range(state.light.directional, 'intensity', 0, 10, .2)
-        .legend('Directional Light').onChange(cb.render.update);
+        .legend('Directional light').onChange(cb.render.update);
 
     root.range(state, 'heightMultiplier', 0.1, 5.0, 0.05)
         .legend('Height multiplier')
