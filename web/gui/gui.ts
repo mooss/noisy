@@ -2,7 +2,7 @@ import { clone } from "../utils/objects.js";
 import { ControlWidget } from "./control-widget.js";
 import { HtmlCssElement, spawn } from "./html.js";
 import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, ReadOnly, ReadOnlyWidget, SelectWidget } from './parameters.js';
-import { Facet, LemonCloak } from "./style.js";
+import { Facet, Gardener } from "./style.js";
 import { GraphWidget } from "./widget.js";
 import { ButtonBar } from "./buttons.js";
 
@@ -78,7 +78,7 @@ export class GUI extends Panel {
 
     /** Creates a GUI instance and attach it to the document body. */
     constructor(...appearanceOverride: Facet[]) {
-        super(document.body, clone(LemonCloak.gui).merge(...appearanceOverride));
+        super(document.body, clone(Gardener.gui).merge(...appearanceOverride));
     }
 
     /**
@@ -88,7 +88,7 @@ export class GUI extends Panel {
      */
     collapsible(): this {
         // Create the thin bar element.
-        const bar = spawn('div', this._elt, LemonCloak.collapsibleBar);
+        const bar = spawn('div', this._elt, Gardener.collapsibleBar);
         // Insert the bar as the first child of the panel container.
         this._elt.insertBefore(bar, this._elt.firstChild);
 
@@ -114,7 +114,7 @@ export class GUI extends Panel {
      * @param text - The title.
      */
     title(text: string): this {
-        const title = spawn('div', this._elt, LemonCloak.title);
+        const title = spawn('div', this._elt, Gardener.title);
         title.textContent = text;
         return this;
     }
@@ -139,9 +139,9 @@ class Folder extends Panel {
         super(parent);
 
         const isNested = parent.closest('details') !== null;
-        this.#details = spawn('details', parent, LemonCloak.folder(isNested));
-        spawn('summary', this.#details, LemonCloak.folderSummary(isNested)).textContent = title;
-        const content = spawn('div', this.#details, LemonCloak.folderContent(isNested));
+        this.#details = spawn('details', parent, Gardener.folder(isNested));
+        spawn('summary', this.#details, Gardener.folderSummary(isNested)).textContent = title;
+        const content = spawn('div', this.#details, Gardener.folderContent(isNested));
 
         this.#details.open = true;
         this._elt.style.paddingLeft = '0';
@@ -173,14 +173,14 @@ export class Deck {
     private _elt: HTMLElement;
 
     constructor(parent: HTMLElement) {
-        this._elt = spawn('div', parent, LemonCloak.deck);
+        this._elt = spawn('div', parent, Gardener.deck);
 
-        this.headerContainer = spawn('div', this._elt, LemonCloak.deckHeaderContainer);
-        this.headerBar = spawn('div', this.headerContainer, LemonCloak.deckHeaderBar);
+        this.headerContainer = spawn('div', this._elt, Gardener.deckHeaderContainer);
+        this.headerBar = spawn('div', this.headerContainer, Gardener.deckHeaderBar);
 
         // Show "arrows" on the left and right of the bar to indicate scrollability.
-        this.leftArrow = spawn('div', this.headerContainer, LemonCloak.deckArrowLeft);
-        this.rightArrow = spawn('div', this.headerContainer, LemonCloak.deckArrowRight);
+        this.leftArrow = spawn('div', this.headerContainer, Gardener.deckArrowLeft);
+        this.rightArrow = spawn('div', this.headerContainer, Gardener.deckArrowRight);
 
         this.headerBar.addEventListener('scroll', () => this._updateArrows());
         this.headerBar.addEventListener('wheel', (e: WheelEvent) => {
@@ -231,7 +231,7 @@ export class Card extends Panel {
         this._deck = deck;
         this.name = name;
 
-        this._button = spawn('div', deck.headerBar, LemonCloak.cardButton);
+        this._button = spawn('div', deck.headerBar, Gardener.cardButton);
         this._button.textContent = name;
         this._button.addEventListener('click', () => this.focus());
         this.lowlight(); // Spawns the border.
@@ -241,14 +241,14 @@ export class Card extends Panel {
 
     // Highlight the header, putting an accent color on its border.
     highlight(): void {
-        this._button.addFacet(LemonCloak.cardHighlight);
-        this._button.removeFacet(LemonCloak.cardLowlight);
+        this._button.addFacet(Gardener.cardHighlight);
+        this._button.removeFacet(Gardener.cardLowlight);
     }
 
     // Lowlight the header, enforcing a plain border.
     lowlight(): void {
-        this._button.addFacet(LemonCloak.cardLowlight);
-        this._button.removeFacet(LemonCloak.cardHighlight);
+        this._button.addFacet(Gardener.cardLowlight);
+        this._button.removeFacet(Gardener.cardHighlight);
     }
 
     // Show the content.

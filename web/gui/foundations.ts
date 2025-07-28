@@ -1,5 +1,5 @@
 import { HtmlCssElement, spawn } from "./html.js";
-import { LemonCloak } from "./style.js";
+import { Gardener } from "./style.js";
 
 export class Label {
     box: HtmlCssElement;
@@ -7,8 +7,8 @@ export class Label {
 
     constructor(parent: HTMLElement) {
         // Setup UI elements.
-        this.box = spawn('div', parent, LemonCloak.label);
-        this.label = spawn('label', this.box, LemonCloak.labelText);
+        this.box = spawn('div', parent, Gardener.label);
+        this.label = spawn('label', this.box, Gardener.labelText);
     }
 
     // Sets the text content of the label.

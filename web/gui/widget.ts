@@ -1,8 +1,8 @@
 import { spawn, HtmlCssElement } from "./html.js";
 import { Label } from "./foundations.js";
-import { LemonCloak } from "./style.js";
+import { Gardener } from "./style.js";
 
-const colors = LemonCloak.colors;
+const colors = Gardener.colors;
 
 export class GraphWidget extends Label {
     private canvas: HtmlCssElement<HTMLCanvasElement>;
@@ -11,12 +11,12 @@ export class GraphWidget extends Label {
 
     constructor(parent: HTMLElement) {
         super(parent);
-        this.canvas = spawn('canvas', this.box, LemonCloak.graphCanvas);
+        this.canvas = spawn('canvas', this.box, Gardener.graphCanvas);
         this.ctx = this.canvas.getContext('2d');
 
         // Put the label on top of the graph (instead of putting it left).
-        this.box.addFacet(LemonCloak.graphBox);
-        this.label.addFacet(LemonCloak.graphLabel);
+        this.box.addFacet(Gardener.graphBox);
+        this.label.addFacet(Gardener.graphLabel);
 
         // Toggle graph visibility when label is clicked
         this.label.addEventListener('click', () => {

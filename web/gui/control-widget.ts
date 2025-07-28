@@ -1,7 +1,7 @@
 import { Label } from "./foundations.js";
 import { InputControl } from "./input-control.js";
 import { spawn } from "./html.js";
-import { LemonCloak } from "./style.js";
+import { Gardener } from "./style.js";
 
 /**
  * A widget that composes a Label and an InputControl together in the DOM, orchestrating value
@@ -29,7 +29,7 @@ export class ControlWidget<PRIM> {
     ) {
         this.label = new Label(parent);
 
-        const valueContainer = spawn('div', this.label.box, LemonCloak.paramValueContainer);
+        const valueContainer = spawn('div', this.label.box, Gardener.paramValueContainer);
         valueContainer.appendChild(control.element);
 
         ////////////////////////////

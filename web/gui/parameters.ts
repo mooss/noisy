@@ -2,7 +2,7 @@ import { ControlWidget } from "./control-widget.js";
 import { Label } from './foundations.js';
 import { HtmlCssElement, spawn } from "./html.js";
 import { BooleanControl, NumberControl, RangeControl, SelectControl } from "./input-control.js";
-import { LemonCloak } from './style.js';
+import { Gardener } from './style.js';
 
 
 export function BooleanWidget(
@@ -11,9 +11,9 @@ export function BooleanWidget(
     const control = new BooleanControl(parent, target[property]);
 
     const checkbox = control.element;
-    checkbox.addFacet(LemonCloak.checkbox);
+    checkbox.addFacet(Gardener.checkbox);
     const style = spawn('style', document.head);
-    style.textContent = LemonCloak.checkboxIndicator;
+    style.textContent = Gardener.checkboxIndicator;
 
     return new ControlWidget(parent, target, property, control);
 }
@@ -52,7 +52,7 @@ export class ReadOnly extends Label {
 
     constructor(parent: HTMLElement, content: any) {
         super(parent);
-        this.value = spawn('div', this.box, LemonCloak.paramValueContainer);
+        this.value = spawn('div', this.box, Gardener.paramValueContainer);
         this.update(content);
     }
 

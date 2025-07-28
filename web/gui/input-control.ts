@@ -1,6 +1,6 @@
 import { clamp } from "../utils/maths.js";
 import { HtmlCssElement, spawn } from "./html.js";
-import { Facet, LemonCloak } from "./style.js";
+import { Facet, Gardener } from "./style.js";
 
 /**
  * Interface required from graphical input controllers.
@@ -38,7 +38,7 @@ abstract class InputControlImpl<PRIM, ELT extends HTMLElement> {
  */
 export class BooleanControl extends InputControlImpl<boolean, HTMLInputElement> {
     constructor(parent: HTMLElement, initial: boolean = false) {
-        super('input', parent, LemonCloak.checkbox);
+        super('input', parent, Gardener.checkbox);
         this.elt.type = 'checkbox';
         this.elt.checked = initial;
     }
@@ -52,7 +52,7 @@ export class BooleanControl extends InputControlImpl<boolean, HTMLInputElement> 
  */
 export class NumberControl extends InputControlImpl<number, HTMLInputElement> {
     constructor(parent: HTMLElement, initial: number = 0) {
-        super('input', parent, LemonCloak.numberInput);
+        super('input', parent, Gardener.numberInput);
         this.elt.type = 'number';
         this.elt.value = String(initial);
         this.elt.addEventListener('wheel', (event) => {
@@ -77,16 +77,16 @@ export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
     private format: (v: number) => number = (v) => v;
 
     constructor(parent: HTMLElement, initial: number, min: number, max: number, step: number) {
-        super('div', parent, LemonCloak.rangeControlContainer);
+        super('div', parent, Gardener.rangeControlContainer);
 
-        this.slider = spawn<HTMLInputElement>('input', this.elt, LemonCloak.rangeInput);
+        this.slider = spawn<HTMLInputElement>('input', this.elt, Gardener.rangeInput);
         this.slider.type = 'range';
         this.slider.min = String(min);
         this.slider.max = String(max);
         this.slider.step = String(step);
         this.slider.value = String(initial);
 
-        this.valueSpan = spawn('span', this.elt, LemonCloak.rangeValueSpan);
+        this.valueSpan = spawn('span', this.elt, Gardener.rangeValueSpan);
 
         this.slider.addEventListener('wheel', (event) => {
             event.preventDefault();
@@ -110,13 +110,13 @@ export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
                 appearance: none;
                 width: 4px;
                 height: 16px;
-                background: ${LemonCloak.colors.input};
+                background: ${Gardener.colors.input};
                 cursor: pointer;
             }
             input[type="range"]::-moz-range-thumb {
                 width: 3px;
                 height: 16px;
-                background: ${LemonCloak.colors.input};
+                background: ${Gardener.colors.input};
                 cursor: pointer;
                 border: none;
                 border-radius: 0;
@@ -144,7 +144,7 @@ export class SelectControl extends InputControlImpl<any, HTMLSelectElement> {
     private dictmode: boolean = false;
 
     constructor(parent: HTMLElement, initial: any, options: Record<string, any>) {
-        super('select', parent, LemonCloak.selectInput);
+        super('select', parent, Gardener.selectInput);
 
         this.dictmode = Object.prototype.hasOwnProperty.call(options, initial);
         if (this.dictmode) {

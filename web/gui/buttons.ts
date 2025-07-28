@@ -1,5 +1,5 @@
 import { HtmlCssElement, spawn } from "./html.js";
-import { LemonCloak } from "./style.js";
+import { Gardener } from "./style.js";
 
 /**
  * A horizontal bar containing clickable buttons.
@@ -10,7 +10,7 @@ export class ButtonBar {
     private buttons: Button[] = [];
 
     constructor(parent: HTMLElement) {
-        this.container = spawn('div', parent, LemonCloak.buttonBar);
+        this.container = spawn('div', parent, Gardener.buttonBar);
     }
 
     /**
@@ -33,7 +33,7 @@ export class Button {
     private _onClick?: (() => void);
 
     constructor(parent: HTMLElement, label: string) {
-        this._elt = spawn('button', parent, LemonCloak.button);
+        this._elt = spawn('button', parent, Gardener.button);
         this._elt.textContent = label;
         this._elt.addEventListener('click', () => this._onClick?.());
     }
