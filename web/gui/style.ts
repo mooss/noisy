@@ -337,7 +337,7 @@ export class Appearance {
             boxSizing: 'border-box',
         });
         this.paramValueContainer = this.mk('param-value-container', {
-            width: '80px',
+            width: '100px',
             display: 'flex',
             color: this.colors.param,
         });
