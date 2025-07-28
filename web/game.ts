@@ -1,5 +1,5 @@
 import { Avatar } from './avatar.js';
-import { CHUNK_UNIT } from './constants.js';
+import { CHUNK_UNIT, VERSION, Version } from './constants.js';
 import { AutoCodec, Codec, Lexon64 } from './encoding/codecs.js';
 import { decrec, encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
@@ -18,6 +18,14 @@ import { download, dragAndDrop, toClipBoard } from './utils/utils.js';
 
 const STATE_STORAGE_KEY = 'load-state';
 
+interface GameState {
+    chunks: ChunkState;
+    avatar: AvatarState;
+    render: RenderState;
+    noise: NoiseMakerI;
+    version: Version;
+}
+
 class Game {
     static ENABLE_STATS_GRAPH = false;
     terrain: Terrain;
@@ -27,41 +35,32 @@ class Game {
     keyboard: Keyboard;
     updateStats: () => void = () => { };
 
-    state: {
-        chunks: ChunkState;
-        avatar: AvatarState;
-        render: RenderState;
-        noise: NoiseMakerI;
+    state: GameState = {
+        chunks: new ChunkState({
+            _power: 7,
+            loadRadius: 1,
+            radiusType: 'square',
+        }),
+        avatar: new AvatarState({
+            size: 3,
+            heightOffset: 0,
+            cameraMode: 'Follow',
+        }),
+        render: new RenderState({
+            style: 'surface',
+            paletteName: 'Bright terrain',
+            light: {
+                ambient: { intensity: .5 },
+                directional: { intensity: 4 },
+            },
+            heightMultiplier: 1,
+        }),
+        noise: noiseAlgorithms(),
+        version: VERSION,
     };
 
     /** Encoder/decoder of noise state to a URL-friendly string. */
     codec: Codec<any, string>;
-
-    constructor() {
-        this.state = {
-            chunks: new ChunkState({
-                _power: 7,
-                loadRadius: 1,
-                radiusType: 'square',
-                previousSize: undefined,
-            }),
-            avatar: new AvatarState({
-                size: 3,
-                heightOffset: 0,
-                cameraMode: 'Follow',
-            }),
-            render: new RenderState({
-                style: 'surface',
-                paletteName: 'Bright terrain',
-                light: {
-                    ambient: { intensity: .5 },
-                    directional: { intensity: 4 },
-                },
-                heightMultiplier: 1,
-            }),
-            noise: noiseAlgorithms(),
-        };
-    }
 
     start(): void {
         this.prepareState();

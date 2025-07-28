@@ -11,7 +11,7 @@ abstract class ChunkStateP extends AutoAssign<ChunkStateP> {
     // Power of the chunk (one side is 2^n + 1).
     declare _power: number;
     // The previous value of this.size.
-    declare previousSize: number;
+    declare previousSize?: number;
     // Chunks beyond this distance *plus* the load radius will be unloaded when entering a new chunk.
     // unloadRadius: number = 2;
 }
