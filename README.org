@@ -1,1 +1,29 @@
-#+title: Procedural terrain generation
+#+title: Noisy
+#+subtitle: Real-time procedural terrain sandbox
+
+Noisy is a sandbox to experiment with noise-based terrain generation.
+You can try it at https://mooss.github.io/noisy/acorn/.
+
+** Features
+
+- Infinite terrain.
+- Interactive parameters applied in real-time.
+- Dynamic loading of new chunks when moving through the terrain.
+- Saving and loading of the application state, through URL parameters or JSON file.
+
+** Run locally
+
+#+begin_src bash :eval never
+cd web
+make setup
+make serve
+#+end_src
+
+** Compile and run the webserver
+
+It builds and embed the project in a Go binary that will serve it and open it in the default browser.
+#+begin_src bash :eval never
+make setup
+make dist
+./build/noisy-serve
+#+end_src
