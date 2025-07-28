@@ -43,7 +43,7 @@ export function renderUI(state: RenderState, root: Panel, cb: StateCallbacks) {
     root.select(state, 'style', {
         'Surface': 'surface',
         'Squares': 'quadPrism',
-        'Hexagons': 'hexPrism',
+        // 'Hexagons': 'hexPrism', //TODO: decide whether to fix or remove it.
     }).legend('Shape').onChange(cb.terrain.recompute);
 
     root.select(state, 'paletteName', palettes)
