@@ -32,7 +32,7 @@ export function noiseAlgorithms(): NoiseMakerI {
         bass: new Layered({
             noise: new Simplex(c(f.base)),
             layers: {
-                fundamental: 1.1,
+                fundamental: .3,
                 octaves: 7,
                 persistence: .65,
                 lacunarity: 1.5,
@@ -44,8 +44,8 @@ export function noiseAlgorithms(): NoiseMakerI {
             layers: {
                 fundamental: .4,
                 octaves: 8,
-                persistence: .6,
-                lacunarity: 1.6,
+                persistence: .65,
+                lacunarity: 1.55,
             },
             sampling: c(f.sampling),
         }),
@@ -57,9 +57,10 @@ export function noiseAlgorithms(): NoiseMakerI {
             'Simplex': simplex,
             'Ridge': ridge,
             'Continental mix': comix,
-        }
+        },
+        current: 'Continental mix',
     });
     map.recompute();
 
-    return new Terracing({ interval: .06, wrapped: map });
+    return new Terracing({ interval: .04, wrapped: map });
 }

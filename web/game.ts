@@ -40,7 +40,7 @@ class Game {
     constructor() {
         this.state = {
             chunks: new ChunkState({
-                _power: 6,
+                _power: 7,
                 loadRadius: 1,
                 radiusType: 'square',
                 previousSize: undefined,

@@ -26,9 +26,10 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
         case 'ContinentalMix':
             noiseUI_impl(noise.p.bass, root.folder('Bass'), cb);
             noiseUI_impl(noise.p.treble, root.folder('Treble'), cb);
-            root.range(noise.p.threshold, 'low', 0, 1, .02).legend('Low').onChange(cb);
-            root.range(noise.p.threshold, 'mid', 0, 1, .02).legend('Mid').onChange(cb);
-            root.range(noise.p.threshold, 'high', 0, 1, .02).legend('High').onChange(cb);
+            const mix = root.folder('Mixing');
+            mix.range(noise.p.threshold, 'low', 0, 1, .02).legend('Low').onChange(cb);
+            mix.range(noise.p.threshold, 'mid', 0, 1, .02).legend('Mid').onChange(cb);
+            mix.range(noise.p.threshold, 'high', 0, 1, .02).legend('High').onChange(cb);
             return;
         case 'Map':
             const pick = noise as NoiseMap;
