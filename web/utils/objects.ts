@@ -27,7 +27,7 @@ export function isObject(variable: any) {
  * Maps fun to each value of obj, creating a new object when the object has entries, otherwise obj
  * is returned as-is.
  */
-export function mapValues(fun: (x: any) => any, obj: any): any {
+export function mapProperties(fun: (x: any) => any, obj: any): any {
     if (!isObject(obj)) return obj;
     const res = {};
     for (const [prop, value] of Object.entries(obj))
@@ -43,7 +43,7 @@ export function foreachEntries(fun: (key: string, value: any) => void, obj: any)
 }
 
 type PropertiesOf<T> = {
-  [K in keyof T]: T[K] extends Function ? never : K
+    [K in keyof T]: T[K] extends Function ? never : K
 }[keyof T];
 type Properties<T> = Pick<T, PropertiesOf<T>>;
 

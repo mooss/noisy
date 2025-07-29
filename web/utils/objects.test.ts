@@ -1,4 +1,4 @@
-import { clone, foreachEntries, isObject, mapValues } from './objects.js';
+import { clone, foreachEntries, isObject, mapProperties } from './objects.js';
 
 describe('objects utilities', () => {
     describe('clone', () => {
@@ -68,27 +68,27 @@ describe('objects utilities', () => {
         });
     });
 
-    describe('mapValues', () => {
+    describe('mapProperties', () => {
         it('should transform values of an object', () => {
             const original = { a: 1, b: 2, c: 3 };
-            const result = mapValues((x) => x * 2, original);
+            const result = mapProperties((x) => x * 2, original);
             expect(result).toEqual({ a: 2, b: 4, c: 6 });
         });
 
         it('should return the same value for non-objects', () => {
-            expect(mapValues((x) => x * 2, 42)).toBe(42);
-            expect(mapValues((x) => x * 2, 'test')).toBe('test');
-            expect(mapValues((x) => x * 2, null)).toBe(null);
+            expect(mapProperties((x) => x * 2, 42)).toBe(42);
+            expect(mapProperties((x) => x * 2, 'test')).toBe('test');
+            expect(mapProperties((x) => x * 2, null)).toBe(null);
         });
 
         it('should handle empty objects', () => {
-            const result = mapValues((x) => x * 2, {});
+            const result = mapProperties((x) => x * 2, {});
             expect(result).toEqual({});
         });
 
         it('should handle nested objects without deep transformation', () => {
             const original = { a: { b: 1 }, c: 2 };
-            const result = mapValues((x) => (typeof x === 'number' ? x * 2 : x), original);
+            const result = mapProperties((x) => (typeof x === 'number' ? x * 2 : x), original);
 
             expect(result).toEqual({ a: { b: 1 }, c: 4 });
             expect(result.a).toBe(original.a); // Not cloned

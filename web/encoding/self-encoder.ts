@@ -1,4 +1,4 @@
-import { mapValues } from "../utils/objects.js";
+import { mapProperties } from "../utils/objects.js";
 
 ////////////////
 // Primitives //
@@ -27,9 +27,9 @@ export function encrec(obj: any): any {
         return obj.encode();
     const cls = classof(obj);
     if (typeof cls === 'string')
-        return { params: { ...mapValues(encrec, obj) }, meta: { class: cls } }
+        return { params: { ...mapProperties(encrec, obj) }, meta: { class: cls } }
     if (obj && typeof obj === 'object')
-        return mapValues(encrec, obj);
+        return mapProperties(encrec, obj);
     return obj;
 }
 
@@ -42,7 +42,7 @@ export interface Creator<Type> {
 
 export function decrec<Type>(data: any, creator: Creator<Type>): any {
     if (typeof data?.meta?.class !== 'string' || data?.params === undefined)
-        return mapValues((nested: any) => decrec(nested, creator), data);
+        return mapProperties((nested: any) => decrec(nested, creator), data);
     return creator.create(data.meta.class, decrec(data.params, creator));
 }
 
