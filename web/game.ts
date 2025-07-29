@@ -1,15 +1,14 @@
 import { Avatar } from './avatar.js';
-import { CHUNK_UNIT, VERSION, Version } from './constants.js';
+import { CHUNK_UNIT } from './constants.js';
 import { AutoCodec, Codec, Lexon64 } from './encoding/codecs.js';
 import { decrec, encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
-import { NoiseMakerI } from './noise/foundations.js';
-import { noiseAlgorithms } from './noise/init.js';
+import { GameState, initialState } from './init.js';
 import { noiseUI } from './noise/ui.js';
 import { Renderer } from './renderer.js';
-import { AvatarState, avatarUI } from './state/avatar.js';
-import { ChunkState, chunksUI } from './state/chunk.js';
-import { RenderState, renderUI } from './state/render.js';
+import { avatarUI } from './state/avatar.js';
+import { chunksUI } from './state/chunk.js';
+import { renderUI } from './state/render.js';
 import { StateCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
@@ -18,13 +17,6 @@ import { download, dragAndDrop, toClipBoard } from './utils/utils.js';
 
 const STATE_STORAGE_KEY = 'load-state';
 
-interface GameState {
-    chunks: ChunkState;
-    avatar: AvatarState;
-    render: RenderState;
-    noise: NoiseMakerI;
-    version: Version;
-}
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
@@ -35,29 +27,7 @@ class Game {
     keyboard: Keyboard;
     updateStats: () => void = () => { };
 
-    state: GameState = {
-        chunks: new ChunkState({
-            _power: 7,
-            loadRadius: 1,
-            radiusType: 'square',
-        }),
-        avatar: new AvatarState({
-            size: 3,
-            heightOffset: 0,
-            cameraMode: 'Follow',
-        }),
-        render: new RenderState({
-            style: 'surface',
-            paletteName: 'Bright terrain',
-            light: {
-                ambient: { intensity: .5 },
-                directional: { intensity: 4 },
-            },
-            heightMultiplier: 1,
-        }),
-        noise: noiseAlgorithms(),
-        version: VERSION,
-    };
+    state: GameState = initialState();
 
     /** Encoder/decoder of noise state to a URL-friendly string. */
     codec: Codec<any, string>;
