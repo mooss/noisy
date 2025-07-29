@@ -34,7 +34,7 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
         case 'Map':
             const pick = noise as NoiseMap;
             const algos = pick.p.algorithms;
-            const deck = root.deck();
+            const deck = root.folder('Algorithm').deck();
             for (const key in algos) {
                 const card = deck.card(key);
                 if (key === pick.p.current) card.focus();
@@ -71,9 +71,11 @@ function layeredUI(layered: Layered<any>, root: Panel, cb: () => void) {
     noisef.range(lay, 'persistence', .1, 1, .05).legend('Persistence').onInput(cb);
     noisef.range(lay, 'lacunarity', .05, 2, .05).legend('Lacunarity').onInput(cb);
 
-    const samplingf = root.folder('Sampling').close();
-    const sam = layered.p.sampling;
-    samplingf.range(sam, 'size', 10, 100, 10).legend('Size').onInput(cb);
-    samplingf.range(sam, 'threshold', 2, 3.5, .1).legend('Threshold').onInput(cb);
-    samplingf.range(sam, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb);
+    // // Clutters the interface and there is rarely a need to change it.
+    // // There should be a way in the interface to toggle advanced settings.
+    // const samplingf = root.folder('Sampling').close();
+    // const sam = layered.p.sampling;
+    // samplingf.range(sam, 'size', 10, 100, 10).legend('Size').onInput(cb);
+    // samplingf.range(sam, 'threshold', 2, 3.5, .1).legend('Threshold').onInput(cb);
+    // samplingf.range(sam, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb);
 }
