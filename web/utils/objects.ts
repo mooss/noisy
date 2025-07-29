@@ -2,37 +2,41 @@
  * Deep clones a value, does not clone private fields.
  * Don't really expect it to return fully correct objects, it only works somewhat for basic stuff.
  */
-export function clone<T>(instance: T): T {
+export function clone<T>(obj: T): T {
     // Primitive types.
-    if (instance === null || instance === undefined || typeof instance !== 'object') {
-        return instance;
-    }
+    if (!isObject(obj)) return obj;
 
     // Arrays.
-    if (Array.isArray(instance)) {
-        return instance.map(item => clone(item)) as T;
-    }
+    if (Array.isArray(obj)) return obj.map(item => clone(item)) as T;
 
     // Objects.
-    const data = structuredClone(instance);
-    const empty = Object.create(Object.getPrototypeOf(instance));
+    const data = structuredClone(obj);
+    const empty = Object.create(Object.getPrototypeOf(obj));
     return Object.assign(empty, data);
 }
 
-export function isObject(variable: any) {
-    return typeof variable === 'object' && variable !== null;
+export function isObject(obj: any) {
+    return typeof obj === 'object' && obj !== null;
 }
 
-/**
- * Maps fun to each value of obj, creating a new object when the object has entries, otherwise obj
- * is returned as-is.
- */
-export function mapProperties(fun: (x: any) => any, obj: any): any {
-    if (!isObject(obj)) return obj;
+/** Maps fun to each value of obj, creating a new object. */
+export function mapRequired<T extends object>(
+    fun: (x: any) => any, obj: Required<T>,
+): Required<T> {
+    if (obj == null) return null;
     const res = {};
     for (const [prop, value] of Object.entries(obj))
         res[prop] = fun(value);
-    return res;
+    return res as Required<T>;
+}
+
+/**
+ * Maps fun to each value of obj, creating a new object when the object has entries, otherwise the
+ * object is returned as-is.
+ */
+export function mapObject(fun: (x: any) => any, obj: Object): any {
+    if (!isObject(obj)) return obj;
+    return mapRequired(fun, obj);
 }
 
 /** Calls fun on each entry of obj, does nothing when obj does not have any entry. */
