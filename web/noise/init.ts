@@ -1,10 +1,11 @@
 import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from "./algorithms.js";
 import { NoiseMakerI } from "./foundations.js";
-import { Terracing } from "./processing.js";
+import { Terracing, Warping } from "./processing.js";
 
 export function noiseAlgorithms(): NoiseMakerI {
     const f = {
+        sbase: { seed: 23 },
         base: { invert: true, square: false, seed: 23 },
         layers: {
             fundamental: .7,
@@ -17,7 +18,7 @@ export function noiseAlgorithms(): NoiseMakerI {
     const c = clone;
 
     const simplex = new Layered({
-        noise: new Simplex(c(f.base)),
+        noise: new Simplex(c(f.sbase)),
         layers: c(f.layers),
         sampling: c(f.sampling),
     });
@@ -30,7 +31,7 @@ export function noiseAlgorithms(): NoiseMakerI {
 
     const comix = new ContinentalMix({
         bass: new Layered({
-            noise: new Simplex(c(f.base)),
+            noise: new Simplex(c(f.sbase)),
             layers: {
                 fundamental: .3,
                 octaves: 7,
@@ -62,5 +63,14 @@ export function noiseAlgorithms(): NoiseMakerI {
     });
     map.recompute();
 
-    return new Terracing({ interval: .04, wrapped: map });
+    const warping = new Warping({
+        frequency: .45,
+        strength: 0.15,
+        warper: new Simplex(c(f.sbase)),
+        wrapped: map,
+    });
+
+    const terracing = new Terracing({ interval: .04, wrapped: warping })
+
+    return terracing;
 }
