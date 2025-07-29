@@ -64,8 +64,8 @@ export function noiseAlgorithms(): NoiseMakerI {
     map.recompute();
 
     const warping = new Warping({
-        frequency: .45,
-        strength: 0.15,
+        frequency: 3.2,
+        strength: .04,
         warper: new Simplex(c(f.sbase)),
         wrapped: map,
     });
