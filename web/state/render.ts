@@ -55,7 +55,7 @@ export function renderUI(state: RenderState, root: Panel, cb: StateCallbacks) {
     root.range(state.light.directional, 'intensity', 0, 10, .2)
         .legend('Directional light').onChange(cb.render.update);
 
-    root.range(state, 'heightMultiplier', 0.1, 5.0, 0.05)
+    root.range(state, 'heightMultiplier', 0, 5.0, 0.02)
         .legend('Height multiplier')
         .onInput(cb.render.update);
 }
