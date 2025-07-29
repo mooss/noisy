@@ -118,18 +118,9 @@ describe('NoiseCodec', () => {
     });
 
     describe('roundtrip', () => {
-        it('should return identical noise after encode/decode', () => {
-            const result = codec.roundtrip(reference);
-            expect(result).toBeInstanceOf(Terracing);
-            expect(result.class).toBe(reference.class);
-            expect(result.p.interval).toEqual(reference.p.interval);
-        });
-
-        it('should maintain algorithm hierarchy', () => {
-            const result = codec.roundtrip(reference) as Terracing;
-            expect(result.p.wrapped).toBeInstanceOf(NoiseMap);
-            const map = result.p.wrapped as NoiseMap;
-            expect(map.p.algorithms['Simplex']).toBeInstanceOf(Layered);
+        it('encode reference should be the same as encoding roundtrip', () => {
+            const rt = codec.roundtrip(reference);
+            expect(codec.encode(rt)).toEqual(codec.encode(reference));
         });
     });
 });
