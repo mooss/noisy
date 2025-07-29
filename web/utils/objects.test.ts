@@ -1,6 +1,43 @@
 import { clone, foreachEntries, isObject, mapObject, mapObjectOrArray, mapRequired } from './objects.js';
 
 describe('objects utilities', () => {
+    // Shared test data
+    const a1b2c3 = { a: 1, b: 2, c: 3 };
+    const a1b2c3Nested = { a: { b: 1 }, c: 2 };
+    const primitiveValues = [42, 'test', true, null, undefined] as const;
+
+    // Shared test cases
+    const testPrimitiveHandling = (fn: Function, name: string) => {
+        describe(`${name} primitive handling`, () => {
+            it('should return the same primitive value when called on primitives', () => {
+                primitiveValues.forEach((value) => {
+                    expect(fn((x: any) => x * 2, value)).toBe(value);
+                });
+            });
+        });
+    };
+
+    const testEmptyObjects = (fn: Function, name: string) => {
+        describe(`${name} empty collections`, () => {
+            it('should handle empty objects', () => {
+                const result = fn((x: any) => x * 2, {});
+                expect(result).toEqual({});
+            });
+        });
+    };
+
+    const testNestedObjects = (fn: Function, name: string) => {
+        describe(`${name} nested objects`, () => {
+            it('should handle nested objects without deep transformation', () => {
+                const original = a1b2c3Nested;
+                const result = fn((x: any) => (typeof x === 'number' ? x * 2 : x), original);
+
+                expect(result).toEqual({ a: { b: 1 }, c: 4 });
+                expect(result.a).toBe(original.a);
+            });
+        });
+    };
+
     describe('clone', () => {
         it('should deep clone a simple object', () => {
             const original = { a: 1, b: 'test' };
@@ -70,7 +107,7 @@ describe('objects utilities', () => {
 
     describe('mapRequired', () => {
         it('should transform the values of an object', () => {
-            const original = { a: 1, b: 2, c: 3 };
+            const original = a1b2c3;
             const result = mapRequired((x) => x * 2, original);
             expect(result).toEqual({ a: 2, b: 4, c: 6 });
         });
@@ -79,52 +116,25 @@ describe('objects utilities', () => {
             expect(mapRequired((x) => x * 2, null)).toBe(null);
         });
 
-        it('should handle empty objects', () => {
-            const result = mapRequired((x) => x * 2, {});
-            expect(result).toEqual({});
-        });
-
-        it('should handle nested objects without deep transformation', () => {
-            const original = { a: { b: 1 }, c: 2 };
-            const result = mapRequired((x) => (typeof x === 'number' ? x * 2 : x), original);
-
-            expect(result).toEqual({ a: { b: 1 }, c: 4 });
-            expect(result.a).toBe(original.a);
-        });
+        testEmptyObjects(mapRequired, 'mapRequired');
+        testNestedObjects(mapRequired, 'mapRequired');
     });
 
     describe('mapObject', () => {
         it('should transform the values of an object', () => {
-            const original = { a: 1, b: 2, c: 3 };
+            const original = a1b2c3;
             const result = mapObject((x) => x * 2, original);
             expect(result).toEqual({ a: 2, b: 4, c: 6 });
         });
 
-        it('should return the same primitive value when called on primitives', () => {
-            expect(mapObject((x) => x * 2, 42)).toBe(42);
-            expect(mapObject((x) => x, 'test')).toBe('test');
-            expect(mapObject((x) => x, true)).toBe(true);
-            expect(mapObject((x) => x, null)).toBe(null);
-            expect(mapObject((x) => x, undefined)).toBe(undefined);
-        });
-
-        it('should handle empty objects', () => {
-            const result = mapObject((x) => x * 2, {});
-            expect(result).toEqual({});
-        });
-
-        it('should handle nested objects without deep transformation', () => {
-            const original = { a: { b: 1 }, c: 2 };
-            const result = mapObject((x) => (typeof x === 'number' ? x * 2 : x), original);
-
-            expect(result).toEqual({ a: { b: 1 }, c: 4 });
-            expect(result.a).toBe(original.a);
-        });
+        testPrimitiveHandling(mapObject, 'mapObject');
+        testEmptyObjects(mapObject, 'mapObject');
+        testNestedObjects(mapObject, 'mapObject');
     });
 
     describe('mapObjectOrArray', () => {
         it('should transform the values of an object', () => {
-            const original = { a: 1, b: 2, c: 3 };
+            const original = a1b2c3;
             const result = mapObjectOrArray((x) => x * 2, original);
             expect(result).toEqual({ a: 2, b: 4, c: 6 });
         });
@@ -135,31 +145,16 @@ describe('objects utilities', () => {
             expect(result).toEqual([2, 4, 6]);
         });
 
-        it('should return the same primitive value when called on primitives', () => {
-            expect(mapObjectOrArray((x) => x * 2, 42)).toBe(42);
-            expect(mapObjectOrArray((x) => x, 'test')).toBe('test');
-            expect(mapObjectOrArray((x) => x, true)).toBe(true);
-            expect(mapObjectOrArray((x) => x, null)).toBe(null);
-            expect(mapObjectOrArray((x) => x, undefined)).toBe(undefined);
-        });
+        testPrimitiveHandling(mapObjectOrArray, 'mapObjectOrArray');
 
-        it('should handle empty objects', () => {
-            const result = mapObjectOrArray((x) => x * 2, {});
-            expect(result).toEqual({});
-        });
+        testEmptyObjects(mapObjectOrArray, 'mapObjectOrArray');
 
         it('should handle empty arrays', () => {
             const result = mapObjectOrArray((x) => x * 2, []);
             expect(result).toEqual([]);
         });
 
-        it('should handle nested objects without deep transformation', () => {
-            const original = { a: { b: 1 }, c: 2 };
-            const result = mapObjectOrArray((x) => (typeof x === 'number' ? x * 2 : x), original);
-
-            expect(result).toEqual({ a: { b: 1 }, c: 4 });
-            expect(result.a).toBe(original.a);
-        });
+        testNestedObjects(mapObjectOrArray, 'mapObjectOrArray');
 
         it('should handle nested arrays without deep transformation', () => {
             const original = [{ a: 1 }, { b: 2 }, 3];
@@ -173,7 +168,7 @@ describe('objects utilities', () => {
 
     describe('foreachEntries', () => {
         it('should call the function for each entry', () => {
-            const obj = { a: 1, b: 2, c: 3 };
+            const obj = a1b2c3;
             const mockFn = jest.fn();
 
             foreachEntries(mockFn, obj);
@@ -187,9 +182,9 @@ describe('objects utilities', () => {
         it('should not call the function for non-objects', () => {
             const mockFn = jest.fn();
 
-            foreachEntries(mockFn, 42);
-            foreachEntries(mockFn, 'test');
-            foreachEntries(mockFn, null);
+            primitiveValues.forEach((value) => {
+                foreachEntries(mockFn, value);
+            });
 
             expect(mockFn).not.toHaveBeenCalled();
         });
