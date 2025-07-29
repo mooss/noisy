@@ -1,4 +1,4 @@
-import { clone, foreachEntries, isObject, mapProperties } from './objects.js';
+import { clone, foreachEntries, isObject, mapObject, mapRequired } from './objects.js';
 
 describe('objects utilities', () => {
     describe('clone', () => {
@@ -68,30 +68,57 @@ describe('objects utilities', () => {
         });
     });
 
-    describe('mapProperties', () => {
+    describe('mapRequired', () => {
         it('should transform values of an object', () => {
             const original = { a: 1, b: 2, c: 3 };
-            const result = mapProperties((x) => x * 2, original);
+            const result = mapRequired((x) => x * 2, original);
             expect(result).toEqual({ a: 2, b: 4, c: 6 });
         });
 
-        it('should return the same value for non-objects', () => {
-            expect(mapProperties((x) => x * 2, 42)).toBe(42);
-            expect(mapProperties((x) => x * 2, 'test')).toBe('test');
-            expect(mapProperties((x) => x * 2, null)).toBe(null);
+        it('should return null when called on null', () => {
+            expect(mapRequired((x) => x * 2, null)).toBe(null);
         });
 
         it('should handle empty objects', () => {
-            const result = mapProperties((x) => x * 2, {});
+            const result = mapRequired((x) => x * 2, {});
             expect(result).toEqual({});
         });
 
         it('should handle nested objects without deep transformation', () => {
             const original = { a: { b: 1 }, c: 2 };
-            const result = mapProperties((x) => (typeof x === 'number' ? x * 2 : x), original);
+            const result = mapRequired((x) => (typeof x === 'number' ? x * 2 : x), original);
 
             expect(result).toEqual({ a: { b: 1 }, c: 4 });
-            expect(result.a).toBe(original.a); // Not cloned
+            expect(result.a).toBe(original.a);
+        });
+    });
+
+    describe('mapObject', () => {
+        it('should transform values of an object', () => {
+            const original = { a: 1, b: 2, c: 3 };
+            const result = mapObject((x) => x * 2, original);
+            expect(result).toEqual({ a: 2, b: 4, c: 6 });
+        });
+
+        it('should return the same primitive value when called on primitives', () => {
+            expect(mapObject((x) => x * 2, 42)).toBe(42);
+            expect(mapObject((x) => x, 'test')).toBe('test');
+            expect(mapObject((x) => x, true)).toBe(true);
+            expect(mapObject((x) => x, null)).toBe(null);
+            expect(mapObject((x) => x, undefined)).toBe(undefined);
+        });
+
+        it('should handle empty objects', () => {
+            const result = mapObject((x) => x * 2, {});
+            expect(result).toEqual({});
+        });
+
+        it('should handle nested objects without deep transformation', () => {
+            const original = { a: { b: 1 }, c: 2 };
+            const result = mapObject((x) => (typeof x === 'number' ? x * 2 : x), original);
+
+            expect(result).toEqual({ a: { b: 1 }, c: 4 });
+            expect(result.a).toBe(original.a);
         });
     });
 
