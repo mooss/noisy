@@ -10,14 +10,14 @@ import { register } from "../state/state.js";
 
 interface noiseStats { low: number; high: number; }
 
-interface NoiseSamplerI {
+interface NoiseSamplerP {
     // Number of points to sample on both the x and y dimensions.
     size: number;
     // Z-score threshold to identify data outliers.
     threshold: number;
 }
 
-function noiseStats(gen: NoiseFun, sampling: NoiseSamplerI): noiseStats {
+function noiseStats(gen: NoiseFun, sampling: NoiseSamplerP): noiseStats {
     const values = [];
     for (let x = 0; x < sampling.size; ++x)
         for (let y = 0; y < sampling.size; ++y)
@@ -28,8 +28,8 @@ function noiseStats(gen: NoiseFun, sampling: NoiseSamplerI): noiseStats {
 ///////////
 // Noise //
 
-export interface SimplexI { seed: number }
-export class Simplex extends NoiseMakerBase<SimplexI> {
+export interface SimplexP { seed: number }
+export class Simplex extends NoiseMakerBase<SimplexP> {
     get class(): NoiseClass { return 'Simplex' };
     get low(): number { return -1 }
     get high(): number { return 1 }
@@ -37,11 +37,11 @@ export class Simplex extends NoiseMakerBase<SimplexI> {
 }
 register('Simplex', Simplex);
 
-export interface RidgeI extends SimplexI {
+export interface RidgeP extends SimplexP {
     invert: boolean;
     square: boolean;
 }
-export class Ridge extends NoiseMakerBase<RidgeI> {
+export class Ridge extends NoiseMakerBase<RidgeP> {
     get class(): NoiseClass { return 'Ridge' };
     get low(): number { return 0 }
     get high(): number { return 1 }
@@ -56,13 +56,13 @@ register('Ridge', Ridge);
 //////////////
 // Layering //
 
-export interface LayersI {
+export interface LayersP {
     fundamental: number;
     octaves: number;
     persistence: number;
     lacunarity: number;
 }
-function layerNoise(noise: NoiseFun, layers: LayersI): NoiseFun {
+function layerNoise(noise: NoiseFun, layers: LayersP): NoiseFun {
     return (x: number, y: number): number => {
         let res = 0;
         let frequency = layers.fundamental;
@@ -88,11 +88,11 @@ function layerNoise(noise: NoiseFun, layers: LayersI): NoiseFun {
     }
 }
 
-interface LayerSamplingI extends NoiseSamplerI { fundamental: number }
+interface LayerSamplingP extends NoiseSamplerP { fundamental: number }
 export class LayeredI<Noise extends NoiseMakerI> {
     noise: Noise;
-    layers: LayersI;
-    sampling: LayerSamplingI;
+    layers: LayersP;
+    sampling: LayerSamplingP;
 }
 export class Layered<Noise extends NoiseMakerI> extends NoiseMakerBase<LayeredI<Noise>> {
     get class(): NoiseClass { return 'Layered' };
@@ -118,7 +118,7 @@ register('Layered', Layered<any>);
 ///////////////
 // Noise mix //
 
-interface ContinentalMixI<I extends NoiseMakerI> {
+interface ContinentalMixP<I extends NoiseMakerI> {
     bass: I;
     treble: I;
     threshold: {
@@ -127,7 +127,7 @@ interface ContinentalMixI<I extends NoiseMakerI> {
         high: number;
     }
 }
-export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<ContinentalMixI<I>> {
+export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<ContinentalMixP<I>> {
     get class(): NoiseClass { return 'ContinentalMix' };
     bass: NoiseFun;
     treble: NoiseFun;
@@ -151,11 +151,11 @@ register('ContinentalMix', ContinentalMix);
 ///////////////////
 // Global config //
 
-export interface NoiseMapI {
+export interface NoiseMapP {
     algorithms: Record<string, NoiseMakerI>;
     current?: string;
 }
-export class NoiseMap extends NoiseMakerBase<NoiseMapI> {
+export class NoiseMap extends NoiseMakerBase<NoiseMapP> {
     get class(): NoiseClass { return 'Map' };
 
     register(name: string, algo: NoiseMakerI): void {

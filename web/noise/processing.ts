@@ -1,14 +1,15 @@
 import { register } from "../state/state.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
 
-abstract class NoiseWrapper<Params = any> extends NoiseMakerBase<Params & { wrapped: NoiseMakerI }> {
+interface NoiseWrapperP { wrapped: NoiseMakerI }
+abstract class NoiseWrapper<Params = any> extends NoiseMakerBase<Params & NoiseWrapperP> {
     get low(): number { return this.p.wrapped.low }
     get high(): number { return this.p.wrapped.high }
     recompute(): void { this.p.wrapped.recompute() }
 }
 
-interface TerracingI { interval: number }
-export class Terracing extends NoiseWrapper<TerracingI> {
+interface TerracingP { interval: number }
+export class Terracing extends NoiseWrapper<TerracingP> {
     get class(): NoiseClass { return 'Terracing' }
     make(): NoiseFun {
         const fun = this.p.wrapped.make();
@@ -19,12 +20,12 @@ export class Terracing extends NoiseWrapper<TerracingI> {
 }
 register('Terracing', Terracing);
 
-interface WarpingI {
+interface WarpingP {
     frequency: number;
     strength: number;
     warper: NoiseMakerI;
 }
-export class Warping extends NoiseWrapper<WarpingI> {
+export class Warping extends NoiseWrapper<WarpingP> {
     get class(): NoiseClass { return 'Warping' }
 
     make(): NoiseFun {
@@ -33,6 +34,8 @@ export class Warping extends NoiseWrapper<WarpingI> {
         const warp = this.p.warper.make();
         return (x, y) => {
             const xoff = warp(x * this.p.frequency, y * this.p.frequency) * this.p.strength;
+            // Using a different y offset computed at a different location reduces linear artifacts
+            // visible near the origin.
             const yoff = warp(x * this.p.frequency, y * this.p.frequency + 100) * this.p.strength;
             return fun(x + xoff, y + yoff);
         }
