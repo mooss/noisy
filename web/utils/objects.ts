@@ -1,7 +1,21 @@
-/** Deep clones an instance, does not clone private fields. */
+/**
+ * Deep clones a value, does not clone private fields.
+ * Don't really expect it to return fully correct objects, it only works somewhat for basic stuff.
+ */
 export function clone<T>(instance: T): T {
+    // Primitive types.
+    if (instance === null || instance === undefined || typeof instance !== 'object') {
+        return instance;
+    }
+
+    // Arrays.
+    if (Array.isArray(instance)) {
+        return instance.map(item => clone(item)) as T;
+    }
+
+    // Objects.
     const data = structuredClone(instance);
-    const empty = Object.create(instance.constructor.prototype);
+    const empty = Object.create(Object.getPrototypeOf(instance));
     return Object.assign(empty, data);
 }
 
