@@ -32,8 +32,9 @@ export class Warping extends NoiseWrapper<WarpingI> {
         if (this.p.strength == 0) return fun;
         const warp = this.p.warper.make();
         return (x, y) => {
-            const offset = warp(x * this.p.frequency, y * this.p.frequency) * this.p.strength;
-            return fun(x + offset, y + offset);
+            const xoff = warp(x * this.p.frequency, y * this.p.frequency) * this.p.strength;
+            const yoff = warp(x * this.p.frequency, y * this.p.frequency + 100) * this.p.strength;
+            return fun(x + xoff, y + yoff);
         }
     }
 
