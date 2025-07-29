@@ -1,4 +1,4 @@
-import { clone, foreachEntries, isObject, mapObject, mapRequired } from './objects.js';
+import { clone, foreachEntries, isObject, mapObject, mapObjectOrArray, mapRequired } from './objects.js';
 
 describe('objects utilities', () => {
     describe('clone', () => {
@@ -69,7 +69,7 @@ describe('objects utilities', () => {
     });
 
     describe('mapRequired', () => {
-        it('should transform values of an object', () => {
+        it('should transform the values of an object', () => {
             const original = { a: 1, b: 2, c: 3 };
             const result = mapRequired((x) => x * 2, original);
             expect(result).toEqual({ a: 2, b: 4, c: 6 });
@@ -94,7 +94,7 @@ describe('objects utilities', () => {
     });
 
     describe('mapObject', () => {
-        it('should transform values of an object', () => {
+        it('should transform the values of an object', () => {
             const original = { a: 1, b: 2, c: 3 };
             const result = mapObject((x) => x * 2, original);
             expect(result).toEqual({ a: 2, b: 4, c: 6 });
@@ -119,6 +119,55 @@ describe('objects utilities', () => {
 
             expect(result).toEqual({ a: { b: 1 }, c: 4 });
             expect(result.a).toBe(original.a);
+        });
+    });
+
+    describe('mapObjectOrArray', () => {
+        it('should transform the values of an object', () => {
+            const original = { a: 1, b: 2, c: 3 };
+            const result = mapObjectOrArray((x) => x * 2, original);
+            expect(result).toEqual({ a: 2, b: 4, c: 6 });
+        });
+
+        it('should transform the values of an array', () => {
+            const original = [1, 2, 3];
+            const result = mapObjectOrArray((x) => x * 2, original);
+            expect(result).toEqual([2, 4, 6]);
+        });
+
+        it('should return the same primitive value when called on primitives', () => {
+            expect(mapObjectOrArray((x) => x * 2, 42)).toBe(42);
+            expect(mapObjectOrArray((x) => x, 'test')).toBe('test');
+            expect(mapObjectOrArray((x) => x, true)).toBe(true);
+            expect(mapObjectOrArray((x) => x, null)).toBe(null);
+            expect(mapObjectOrArray((x) => x, undefined)).toBe(undefined);
+        });
+
+        it('should handle empty objects', () => {
+            const result = mapObjectOrArray((x) => x * 2, {});
+            expect(result).toEqual({});
+        });
+
+        it('should handle empty arrays', () => {
+            const result = mapObjectOrArray((x) => x * 2, []);
+            expect(result).toEqual([]);
+        });
+
+        it('should handle nested objects without deep transformation', () => {
+            const original = { a: { b: 1 }, c: 2 };
+            const result = mapObjectOrArray((x) => (typeof x === 'number' ? x * 2 : x), original);
+
+            expect(result).toEqual({ a: { b: 1 }, c: 4 });
+            expect(result.a).toBe(original.a);
+        });
+
+        it('should handle nested arrays without deep transformation', () => {
+            const original = [{ a: 1 }, { b: 2 }, 3];
+            const result = mapObjectOrArray((x) => (typeof x === 'number' ? x * 2 : x), original);
+
+            expect(result).toEqual([{ a: 1 }, { b: 2 }, 6]);
+            expect(result[0]).toBe(original[0]);
+            expect(result[1]).toBe(original[1]);
         });
     });
 

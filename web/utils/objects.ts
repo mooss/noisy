@@ -39,6 +39,18 @@ export function mapObject(fun: (x: any) => any, obj: Object): any {
     return mapRequired(fun, obj);
 }
 
+/**
+ * Applies fun to every element of obj.
+ * When it is an array, its values are mapped and an array is returned.
+ * When it is another object, its values are mapped and an object is returned.
+ * When it is a primitive, it is returned as-is.
+ */
+export function mapObjectOrArray(fun: (x: any) => any, obj: any): any {
+    if(!isObject(obj)) return obj;
+    if (Array.isArray(obj)) return obj.map(fun);
+    return mapRequired(fun, obj);
+}
+
 /** Calls fun on each entry of obj, does nothing when obj does not have any entry. */
 export function foreachEntries(fun: (key: string, value: any) => void, obj: any): void {
     if (!isObject(obj)) return;
