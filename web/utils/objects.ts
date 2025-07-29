@@ -46,7 +46,7 @@ export function mapObject(fun: (x: any) => any, obj: Object): any {
  * When it is a primitive, it is returned as-is.
  */
 export function mapObjectOrArray(fun: (x: any) => any, obj: any): any {
-    if(!isObject(obj)) return obj;
+    if (!isObject(obj)) return obj;
     if (Array.isArray(obj)) return obj.map(fun);
     return mapRequired(fun, obj);
 }
