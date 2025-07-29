@@ -1,4 +1,4 @@
-import { mapObject, mapRequired } from "../utils/objects.js";
+import { mapObject, mapObjectOrArray, mapRequired } from "../utils/objects.js";
 
 ////////////////
 // Primitives //
@@ -23,14 +23,17 @@ function classof(obj: any): string | undefined {
 
 /** Recursively encodes a nested record of self-encoders. */
 export function encrec(obj: any): any {
+    // Encoding handled by the object itself.
     if (obj?.encode && typeof obj.encode === 'function')
         return obj.encode();
+
+    // Self-encoded object through a string property or a method returning a string.
     const cls = classof(obj);
     if (typeof cls === 'string')
         return { params: { ...mapRequired(encrec, obj) }, meta: { class: cls } }
-    if (obj && typeof obj === 'object')
-        return mapRequired(encrec, obj);
-    return obj;
+
+    // A plain object, array or primitive that will be encoded as-is.
+    return mapObjectOrArray(encrec, obj);
 }
 
 //////////////
@@ -42,7 +45,7 @@ export interface Creator<Type> {
 
 export function decrec<Type>(data: any, creator: Creator<Type>): any {
     if (typeof data?.meta?.class !== 'string' || data?.params === undefined)
-        return mapObject((nested: any) => decrec(nested, creator), data);
+        return mapObjectOrArray((nested: any) => decrec(nested, creator), data);
     return creator.create(data.meta.class, decrec(data.params, creator));
 }
 

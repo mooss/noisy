@@ -116,6 +116,12 @@ describe('NoiseCodec', () => {
             expect(Object.keys(decoded.p.algorithms)).toEqual(['test1', 'test2']);
             expect(decoded.p.algorithms['test1']).toBeInstanceOf(Simplex);
         });
+
+        it('should handle arrays', () => {
+            const lost = [4, 8, 15, 16, 23, 42, { sum: 108 }];
+            const decoded = codec.roundtrip(lost);
+            expect(decoded).toEqual(lost);
+        });
     });
 
     describe('roundtrip', () => {
