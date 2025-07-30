@@ -66,8 +66,8 @@ export function noiseAlgorithms(): NoiseMakerI {
     return ProcessingPipeline.build(map).stack(
         Terracing.build({interval: .04}),
         Warping.build({
-            frequency: 3.2,
-            strength: .04,
+            frequency: 2.25,
+            strength: .08,
             warper: new Simplex(c(f.sbase)),
         }),
     )
