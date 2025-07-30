@@ -56,8 +56,10 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             noiseUI_impl(noise.p.warper, wrp, cb);
             noiseUI_impl(noise.p.wrapped, root, cb);
             return;
+        case 'ProcessingPipeline':
+            return noiseUI_impl(noise.p.top, root, cb);
     }
-    console.warn('Unsupported noise class:', noise.class, 'recursing anyway');
+    console.warn('Unknow noise class in UI:', noise.class, 'recursing anyway');
     foreachEntries((_, value) => noiseUI_impl(value as NoiseMakerI, root, cb), noise);
 }
 
