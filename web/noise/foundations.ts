@@ -4,7 +4,8 @@ import { rangeMapper } from "../utils/maths.js";
 /////////////////
 // Noisemaking //
 
-export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map' | 'Terracing' | 'Warping';
+export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'PostProcess' | 'Map'
+ | 'Terracing' | 'Warping' | 'ProcessingPipeline';
 
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;
