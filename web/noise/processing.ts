@@ -37,7 +37,7 @@ export class Warping extends NoiseWrapper<WarpingP> {
     make(): NoiseFun {
         const fun = this.p.wrapped.make();
         if (this.p.strength == 0) return fun;
-        const warp = this.p.warper.make();
+        const warp = this.p.warper.normalised(0, 1);
         return (x, y) => {
             const xoff = warp(x * this.p.frequency, y * this.p.frequency) * this.p.strength;
             // Using a different y offset computed at a different location reduces linear artifacts
