@@ -12,15 +12,14 @@ abstract class NoiseWrapper<Params = any>
     wrap(noise: NoiseMakerI) { this.p.wrapped = noise }
 }
 
-interface TerracingP { interval: number }
+interface TerracingP { steps: number }
 export class Terracing extends NoiseWrapper<TerracingP> {
     get class(): NoiseClass { return 'Terracing' }
     static build(params: TerracingP): Terracing { return new Terracing({ ...params, wrapped: null }) }
     make(): NoiseFun {
         const fun = this.p.wrapped.make();
-        if (this.p.interval == 0) return fun;
-        const step = this.p.interval * (this.high - this.low);
-        return (x, y) => Math.round(fun(x, y) / step) * step;
+        if (this.p.steps == 0) return fun;
+        return (x, y) => Math.round(fun(x, y) * this.p.steps) / this.p.steps;
     }
 }
 register('Terracing', Terracing);
