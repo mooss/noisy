@@ -1,5 +1,6 @@
 import { initialState } from '../init.js';
-import { ContinentalMix, Layered, NoiseMap, Ridge, Simplex } from '../noise/algorithms.js';
+import { ContinentalMix, Layered, Ridge, Simplex } from '../noise/algorithms.js';
+import { NoiseMap } from '../noise/containers.js';
 import { NoiseMakerI } from '../noise/foundations.js';
 import { noiseAlgorithms } from '../noise/init.js';
 import { Terracing } from '../noise/processing.js';
