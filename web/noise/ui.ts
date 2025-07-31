@@ -58,6 +58,13 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             return;
         case 'ProcessingPipeline':
             return noiseUI_impl(noise.p.top, root, cb);
+        case 'NoisyTerracing':
+            const nter = root.folder('Terracing');
+            nter.range(noise.p, 'min', 0, 100, 1).legend('Min terraces').onInput(cb);
+            nter.range(noise.p, 'max', 0, 100, 1).legend('Max terraces').onInput(cb);
+            noiseUI_impl(noise.p.terracer, nter, cb);
+            noiseUI_impl(noise.p.wrapped, root, cb);
+            return;
     }
     console.warn('Unknow noise class in UI:', noise.class, 'recursing anyway');
     foreachEntries((_, value) => noiseUI_impl(value as NoiseMakerI, root, cb), noise);

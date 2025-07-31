@@ -24,6 +24,30 @@ export class Terracing extends NoiseWrapper<TerracingP> {
 }
 register('Terracing', Terracing);
 
+interface NoisyTerracingP { min: number, max: number, terracer: NoiseMakerI }
+export class NoisyTerracing extends NoiseWrapper<NoisyTerracingP> {
+    get class(): NoiseClass { return 'NoisyTerracing' }
+    static build(params: NoisyTerracingP): NoisyTerracing {
+        return new NoisyTerracing({ ...params, wrapped: null });
+    }
+
+    make(): NoiseFun {
+        const fun = this.p.wrapped.make();
+        const min = this.p.min; const max = this.p.max;
+        if (min == 0 && max == 0) return fun;
+
+        let interval: (x: number, y: number) => number;
+        interval = () => min;
+        if (max > min) interval = this.p.terracer.normalised(min, max);
+
+        return (x, y) => {
+            const step = interval(x, y);
+            return Math.round(fun(x, y) * step) / step
+        };
+    }
+}
+register('NoisyTerracing', NoisyTerracing);
+
 interface WarpingP {
     frequency: number;
     strength: number;
