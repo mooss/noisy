@@ -7,6 +7,7 @@ import { GameState, initialState } from './init.js';
 import { noiseUI } from './noise/ui.js';
 import { Renderer } from './renderer.js';
 import { avatarUI } from './state/avatar.js';
+import { cameraUI } from './state/camera.js';
 import { chunksUI } from './state/chunk.js';
 import { renderUI } from './state/render.js';
 import { GameCallbacks, StateRegistry } from './state/state.js';
@@ -42,7 +43,7 @@ class Game {
         this.avatar.y = .5;
         this.avatar.z = 0;
 
-        this.renderer = new Renderer(this.state.render);
+        this.renderer = new Renderer(this.state.render, this.state.camera);
         this.renderer.addMesh(this.terrain.mesh);
         this.renderer.addMesh(this.avatar.mesh);
 
@@ -84,6 +85,7 @@ class Game {
 
         chunksUI(this.state.chunks, gui.folder('Chunks'), this.callbacks);
         renderUI(this.state.render, gui.folder('Render'), this.callbacks);
+        cameraUI(this.state.camera, gui.folder('Camera'), this.callbacks);
         avatarUI(this.state.avatar, gui.folder('Avatar').close(), this.callbacks);
 
         const tergen = new GUI(GUI.POSITION_RIGHT).title('Terrain Generation').collapsible();
@@ -203,7 +205,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     }
 
     updateCamera(): void {
-        if (this.state.render.cameraMode === 'Follow') {
+        if (this.state.camera.cameraMode === 'Follow') {
             this.renderer.lookAt(this.avatar.mesh.position);
         }
     }
