@@ -1,11 +1,11 @@
 import { Panel } from "../gui/gui.js";
-import { StateCallbacks } from "../state/state.js";
+import { GameCallbacks } from "../state/state.js";
 import { foreachEntries } from "../utils/objects.js";
 import { Layered } from "./algorithms.js";
 import { NoiseMap, ProcessingPipelineMap } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
 
-export function noiseUI(noise: NoiseMakerI, root: Panel, cb: StateCallbacks) {
+export function noiseUI(noise: NoiseMakerI, root: Panel, cb: GameCallbacks) {
     noiseUI_impl(noise, root, () => {
         noise.recompute();
         cb.terrain.recompute();

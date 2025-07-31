@@ -23,7 +23,6 @@ export function initialState(): GameState {
         avatar: new AvatarState({
             size: 3,
             heightOffset: 0,
-            cameraMode: 'Follow',
         }),
         render: new RenderState({
             style: 'surface',
@@ -33,6 +32,7 @@ export function initialState(): GameState {
                 directional: { intensity: 4 },
             },
             heightMultiplier: 1,
+            cameraMode: 'Follow',
         }),
         noise: noiseAlgorithms(),
         version: VERSION,

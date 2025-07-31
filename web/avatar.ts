@@ -1,5 +1,6 @@
-import { Position } from "./coordinates.js";
 import * as THREE from 'three';
+import { Position } from "./coordinates.js";
+import { GameCallbacks } from "./state/state.js";
 import { Keyboard } from './ui.js';
 
 export class Avatar {
@@ -16,7 +17,7 @@ export class Avatar {
 
     // Change avatar position on a new frame.
     // Returns true when the avatar position changed.
-    update(dt: number, keyboard: Keyboard): boolean {
+    update(dt: number, keyboard: Keyboard, cb: GameCallbacks): boolean {
         let dx = 0, dy = 0;
         if (keyboard.isPressed('KeyW')) dy += this.speed;
         if (keyboard.isPressed('KeyS')) dy -= this.speed;
@@ -26,6 +27,7 @@ export class Avatar {
 
         this.x += dx * dt;
         this.y += dy * dt;
+        cb.camera.update();
         return true;
     }
 
