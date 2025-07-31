@@ -1,7 +1,7 @@
 import { CHUNK_UNIT } from "../constants.js";
 import { Panel } from "../gui/gui.js";
 import { AutoAssign } from "../utils/objects.js";
-import { register, StateCallbacks } from "./state.js";
+import { register, GameCallbacks } from "./state.js";
 
 abstract class ChunkStateP extends AutoAssign<ChunkStateP> {
     // Chunks within this distance will be unloaded when entering a new chunk.
@@ -29,7 +29,7 @@ export class ChunkState extends ChunkStateP {
 }
 register('ChunkState', ChunkState);
 
-export function chunksUI(conf: ChunkState, root: Panel, cb: StateCallbacks) {
+export function chunksUI(conf: ChunkState, root: Panel, cb: GameCallbacks) {
     root.range(conf, 'power', 1, 8, 1).legend('Blocks in a chunk')
         .onInput(cb.terrain.recompute)
         .formatter(() => conf.nblocks);

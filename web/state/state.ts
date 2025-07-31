@@ -6,14 +6,15 @@ export function register(name: string, ctor: Ctor<any>) {
         console.error(`Duplicated state registration attempt for ${name}`);
 }
 
-interface StateCallbacksI {
+interface GameCallbacksI {
     recomputeTerrain(): void;
     ensureTerrainLoaded(): void;
     updateAvatar(): void;
     updateRender(): void;
+    updateCamera(): void;
 }
-export class StateCallbacks {
-    constructor(private cb: StateCallbacksI) { };
+export class GameCallbacks {
+    constructor(private cb: GameCallbacksI) { };
     readonly terrain = {
         recompute: () => this.cb.recomputeTerrain(),
         ensureLoaded: () => this.cb.ensureTerrainLoaded(),
@@ -23,5 +24,8 @@ export class StateCallbacks {
     }
     readonly render = {
         update: () => this.cb.updateRender(),
+    }
+    readonly camera = {
+        update: () => this.cb.updateCamera(),
     }
 }

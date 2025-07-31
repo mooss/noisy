@@ -9,7 +9,7 @@ import { Renderer } from './renderer.js';
 import { avatarUI } from './state/avatar.js';
 import { chunksUI } from './state/chunk.js';
 import { renderUI } from './state/render.js';
-import { StateCallbacks, StateRegistry } from './state/state.js';
+import { GameCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
@@ -26,7 +26,7 @@ class Game {
     fps: FpsWidget;
     keyboard: Keyboard;
     updateStats: () => void = () => { };
-
+    readonly callbacks = new GameCallbacks(this);
     state: GameState = initialState();
 
     /** Encoder/decoder of noise state to a URL-friendly string. */
@@ -48,6 +48,7 @@ class Game {
 
         this.setupUI();
         this.recomputeTerrain();
+        this.updateAvatar();
         this.startAnimationLoop();
     }
 
@@ -81,13 +82,12 @@ class Game {
         this.fps = new FpsWidget(gui);
         if (Game.ENABLE_STATS_GRAPH) this.setupStatsGraph(gui);
 
-        const cb = new StateCallbacks(this);
-        chunksUI(this.state.chunks, gui.folder('Chunks'), cb);
-        renderUI(this.state.render, gui.folder('Render'), cb);
-        avatarUI(this.state.avatar, gui.folder('Avatar').close(), cb);
+        chunksUI(this.state.chunks, gui.folder('Chunks'), this.callbacks);
+        renderUI(this.state.render, gui.folder('Render'), this.callbacks);
+        avatarUI(this.state.avatar, gui.folder('Avatar').close(), this.callbacks);
 
         const tergen = new GUI(GUI.POSITION_RIGHT).title('Terrain Generation').collapsible();
-        noiseUI(this.state.noise, tergen, cb);
+        noiseUI(this.state.noise, tergen, this.callbacks);
     }
 
     saveStateToUrl(): string {
@@ -171,7 +171,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     onFrame(delta: number): void {
         this.fps.update(delta);
         this.keyboard.checkFocus();
-        if (this.avatar.update(delta, this.keyboard)) {
+        if (this.avatar.update(delta, this.keyboard, this.callbacks)) {
             this.updateAvatar();
         }
     }
@@ -184,17 +184,13 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
         this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.state.avatar.heightOffset;
         this.avatar.reposition(CHUNK_UNIT, this.state.render.verticalUnit);
         this.avatar.setScale(this.state.avatar.size);
-
-        if (this.state.avatar.cameraMode === 'Follow') {
-            this.renderer.lookAt(this.avatar.mesh.position);
-        }
     }
 
     recomputeTerrain(): void {
         this.terrain.recompute();
         this.renderer.updateLighting();
-        this.updateAvatar();
         this.updateStats();
+        this.updateAvatar();
     }
 
     ensureTerrainLoaded(): void {
@@ -204,7 +200,12 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     updateRender(): void {
         this.renderer.updateLighting();
         this.terrain.rescaleMesh();
-        this.updateAvatar();
+    }
+
+    updateCamera(): void {
+        if (this.state.render.cameraMode === 'Follow') {
+            this.renderer.lookAt(this.avatar.mesh.position);
+        }
     }
 }
 

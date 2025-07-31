@@ -5,13 +5,14 @@ import type { HeightGenerator } from '../height-generator.js';
 import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh.js';
 import { palettes } from '../palettes.js';
 import { AutoAssign } from '../utils/objects.js';
-import { register, StateCallbacks } from './state.js';
+import { register, GameCallbacks } from './state.js';
 
 interface LightConfig {
     ambient: { intensity: number };
     directional: { intensity: number };
 }
 
+type CameraMode = 'Follow' | 'Free';
 type RenderStyle = 'surface' | 'quadPrism' | 'hexPrism';
 
 class RenderStateP extends AutoAssign<RenderStateP> {
@@ -19,6 +20,7 @@ class RenderStateP extends AutoAssign<RenderStateP> {
     declare paletteName: string;
     declare light: LightConfig;
     declare heightMultiplier: number; // Multiplier for the terrain height.
+    declare cameraMode: CameraMode; // Camera mode: 'Free' or 'Follow'.
 }
 
 export class RenderState extends RenderStateP {
@@ -39,7 +41,7 @@ export class RenderState extends RenderStateP {
 }
 register('RenderState', RenderState);
 
-export function renderUI(state: RenderState, root: Panel, cb: StateCallbacks) {
+export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
     root.select(state, 'style', {
         'Surface': 'surface',
         'Squares': 'quadPrism',
@@ -58,4 +60,9 @@ export function renderUI(state: RenderState, root: Panel, cb: StateCallbacks) {
     root.range(state, 'heightMultiplier', 0, 5.0, 0.02)
         .legend('Height multiplier')
         .onInput(cb.render.update);
+
+    root.select(state, 'cameraMode', {
+        'Follow': 'Follow',
+        'Free': 'Free',
+    }).legend('Camera mode').onChange(() => { cb.avatar.update(); cb.camera.update(); });
 }
