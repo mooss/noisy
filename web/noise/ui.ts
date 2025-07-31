@@ -1,7 +1,8 @@
 import { Panel } from "../gui/gui.js";
 import { StateCallbacks } from "../state/state.js";
 import { foreachEntries } from "../utils/objects.js";
-import { Layered, NoiseMap } from "./algorithms.js";
+import { Layered } from "./algorithms.js";
+import { NoiseMap, ProcessingPipelineMap } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
 
 export function noiseUI(noise: NoiseMakerI, root: Panel, cb: StateCallbacks) {
@@ -12,6 +13,7 @@ export function noiseUI(noise: NoiseMakerI, root: Panel, cb: StateCallbacks) {
 }
 
 function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
+    if (!noise) return; // Noise classes might be empty for encoding purposes.
     switch (noise.class) {
         case 'Simplex':
             root.number(noise.p, 'seed').legend('Seed').onChange(cb);
@@ -31,43 +33,47 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             mix.range(noise.p.threshold, 'mid', 0, 1, .02).legend('Mid').onChange(cb);
             mix.range(noise.p.threshold, 'high', 0, 1, .02).legend('High').onChange(cb);
             return;
+        case 'ProcessingMap':
+            mapUI(noise as ProcessingPipelineMap, root, cb, 'Terracing');
+            return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'Map':
-            const pick = noise as NoiseMap;
-            const algos = pick.p.algorithms;
-            const deck = root.folder('Algorithm').deck();
-            for (const key in algos) {
-                const card = deck.card(key);
-                if (key === pick.p.current) card.focus();
-                card.onClick(() => {
-                    pick.algorithm = key;
-                    cb();
-                });
-                noiseUI_impl(algos[key], card, cb);
-            }
-            return;
+            return mapUI(noise as NoiseMap<any, any>, root, cb, 'Height');
         case 'Terracing':
             root.range(noise.p, 'steps', 0, 100, 1).legend('Terraces').onInput(cb);
-            noiseUI_impl(noise.p.wrapped, root, cb);
-            return;
+            return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'Warping':
             const wrp = root.folder('Warping');
             wrp.range(noise.p, 'strength', 0, .2, .01).legend('Strength').onInput(cb);
             wrp.range(noise.p, 'frequency', 0, 4, .05).legend('Frequency').onInput(cb);
             noiseUI_impl(noise.p.warper, wrp, cb);
-            noiseUI_impl(noise.p.wrapped, root, cb);
-            return;
+            return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'ProcessingPipeline':
             return noiseUI_impl(noise.p.top, root, cb);
         case 'NoisyTerracing':
-            const nter = root.folder('Terracing');
-            nter.range(noise.p, 'min', 0, 100, 1).legend('Min terraces').onInput(cb);
-            nter.range(noise.p, 'max', 0, 100, 1).legend('Max terraces').onInput(cb);
-            noiseUI_impl(noise.p.terracer, nter, cb);
-            noiseUI_impl(noise.p.wrapped, root, cb);
-            return;
+            root.range(noise.p, 'min', 0, 100, 1).legend('Min terraces').onInput(cb);
+            root.range(noise.p, 'max', 0, 100, 1).legend('Max terraces').onInput(cb);
+            noiseUI_impl(noise.p.terracer, root, cb);
+            return noiseUI_impl(noise.p.wrapped, root, cb);
+        default:
     }
     console.warn('Unknow noise class in UI:', noise.class, 'recursing anyway');
     foreachEntries((_, value) => noiseUI_impl(value as NoiseMakerI, root, cb), noise);
+}
+
+function mapUI(noise: NoiseMap<any, any>, root: Panel, cb: () => void, title: string) {
+    const pick = noise as NoiseMap<any, any>;
+    const algos = pick.p.algorithms;
+    const deck = root.folder(title).deck();
+    for (const key in algos) {
+        const card = deck.card(key);
+        if (key === pick.p.current) card.focus();
+        card.onClick(() => {
+            pick.algorithm = key;
+            cb();
+        });
+        const alg = algos[key];
+        noiseUI_impl(alg, card, cb);
+    }
 }
 
 function layeredUI(layered: Layered<any>, root: Panel, cb: () => void) {

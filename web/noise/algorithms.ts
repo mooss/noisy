@@ -147,37 +147,3 @@ export class ContinentalMix<I extends NoiseMakerI> extends NoiseMakerBase<Contin
     }
 }
 register('ContinentalMix', ContinentalMix);
-
-///////////////////
-// Global config //
-
-export interface NoiseMapP {
-    algorithms: Record<string, NoiseMakerI>;
-    current?: string;
-}
-export class NoiseMap extends NoiseMakerBase<NoiseMapP> {
-    get class(): NoiseClass { return 'Map' };
-
-    register(name: string, algo: NoiseMakerI): void {
-        this.p.algorithms[name] = algo;
-    }
-
-    get algorithm(): NoiseMakerI {
-        if (this.p.current === undefined)
-            this.p.current = Object.keys(this.p.algorithms)[0];
-        return this.p.algorithms[this.p.current];
-    };
-    set algorithm(algo: string) {
-        this.p.current = algo;
-        this.recompute();
-    }
-
-    make(): NoiseFun {
-        return this.algorithm.make()
-    }
-    get low(): number { return this.algorithm.low }
-    get high(): number { return this.algorithm.high }
-    recompute(): void { this.algorithm.recompute() }
-}
-register('Map', NoiseMap);
-

@@ -77,8 +77,8 @@ export class Warping extends NoiseWrapper<WarpingP> {
 }
 register('Warping', Warping);
 
-interface PipelineBaseP { top: NoiseMakerI }
-export class ProcessingPipeline extends NoiseMakerBase<PipelineBaseP> {
+interface ProcessingPipelineP { top: NoiseMakerI }
+export class ProcessingPipeline extends NoiseMakerBase<ProcessingPipelineP> {
     get class(): NoiseClass { return 'ProcessingPipeline' }
     get low(): number { return this.p.top.low }
     get high(): number { return this.p.top.high }
