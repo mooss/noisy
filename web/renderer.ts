@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
+import { CameraState } from './state/camera.js';
 import type { RenderState } from './state/render.js';
-import { CHUNK_UNIT } from "./constants.js";
 
 export class Renderer {
     private scene: THREE.Scene;
@@ -10,17 +10,13 @@ export class Renderer {
     private controls: MapControls;
     private ambientLight: THREE.AmbientLight;
     private directionalLight: THREE.DirectionalLight;
-    private renderConf: RenderState;
 
-    constructor(renderConf: RenderState) {
-        this.renderConf = renderConf;
+    constructor(private renderstate: RenderState, private camstate: CameraState) {
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0, 0, 0);
 
-        const camDist = CHUNK_UNIT * 1.2 + 50;
-        const center = CHUNK_UNIT / 2;
         this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, .1, 10000);
-        this.camera.position.set(center, center - camDist * 0.7, camDist * 0.7);
+        this.camera.position.set(camstate.position.x, camstate.position.y, camstate.position.z);
         this.camera.up.set(0, 0, 1);
 
         this.renderer = new THREE.WebGLRenderer({
@@ -41,7 +37,7 @@ export class Renderer {
         this.controls = new MapControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
         this.controls.dampingFactor = 0.1;
-        this.controls.target = new THREE.Vector3(center, center, 0);
+        this.controls.target = new THREE.Vector3(camstate.focus.x, camstate.focus.y, camstate.focus.z);
 
         window.addEventListener('resize', this.resizeWindow.bind(this), false);
     }
@@ -57,8 +53,8 @@ export class Renderer {
     }
 
     updateLighting(): void {
-        this.ambientLight.intensity = this.renderConf.light.ambient.intensity;
-        this.directionalLight.intensity = this.renderConf.light.directional.intensity;
+        this.ambientLight.intensity = this.renderstate.light.ambient.intensity;
+        this.directionalLight.intensity = this.renderstate.light.directional.intensity;
     }
 
     // Point the camera towards target, maintaining the offset that existed between the previous
@@ -66,6 +62,9 @@ export class Renderer {
     lookAt(target: THREE.Vector3): void {
         this.camera.position.add(target).sub(this.controls.target);
         this.controls.target.copy(target);
+        const pos = this.camera.position;
+        this.camstate.position = { x: pos.x, y: pos.y, z: pos.z };
+        this.camstate.focus = { x: target.x, y: target.y, z: target.z };
     }
 
     render(): void {

@@ -1,20 +1,30 @@
-import { VERSION, Version } from "./constants.js";
+import { CHUNK_UNIT, VERSION, Version } from "./constants.js";
 import { NoiseMakerI } from "./noise/foundations.js";
 import { noiseAlgorithms } from "./noise/init.js";
 import { AvatarState } from "./state/avatar.js";
+import { CameraState } from "./state/camera.js";
 import { ChunkState } from "./state/chunk.js";
 import { RenderState } from "./state/render.js";
 
 export interface GameState {
-    chunks: ChunkState;
     avatar: AvatarState;
-    render: RenderState;
+    camera: CameraState;
+    chunks: ChunkState;
     noise: NoiseMakerI;
+    render: RenderState;
     version: Version;
 }
 
 export function initialState(): GameState {
+    const camDist = CHUNK_UNIT * 1.2 + 50;
+    const center = CHUNK_UNIT / 2;
+
     return {
+        camera: new CameraState({
+            cameraMode: 'Follow',
+            position: { x: center, y: center - camDist * 0.7, z: camDist * 0.7 },
+            focus: { x: center, y: center, z: 0 },
+        }),
         chunks: new ChunkState({
             _power: 6,
             loadRadius: 1,
@@ -32,7 +42,6 @@ export function initialState(): GameState {
                 directional: { intensity: 4 },
             },
             heightMultiplier: 1,
-            cameraMode: 'Follow',
         }),
         noise: noiseAlgorithms(),
         version: VERSION,
