@@ -30,7 +30,7 @@ describe('NoiseCodec', () => {
     describe('encode/decode', () => {
         it('should roundtrip a noise algorithm unchanged', () => {
             const terraced = new Terracing({
-                interval: 0.1,
+                steps: 27,
                 wrapped: new NoiseMap({
                     algorithms: {
                         'test': new Simplex({ seed: 42 })
@@ -41,7 +41,7 @@ describe('NoiseCodec', () => {
 
             expect(decoded).toBeInstanceOf(Terracing);
             expect(decoded.class).toBe('Terracing');
-            expect(decoded.p.interval).toEqual(0.1);
+            expect(decoded.p.steps).toEqual(27);
 
             const inner = decoded.p.wrapped;
             expect(inner).toBeInstanceOf(NoiseMap);

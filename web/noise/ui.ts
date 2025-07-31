@@ -46,12 +46,12 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             }
             return;
         case 'Terracing':
-            root.range(noise.p, 'interval', 0, .1, .01).legend('Terracing').onInput(cb);
+            root.range(noise.p, 'steps', 0, 100, 1).legend('Terraces').onInput(cb);
             noiseUI_impl(noise.p.wrapped, root, cb);
             return;
         case 'Warping':
             const wrp = root.folder('Warping');
-            wrp.range(noise.p, 'strength', 0, .2, .01).legend('Warping').onInput(cb);
+            wrp.range(noise.p, 'strength', 0, .2, .01).legend('Strength').onInput(cb);
             wrp.range(noise.p, 'frequency', 0, 4, .05).legend('Frequency').onInput(cb);
             noiseUI_impl(noise.p.warper, wrp, cb);
             noiseUI_impl(noise.p.wrapped, root, cb);
