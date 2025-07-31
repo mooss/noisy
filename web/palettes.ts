@@ -77,5 +77,5 @@ export const palettes: Record<string, Palette> = {
     'Sunset': sunset,
     'Black & white': blackWhite,
     'Cyberpuke': cyberPuke,
-    'Tectonic': tectonic,
+    // 'Tectonic': tectonic,
 };
