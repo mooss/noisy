@@ -1,15 +1,12 @@
 import { register } from "../state/state.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
 
-interface NoiseWrapperI extends NoiseMakerI { wrap(noise: NoiseMakerI): void }
 interface NoiseWrapperP { wrapped: NoiseMakerI }
 abstract class NoiseWrapper<Params = any>
-    extends NoiseMakerBase<Params & NoiseWrapperP>
-    implements NoiseWrapperI {
+    extends NoiseMakerBase<Params & NoiseWrapperP> {
     get low(): number { return this.p.wrapped.low }
     get high(): number { return this.p.wrapped.high }
     recompute(): void { this.p.wrapped.recompute() }
-    wrap(noise: NoiseMakerI) { this.p.wrapped = noise }
 }
 
 interface TerracingP { steps: number }
@@ -94,7 +91,7 @@ export class ProcessingPipeline extends NoiseMakerBase<ProcessingPipelineP> {
     /**
      * Stacks noise wrappers on top of the previous, linking each with the one below.
      */
-    stack(...floors: Array<NoiseWrapperI>): this {
+    stack(...floors: Array<NoiseMakerI<NoiseWrapperP>>): this {
         for (let i = floors.length - 1; i >= 0; --i) {
             floors[i].p.wrapped = this.p.top;
             this.p.top = floors[i];

@@ -1,13 +1,12 @@
 import { SelfEncoded } from "../encoding/self-encoder.js";
 import { register } from "../state/state.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
-import { NoiseWrapperI } from "./processing.js";
 
-export interface NoiseMapP<Maker extends NoiseMakerI> {
-    algorithms: Record<string, Maker>;
+export interface NoiseMapP {
+    algorithms: Record<string, NoiseMakerI>;
     current?: string;
 }
-export class NoiseMap<Maker extends NoiseMakerI, Params extends NoiseMapP<Maker>> extends NoiseMakerBase<Params> {
+export class NoiseMap<Params extends NoiseMapP> extends NoiseMakerBase<Params> {
     get algorithm(): NoiseMakerI {
         if (this.p.current === undefined)
             this.p.current = Object.keys(this.p.algorithms)[0];
@@ -20,12 +19,12 @@ export class NoiseMap<Maker extends NoiseMakerI, Params extends NoiseMapP<Maker>
     get low(): number { return this.algorithm.low }
     get high(): number { return this.algorithm.high }
     recompute(): void { this.algorithm.recompute() }
-    register(name: string, algo: Maker): void { this.p.algorithms[name] = algo }
+    register(name: string, algo: NoiseMakerI): void { this.p.algorithms[name] = algo }
 }
 register('Map', NoiseMap);
 
-interface ProcessingMapP extends NoiseMapP<NoiseWrapperI> { wrapped?: NoiseMakerI }
-export class ProcessingPipelineMap extends NoiseMap<NoiseWrapperI, ProcessingMapP> {
+interface ProcessingMapP extends NoiseMapP { wrapped: NoiseMakerI }
+export class ProcessingPipelineMap extends NoiseMap<ProcessingMapP> {
     encode(): SelfEncoded {
         // The wrapped references must be deleted, otherwise the wrapped noise will be duplicated
         // in the encoding.

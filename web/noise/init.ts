@@ -82,6 +82,7 @@ export function noiseAlgorithms(): NoiseMakerI {
             }),
         },
         current: 'Constant',
+        wrapped: undefined,
     });
 
     return ProcessingPipeline.build(map).stack(
