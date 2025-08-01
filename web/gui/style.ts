@@ -268,13 +268,13 @@ export class Appearance {
         });
         this.folderContent = (nested: boolean) => this.mk(`folder-content-${nested ? 'nested' : 'toplevel'}`, {
             borderLeft: nested ? `1px solid ${this.colors.border}` : 'none',
-            paddingLeft: nested ? '8px' : '0',
+            paddingLeft: nested ? '4px' : '2px',
         });
         this.folderSummary = (nested: boolean) => this.mk(`folder-summary-${nested ? 'nested' : 'toplevel'}`, {
             cursor: 'pointer',
             fontWeight: 500,
             padding: '2px 0',
-            marginLeft: nested ? '-8px' : '0',
+            marginLeft: nested ? '-10px' : '0',
             paddingLeft: nested ? '8px' : '0',
         });
 
