@@ -2,14 +2,15 @@ import * as THREE from 'three';
 import { Position } from "./coordinates.js";
 import { GameCallbacks } from "./state/state.js";
 import { Keyboard } from './ui.js';
+import { AvatarState } from './state/avatar.js';
 
 export class Avatar {
     // World position of the avatar.
-    coords: Position = new Position(0, 0, 0);
+    get coords(): Position { return this.state.position }
     mesh: THREE.Mesh;
     speed: number = .5; // Units per second.
 
-    constructor() {
+    constructor(private state: AvatarState) {
         const geometry = new THREE.SphereGeometry(1, 32, 32);
         const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
         this.mesh = new THREE.Mesh(geometry, material);

@@ -18,7 +18,6 @@ import { download, dragAndDrop, toClipBoard } from './utils/utils.js';
 
 const STATE_STORAGE_KEY = 'load-state';
 
-
 class Game {
     static ENABLE_STATS_GRAPH = false;
     terrain: Terrain;
@@ -38,10 +37,7 @@ class Game {
 
         this.terrain = new Terrain(this.state.chunks, this.state.noise, this.state.render);
         this.keyboard = new Keyboard();
-        this.avatar = new Avatar();
-        this.avatar.x = .5;
-        this.avatar.y = .5;
-        this.avatar.z = 0;
+        this.avatar = new Avatar(this.state.avatar);
 
         this.renderer = new Renderer(this.state.render, this.state.camera);
         this.renderer.addMesh(this.terrain.mesh);
@@ -56,9 +52,10 @@ class Game {
     /** Create the noise codec and potentially load state from session storage or GET parameters. */
     prepareState(): void {
         const alphabet = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';
-        const urlCodec = new Lexon64(encrec(this.state), alphabet);
+        const statenc = encrec(this.state);
+        const urlCodec = new Lexon64(statenc, alphabet);
         this.codec = new AutoCodec(urlCodec, StateRegistry);
-        this.state = StateRegistry.decode(encrec(this.state)); // Live encoding/decoding test.
+        this.state = StateRegistry.decode(statenc); // Live encoding/decoding test.
 
         const reload = sessionStorage.getItem(STATE_STORAGE_KEY);
         if (reload) {

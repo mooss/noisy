@@ -1,4 +1,4 @@
-import { mapObject, mapObjectOrArray, mapRequired } from "../utils/objects.js";
+import { AutoAssign, mapObjectOrArray, mapRequired } from "../utils/objects.js";
 
 ////////////////
 // Primitives //
@@ -9,6 +9,10 @@ export interface SelfEncoded {
 }
 export interface SelfEncoder {
     encode(): SelfEncoded;
+}
+
+export abstract class AutoEncoder<T> extends AutoAssign<T> {
+    abstract class(): string;
 }
 
 //////////////

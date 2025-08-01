@@ -1,5 +1,5 @@
-/////////////////////////
-// Integer coordinates //
+import { AutoEncoder } from "./encoding/self-encoder.js";
+import { register } from "./state/state.js";
 
 /**
  * Represents 2D integer coordinates for blocks, either locally within a chunk or globally within
@@ -81,20 +81,14 @@ export class Coordinates {
 /**
  * Represents 3D floating-point coordinates for points in the world, either local or global.
  */
-export class Position {
+export class Position extends AutoEncoder<Position> {
+    class(): string { return 'Position' }
     /** The X coordinate. */
-    x: number;
+    declare x: number;
     /** The Y coordinate. */
-    y: number;
+    declare y: number;
     /** The Z coordinate. */
-    z: number;
-
-    /**
-     * @param x - The X coordinate.
-     * @param y - The Y coordinate.
-     * @param z - The Z coordinate.
-     */
-    constructor(x: number, y: number, z: number) { this.x = x; this.y = y; this.z = z; }
+    declare z: number;
 
     /**
      * Convert the position to the chunk Coordinates containing it.
@@ -105,3 +99,4 @@ export class Position {
         return new Coordinates(Math.floor(this.x), Math.floor(this.y));
     }
 }
+register('Position', Position)
