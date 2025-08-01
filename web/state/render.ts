@@ -18,7 +18,7 @@ class RenderStateP extends AutoAssign<RenderStateP> {
     declare style: RenderStyle;
     declare paletteName: string;
     declare light: LightConfig;
-    declare heightMultiplier: number; // Multiplier for the terrain height.
+    declare heightMultiplier: number;
 }
 
 export class RenderState extends RenderStateP {
