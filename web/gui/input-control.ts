@@ -103,25 +103,8 @@ export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
             this.elt.dispatchEvent(new Event('change'));
         });
 
-        // Style the slider thumb as a vertical bar.
         const style = spawn('style', document.head);
-        style.textContent = `
-            input[type="range"]::-webkit-slider-thumb {
-                appearance: none;
-                width: 4px;
-                height: 16px;
-                background: ${Gardener.colors.input};
-                cursor: pointer;
-            }
-            input[type="range"]::-moz-range-thumb {
-                width: 3px;
-                height: 16px;
-                background: ${Gardener.colors.input};
-                cursor: pointer;
-                border: none;
-                border-radius: 0;
-            }
-        `;
+        style.textContent = Gardener.rangeThumb;
     }
 
     get value(): number { return parseFloat(this.slider.value) }
