@@ -1,5 +1,6 @@
 import { Avatar } from './avatar.js';
 import { CHUNK_UNIT } from './constants.js';
+import { Position } from './coordinates.js';
 import { AutoCodec, Codec, Lexon64 } from './encoding/codecs.js';
 import { decrec, encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
@@ -132,7 +133,8 @@ class Game {
         const zScoreGraph = root.graph().legend("Z-scores of the sorted heights").close();
 
         this.updateStats = (): void => {
-            const heightfun = this.terrain.chunkHeightFun(this.avatar.coords.toChunk());
+            const pos = this.avatar.coords;
+            const heightfun = this.terrain.chunkHeightFun({ x: Math.floor(pos.x), y: Math.floor(pos.y) });
             const heights: number[] = [];
             for (let i = 0; i < this.state.chunks.nblocks; ++i)
                 for (let j = 0; j < this.state.chunks.nblocks; ++j)
@@ -179,7 +181,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     // Update graphics //
 
     updateAvatar(): void {
-        this.terrain.centerOn(this.avatar.coords);
+        this.terrain.centerOn(new Position(this.avatar.coords));
         this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.state.avatar.heightOffset;
         this.avatar.reposition(CHUNK_UNIT, this.state.render.verticalUnit);
         this.avatar.setScale(this.state.avatar.size);

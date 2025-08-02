@@ -1,13 +1,13 @@
-import { Position } from '../coordinates.js';
 import type { Panel } from '../gui/gui.js';
+import { vector3 } from '../utils/maths.js';
 import { AutoAssign } from '../utils/objects.js';
-import { register, GameCallbacks } from './state.js';
+import { register, GameCallbacks} from './state.js';
 
 export class AvatarState extends AutoAssign<AvatarState> {
     class(): string { return 'AvatarState' }
     declare size: number;           // Avatar sphere radius (cell size multiplier).
     declare heightOffset: number;   // How high above the terrain the avatar floats (cell size multiplier).
-    declare position: Position;
+    declare position: vector3;
 }
 register('AvatarState', AvatarState);
 

@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-import { Position } from "./coordinates.js";
 import { GameCallbacks } from "./state/state.js";
 import { Keyboard } from './ui.js';
 import { AvatarState } from './state/avatar.js';
+import { vector3 } from './utils/maths.js';
 
 export class Avatar {
     // World position of the avatar.
-    get coords(): Position { return this.state.position }
+    get coords(): vector3 { return this.state.position }
     mesh: THREE.Mesh;
     speed: number = .5; // Units per second.
 

@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import type { ChunkState } from './state/chunk.js';
-import type { RenderState } from './state/render.js';
 import { CHUNK_UNIT } from "./constants.js";
 import { Coordinates, Position } from "./coordinates.js";
 import { NoiseMakerI } from './noise/foundations.js';
+import type { ChunkState } from './state/chunk.js';
+import type { RenderState } from './state/render.js';
+import { vector2 } from './utils/maths.js';
 
 class Chunk {
     coords: Coordinates;
@@ -51,7 +52,7 @@ export class Terrain {
      * Returns the height function of the given chunk.
      * The chunk is the height field between 0 and 1 (for both coordinates).
      */
-    chunkHeightFun(chunkCoords: Coordinates): (x: number, y: number) => number {
+    chunkHeightFun(chunkCoords: vector2): (x: number, y: number) => number {
         return (x, y) => this.height(x + chunkCoords.x, y + chunkCoords.y);
     }
 
