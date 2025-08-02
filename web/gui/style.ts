@@ -129,6 +129,7 @@ export class Appearance {
 
     rangeControlContainer: Facet;
     rangeInput: Facet;
+    rangeThumb: string;
     rangeValueSpan: Facet;
 
     selectInput: Facet;
@@ -358,6 +359,21 @@ export class Appearance {
             margin: '0',
             borderRadius: '2px',
         });
+        this.rangeThumb = `input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 4px;
+    height: 16px;
+    background: ${this.colors.input};
+    cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+    width: 3px;
+    height: 16px;
+    background: ${this.colors.input};
+    cursor: pointer;
+    border: none;
+    border-radius: 0;
+}`;
         this.rangeValueSpan = this.mk('range-value-span', {
             width: '30px',
             marginLeft: '4px',

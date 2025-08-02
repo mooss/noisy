@@ -65,10 +65,6 @@ export function StaticTextWidget(parent: HTMLElement, content: any): StaticText 
     return new StaticText(parent, content);
 }
 
-/**
- * Factory that creates a ControlWidget wrapping a SelectControl.
- * Replaces the former Select class.
- */
 export function SelectWidget(
     parent: HTMLElement, target: Record<string, any>,
     property: string, options: Record<string, any>
