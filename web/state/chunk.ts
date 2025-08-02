@@ -30,12 +30,12 @@ export class ChunkState extends ChunkStateP {
 register('ChunkState', ChunkState);
 
 export function chunksUI(conf: ChunkState, root: Panel, cb: GameCallbacks) {
-    root.range(conf, 'power', 1, 8, 1).legend('Blocks in a chunk')
+    root.range(conf, 'power', 1, 8, 1).label('Blocks in a chunk')
         .onInput(cb.terrain.recompute)
         .formatter(() => conf.nblocks);
     root.select(conf, 'radiusType', {
         'Square': 'square',
         'Circle': 'circle',
-    }).legend('Radius type').onChange(cb.terrain.ensureLoaded);
-    root.range(conf, 'loadRadius', 0, 8, 1).legend('Load radius').onInput(cb.terrain.ensureLoaded);
+    }).label('Radius type').onChange(cb.terrain.ensureLoaded);
+    root.range(conf, 'loadRadius', 0, 8, 1).label('Load radius').onInput(cb.terrain.ensureLoaded);
 }

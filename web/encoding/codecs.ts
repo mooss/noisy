@@ -1,7 +1,7 @@
 import { compressToBase64, decompressFromBase64 } from "lz-string";
 import { combinations, mapit } from "../utils/iteration.js";
 import { sortedMap } from "../utils/maps.js";
-import { countNodes, cultivateObject, cultivateObjectOrArray } from "../utils/tree.js";
+import { countNodes, cultivateObjectOrArray } from "../utils/tree.js";
 import { Creator, decrec, encrec } from "./self-encoder.js";
 
 export interface Codec<From, To> {
@@ -32,6 +32,7 @@ export class Lexicon extends CodecABC<any, any> {
             // Hopefully deterministic across all machines.
             return String(lk).localeCompare(String(rk), 'en-US');
         });
+        // Combinations on the alphabet (e.g. for latin alphabet [a, b, c, ..., aa, ab, ...]).
         const combos = mapit((x) => x.join(''), combinations(alphabet));
 
         for (const [term] of counter) {

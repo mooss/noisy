@@ -100,7 +100,7 @@ class Game {
     }
 
     setupActions(root: Panel): void {
-        const actions = root.buttonBar();
+        const actions = root.buttons();
         const copy = actions.button('Copy url');
         const save = actions.button('Download');
         copy.onClick(() => toClipBoard(this.saveStateToUrl()));
@@ -128,9 +128,9 @@ class Game {
     }
 
     setupStatsGraph(root: Panel): void {
-        const heightGraph = root.graph().legend("Sorted heights in active chunk");
-        const heightStats = root.readOnly('').legend('Height stats');
-        const zScoreGraph = root.graph().legend("Z-scores of the sorted heights").close();
+        const heightGraph = root.graph().label("Sorted heights in active chunk");
+        const heightStats = root.static('').label('Height stats');
+        const zScoreGraph = root.graph().label("Z-scores of the sorted heights").close();
 
         this.updateStats = (): void => {
             const pos = this.avatar.coords;

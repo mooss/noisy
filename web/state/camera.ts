@@ -17,5 +17,5 @@ export function cameraUI(state: CameraState, root: Panel, cb: GameCallbacks) {
     root.select(state, 'cameraMode', {
         'Follow': 'Follow',
         'Free': 'Free',
-    }).legend('Camera mode').onChange(() => { cb.avatar.update(); cb.camera.update(); });
+    }).label('Camera mode').onChange(() => { cb.avatar.update(); cb.camera.update(); });
 }
