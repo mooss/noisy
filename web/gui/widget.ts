@@ -16,10 +16,10 @@ export class GraphWidget extends Label {
 
         // Put the label on top of the graph (instead of putting it left).
         this.box.addFacet(Gardener.graphBox);
-        this.label.addFacet(Gardener.graphLabel);
+        this.elt.addFacet(Gardener.graphLabel);
 
         // Toggle graph visibility when label is clicked
-        this.label.addEventListener('click', () => {
+        this.elt.addEventListener('click', () => {
             this.visible(!this.opened())
             if (this.opened()) this.draw();
         });
@@ -36,7 +36,7 @@ export class GraphWidget extends Label {
 
     visible(show: boolean): void {
         this.canvas.style.display = show ? '': 'none';
-        this.label.style.textDecoration = show ? 'none': 'underline';
+        this.elt.style.textDecoration = show ? 'none': 'underline';
     }
 
     close():  GraphWidget { this.visible(false); return this; }

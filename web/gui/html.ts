@@ -6,7 +6,7 @@ export type HtmlCssElement<T extends HTMLElement = HTMLElement> = T & {
     removeFacet(props: Facet): void;
 }
 
-function addCss<T extends HTMLElement>(el: T): HtmlCssElement<T> {
+function addFacetMethods<T extends HTMLElement>(el: T): HtmlCssElement<T> {
     (el as HtmlCssElement<T>).addFacet = function(style: Facet) {
         this.classList.add(...style.classes);
     };
@@ -20,7 +20,7 @@ function addCss<T extends HTMLElement>(el: T): HtmlCssElement<T> {
 /**
  * Spawns an HTML element below parent and assign it an optional style.
  *
- * A `css` method is added to the element to conveniently change the stile.
+ * `addFacet` and `removeFacet` method is added to the element to conveniently change the style.
  *
  * @param tag     - The HTML tag name for the new element.
  * @param parent  - The parent DOM element.
@@ -33,7 +33,7 @@ export function spawn<T extends HTMLElement = HTMLElement>(
     parent: HTMLElement,
     style?: Facet,
 ): HtmlCssElement<T> {
-    const res = addCss(document.createElement(tag) as T);
+    const res = addFacetMethods(document.createElement(tag) as T);
     if (style !== undefined) {
         res.addFacet(style);
     }

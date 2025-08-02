@@ -47,7 +47,7 @@ export function RangeWidget(
     return result;
 }
 
-export class ReadOnly extends Label {
+export class StaticText extends Label {
     private value: HtmlCssElement;
 
     constructor(parent: HTMLElement, content: any) {
@@ -61,8 +61,8 @@ export class ReadOnly extends Label {
     }
 }
 
-export function ReadOnlyWidget(parent: HTMLElement, content: any): ReadOnly {
-    return new ReadOnly(parent, content);
+export function StaticTextWidget(parent: HTMLElement, content: any): StaticText {
+    return new StaticText(parent, content);
 }
 
 /**

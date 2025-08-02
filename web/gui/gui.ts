@@ -1,7 +1,7 @@
 import { clone } from "../utils/objects.js";
 import { ControlWidget } from "./control-widget.js";
 import { HtmlCssElement, spawn } from "./html.js";
-import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, ReadOnly, ReadOnlyWidget, SelectWidget } from './parameters.js';
+import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, StaticText, StaticTextWidget, SelectWidget } from './parameters.js';
 import { Facet, Gardener } from "./style.js";
 import { GraphWidget } from "./widget.js";
 import { ButtonBar } from "./buttons.js";
@@ -40,7 +40,7 @@ export class Panel {
         return new Deck(this._elt);
     }
 
-    buttonBar(): ButtonBar {
+    buttons(): ButtonBar {
         return new ButtonBar(this._elt);
     }
 
@@ -58,8 +58,8 @@ export class Panel {
         return RangeWidget(this._elt, target, property, min, max, step);
     }
 
-    readOnly(content: any): ReadOnly {
-        return ReadOnlyWidget(this._elt, content);
+    static(content: any): StaticText {
+        return StaticTextWidget(this._elt, content);
     }
 
     select(

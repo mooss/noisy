@@ -1,5 +1,5 @@
 import { Panel } from './gui/gui.js';
-import { ReadOnly } from './gui/parameters.js';
+import { StaticText } from './gui/parameters.js';
 
 class FpsCounter {
     private delta: number = 0;
@@ -23,11 +23,11 @@ class FpsCounter {
 
 export class FpsWidget {
     private fps: FpsCounter;
-    private fpsUI: ReadOnly;
+    private fpsUI: StaticText;
 
     constructor(parent: Panel) {
         this.fps = new FpsCounter();
-        this.fpsUI = parent.readOnly(0).legend('FPS');
+        this.fpsUI = parent.static(0).label('FPS');
     }
 
     update(delta: number): void { this.fpsUI.update(Math.round(this.fps.update(delta))) }

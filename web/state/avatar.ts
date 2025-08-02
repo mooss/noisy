@@ -13,9 +13,9 @@ register('AvatarState', AvatarState);
 
 export function avatarUI(state: AvatarState, root: Panel, cb: GameCallbacks) {
     root.range(state, 'size', 1, 10, 1)
-        .legend('Size')
+        .label('Size')
         .onInput(cb.avatar.update);
     root.range(state, 'heightOffset', 0, 0.2, 0.01)
-        .legend('Height offset')
+        .label('Height offset')
         .onInput(cb.avatar.update);
 }

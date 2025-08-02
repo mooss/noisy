@@ -44,18 +44,18 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         'Surface': 'surface',
         'Squares': 'quadPrism',
         // 'Hexagons': 'hexPrism', //TODO: decide whether to fix or remove it.
-    }).legend('Shape').onChange(cb.terrain.recompute);
+    }).label('Shape').onChange(cb.terrain.recompute);
 
     root.select(state, 'paletteName', palettes)
-        .legend('Palette').onChange(cb.terrain.recompute);
+        .label('Palette').onChange(cb.terrain.recompute);
 
     root.range(state.light.ambient, 'intensity', 0, 10, .2)
-        .legend('Ambient light').onChange(cb.render.update);
+        .label('Ambient light').onChange(cb.render.update);
 
     root.range(state.light.directional, 'intensity', 0, 10, .2)
-        .legend('Directional light').onChange(cb.render.update);
+        .label('Directional light').onChange(cb.render.update);
 
     root.range(state, 'heightMultiplier', 0, 5.0, 0.02)
-        .legend('Height multiplier')
+        .label('Height multiplier')
         .onInput(cb.render.update);
 }

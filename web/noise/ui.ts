@@ -16,12 +16,12 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
     if (!noise) return; // Noise classes might be empty for encoding purposes.
     switch (noise.class) {
         case 'Simplex':
-            root.number(noise.p, 'seed').legend('Seed').onChange(cb);
+            root.number(noise.p, 'seed').label('Seed').onChange(cb);
             return;
         case 'Ridge':
-            root.number(noise.p, 'seed').legend('Seed').onChange(cb);
-            root.bool(noise.p, 'invert').legend('Invert').onChange(cb);
-            root.bool(noise.p, 'square').legend('Square').onChange(cb);
+            root.number(noise.p, 'seed').label('Seed').onChange(cb);
+            root.bool(noise.p, 'invert').label('Invert').onChange(cb);
+            root.bool(noise.p, 'square').label('Square').onChange(cb);
             return;
         case 'Layered':
             return layeredUI(noise as any, root, cb);
@@ -29,9 +29,9 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             noiseUI_impl(noise.p.bass, root.folder('Bass'), cb);
             noiseUI_impl(noise.p.treble, root.folder('Treble'), cb);
             const mix = root.folder('Mixing');
-            mix.range(noise.p.threshold, 'low', 0, 1, .02).legend('Low').onChange(cb);
-            mix.range(noise.p.threshold, 'mid', 0, 1, .02).legend('Mid').onChange(cb);
-            mix.range(noise.p.threshold, 'high', 0, 1, .02).legend('High').onChange(cb);
+            mix.range(noise.p.threshold, 'low', 0, 1, .02).label('Low').onChange(cb);
+            mix.range(noise.p.threshold, 'mid', 0, 1, .02).label('Mid').onChange(cb);
+            mix.range(noise.p.threshold, 'high', 0, 1, .02).label('High').onChange(cb);
             return;
         case 'ProcessingMap':
             mapUI(noise as ProcessingPipelineMap, root, cb, 'Terracing');
@@ -39,19 +39,19 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
         case 'Map':
             return mapUI(noise as NoiseMap<any, any>, root, cb, 'Height');
         case 'Terracing':
-            root.range(noise.p, 'steps', 0, 100, 1).legend('Terraces').onInput(cb);
+            root.range(noise.p, 'steps', 0, 100, 1).label('Terraces').onInput(cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'Warping':
             const wrp = root.folder('Warping');
-            wrp.range(noise.p, 'strength', 0, .2, .01).legend('Strength').onInput(cb);
-            wrp.range(noise.p, 'frequency', 0, 4, .05).legend('Frequency').onInput(cb);
+            wrp.range(noise.p, 'strength', 0, .2, .01).label('Strength').onInput(cb);
+            wrp.range(noise.p, 'frequency', 0, 4, .05).label('Frequency').onInput(cb);
             noiseUI_impl(noise.p.warper, wrp, cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'ProcessingPipeline':
             return noiseUI_impl(noise.p.top, root, cb);
         case 'NoisyTerracing':
-            root.range(noise.p, 'min', 0, 100, 1).legend('Min terraces').onInput(cb);
-            root.range(noise.p, 'max', 0, 100, 1).legend('Max terraces').onInput(cb);
+            root.range(noise.p, 'min', 0, 100, 1).label('Min terraces').onInput(cb);
+            root.range(noise.p, 'max', 0, 100, 1).label('Max terraces').onInput(cb);
             noiseUI_impl(noise.p.terracer, root, cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
         default:
@@ -81,10 +81,10 @@ function layeredUI(layered: Layered<any>, root: Panel, cb: () => void) {
     noiseUI_impl(layered.p.noise, noisef, cb);
 
     const lay = layered.p.layers;
-    noisef.range(lay, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb);
-    noisef.range(lay, 'octaves', 1, 8, 1).legend('Octaves').onInput(cb);
-    noisef.range(lay, 'persistence', .1, 1, .05).legend('Persistence').onInput(cb);
-    noisef.range(lay, 'lacunarity', .05, 2, .05).legend('Lacunarity').onInput(cb);
+    noisef.range(lay, 'fundamental', .1, 5, .1).label('Fundamental').onInput(cb);
+    noisef.range(lay, 'octaves', 1, 8, 1).label('Octaves').onInput(cb);
+    noisef.range(lay, 'persistence', .1, 1, .05).label('Persistence').onInput(cb);
+    noisef.range(lay, 'lacunarity', .05, 2, .05).label('Lacunarity').onInput(cb);
 
     // // Clutters the interface and there is rarely a need to change it.
     // // There should be a way in the interface to toggle advanced settings.

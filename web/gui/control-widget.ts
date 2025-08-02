@@ -8,7 +8,7 @@ import { Gardener } from "./style.js";
  * binding, event listening, and initial layout.
  */
 export class ControlWidget<PRIM> {
-    private label: Label;
+    private labelElt: Label;
     private onChangeCallback?: (value: PRIM) => void;
     private onInputCallback?: (value: PRIM) => void;
 
@@ -27,9 +27,9 @@ export class ControlWidget<PRIM> {
         private property: string,
         private control: InputControl<PRIM>,
     ) {
-        this.label = new Label(parent);
+        this.labelElt = new Label(parent);
 
-        const valueContainer = spawn('div', this.label.box, Gardener.paramValueContainer);
+        const valueContainer = spawn('div', this.labelElt.box, Gardener.paramValueContainer);
         valueContainer.appendChild(control.element);
 
         ////////////////////////////
@@ -54,8 +54,8 @@ export class ControlWidget<PRIM> {
      * @param text - The new label text.
      * @returns this for chaining.
      */
-    legend(text: string): this {
-        this.label.legend(text);
+    label(text: string): this {
+        this.labelElt.label(text);
         return this;
     }
 
