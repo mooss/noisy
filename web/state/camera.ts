@@ -1,9 +1,9 @@
 import { Panel } from '../gui/gui.js';
+import { vector3 } from '../utils/maths.js';
 import { AutoAssign } from '../utils/objects.js';
 import { GameCallbacks, register } from './state.js';
 
 type CameraMode = 'Follow' | 'Free';
-interface vector3 { x: number; y: number; z: number; }
 
 export class CameraState extends AutoAssign<CameraState> {
     class(): string { return 'CameraState' }

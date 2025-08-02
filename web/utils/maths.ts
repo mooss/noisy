@@ -1,3 +1,6 @@
+export interface vector2 { x: number; y: number; }
+export interface vector3 extends vector2 { z: number }
+
 /**
  * Clamps a number between a minimum and maximum value.
  *

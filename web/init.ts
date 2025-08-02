@@ -1,5 +1,4 @@
 import { CHUNK_UNIT, VERSION, Version } from "./constants.js";
-import { Position } from "./coordinates.js";
 import { NoiseMakerI } from "./noise/foundations.js";
 import { noiseAlgorithms } from "./noise/init.js";
 import { AvatarState } from "./state/avatar.js";
@@ -34,7 +33,7 @@ export function initialState(): GameState {
         avatar: new AvatarState({
             size: 3,
             heightOffset: 0,
-            position: new Position({x: .5, y: .5, z: 0}), // Middle of the first chunk.
+            position: {x: .5, y: .5, z: 0}, // Middle of the first chunk.
         }),
         render: new RenderState({
             style: 'surface',
