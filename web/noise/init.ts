@@ -2,7 +2,7 @@ import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, Ridge, Simplex } from "./algorithms.js";
 import { NoiseMap, ProcessingPipelineMap } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
-import { NoisyTerracing, ProcessingPipeline, Terracing, Warping } from "./processing.js";
+import { NoisyTerracing, ProcessingPipeline, Terracing, Tiling, Warping } from "./processing.js";
 
 export function noiseAlgorithms(): NoiseMakerI {
     const f = {
@@ -18,7 +18,7 @@ export function noiseAlgorithms(): NoiseMakerI {
     };
     const c = clone;
 
-    const simplex = new Layered({
+    let simplex: NoiseMakerI = new Layered({
         noise: new Simplex(c(f.sbase)),
         layers: c(f.layers),
         sampling: c(f.sampling),
@@ -91,6 +91,11 @@ export function noiseAlgorithms(): NoiseMakerI {
             frequency: 2.25,
             strength: .08,
             warper: new Simplex(c(f.sbase)),
+        }),
+        new Tiling({
+            coorscale: 3,
+            noisescale: 2,
+            enabled: false,
         }),
     )
 }
