@@ -1,7 +1,7 @@
 import { register } from "../state/state.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
 
-interface NoiseWrapperP { wrapped: NoiseMakerI }
+interface NoiseWrapperP { wrapped?: NoiseMakerI }
 abstract class NoiseWrapper<Params = any>
     extends NoiseMakerBase<Params & NoiseWrapperP> {
     get low(): number { return this.p.wrapped.low }
@@ -100,3 +100,25 @@ export class ProcessingPipeline extends NoiseMakerBase<ProcessingPipelineP> {
     }
 }
 register('ProcessingPipeline', ProcessingPipeline);
+
+interface TilingP {
+    coorscale: number;
+    noisescale: number;
+    enabled: boolean;
+}
+export class Tiling extends NoiseWrapper<TilingP> {
+    get class(): NoiseClass { return 'Tiling' }
+    make(): NoiseFun {
+        const fun = this.p.wrapped.normalised(0, 1);
+        if (!this.p.enabled) return fun;
+        return (x, y) => {
+            const raw = fun(x, y);
+            x = this.p.coorscale * x + this.p.noisescale * raw;
+            y = this.p.coorscale * y + this.p.noisescale * fun(x + 10, y);
+            return fun(Math.round(x), Math.round(y));
+        }
+    }
+    get low() { return 0; }
+    get high() { return 1; }
+}
+register('Tiling', Tiling)

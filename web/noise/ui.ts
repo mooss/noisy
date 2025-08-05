@@ -37,7 +37,7 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             mapUI(noise as ProcessingPipelineMap, root, cb, 'Terracing');
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'Map':
-            return mapUI(noise as NoiseMap<any, any>, root, cb, 'Height');
+            return mapUI(noise as NoiseMap<any>, root, cb, 'Height');
         case 'Terracing':
             root.range(noise.p, 'steps', 0, 100, 1).label('Terraces').onInput(cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
@@ -54,14 +54,20 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             root.range(noise.p, 'max', 0, 100, 1).label('Max terraces').onInput(cb);
             noiseUI_impl(noise.p.terracer, root, cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
+        case 'Tiling':
+            const tilef = root.folder('Tiling').close();
+            tilef.bool(noise.p, 'enabled').label('Enabled').onInput(cb);
+            tilef.range(noise.p, 'coorscale', 1, 50, 1).label('Coordinates scale').onInput(cb);
+            tilef.range(noise.p, 'noisescale', 0, 6, .2).label('Noise scale').onInput(cb);
+            return noiseUI_impl(noise.p.wrapped, root, cb);
         default:
     }
     console.warn('Unknow noise class in UI:', noise.class, 'recursing anyway');
     foreachEntries((_, value) => noiseUI_impl(value as NoiseMakerI, root, cb), noise);
 }
 
-function mapUI(noise: NoiseMap<any, any>, root: Panel, cb: () => void, title: string) {
-    const pick = noise as NoiseMap<any, any>;
+function mapUI(noise: NoiseMap<any>, root: Panel, cb: () => void, title: string) {
+    const pick = noise as NoiseMap<any>;
     const algos = pick.p.algorithms;
     const deck = root.folder(title).deck();
     for (const key in algos) {
