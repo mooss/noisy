@@ -1,11 +1,11 @@
 import { Label } from "./foundations.js";
-import { InputControl } from "./input-control.js";
 import { spawn } from "./html.js";
+import { InputControl } from "./input-control.js";
 import { Gardener } from "./style.js";
 
 /**
- * A widget that composes a Label and an InputControl together in the DOM, orchestrating value
- * binding, event listening, and initial layout.
+ * A widget that composes a Label and an InputControl together in the DOM, event listening, and
+ * initial layout.
  */
 export class ControlWidget<PRIM> {
     private labelElt: Label;
@@ -15,17 +15,12 @@ export class ControlWidget<PRIM> {
     /**
      * Creates a new ControlWidget instance.
      *
-     * @param parent    - The parent DOM element.
-     * @param target    - The target object to bind to.
-     * @param property  - The property name to bind to.
-     * @param labelText - The label text.
-     * @param control   - The InputControl instance to use.
+     * @param parent  - The parent DOM element.
+     * @param control - The InputControl instance to use.
      */
     constructor(
         parent: HTMLElement,
-        private target: Record<string, PRIM>,
-        private property: string,
-        private control: InputControl<PRIM>,
+        protected control: InputControl<PRIM>,
     ) {
         this.labelElt = new Label(parent);
 
@@ -44,9 +39,19 @@ export class ControlWidget<PRIM> {
             this.onChangeCallback?.(value);
         });
 
-        control.value = target[property]; // Initial value.
         this.update();
     }
+
+    protected update(): PRIM {
+        const value = this.control.value;
+        this.control.update(value);
+        return value;
+    }
+
+    get(): PRIM { return this.control.value }
+
+    //////////////////////
+    // Chaining methods //
 
     /**
      * Sets the label text.
@@ -80,11 +85,34 @@ export class ControlWidget<PRIM> {
         this.onInputCallback = callback;
         return this;
     }
+}
 
-    private update(): PRIM {
-        const value = this.control.value;
-        this.target[this.property] = value;
-        this.control.update(value);
-        return value;
+/**
+ * A ControlWidget with added persistence.
+ */
+export class PersistingControlWidget<PRIM> extends ControlWidget<PRIM> {
+
+    /**
+     * Creates a new PersistingControlWidget instance.
+     *
+     * @param parent   - The parent DOM element.
+     * @param target   - The target object to bind to.
+     * @param property - The property name to bind to.
+     * @param control  - The InputControl instance to use.
+     */
+    constructor(
+        parent: HTMLElement,
+        private target: Record<string, PRIM>,
+        private property: string,
+        control: InputControl<PRIM>,
+    ) {
+        super(parent, control);
+    }
+
+    protected update(): PRIM {
+        const res = super.update();
+        if (this.target && this.property)
+            this.target[this.property] = res;
+        return res;
     }
 }
