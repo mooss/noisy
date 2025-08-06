@@ -2,16 +2,16 @@ import { ControlWidget } from "./control-widget.js";
 import { Label } from './foundations.js';
 import { HtmlCssElement, spawn } from "./html.js";
 import { BooleanControl, NumberControl, RangeControl, SelectControl } from "./input-control.js";
+import { BooleanSpec } from "./specs/specs.js";
 import { Gardener } from './style.js';
-
 
 export function BooleanWidget(
     parent: HTMLElement, target: Record<string, boolean>, property: string,
+    spec: BooleanSpec,
 ): ControlWidget<boolean> {
-    const control = new BooleanControl(parent, target[property]);
+    const control = new BooleanControl(parent, spec.params.default);
+    control.element.addFacet(Gardener.checkbox);
 
-    const checkbox = control.element;
-    checkbox.addFacet(Gardener.checkbox);
     const style = spawn('style', document.head);
     style.textContent = Gardener.checkboxIndicator;
 

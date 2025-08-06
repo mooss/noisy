@@ -1,10 +1,11 @@
 import { clone } from "../utils/objects.js";
+import { ButtonBar } from "./buttons.js";
 import { ControlWidget } from "./control-widget.js";
 import { HtmlCssElement, spawn } from "./html.js";
-import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, StaticText, StaticTextWidget, SelectWidget } from './parameters.js';
+import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, SelectWidget, StaticText, StaticTextWidget } from './parameters.js';
+import { BaseSpec, BooleanSpec } from "./specs/specs.js";
 import { Facet, Gardener } from "./style.js";
 import { GraphWidget } from "./widget.js";
-import { ButtonBar } from "./buttons.js";
 
 /////////////////
 // Foundations //
@@ -28,8 +29,11 @@ export class Panel {
     /////////////////////////////
     // Parameters registration //
 
-    bool(target: Record<string, any>, property: string): ControlWidget<boolean> {
-        return BooleanWidget(this._elt, target, property);
+    attach<T>(spec: BaseSpec<T>, target: Record<string, any>, property: string): ControlWidget<any> {
+        if (spec instanceof BooleanSpec) {
+            return BooleanWidget(this._elt, target, property, spec);
+        }
+        throw new Error(`Unsupported spec type: ${spec.constructor.name}`);
     }
 
     folder(name: string): Folder {

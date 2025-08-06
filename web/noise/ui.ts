@@ -1,4 +1,5 @@
 import { Panel } from "../gui/gui.js";
+import { BooleanSpec } from "../gui/specs/specs.js";
 import { GameCallbacks } from "../state/state.js";
 import { foreachEntries } from "../utils/objects.js";
 import { Layered } from "./algorithms.js";
@@ -20,8 +21,10 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             return;
         case 'Ridge':
             root.number(noise.p, 'seed').label('Seed').onChange(cb);
-            root.bool(noise.p, 'invert').label('Invert').onChange(cb);
-            root.bool(noise.p, 'square').label('Square').onChange(cb);
+            root.attach(new BooleanSpec({ default: noise.p.invert }), noise.p, 'invert')
+                .label('Invert').onChange(cb);
+            root.attach(new BooleanSpec({ default: noise.p.square }), noise.p, 'square')
+                .label('Square').onChange(cb);
             return;
         case 'Layered':
             return layeredUI(noise as any, root, cb);
@@ -56,7 +59,8 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'Tiling':
             const tilef = root.folder('Tiling').close();
-            tilef.bool(noise.p, 'enabled').label('Enabled').onInput(cb);
+            tilef.attach(new BooleanSpec({ default: noise.p.enabled }), noise.p, 'enabled')
+                .label('Enabled').onInput(cb);
             tilef.range(noise.p, 'coorscale', 1, 50, 1).label('Coordinates scale').onInput(cb);
             tilef.range(noise.p, 'noisescale', 0, 6, .2).label('Noise scale').onInput(cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
