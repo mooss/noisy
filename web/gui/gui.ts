@@ -1,6 +1,6 @@
 import { clone } from "../utils/objects.js";
 import { ButtonBar } from "./buttons.js";
-import { ControlWidget } from "./control-widget.js";
+import { DataField } from "./fields.js";
 import { HtmlCssElement, spawn } from "./html.js";
 import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, SelectWidget, StaticText, StaticTextWidget } from './parameters.js';
 import { BaseSpec, BooleanSpec } from "./specs/specs.js";
@@ -29,7 +29,7 @@ export class Panel {
     /////////////////////////////
     // Parameters registration //
 
-    attach<T>(spec: BaseSpec<T>, target: Record<string, any>, property: string): ControlWidget<any> {
+    attach<T>(spec: BaseSpec<T>, target: Record<string, any>, property: string): DataField<any> {
         if (spec instanceof BooleanSpec) {
             return BooleanWidget(this._elt, target, property, spec);
         }
@@ -52,7 +52,7 @@ export class Panel {
         return new GraphWidget(this._elt);
     }
 
-    number(target: Record<string, any>, property: string): ControlWidget<number> {
+    number(target: Record<string, any>, property: string): DataField<number> {
         return NumberWidget(this._elt, target, property);
     }
 
@@ -68,7 +68,7 @@ export class Panel {
 
     select(
         target: Record<string, any>, property: string, options: Record<string, any>,
-    ): ControlWidget<any> {
+    ): DataField<any> {
         return SelectWidget(this._elt, target, property, options);
     }
 }

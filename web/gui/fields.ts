@@ -1,26 +1,26 @@
+import { InputEditor } from "./editors.js";
 import { Label } from "./foundations.js";
 import { spawn } from "./html.js";
-import { InputControl } from "./input-control.js";
 import { Gardener } from "./style.js";
 
 /**
  * A widget that composes a Label and an InputControl together in the DOM, event listening, and
  * initial layout.
  */
-export class ControlWidget<PRIM> {
+export class Field<PRIM> {
     private labelElt: Label;
     private onChangeCallback?: (value: PRIM) => void;
     private onInputCallback?: (value: PRIM) => void;
 
     /**
-     * Creates a new ControlWidget instance.
+     * Creates a new Field instance.
      *
      * @param parent  - The parent DOM element.
      * @param control - The InputControl instance to use.
      */
     constructor(
         parent: HTMLElement,
-        protected control: InputControl<PRIM>,
+        protected control: InputEditor<PRIM>,
     ) {
         this.labelElt = new Label(parent);
 
@@ -88,12 +88,12 @@ export class ControlWidget<PRIM> {
 }
 
 /**
- * A ControlWidget with added persistence.
+ * A Field with added persistence.
  */
-export class PersistingControlWidget<PRIM> extends ControlWidget<PRIM> {
+export class DataField<PRIM> extends Field<PRIM> {
 
     /**
-     * Creates a new PersistingControlWidget instance.
+     * Creates a new DataField instance.
      *
      * @param parent   - The parent DOM element.
      * @param target   - The target object to bind to.
@@ -104,7 +104,7 @@ export class PersistingControlWidget<PRIM> extends ControlWidget<PRIM> {
         parent: HTMLElement,
         private target: Record<string, PRIM>,
         private property: string,
-        control: InputControl<PRIM>,
+        control: InputEditor<PRIM>,
     ) {
         super(parent, control);
     }

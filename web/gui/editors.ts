@@ -3,9 +3,9 @@ import { HtmlCssElement, spawn } from "./html.js";
 import { Facet, Gardener } from "./style.js";
 
 /**
- * Interface required from graphical input controllers.
+ * Interface of a UI element that can be used to change a value.
  */
-export interface InputControl<PRIM> {
+export interface InputEditor<PRIM> {
     /** Underlying HTML element for this control. */
     readonly element: HTMLElement;
 
@@ -17,11 +17,11 @@ export interface InputControl<PRIM> {
 }
 
 /**
- * Base implementation for graphical input controls that stores an input element and requires its
- * concrete implementation to provide a value property in order to satisfy the InputControl<PRIM>
+ * Base implementation for graphical input editor that stores an input element and requires its
+ * concrete implementation to provide a value property in order to satisfy the InputEditor<PRIM>
  * interface.
  */
-abstract class InputControlImpl<PRIM, ELT extends HTMLElement> {
+abstract class InputEditorImpl<PRIM, ELT extends HTMLElement> {
     protected elt: HtmlCssElement<ELT>;
     get element(): HtmlCssElement<ELT> { return this.elt }
 
@@ -34,9 +34,9 @@ abstract class InputControlImpl<PRIM, ELT extends HTMLElement> {
 }
 
 /**
- * Boolean checkbox control.
+ * Boolean checkbox editor.
  */
-export class BooleanControl extends InputControlImpl<boolean, HTMLInputElement> {
+export class BooleanEditor extends InputEditorImpl<boolean, HTMLInputElement> {
     constructor(parent: HTMLElement, initial: boolean = false) {
         super('input', parent, Gardener.checkbox);
         this.elt.type = 'checkbox';
@@ -48,9 +48,9 @@ export class BooleanControl extends InputControlImpl<boolean, HTMLInputElement> 
 }
 
 /**
- * Number input control.
+ * Number input editor.
  */
-export class NumberControl extends InputControlImpl<number, HTMLInputElement> {
+export class NumberEditor extends InputEditorImpl<number, HTMLInputElement> {
     constructor(parent: HTMLElement, initial: number = 0) {
         super('input', parent, Gardener.numberInput);
         this.elt.type = 'number';
@@ -69,9 +69,9 @@ export class NumberControl extends InputControlImpl<number, HTMLInputElement> {
 }
 
 /**
- * Range slider control.
+ * Range slider editor.
  */
-export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
+export class RangeEditor extends InputEditorImpl<number, HTMLDivElement> {
     private slider: HtmlCssElement<HTMLInputElement>;
     private valueSpan: HtmlCssElement<HTMLSpanElement>;
     private format: (v: number) => number = (v) => v;
@@ -121,9 +121,9 @@ export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
 }
 
 /**
- * Select dropdown control.
+ * Select dropdown editor.
  */
-export class SelectControl extends InputControlImpl<any, HTMLSelectElement> {
+export class SelectEditor extends InputEditorImpl<any, HTMLSelectElement> {
     private dictmode: boolean = false;
 
     constructor(parent: HTMLElement, initial: any, options: Record<string, any>) {

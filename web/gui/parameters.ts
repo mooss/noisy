@@ -1,33 +1,33 @@
-import { ControlWidget } from "./control-widget.js";
+import { BooleanEditor, NumberEditor, RangeEditor, SelectEditor } from './editors.js';
+import { DataField } from './fields.js';
 import { Label } from './foundations.js';
 import { HtmlCssElement, spawn } from "./html.js";
-import { BooleanControl, NumberControl, RangeControl, SelectControl } from "./input-control.js";
 import { BooleanSpec } from "./specs/specs.js";
 import { Gardener } from './style.js';
 
 export function BooleanWidget(
     parent: HTMLElement, target: Record<string, boolean>, property: string,
     spec: BooleanSpec,
-): ControlWidget<boolean> {
-    const control = new BooleanControl(parent, spec.params.default);
+): DataField<boolean> {
+    const control = new BooleanEditor(parent, spec.params.default);
     control.element.addFacet(Gardener.checkbox);
 
     const style = spawn('style', document.head);
     style.textContent = Gardener.checkboxIndicator;
 
-    return new ControlWidget(parent, target, property, control);
+    return new DataField(parent, target, property, control);
 }
 
 export function NumberWidget(
     parent: HTMLElement, target: Record<string, number>, property: string,
-): ControlWidget<number> {
-    const control = new NumberControl(parent, target[property]);
-    return new ControlWidget(parent, target, property, control);
+): DataField<number> {
+    const control = new NumberEditor(parent, target[property]);
+    return new DataField(parent, target, property, control);
 }
 
 // A number control widget with a formatter field dictating how the number can be transformed for
 // display purposes.
-export type RangeControlWidget = ControlWidget<number> & {
+export type RangeControlWidget = DataField<number> & {
     formatter: (fun: (value: number) => number) => RangeControlWidget;
 };
 
@@ -35,8 +35,8 @@ export function RangeWidget(
     parent: HTMLElement, target: Record<string, number>, property: string,
     min: number, max: number, step: number
 ): RangeControlWidget {
-    const control = new RangeControl(parent, target[property], min, max, step);
-    const widget = new ControlWidget(parent, target, property, control);
+    const control = new RangeEditor(parent, target[property], min, max, step);
+    const widget = new DataField(parent, target, property, control);
 
     const result = widget as RangeControlWidget;
     result.formatter = (fun: (value: number) => number) => {
@@ -68,7 +68,7 @@ export function StaticTextWidget(parent: HTMLElement, content: any): StaticText 
 export function SelectWidget(
     parent: HTMLElement, target: Record<string, any>,
     property: string, options: Record<string, any>
-): ControlWidget<any> {
-    const control = new SelectControl(parent, target[property], options);
-    return new ControlWidget(parent, target, property, control);
+): DataField<any> {
+    const control = new SelectEditor(parent, target[property], options);
+    return new DataField(parent, target, property, control);
 }
