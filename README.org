@@ -1,8 +1,7 @@
 #+title: Noisy
 #+subtitle: Real-time procedural terrain sandbox
 
-Noisy is a sandbox to experiment with noise-based terrain generation.
-You can try it at https://mooss.github.io/noisy/acorn/.
+Noisy is a sandbox to experiment with noise-based terrain generation ([[https://mooss.github.io/noisy/acorn][load sandbox]]).
 
 ** Features
 
