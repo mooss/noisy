@@ -8,7 +8,7 @@ Noisy is a sandbox to experiment with noise-based terrain generation ([[https://
 - Infinite terrain.
 - Interactive parameters applied in real-time.
 - Dynamic loading of new chunks when moving through the terrain.
-- Saving and loading of the application state, through URL parameters or JSON file.
+- Saving and loading of the application state, through URL parameters or JSON file (drag-and-drop to load).
 
 ** Controls
 
