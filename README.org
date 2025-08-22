@@ -10,6 +10,13 @@ Noisy is a sandbox to experiment with noise-based terrain generation ([[https://
 - Dynamic loading of new chunks when moving through the terrain.
 - Saving and loading of the application state, through URL parameters or JSON file.
 
+** Controls
+
+- /WASD/ to move the avatar around.
+- /Mouse wheel/ to zoom.
+- /Left click + mouse movement/ to pan around the map.
+- /Right click + mouse movement/ to rotate the camera.
+
 ** Example
 
 [[https://mooss.github.io/noisy/acorn/?q=N4IghmIFygxtoDi0QBEQBpwFsUFNNwBnFWASwCdYAbArABwrwDcyB7AVyIGUyAvAlACMAJgAcAXywAjBOBRhZEqSADqc-DBABzfITBkUACUIAtBbpWytkKCABqIZVjAAXDXLAB3Bc30UUAE19ajkAVTkAMWgABgA6ADYVMAAzKJQARSdkgAsUAGEnGU8FDmysNK1rUFtwAA8ikE0agGtYuJiAZhcAQTlq-TswNkbmkG45PqqSuwBHUblK0AHavpUxkbs_LDy7ADtCHztQ5xAArQATFAAhQhI7AE9CdzsAK0J6FAaVMq1dO1wWEMdjaWCudgIyhUfH6MxA83Wi1hNhQMMRWk2IG2IF2IAOWCOIBOKnOoHBIFuWHuICeWBeIHeDC-jV-oH-IEBIGBIFBIHJkNOAFFkTUFFd0aAABoiwbwhZaJYgFYoNZYDYobG4_EgQnErCkvkoADSdxQ6DpKEZIE-dm-WFZOhQnO5vP52WST2mKLm8tAiuVdjRarkmM1GsO0BESRJcnJABlTY9npaPigAAosuTs50oV16KFAzwHOwAKX0NpAAHl9O87AA5d3JQQgYVQ5IwmzzOwAJX0mhAABVskA.][doc/assets/scene1.png]]
