@@ -13,7 +13,7 @@ EOF
 }
 
 OUT=CHANGELOG-DRAFT.md
-# openrouter:google/gemini-2.5-pro works great but is a bit expensive.
+# openrouter:google/gemini-2.5-pro works great but is a bit expensive. R1 is also very good (maybe better) but still expensive.
 git log master..HEAD --patch | jenai -o "$(prompt)" --file CHANGELOG.md --model kimi-k2 --tee $OUT
 cat $OUT | xclip -selection secondary
 echo "Saved in $OUT and copied to clipboard"

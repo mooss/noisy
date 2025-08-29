@@ -1,6 +1,41 @@
 # CHANGELOG
 
+## Alpha 2 "Bean" – post-processing & positions persistence
+
+The main improvements of this release are:
+- Additional post-processing options (warping, noisy terracing and tiling).
+- Persistence of avatar and camera positions.
+
+### Core engine & world model
+- **Noise warping**: distort terrain features, hiding some artifacts.
+- **Noisy terracing**: terracing mode where the number of terraces varies based on a noise function.
+- **Noise tiling**: group neighboring points into flat irregular tiles.
+
+### Rendering pipeline
+- **Flat terrain**: the 'Height multiplier' slider can be set to zero for completely flat terrains.
+
+### UI & widgets
+- **Improved folder indentation**: adjusted the UI styling to make the first level of folders more readable.
+- **Intuitive terracing control**: replaced the previous terracing 'interval' parameter with the more user-friendly 'steps' parameter.
+- **Removed 'Tectonic' palette**: the 'Tectonic' color palette can no longer be selected.
+
+### Storage & sharing
+- **Persistent camera state**: the camera position and its focus point are saved in the game state.
+- **Persistent avatar position**: the avatar coordinates are saved in the game state.
+
+## Implementation details
+- **Noise processing pipeline**: a system to chain multiple post-processing effects together, such as warping and terracing.
+- **Enhanced state encoding**: array support for self encoders and centralize everything state-related in `web/state`.
+- **Refactor of `tree` and `object` utilities**: consistent naming scheme and additional functions.
+- **Additional tests**: tests for the `object` utilities and tweaked state tests.
+- **UI naming consistency**: harmonized UI method and class names (e.g., `readOnly` → `static`, `buttonBar` → `buttons`).
+
 ## Alpha 1 "Acorn" – initial public release
+
+This initial release features a sandbox to edit and explore procedurally generated terrain, with:
+- A WASD-controllable avatar.
+- Real-time terrain customization.
+- The ability to share the worlds created.
 
 ### Core engine & world model
 - **Chunk-based terrain**: the world is split in square chunks.
