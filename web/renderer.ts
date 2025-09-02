@@ -62,7 +62,13 @@ export class Renderer {
     lookAt(target: THREE.Vector3): void {
         this.camera.position.add(target).sub(this.controls.target);
         this.controls.target.copy(target);
+        this.updateState();
+    }
+
+    // Update the state to reflect the actual camera position and focus point.
+    updateState(): void {
         const pos = this.camera.position;
+        const target = this.controls.target;
         this.camstate.position = { x: pos.x, y: pos.y, z: pos.z };
         this.camstate.focus = { x: target.x, y: target.y, z: target.z };
     }

@@ -72,6 +72,16 @@ class Game {
         }
     }
 
+    /**
+     * Ensure that the state is fully up-to-date and returns it.
+     * This state is necessary because some part of the state are encoded in third-party objects
+     * whose value are not automatically reflected in the game state.
+     */
+    updatedState(): GameState {
+        this.renderer.updateState();
+        return this.state;
+    }
+
     ////////
     // UI //
 
@@ -92,7 +102,7 @@ class Game {
 
     saveStateToUrl(): string {
         const url = new URL(window.location.href);
-        url.search = '?q=' + this.codec.encode(this.state);
+        url.search = '?q=' + this.codec.encode(this.updatedState());
         const link = encodeURI(url.toString());
         // Update the URL bar to enshrine the current state into the page.
         window.history.pushState({ path: link }, '', link);
@@ -106,7 +116,7 @@ class Game {
         copy.onClick(() => toClipBoard(this.saveStateToUrl()));
 
         save.onClick(() => {
-            const state = JSON.stringify(encrec(this.state), null, 2);
+            const state = JSON.stringify(encrec(this.updatedState()), null, 2);
             download(state, 'tergen-state.json', { type: 'application/json' });
         });
 
