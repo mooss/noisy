@@ -30,6 +30,11 @@ Try it [now](https://mooss.github.io/noisy/acorn).
         <img src="https://mooss.github.io/noisy/bean/scenes/rainbow-plates.jpeg" alt="Procedurally generated rainbow plates"/>
       </a>
     </td>
+    <td>
+      <a title="Swirling fantasy" href="https://mooss.github.io/noisy/bean/?q=N4IghgDiBcoMY1GAjjEAxATgU2yANCAAqIgCiMATAAwDsAdAKy0BsAHACwCc1AzJZ2ptC6GAFpKvavQ6M2lASzm1eHWoQDiVXl3oBGPbS4HajRnsqm2AX0JgAnqQrQ9LXVzMeeXNntnCMcUYOGS4wrhZeFhVaIVVNKl1KZjljWgM9Lg5eG1sQACNSMDQwTBBrPLAAZ1IEWBAAJTQALwJwUWgQAA82sABVNABhNogcADcASwB7AFcqgGUJ5rxoZJY8wvrizrAAF3LKgGta0gm0HrthzoB3NpJ652kFbnDX1_VA6Cf-N9-uVgSX3olBebh4Kh8emo1D0vAqhE2SBKABsDnYAOonLYALRKYGKdgAimh0GAAHa7aqOOzOJAAK1IADkYNJ1nYxkySgAzNHgABCLPotEoGyKJQAaryAOakRHgEoAFXKhDqSDAK1Acu24HmypAqpAAClSABpWVinZgBB5A1gAAaMGy8PAzPqWpKAHk9bazdBeB8wABJR0BsBy92dKbe0gyt0WkD7G2kAAWaB5zqg9QAJjA9PQuIRUJ1g4Qyp1joQyWgZnqavUzp0ALZtBmdVGEHOdPAVHt5ACyJWZhAAIuatnizkmtgBBKj5uwATUFmTsYFTcfHnUTKpTad5o43SMtOanSFuXd6A8tvR6nVnI7HR_AAAlo_VjfV9of5ZG36BY5q8bbvqu6dOmeSZqAnYgByhYwIwpZoBWIBVp0NZ5HWoANiAzaEK2IDtiA0Hds6ArftqUaniAAEFPGApUV6d5tFcIDEoQ64gOBhCQURaCvnBxZtGWIDIahIDoYQmEgNhuEgPhhHEQceQADKPj-4ASSBWzNuRaCUTu9Q0RGCZ_iAHFgCeEGkJ2eZ6AJCEgMJonVrWpxoLJ8ltIpParjyum_lRRl0aZjEgPeIAsWxZkwLwegZtZaCYgJLCIUCKUoXirn1u5LZoApaAkXkrZIFoQIcJQdgftIch2Ae0i0LkzpXiAqm9m1lRgDRYBNDsZx2Pc4CFHYqk7FWFRAA">
+        <img src="https://mooss.github.io/noisy/bean/scenes/swirling-fantasy.jpeg" alt="Procedurally generated swirling fantasy"/>
+      </a>
+    </td>
   </tr>
 </table>
 Click the image to open a scene.
