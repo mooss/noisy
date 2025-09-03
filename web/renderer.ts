@@ -82,7 +82,7 @@ export class Renderer {
     // Take a screenshot of the scene and download it.
     screenshot(filename: string): void {
         this.renderer.render(this.scene, this.camera);
-        const dataURL = this.renderer.domElement.toDataURL('image/png');
+        const dataURL = this.renderer.domElement.toDataURL('image/jpeg');
         downloadURL(dataURL, filename);
     }
 }

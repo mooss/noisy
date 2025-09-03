@@ -116,7 +116,7 @@ class Game {
             const state = JSON.stringify(encrec(this.updatedState()), null, 2);
             downloadData(state, 'noisy-savefile.json', { type: 'application/json' });
         });
-        actions.button('Screenshot').onClick(() => this.renderer.screenshot('noisy-screenshot.png'));
+        actions.button('Screenshot').onClick(() => this.renderer.screenshot('noisy-screenshot.jpeg'));
 
         dragAndDrop((file) => {
             if (file.type === 'application/json') {
