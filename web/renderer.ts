@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { CameraState } from './state/camera.js';
 import type { RenderState } from './state/render.js';
+import { downloadURL } from './utils/utils.js';
 
 export class Renderer {
     private scene: THREE.Scene;
@@ -76,5 +77,12 @@ export class Renderer {
     render(): void {
         this.controls.update();
         this.renderer.render(this.scene, this.camera);
+    }
+
+    // Take a screenshot of the scene and download it.
+    screenshot(filename: string): void {
+        this.renderer.render(this.scene, this.camera);
+        const dataURL = this.renderer.domElement.toDataURL('image/png');
+        downloadURL(dataURL, filename);
     }
 }

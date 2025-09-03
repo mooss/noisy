@@ -15,7 +15,7 @@ import { GameCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
-import { download, dragAndDrop, toClipBoard } from './utils/utils.js';
+import { downloadData, dragAndDrop, toClipBoard } from './utils/utils.js';
 
 const STATE_STORAGE_KEY = 'load-state';
 
@@ -111,14 +111,12 @@ class Game {
 
     setupActions(root: Panel): void {
         const actions = root.buttons();
-        const copy = actions.button('Copy url');
-        const save = actions.button('Download');
-        copy.onClick(() => toClipBoard(this.saveStateToUrl()));
-
-        save.onClick(() => {
+        actions.button('Copy url').onClick(() => toClipBoard(this.saveStateToUrl()));
+        actions.button('Download').onClick(() => {
             const state = JSON.stringify(encrec(this.updatedState()), null, 2);
-            download(state, 'tergen-state.json', { type: 'application/json' });
+            downloadData(state, 'noisy-savefile.json', { type: 'application/json' });
         });
+        actions.button('Screenshot').onClick(() => this.renderer.screenshot('noisy-screenshot.png'));
 
         dragAndDrop((file) => {
             if (file.type === 'application/json') {
