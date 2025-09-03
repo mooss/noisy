@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Alpha 2 "Bean" – post-processing & positions persistence
+## Alpha 2 "bean" – post-processing & positions persistence
 
 The main improvements of this release are:
 - Additional post-processing options (warping, noisy terracing and tiling).
@@ -27,14 +27,14 @@ The main improvements of this release are:
 - **Persistent camera state**: the camera position and its focus point are saved in the game state.
 - **Persistent avatar position**: the avatar coordinates are saved in the game state.
 
-## Implementation details
+### Implementation details
 - **Noise processing pipeline**: a system to chain multiple post-processing effects together, such as warping and terracing.
 - **Enhanced state encoding**: array support for self encoders and centralize everything state-related in `web/state`.
 - **Refactor of `tree` and `object` utilities**: consistent naming scheme and additional functions.
 - **Additional tests**: tests for the `object` utilities and tweaked state tests.
 - **UI naming consistency**: harmonized UI method and class names (e.g., `readOnly` → `static`, `buttonBar` → `buttons`).
 
-## Alpha 1 "Acorn" – initial public release
+## Alpha 1 "acorn" – initial public release
 
 This initial release features a sandbox to edit and explore procedurally generated terrain, with:
 - A WASD-controllable avatar.

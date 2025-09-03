@@ -16,7 +16,7 @@ Try it [now](https://mooss.github.io/noisy/acorn).
 - *Left click + mouse movement* to pan around the map.
 - *Right click + mouse movement* to rotate the camera.
 
-## Example
+## Examples
 
 <table>
   <tr>
@@ -44,7 +44,7 @@ Try it [now](https://mooss.github.io/noisy/acorn).
     </td>
   </tr>
 </table>
-Click the image to open a scene.
+Click on an image to open its scene.
 
 ## Run locally
 
