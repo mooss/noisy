@@ -70,6 +70,24 @@ const sunset: Palette = [
     rgb(3, 248, 252)    // Teal.
 ];
 
+const coffeeAndMilk: Palette = [
+    rgb(76, 29, 13),    // Dark coffee.
+    rgb(139, 69, 19),   // Coffee.
+    rgb(160, 82, 45),   // Light coffee.
+    rgb(222, 184, 135), // Milk.
+    rgb(255, 255, 255), // Cream.
+];
+
+const rainbow: Palette = [
+    rgb(255, 0, 0),     // Red.
+    rgb(255, 165, 0),   // Orange.
+    rgb(255, 255, 0),   // Yellow.
+    rgb(0, 255, 0),     // Green.
+    rgb(0, 0, 255),     // Blue.
+    rgb(75, 0, 130),    // Indigo.
+    rgb(238, 130, 238), // Violet.
+];
+
 export const palettes: Record<string, Palette> = {
     'Bright terrain': brightTerrain,
     'Bright continent': brightContinent,
@@ -77,5 +95,7 @@ export const palettes: Record<string, Palette> = {
     'Sunset': sunset,
     'Black & white': blackWhite,
     'Cyberpuke': cyberPuke,
+    'Coffee & milk': coffeeAndMilk,
+    'Rainbow': rainbow,
     // 'Tectonic': tectonic,
 };
