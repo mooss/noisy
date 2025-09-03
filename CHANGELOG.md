@@ -5,6 +5,8 @@
 The main improvements of this release are:
 - Additional post-processing options (warping, noisy terracing and tiling).
 - Persistence of avatar and camera positions.
+- Two additional palettes and another removed.
+- The ability to take a screenshot.
 
 ### Core engine & world model
 - **Noise warping**: distort terrain features, hiding some artifacts.
@@ -13,11 +15,13 @@ The main improvements of this release are:
 
 ### Rendering pipeline
 - **Flat terrain**: the 'Height multiplier' slider can be set to zero for completely flat terrains.
+- **Color palettes**: removed the 'Tectonic' palette and added a 'Rainbow' and a 'Coffe & milk' palettes.
 
 ### UI & widgets
 - **Improved folder indentation**: adjusted the UI styling to make the first level of folders more readable.
 - **Intuitive terracing control**: replaced the previous terracing 'interval' parameter with the more user-friendly 'steps' parameter.
 - **Removed 'Tectonic' palette**: the 'Tectonic' color palette can no longer be selected.
+- **Screenshot button**: download the current scene to a JPEG file.
 
 ### Storage & sharing
 - **Persistent camera state**: the camera position and its focus point are saved in the game state.
