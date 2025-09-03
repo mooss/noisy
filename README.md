@@ -30,9 +30,16 @@ Try it [now](https://mooss.github.io/noisy/acorn).
         <img src="https://mooss.github.io/noisy/bean/scenes/rainbow-plates.jpeg" alt="Procedurally generated rainbow plates"/>
       </a>
     </td>
+  </tr>
+  <tr>
     <td>
       <a title="Swirling fantasy" href="https://mooss.github.io/noisy/bean/?q=N4IghgDiBcoMY1GAjjEAxATgU2yANCAAqIgCiMATAAwDsAdAKy0BsAHACwCc1AzJZ2ptC6GAFpKvavQ6M2lASzm1eHWoQDiVXl3oBGPbS4HajRnsqm2AX0JgAnqQrQ9LXVzMeeXNntnCMcUYOGS4wrhZeFhVaIVVNKl1KZjljWgM9Lg5eG1sQACNSMDQwTBBrPLAAZ1IEWBAAJTQALwJwUWgQAA82sABVNABhNogcADcASwB7AFcqgGUJ5rxoZJY8wvrizrAAF3LKgGta0gm0HrthzoB3NpJ652kFbnDX1_VA6Cf-N9-uVgSX3olBebh4Kh8emo1D0vAqhE2SBKABsDnYAOonLYALRKYGKdgAimh0GAAHa7aqOOzOJAAK1IADkYNJ1nYxkySgAzNHgABCLPotEoGyKJQAaryAOakRHgEoAFXKhDqSDAK1Acu24HmypAqpAAClSABpWVinZgBB5A1gAAaMGy8PAzPqWpKAHk9bazdBeB8wABJR0BsBy92dKbe0gyt0WkD7G2kAAWaB5zqg9QAJjA9PQuIRUJ1g4Qyp1joQyWgZnqavUzp0ALZtBmdVGEHOdPAVHt5ACyJWZhAAIuatnizkmtgBBKj5uwATUFmTsYFTcfHnUTKpTad5o43SMtOanSFuXd6A8tvR6nVnI7HR_AAAlo_VjfV9of5ZG36BY5q8bbvqu6dOmeSZqAnYgByhYwIwpZoBWIBVp0NZ5HWoANiAzaEK2IDtiA0Hds6ArftqUaniAAEFPGApUV6d5tFcIDEoQ64gOBhCQURaCvnBxZtGWIDIahIDoYQmEgNhuEgPhhHEQceQADKPj-4ASSBWzNuRaCUTu9Q0RGCZ_iAHFgCeEGkJ2eZ6AJCEgMJonVrWpxoLJ8ltIpParjyum_lRRl0aZjEgPeIAsWxZkwLwegZtZaCYgJLCIUCKUoXirn1u5LZoApaAkXkrZIFoQIcJQdgftIch2Ae0i0LkzpXiAqm9m1lRgDRYBNDsZx2Pc4CFHYqk7FWFRAA">
         <img src="https://mooss.github.io/noisy/bean/scenes/swirling-fantasy.jpeg" alt="Procedurally generated swirling fantasy"/>
+      </a>
+    </td>
+    <td>
+      <a title="Dim sunset" href="https://mooss.github.io/noisy/bean/?q=N4IghgDiBcoMY1GAjjEAxATgU2yANCAAqIgCiMAjAEwDsAdAJzMuuMAcArNYejALQ1q9AAwBmNo1oAWaXU6EA4jGqcRoiWxmdO7AL6EwAT1IVoIE7zSWQy8wHcQegyABGpMGjCYnLsAGdSBFgQACU0AEkCcD5zPEMAVTQ4AEtMOAAbeJAIHAA3FIB7AFd_AGUUgC88cxMXdxDPczAAF19DAGsg0hS0AA9osABhNEdCEhCzdRERWklJHQA2K2h1RhF2ebYFWxh1NU5nQgakLwz28AB1bsaALS8wT0MARTQy4oA7f2w2wzMkABWpAAcl4AGZOQx5EGjC5gABC_Uhbg8XgAahcAOakE7gLwAFWRwSQYBqoFxTXAZSJpAAUqQANI41HNMAIFzE8AADRUIiO4FBIQpXgA8jTGkzmtjDFFmgALQZgXHC8yFcWgbFClkgNoc0gK8wQ_lQEIAEzQ2VQ5gGhB85i6hA-aGKyMCIV65gAttEgeZzoRzXFfM5-QBZNBMwgAEWZjQevT1jQAgl4EIYAJpoQmGMAG8na3WETkGkBGlwxrVx1nmxNIRxBwzh1mDAbmFPR2OnZoACXVIHpITala7IDVtZAmvzVZ1fZLZcIJtAgZAvcIVpAlWidpADpATvMLpcbtAHpA3sIvpA_pAy7wIcIiOHeNVfcnKOniPHYvMr0IIzb0Rzhci43mgq4gOum62mgu77iAh6EMeICnueICXtet7BoQAAynbPuACEgJyYDek-lJjkWpBviqM7jkBxqkMujzRFaOx2msjp7PQXBHj0aCoeh0SYfe4BgBCZFoBRRFUXhlKfpRITfiA7YgP-ymAWg845IxaAYmuaBQSA26wWg9y8e6_E-mgGEWlhaEeHY6hiDw4ADuoizLOAFbqLQ-giU2IC4SGwUiY8b5gOEzS9IYEzgO4hi4c0TrOEAA">
+        <img src="https://mooss.github.io/noisy/bean/scenes/dim-sunset.jpeg" alt="Procedurally generated dim sunset"/>
       </a>
     </td>
   </tr>
