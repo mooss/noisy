@@ -26,7 +26,7 @@ export function initialState(): GameState {
             focus: { x: center, y: center, z: 0 },
         }),
         chunks: new ChunkState({
-            _power: 6,
+            _power: 7,
             loadRadius: 1,
             radiusType: 'square',
         }),
