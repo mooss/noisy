@@ -40,7 +40,7 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             return mapUI(noise as NoiseMap<any>, root, cb, 'Height');
         case 'Terracing':
             root.range(noise.p, 'steps', 0, 100, 1).label('Terraces').onInput(cb);
-            return noiseUI_impl(noise.p.wrapped, root, cb);
+            return;
         case 'Warping':
             const wrp = root.folder('Warping');
             wrp.range(noise.p, 'strength', 0, .2, .01).label('Strength').onInput(cb);
@@ -52,7 +52,7 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
         case 'NoisyTerracing':
             root.range(noise.p, 'min', 0, 100, 1).label('Min terraces').onInput(cb);
             root.range(noise.p, 'max', 0, 100, 1).label('Max terraces').onInput(cb);
-            noiseUI_impl(noise.p.terracer, root, cb);
+            noiseUI_impl(noise.p.terracer, root.folder('Noise'), cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'Tiling':
             const tilef = root.folder('Tiling').close();
@@ -83,14 +83,13 @@ function mapUI(noise: NoiseMap<any>, root: Panel, cb: () => void, title: string)
 }
 
 function layeredUI(layered: Layered<any>, root: Panel, cb: () => void) {
-    const noisef = root.folder('Noise');
-    noiseUI_impl(layered.p.noise, noisef, cb);
+    noiseUI_impl(layered.p.noise, root, cb);
 
     const lay = layered.p.layers;
-    noisef.range(lay, 'fundamental', .1, 5, .1).label('Fundamental').onInput(cb);
-    noisef.range(lay, 'octaves', 1, 8, 1).label('Octaves').onInput(cb);
-    noisef.range(lay, 'persistence', .1, 1, .05).label('Persistence').onInput(cb);
-    noisef.range(lay, 'lacunarity', 1, 2, .02).label('Lacunarity').onInput(cb);
+    root.range(lay, 'fundamental', .1, 5, .1).label('Fundamental').onInput(cb);
+    root.range(lay, 'octaves', 1, 8, 1).label('Octaves').onInput(cb);
+    root.range(lay, 'persistence', .1, 1, .05).label('Persistence').onInput(cb);
+    root.range(lay, 'lacunarity', 1, 2, .02).label('Lacunarity').onInput(cb);
 
     // // Clutters the interface and there is rarely a need to change it.
     // // There should be a way in the interface to toggle advanced settings.
