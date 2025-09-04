@@ -90,7 +90,7 @@ function layeredUI(layered: Layered<any>, root: Panel, cb: () => void) {
     noisef.range(lay, 'fundamental', .1, 5, .1).label('Fundamental').onInput(cb);
     noisef.range(lay, 'octaves', 1, 8, 1).label('Octaves').onInput(cb);
     noisef.range(lay, 'persistence', .1, 1, .05).label('Persistence').onInput(cb);
-    noisef.range(lay, 'lacunarity', .05, 2, .05).label('Lacunarity').onInput(cb);
+    noisef.range(lay, 'lacunarity', 1, 2, .02).label('Lacunarity').onInput(cb);
 
     // // Clutters the interface and there is rarely a need to change it.
     // // There should be a way in the interface to toggle advanced settings.
