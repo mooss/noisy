@@ -9,7 +9,10 @@ abstract class NoiseWrapper<Params = any>
     recompute(): void { this.p.wrapped.recompute() }
 }
 
-interface TerracingP { steps: number }
+interface TerracingP {
+    //TIP: terracing_steps Number of terraces used in the terrain. More terraces will create a smoother terrain.
+    steps: number;
+}
 export class Terracing extends NoiseWrapper<TerracingP> {
     get class(): NoiseClass { return 'Terracing' }
     static build(params: TerracingP): Terracing { return new Terracing({ ...params, wrapped: null }) }
@@ -21,7 +24,16 @@ export class Terracing extends NoiseWrapper<TerracingP> {
 }
 register('Terracing', Terracing);
 
-interface NoisyTerracingP { min: number, max: number, terracer: NoiseMakerI }
+interface NoisyTerracingP {
+    //TIP: noisy_terrace_min Minimum number of terraces used in the terrain. More terraces will create smoother terrain.
+    min: number;
+
+    //TIP: noisy_terrace_max Maximum number of terraces used in the terrain. More terraces will create smoother terrain.
+    max: number;
+
+    //TIP: noisy_terracer Noise dictating how much terraces will be used at a given point, normalized between min and max.
+    terracer: NoiseMakerI;
+}
 export class NoisyTerracing extends NoiseWrapper<NoisyTerracingP> {
     get class(): NoiseClass { return 'NoisyTerracing' }
     static build(params: NoisyTerracingP): NoisyTerracing {
@@ -46,8 +58,13 @@ export class NoisyTerracing extends NoiseWrapper<NoisyTerracingP> {
 register('NoisyTerracing', NoisyTerracing);
 
 interface WarpingP {
+    //TIP: warping_frequency Scale factor for the warping coordinates, dictating how dense the warping is. Higher values will make the warping effect repeat more frequently, making the effect more visible.
     frequency: number;
+
+    //TIP: warping_strength How much the warping effect distorts the coordinates. Higher value will make the terrain more swirly, making the effect more visible.
     strength: number;
+
+    //TIP: warper Noise dictating the magnitude of the warping effect.
     warper: NoiseMakerI;
 }
 export class Warping extends NoiseWrapper<WarpingP> {
@@ -102,9 +119,14 @@ export class ProcessingPipeline extends NoiseMakerBase<ProcessingPipelineP> {
 register('ProcessingPipeline', ProcessingPipeline);
 
 interface TilingP {
+    //TIP: tiling_coorscale Multiplier for the tile coordinates, dictates the tile density. Higher values will result in more tile packed into a chunk.
     coorscale: number;
-    noisescale: number;
+
+    //TIP: tiling_elabled Toggles tiling on or off.
     enabled: boolean;
+
+    //TIP: tiling_noisescale Magnitude of the distortion applied to each tile. Higher values will make the tiles less square and more chaotic.
+    noisescale: number;
 }
 export class Tiling extends NoiseWrapper<TilingP> {
     get class(): NoiseClass { return 'Tiling' }

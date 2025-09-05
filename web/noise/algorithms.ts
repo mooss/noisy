@@ -28,7 +28,11 @@ function noiseStats(gen: NoiseFun, sampling: NoiseSamplerP): noiseStats {
 ///////////
 // Noise //
 
-export interface SimplexP { seed: number }
+export interface SimplexP {
+    // Random source for simplex noise.
+    //TIP: simplex_seed Seed for the simplex noise generator. Altering the seed changes the pattern of the generated noise.
+    seed: number;
+}
 export class Simplex extends NoiseMakerBase<SimplexP> {
     get class(): NoiseClass { return 'Simplex' };
     get low(): number { return -1 }
@@ -38,7 +42,14 @@ export class Simplex extends NoiseMakerBase<SimplexP> {
 register('Simplex', Simplex);
 
 export interface RidgeP extends SimplexP {
+    // When true, flips the signal, thus inverting the height.
+    // Occurs after squaring the signal.
+    //TIP: ridge_invert Inverts the height, making valleys appear as ridges and vice versa.
     invert: boolean;
+
+    // When true, squares the signal.
+    // Occurs after taking the absolute value.
+    //TIP: ridge_square Squares the height, giving a flatter appearance, with less dramatic peaks and hiding the folds.
     square: boolean;
 }
 export class Ridge extends NoiseMakerBase<RidgeP> {
@@ -57,9 +68,16 @@ register('Ridge', Ridge);
 // Layering //
 
 export interface LayersP {
+    //TIP: layers_fundamental Base frequency for the first noise layer, controls the size of terrain features. Lower values creates broader, smoother terrain. Higher values will bring everything close together, resulting sharper terrain with steeper slopes.
     fundamental: number;
+
+    //TIP: layers_octaves Number of noise layers. More octaves will add details to the terrain.
     octaves: number;
+
+    //TIP: layers_persistence Amount by which the height of each successive octave is decreased. Lower values makes each octave contribute less to the terrain.
     persistence: number;
+
+    //TIP: layers_lacunarity Multiplier for the frequency of each successive octave. Higher values makes each octave pack more details, resulting in sharper terrain with steeper slopes.
     lacunarity: number;
 }
 function layerNoise(noise: NoiseFun, layers: LayersP): NoiseFun {
@@ -119,11 +137,21 @@ register('Layered', Layered<any>);
 // Noise mix //
 
 interface ContinentalMixP<I extends NoiseMakerI> {
+    //TIP: continental_bass The lower part of the terrain.
     bass: I;
+
+    //TIP: continental_treble The higher part of the terrain, also acting as the selecting noise. When this noise is below the high threshold, the bass noise is added to the mix. When above the high threshold, only this treble noise is present.
     treble: I;
+
+    //TIP: continental_threshold Thresholds dictating which noise (bass or treble) will be used for the terrain height and how to mix them.
     threshold: {
+        //TIP: continental_low Low cutoff point. When the treble is below this value, the height is fully dictated by the bass.
         low: number;
+
+        //TIP: continental_mid Controls the transition between bass and treble when treble is between the low and high thresholds. When lower, bass has a bigger influence. When higher, treble has a bigger influence.
         mid: number;
+
+        //TIP: continental_high High cutoff point. When the treble is above this value, the height is fully dictated by the treble.
         high: number;
     }
 }

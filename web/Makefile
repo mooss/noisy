@@ -1,7 +1,10 @@
 ###########
 # Phonies #
 
-.PHONY: setup update-modules serve build test
+.PHONY: build setup update-modules serve test
+
+build:
+	npx vite build
 
 setup:
 	npm ci
@@ -13,9 +16,6 @@ update-modules:
 serve:
 	npx vite
 
-build:
-	npx vite build
-
 test:
 	npx jest
 
@@ -25,4 +25,9 @@ test:
 TS_FILES := $(shell git ls-files '**/*.ts' '*.ts')
 
 dependencies.svg: $(TS_FILES)
-	npx madge game.ts -i dependencies.svg
+	npx madge game.ts -i $@
+
+noise/ui-tips.ts: noise/algorithms.ts noise/processing.ts
+	echo 'const tips = {' > $@
+	sed -rn 's| *//TIP: ([^ ]+) (.*)$$|    \1: "\2",|p' $^ >> $@
+	echo '}' >> $@

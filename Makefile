@@ -1,4 +1,4 @@
-.PHONY: build run clean dist setup
+.PHONY: build clean dist run setup
 
 build:
 	make -C web build
