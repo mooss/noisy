@@ -16,4 +16,28 @@ export class Label {
         this.elt.textContent = name;
         return this;
     }
+
+    // Displays a tooltip when hovering over the label.
+    tooltip(text: string): this {
+        new Tooltip(this.box, text);
+        return this;
+    }
+}
+
+export class Tooltip {
+    private elt: HtmlCssElement;
+
+    constructor(parent: HTMLElement, text: string) {
+        this.elt = spawn('div', parent, Gardener.tooltip);
+        this.elt.textContent = text;
+        this.elt.style.display = 'none';
+
+        // Show and hide when hovering.
+        parent.addEventListener('mouseenter', () => {
+            this.elt.style.display = '';
+        });
+        parent.addEventListener('mouseleave', () => {
+            this.elt.style.display = 'none';
+        });
+    }
 }

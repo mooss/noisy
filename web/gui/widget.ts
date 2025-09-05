@@ -43,6 +43,12 @@ export class GraphWidget extends Label {
     open():   GraphWidget { this.visible(true); this.draw(); return this; }
     opened(): boolean     { return this.canvas.style.display === '' }
 
+    // Displays a tooltip when hovering over the graph.
+    tooltip(text: string): this {
+        super.tooltip(text);
+        return this;
+    }
+
     /////////////////////////////
     // Private drawing methods //
 

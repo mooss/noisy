@@ -59,6 +59,12 @@ export class ControlWidget<PRIM> {
         return this;
     }
 
+    /** Displays a tooltip when hovering over the label. */
+    tooltip(text: string): this {
+        this.labelElt.tooltip(text);
+        return this;
+    }
+
     /**
      * Registers a callback for change events.
      *

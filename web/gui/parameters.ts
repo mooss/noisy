@@ -59,6 +59,12 @@ export class StaticText extends Label {
     update(content: any) {
         this.value.textContent = String(content);
     }
+
+    // Displays a tooltip when hovering over the text.
+    tooltip(text: string): this {
+        super.tooltip(text);
+        return this;
+    }
 }
 
 export function StaticTextWidget(parent: HTMLElement, content: any): StaticText {

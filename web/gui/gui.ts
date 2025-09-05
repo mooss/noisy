@@ -5,6 +5,7 @@ import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, StaticTex
 import { Facet, Gardener } from "./style.js";
 import { GraphWidget } from "./widget.js";
 import { ButtonBar } from "./buttons.js";
+import { Tooltip } from "./foundations.js";
 
 /////////////////
 // Foundations //
@@ -146,6 +147,12 @@ class Folder extends Panel {
         this.#details.open = true;
         this._elt.style.paddingLeft = '0';
         content.appendChild(this._elt); // Doesn't display properly without this.
+    }
+
+    /** Displays a tooltip when hovering over the folder. */
+    tooltip(text: string): this {
+        new Tooltip(this._elt, text);
+        return this;
     }
 
     show(): this { this.#details.style.display = ''; return this; }

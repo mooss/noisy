@@ -134,6 +134,7 @@ export class Appearance {
 
     selectInput: Facet;
     title: Facet;
+    tooltip: Facet;
 
     colors: StyleColors = {
         background: '#1a202c',
@@ -319,6 +320,7 @@ export class Appearance {
             display: 'flex',
             alignItems: 'center',
             padding: '2px 0',
+            position: 'relative',
         });
         this.labelText = this.mk('label-text', {
             flex: '1',
@@ -397,6 +399,31 @@ input[type="range"]::-moz-range-thumb {
             padding: '2px 0',
             marginBottom: '2px',
             color: this.colors.text,
+        });
+        this.tooltip = this.mk('tooltip', {
+            backgroundColor: transparent(this.colors.background, .9),
+            color: this.colors.text,
+            border: `1px solid ${this.colors.border}`,
+            borderRadius: '2px',
+            padding: '2px 4px',
+            fontSize: '10px',
+
+            // WIthout this, tooltip behaviour is inconsistent and sometimes the tooltip persist
+            // when leaving the label and hovering it.
+            pointerEvents: 'none',
+
+            // Don't the tooltip inside the containing element, which would squash the other
+            // contained elements.
+            position: 'absolute',
+
+            // Display the tooltip below the element.
+            top: '100%',
+
+            // Collapse on whitespace and always break on newlines.
+            whiteSpace: 'pre-line',
+
+            // Ensures that the tooltip is in front and that the transparency hides what is behind.
+            zIndex: '1001',
         });
     }
 
