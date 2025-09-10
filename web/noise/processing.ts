@@ -122,7 +122,7 @@ interface TilingP {
     //TIP: tiling_coorscale Multiplier for the tile coordinates, dictates the tile density. Higher values will result in more tile packed into a chunk.
     coorscale: number;
 
-    //TIP: tiling_elabled Toggles tiling on or off.
+    //TIP: tiling_enabled Toggles tiling on or off.
     enabled: boolean;
 
     //TIP: tiling_noisescale Magnitude of the distortion applied to each tile. Higher values will make the tiles less square and more chaotic.
