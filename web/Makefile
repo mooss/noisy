@@ -29,5 +29,5 @@ dependencies.svg: $(TS_FILES)
 
 noise/ui-tips.ts: noise/algorithms.ts noise/processing.ts
 	echo 'export const tips = {' > $@
-	sed -rn 's| *//TIP: ([^ ]+) (.*)$$|    \1: "\2",|p' $^ >> $@
+	sed -rn 's| *//TIP: ([^ ]+) (.*)$$|    \1: "\2",|p' $^ | sed -r 's/\. /.\\n/g' >> $@
 	echo '}' >> $@
