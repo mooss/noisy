@@ -31,8 +31,8 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
         case 'Layered':
             return layeredUI(noise as any, root, cb);
         case 'ContinentalMix':
-            noiseUI_impl(noise.p.bass, root.folder('Bass').tooltip(tips.continental_bass), cb);
-            noiseUI_impl(noise.p.treble, root.folder('Treble').tooltip(tips.continental_treble), cb);
+            noiseUI_impl(noise.p.treble, root.folder('Mountains').tooltip(tips.continental_treble), cb);
+            noiseUI_impl(noise.p.bass, root.folder('Hills').tooltip(tips.continental_bass), cb);
             const mix = root.folder('Mixing').tooltip(tips.continental_threshold);
             mix.range(noise.p.threshold, 'low', 0, 1, .02)
                 .label('Low').tooltip(tips.continental_low).onChange(cb);
@@ -84,7 +84,7 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
 
 // The functional nature of UI definition forces us to hardcode tooltip-deduction logic here.
 // Really highlights the need to move to a declarative UI.
-function cardTooltip(title: string): string {
+function title2tooltip(title: string): string {
     switch (title) {
         case 'Constant':
             return tips.terracing_constant;
@@ -96,13 +96,26 @@ function cardTooltip(title: string): string {
             return tips.ridge;
         case 'Continental mix':
             return tips.continental_mix;
+        case 'Terracing':
+            return tips.terracing;
+        case 'Height':
+            //TIP: height Algorithm generating the height of the terrain.
+            return tips.height;
     }
+}
+interface tooltiper { tooltip(tip: string): void; }
+function addTooltip(title: string, ui: tooltiper) {
+        const tooltip = title2tooltip(title);
+        if (tooltip != null) ui.tooltip(tooltip);
 }
 
 function mapUI(noise: NoiseMap<any>, root: Panel, cb: () => void, title: string) {
     const pick = noise as NoiseMap<any>;
     const algos = pick.p.algorithms;
-    const deck = root.folder(title).deck();
+    const fold = root.folder(title);
+    const deck = fold.deck();
+    addTooltip(title, fold);
+
     for (const key in algos) {
         const card = deck.card(key);
         if (key === pick.p.current) card.focus();
@@ -112,8 +125,7 @@ function mapUI(noise: NoiseMap<any>, root: Panel, cb: () => void, title: string)
         });
         const alg = algos[key];
 
-        const tooltip = cardTooltip(key);
-        if (tooltip != null) card.tooltip(tooltip);
+        addTooltip(key, card);
 
         noiseUI_impl(alg, card, cb);
     }

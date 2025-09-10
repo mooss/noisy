@@ -78,10 +78,10 @@ export interface LayersP {
     //TIP: layers_octaves Number of noise layers. More octaves will add details to the terrain.
     octaves: number;
 
-    //TIP: layers_persistence Amount by which the height of each successive octave is decreased. Lower values makes each octave contribute less to the terrain.
+    //TIP: layers_persistence Amount by which the height of each successive octave is decreased. Lower values makes every subsequent octave contribute less to the terrain.
     persistence: number;
 
-    //TIP: layers_lacunarity Multiplier for the frequency of each successive octave. Higher values makes each octave pack more details, resulting in sharper terrain with steeper slopes.
+    //TIP: layers_lacunarity Multiplier for the frequency of each successive octave. Higher values makes every subsequent octave pack more details, resulting in sharper terrain with steeper slopes.
     lacunarity: number;
 }
 function layerNoise(noise: NoiseFun, layers: LayersP): NoiseFun {
@@ -140,23 +140,23 @@ register('Layered', Layered<any>);
 ///////////////
 // Noise mix //
 
-//TIP: continental_mix Layered simplex noise and layered ridge noise combined together. The ridge part is what dictates the general shape of the terrain, whereas the simplex part influences the lower part of the terrain. The result is a montaineous terrain with the lower elevations made of hills.
+//TIP: continental_mix Ridge noise and simplex noise combined together. The ridge part (mountains) is what dictates the general shape of the terrain, whereas the simplex part (hills) influences the lower part of the terrain. The result is a montaineous terrain with the lower elevations made of smoother hills.
 interface ContinentalMixP<I extends NoiseMakerI> {
-    //TIP: continental_bass The lower part of the terrain.
+    //TIP: continental_bass The lower, hilly part of the terrain.
     bass: I;
 
-    //TIP: continental_treble The higher part of the terrain, also acting as the selecting noise. When this noise is below the high threshold, the bass noise is added to the mix. When above the high threshold, only this treble noise is present.
+    //TIP: continental_treble The mountaineous part of the terrain. When its height is below the high threshold, the hill height is added to the mix. When above the high threshold, only mountains are present.
     treble: I;
 
-    //TIP: continental_threshold Thresholds dictating which noise (bass or treble) will be used for the terrain height and how to mix them.
+    //TIP: continental_threshold Thresholds dictating which noise (mountain or hill) will be used to decide the height and how to mix them.
     threshold: {
-        //TIP: continental_low Low cutoff point. When the treble is below this value, the height is fully dictated by the bass.
+        //TIP: continental_low Low cutoff point. When the mountain height is below this value, it fully decides the final height.
         low: number;
 
-        //TIP: continental_mid Controls the transition between bass and treble when treble is between the low and high thresholds. When lower, bass has a bigger influence. When higher, treble has a bigger influence.
+        //TIP: continental_mid Controls the transition between mountains and hills when the mountain height is between the low and high thresholds. When lower, hill height has a bigger influence. When higher, mountain height has a bigger influence.
         mid: number;
 
-        //TIP: continental_high High cutoff point. When the treble is above this value, the height is fully dictated by the treble.
+        //TIP: continental_high High cutoff point. When the mountain height is above this value, it fully decides the final height.
         high: number;
     }
 }

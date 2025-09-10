@@ -124,7 +124,7 @@ register('ProcessingPipeline', ProcessingPipeline);
 
 //TIP: tiling Groups neighboring coordinates together to form chunks of uniform height. Can create shapes looking like continents.
 interface TilingP {
-    //TIP: tiling_coorscale Multiplier for the tile coordinates, dictates the tile density. Higher values will result in more tile packed into a chunk.
+    //TIP: tiling_coorscale Multiplier for the tile coordinates, dictates the tile density. Higher values will result in more tiles packed into a chunk.
     coorscale: number;
 
     //TIP: tiling_enabled Toggles tiling on or off.
