@@ -6,18 +6,28 @@ import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh.
 import { palettes } from '../palettes.js';
 import { AutoAssign } from '../utils/objects.js';
 import { GameCallbacks, register } from './state.js';
+import { tips } from '../ui/tips.js';
 
 interface LightConfig {
+    //TIP: light_ambient Ambient light intensity.
     ambient: { intensity: number };
+
+    //TIP: light_directional Directional light intensity.
     directional: { intensity: number };
 }
 
 type RenderStyle = 'surface' | 'quadPrism' | 'hexPrism';
 
 class RenderStateP extends AutoAssign<RenderStateP> {
+    //TIP: render_style Fundamental shape the terrain is made of.
     declare style: RenderStyle;
+
+    //TIP: render_palette Color palette of the terrain.
     declare paletteName: string;
+
     declare light: LightConfig;
+
+    //TIP: height_multiplier Multiplier applied to the terrain height. Set to zero to display flat terrain.
     declare heightMultiplier: number;
 }
 
@@ -44,18 +54,28 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         'Surface': 'surface',
         'Squares': 'quadPrism',
         // 'Hexagons': 'hexPrism', //TODO: decide whether to fix or remove it.
-    }).label('Shape').onChange(cb.terrain.recompute);
+    })
+        .label('Shape')
+        .onChange(cb.terrain.recompute)
+        .tooltip(tips.render_style);
 
     root.select(state, 'paletteName', palettes)
-        .label('Palette').onChange(cb.terrain.recompute);
+        .label('Palette')
+        .onChange(cb.terrain.recompute)
+        .tooltip(tips.render_palette);
 
     root.range(state.light.ambient, 'intensity', 0, 10, .2)
-        .label('Ambient light').onChange(cb.render.update);
+        .label('Ambient light')
+        .onChange(cb.render.update)
+        .tooltip(tips.light_ambient);
 
     root.range(state.light.directional, 'intensity', 0, 10, .2)
-        .label('Directional light').onChange(cb.render.update);
+        .label('Directional light')
+        .onChange(cb.render.update)
+        .tooltip(tips.light_directional);
 
     root.range(state, 'heightMultiplier', 0, 5.0, 0.02)
         .label('Height multiplier')
-        .onInput(cb.render.update);
+        .onInput(cb.render.update)
+        .tooltip(tips.height_multiplier);
 }

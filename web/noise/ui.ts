@@ -4,7 +4,7 @@ import { foreachEntries } from "../utils/objects.js";
 import { Layered } from "./algorithms.js";
 import { NoiseMap, ProcessingPipelineMap } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
-import { tips } from "./ui-tips.js";
+import { tips } from "../ui/tips.js";
 
 export function noiseUI(noise: NoiseMakerI, root: Panel, cb: GameCallbacks) {
     noiseUI_impl(noise, root, () => {

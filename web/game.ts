@@ -15,6 +15,7 @@ import { GameCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
 import { FpsWidget, Keyboard } from './ui.js';
+import { tips } from './ui/tips.js';
 import { downloadData, dragAndDrop, toClipBoard } from './utils/utils.js';
 
 const STATE_STORAGE_KEY = 'load-state';
@@ -91,7 +92,7 @@ class Game {
         this.fps = new FpsWidget(gui);
         if (Game.ENABLE_STATS_GRAPH) this.setupStatsGraph(gui);
 
-        chunksUI(this.state.chunks, gui.folder('Chunks'), this.callbacks);
+        chunksUI(this.state.chunks, gui.folder('Chunks').tooltip(tips.chunks), this.callbacks);
         renderUI(this.state.render, gui.folder('Render'), this.callbacks);
         cameraUI(this.state.camera, gui.folder('Camera'), this.callbacks);
         avatarUI(this.state.avatar, gui.folder('Avatar').close(), this.callbacks);

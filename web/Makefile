@@ -27,7 +27,7 @@ TS_FILES := $(shell git ls-files '**/*.ts' '*.ts')
 dependencies.svg: $(TS_FILES)
 	npx madge game.ts -i $@
 
-noise/ui-tips.ts: noise/algorithms.ts noise/processing.ts noise/ui.ts
+ui/tips.ts: noise/algorithms.ts noise/processing.ts noise/ui.ts state/*
 	echo 'export const tips = {' > $@
 	sed -rn 's| *//TIP: ([^ ]+) (.*)$$|    \1: "\2",|p' $^ | sed -r 's/\. /.\\n/g' >> $@
 	echo '}' >> $@
