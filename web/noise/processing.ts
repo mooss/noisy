@@ -9,6 +9,8 @@ abstract class NoiseWrapper<Params = any>
     recompute(): void { this.p.wrapped.recompute() }
 }
 
+//TIP: terracing Adds steps in the terrain, creating terraces.
+//TIP: terracing_constant Use the same amount of terraces everywhere. Generates a blocky terrain with evenly-spaced terrain.
 interface TerracingP {
     //TIP: terracing_steps Number of terraces used in the terrain. More terraces will create a smoother terrain.
     steps: number;
@@ -24,6 +26,7 @@ export class Terracing extends NoiseWrapper<TerracingP> {
 }
 register('Terracing', Terracing);
 
+//TIP: terracing_noisy Use a different amount of terraces in different places. Creates a stepped and wobbly surface that increases in wobbleliness when the difference between the minimum and the maximum of terraces increases.
 interface NoisyTerracingP {
     //TIP: noisy_terrace_min Minimum number of terraces used in the terrain. More terraces will create smoother terrain.
     min: number;
@@ -57,6 +60,7 @@ export class NoisyTerracing extends NoiseWrapper<NoisyTerracingP> {
 }
 register('NoisyTerracing', NoisyTerracing);
 
+//TIP: warping Distorts the coordinates to hide straight lines in the terrain, introducing vortex-like perturbations.
 interface WarpingP {
     //TIP: warping_frequency Scale factor for the warping coordinates, dictating how dense the warping is. Higher values will make the warping effect repeat more frequently, making the effect more visible.
     frequency: number;
@@ -118,6 +122,7 @@ export class ProcessingPipeline extends NoiseMakerBase<ProcessingPipelineP> {
 }
 register('ProcessingPipeline', ProcessingPipeline);
 
+//TIP: tiling Groups neighboring coordinates together to form chunks of uniform height. Can create shapes looking like continents.
 interface TilingP {
     //TIP: tiling_coorscale Multiplier for the tile coordinates, dictates the tile density. Higher values will result in more tile packed into a chunk.
     coorscale: number;

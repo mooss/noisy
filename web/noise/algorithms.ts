@@ -28,6 +28,7 @@ function noiseStats(gen: NoiseFun, sampling: NoiseSamplerP): noiseStats {
 ///////////
 // Noise //
 
+//TIP: simplex Raw simplex noise, the foundamental terrain generation building block. Creates a landscape of smooth hills.
 export interface SimplexP {
     // Random source for simplex noise.
     //TIP: simplex_seed Seed for the simplex noise generator. Altering the seed changes the pattern of the generated noise.
@@ -41,6 +42,7 @@ export class Simplex extends NoiseMakerBase<SimplexP> {
 }
 register('Simplex', Simplex);
 
+//TIP: ridge Simplex noise with a post-processing step to create a sharper terrain reminescent of a mountain chain.
 export interface RidgeP extends SimplexP {
     // When true, flips the signal, thus inverting the height.
     // Occurs after squaring the signal.
@@ -67,6 +69,8 @@ register('Ridge', Ridge);
 //////////////
 // Layering //
 
+//TIP: layered_simplex Multiple values (called octaves) of simplex noise layered on top of each other. Creates a more complex hilly terrain than plain simplex noise, with each octave adding more details.
+//TIP: layered_ridge Multiple values (called octaves) of simplex noise layered on top of each other. Creates a more complex mountaineous terrain than plain ridge noise, with each octave adding more details.
 export interface LayersP {
     //TIP: layers_fundamental Base frequency for the first noise layer, controls the size of terrain features. Lower values creates broader, smoother terrain. Higher values will bring everything close together, resulting sharper terrain with steeper slopes.
     fundamental: number;
@@ -136,6 +140,7 @@ register('Layered', Layered<any>);
 ///////////////
 // Noise mix //
 
+//TIP: continental_mix Layered simplex noise and layered ridge noise combined together. The ridge part is what dictates the general shape of the terrain, whereas the simplex part influences the lower part of the terrain. The result is a montaineous terrain with the lower elevations made of hills.
 interface ContinentalMixP<I extends NoiseMakerI> {
     //TIP: continental_bass The lower part of the terrain.
     bass: I;

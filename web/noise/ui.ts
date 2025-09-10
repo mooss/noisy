@@ -51,7 +51,7 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
                 .label('Terraces').onInput(cb).tooltip(tips.terracing_steps);
             return;
         case 'Warping':
-            const wrp = root.folder('Warping').tooltip(tips.warper);
+            const wrp = root.folder('Warping').tooltip(tips.warping);
             wrp.range(noise.p, 'strength', 0, .2, .01)
                 .label('Strength').tooltip(tips.warping_strength).onInput(cb);
             wrp.range(noise.p, 'frequency', 0, 4, .05)
@@ -68,7 +68,7 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             noiseUI_impl(noise.p.terracer, root.folder('Noise').tooltip(tips.noisy_terracer), cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'Tiling':
-            const tilef = root.folder('Tiling').close();
+            const tilef = root.folder('Tiling').close().tooltip(tips.tiling);
             tilef.bool(noise.p, 'enabled')
                 .label('Enabled').tooltip(tips.tiling_enabled).onInput(cb);
             tilef.range(noise.p, 'coorscale', 1, 50, 1)
@@ -80,6 +80,23 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
     }
     console.warn('Unknow noise class in UI:', noise.class, 'recursing anyway');
     foreachEntries((_, value) => noiseUI_impl(value as NoiseMakerI, root, cb), noise);
+}
+
+// The functional nature of UI definition forces us to hardcode tooltip-deduction logic here.
+// Really highlights the need to move to a declarative UI.
+function cardTooltip(title: string): string {
+    switch (title) {
+        case 'Constant':
+            return tips.terracing_constant;
+        case 'Noisy':
+            return tips.terracing_noisy;
+        case 'Simplex':
+            return tips.simplex;
+        case 'Ridge':
+            return tips.ridge;
+        case 'Continental mix':
+            return tips.continental_mix;
+    }
 }
 
 function mapUI(noise: NoiseMap<any>, root: Panel, cb: () => void, title: string) {
@@ -94,6 +111,10 @@ function mapUI(noise: NoiseMap<any>, root: Panel, cb: () => void, title: string)
             cb();
         });
         const alg = algos[key];
+
+        const tooltip = cardTooltip(key);
+        if (tooltip != null) card.tooltip(tooltip);
+
         noiseUI_impl(alg, card, cb);
     }
 }
