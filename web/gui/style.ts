@@ -412,7 +412,7 @@ input[type="range"]::-moz-range-thumb {
             // when leaving the label and hovering it.
             pointerEvents: 'none',
 
-            // Don't the tooltip inside the containing element, which would squash the other
+            // Don't put the tooltip inside the containing element, which would squash the other
             // contained elements.
             position: 'absolute',
 

@@ -128,8 +128,11 @@ export class GUI extends Panel {
  * A collapsible folder within the GUI.
  */
 class Folder extends Panel {
+    /** The collapsible header of the folder, containing the title. */
+    private summary: HTMLElement;
+
     /** The details HTML element that wraps the folder content. */
-    #details: HTMLDetailsElement;
+    private details: HTMLDetailsElement;
 
     /**
      * Creates a new Folder instance.
@@ -140,25 +143,29 @@ class Folder extends Panel {
         super(parent);
 
         const isNested = parent.closest('details') !== null;
-        this.#details = spawn('details', parent, Gardener.folder(isNested));
-        spawn('summary', this.#details, Gardener.folderSummary(isNested)).textContent = title;
-        const content = spawn('div', this.#details, Gardener.folderContent(isNested));
+        this.details = spawn('details', parent, Gardener.folder(isNested));
+        this.summary = spawn('summary', this.details, Gardener.folderSummary(isNested));
+        this.summary.textContent = title;
+        const content = spawn('div', this.details, Gardener.folderContent(isNested));
 
-        this.#details.open = true;
+        this.details.open = true;
         this._elt.style.paddingLeft = '0';
         content.appendChild(this._elt); // Doesn't display properly without this.
     }
 
     /** Displays a tooltip when hovering over the folder. */
     tooltip(text: string): this {
-        new Tooltip(this._elt, text);
+        // Tooltips display at the very bottom of the panel without this.
+        this.summary.style.position = 'relative';
+
+        new Tooltip(this.summary, text);
         return this;
     }
 
-    show(): this { this.#details.style.display = ''; return this; }
-    hide(): this { this.#details.style.display = 'none'; return this; }
-    open(): this { this.#details.open = true; return this; }
-    close(): this { this.#details.open = false; return this; }
+    show(): this { this.details.style.display = ''; return this; }
+    hide(): this { this.details.style.display = 'none'; return this; }
+    open(): this { this.details.open = true; return this; }
+    close(): this { this.details.open = false; return this; }
 }
 
 ////////////////////
