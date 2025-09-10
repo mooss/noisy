@@ -27,14 +27,14 @@ export class Label {
 export class Tooltip {
     private elt: HtmlCssElement;
 
-    constructor(parent: HTMLElement, text: string) {
+    constructor(parent: HTMLElement, text: string, position: HTMLElement = parent) {
         this.elt = spawn('div', document.body, Gardener.tooltip);
         this.elt.textContent = text;
         this.elt.style.display = 'none';
 
         // Show and hide when hovering.
         parent.addEventListener('mouseenter', () => {
-            const rect = parent.getBoundingClientRect();
+            const rect = position.getBoundingClientRect();
             this.elt.style.left = `${rect.left}px`;
             this.elt.style.top = `${rect.bottom + window.scrollY}px`;
             this.elt.style.display = '';

@@ -13,7 +13,7 @@ import { Tooltip } from "./foundations.js";
 /**
  * GUI panel that can display information and adjust parameters.
  */
-export class Panel {
+export abstract class Panel {
     /**
      * The main container element for the panel.
      */
@@ -25,6 +25,9 @@ export class Panel {
     constructor(parent: HTMLElement, style?: Facet) {
         this._elt = spawn('div', parent, style);
     }
+
+    /** Displays a tooltip when hovering over the element. */
+    abstract tooltip(text: string): this;
 
     /////////////////////////////
     // Parameters registration //
@@ -77,9 +80,23 @@ export class GUI extends Panel {
     static POSITION_RIGHT = new Facet('gui-right', { right: '8px', left: 'auto' });
     static POSITION_LEFT = new Facet('gui-left', { left: '8px', right: 'auto' });
 
+    private bar: HTMLDivElement;
+    private _title: HTMLDivElement;
+
     /** Creates a GUI instance and attach it to the document body. */
     constructor(...appearanceOverride: Facet[]) {
         super(document.body, clone(Gardener.gui).merge(...appearanceOverride));
+        this.bar = spawn('div', this._elt, Gardener.collapsibleBar);
+        this._title = spawn('div', this._elt, Gardener.title);
+    }
+
+    /**
+     * Displays a tooltip when hovering over the title.
+     * Will not display without a title.
+     */
+    tooltip(text: string): this {
+        new Tooltip(this._title, text);
+        return this;
     }
 
     /**
@@ -88,18 +105,13 @@ export class GUI extends Panel {
      * It must be called only once.
      */
     collapsible(): this {
-        // Create the thin bar element.
-        const bar = spawn('div', this._elt, Gardener.collapsibleBar);
-        // Insert the bar as the first child of the panel container.
-        this._elt.insertBefore(bar, this._elt.firstChild);
-
         // On click, toggle the visibility of all children except the bar.
         let isCollapsed = false;
-        bar.addEventListener('click', () => {
+        this.bar.addEventListener('click', () => {
             isCollapsed = !isCollapsed;
             for (let i = 0; i < this._elt.children.length; i++) {
                 const child = this._elt.children[i] as HTMLElement;
-                if (child !== bar) {
+                if (child !== this.bar) {
                     // This only collapses the root of each elements, thus not affecting the
                     // visibility of things like folders.
                     child.style.display = isCollapsed ? 'none' : '';
@@ -115,8 +127,7 @@ export class GUI extends Panel {
      * @param text - The title.
      */
     title(text: string): this {
-        const title = spawn('div', this._elt, Gardener.title);
-        title.textContent = text;
+        this._title.textContent = text;
         return this;
     }
 }
@@ -251,6 +262,12 @@ export class Card extends Panel {
         this.lowlight(); // Spawns the border.
 
         this.hide();
+    }
+
+    /** Displays a tooltip when hovering over the card. */
+    tooltip(text: string): this {
+        new Tooltip(this._button, text, this._deck.headerBar);
+        return this;
     }
 
     // Highlight the header, putting an accent color on its border.
