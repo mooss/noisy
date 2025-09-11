@@ -116,7 +116,7 @@ class Game {
      * whose value are not automatically reflected in the game state.
      */
     updatedState(): GameState {
-        this.renderer.updateState();
+        this.renderer?.updateState();
         return this.state;
     }
 
