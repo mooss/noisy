@@ -1,6 +1,12 @@
 export interface vector2 { x: number; y: number; }
 export interface vector3 extends vector2 { z: number }
 
+export class vec2 {
+    x: number;
+    y: number;
+    static zero(): vec2 { return {x: 0, y: 0}}
+}
+
 /**
  * Clamps a number between a minimum and maximum value.
  *

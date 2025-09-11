@@ -136,6 +136,12 @@ export class Appearance {
     title: Facet;
     tooltip: Facet;
 
+    window: Facet;
+    windowHeader: Facet;
+    windowTitle: Facet;
+    windowCloseButton: Facet;
+    windowContent: Facet;
+
     colors: StyleColors = {
         background: '#1a202c',
         border: '#4a5568',
@@ -408,7 +414,7 @@ input[type="range"]::-moz-range-thumb {
             padding: '2px 4px',
             fontSize: '10px',
 
-            // WIthout this, tooltip behaviour is inconsistent and sometimes the tooltip persist
+            // Without this, tooltip behaviour is inconsistent and sometimes the tooltip persist
             // when leaving the label and hovering it.
             pointerEvents: 'none',
 
@@ -424,6 +430,45 @@ input[type="range"]::-moz-range-thumb {
 
             // Ensures that the tooltip is in front and that the transparency hides what is behind.
             zIndex: '1001',
+        });
+
+        this.window = this.mk('window', {
+            position: 'absolute',
+            zIndex: '2000',
+            backgroundColor: transparent(this.colors.background, .9),
+            border: `1px solid ${this.colors.border}`,
+            borderRadius: '4px',
+            minWidth: '400px',
+            maxWidth: '800px',
+        });
+        this.windowHeader = this.mk('window-header', {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '2px 6px',
+            backgroundColor: this.colors.inputBg,
+            borderBottom: `1px solid ${this.colors.border}`,
+            cursor: 'move',
+        });
+        this.windowTitle = this.mk('window-title', {
+            color: this.colors.text,
+            fontWeight: 'bold',
+        });
+        this.windowCloseButton = this.mk('window-close-button', {
+            background: 'transparent',
+            border: 'none',
+            color: this.colors.label,
+            cursor: 'pointer',
+            fontSize: '14px',
+            padding: '0',
+            marginTop: '-2px',
+            '&:hover': {
+                color: this.colors.input,
+            },
+        });
+        this.windowContent = this.mk('window-content', {
+            padding: '6px 8px',
+            color: this.colors.text,
         });
     }
 
