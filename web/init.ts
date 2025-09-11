@@ -1,10 +1,12 @@
 import { CHUNK_UNIT, VERSION, Version } from "./constants.js";
+import { encrec } from "./encoding/self-encoder.js";
 import { NoiseMakerI } from "./noise/foundations.js";
 import { noiseAlgorithms } from "./noise/init.js";
 import { AvatarState } from "./state/avatar.js";
 import { CameraState } from "./state/camera.js";
 import { ChunkState } from "./state/chunk.js";
 import { RenderState } from "./state/render.js";
+import { StateRegistry } from "./state/state.js";
 
 export interface GameState {
     avatar: AvatarState;
@@ -15,7 +17,24 @@ export interface GameState {
     version: Version;
 }
 
-export function initialState(): GameState {
+/**
+ * The reference state used to compress the state when saving to URL.
+ * Useful to maintain the validity of URLs when only minor things change between versions.
+ *
+ * It is necessary to keep track of this because it is used as a dictionary to create the state
+ * codec, so changing this reference state creates a completely different encoder, which is not
+ * backwards compatible.
+ */
+export const REFERENCE_STATE = mkReferenceState();
+
+/**
+ * The initial game state, i.e. the reference state updated with what changed between the last
+ * compatible version and this version.
+ */
+export const INITIAL_STATE: GameState = StateRegistry.decode(encrec(REFERENCE_STATE));
+INITIAL_STATE.version = VERSION;
+
+function mkReferenceState(): GameState {
     const camDist = CHUNK_UNIT * 1.2 + 50;
     const center = CHUNK_UNIT / 2;
 
@@ -45,6 +64,8 @@ export function initialState(): GameState {
             heightMultiplier: 1,
         }),
         noise: noiseAlgorithms(),
-        version: VERSION,
+
+        // The last version with a URL-compatible state.
+        version: new Version('alpha', '2', 'bean'),
     }
 }

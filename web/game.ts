@@ -4,7 +4,7 @@ import { Position } from './coordinates.js';
 import { AutoCodec, Codec, Lexon64 } from './encoding/codecs.js';
 import { decrec, encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
-import { GameState, initialState } from './init.js';
+import { GameState, INITIAL_STATE, REFERENCE_STATE } from './init.js';
 import { noiseUI } from './noise/ui.js';
 import { Renderer } from './renderer.js';
 import { avatarUI } from './state/avatar.js';
@@ -67,7 +67,7 @@ class Game {
     keyboard: Keyboard;
     updateStats: () => void = () => { };
     readonly callbacks = new GameCallbacks(this);
-    state: GameState = initialState();
+    state: GameState = INITIAL_STATE;
 
     /** Encoder/decoder of noise state to a URL-friendly string. */
     codec: Codec<any, string>;
@@ -92,10 +92,9 @@ class Game {
     /** Create the noise codec and potentially load state from session storage or GET parameters. */
     prepareState(): void {
         const alphabet = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';
-        const statenc = encrec(this.state);
-        const urlCodec = new Lexon64(statenc, alphabet);
+        const encodedRef = encrec(REFERENCE_STATE);
+        const urlCodec = new Lexon64(encodedRef, alphabet);
         this.codec = new AutoCodec(urlCodec, StateRegistry);
-        this.state = StateRegistry.decode(statenc); // Live encoding/decoding test.
 
         const reload = sessionStorage.getItem(STATE_STORAGE_KEY);
         if (reload) {
