@@ -29,20 +29,30 @@ Welcome to Noisy, the procedural terrain sandbox.<br/>
 The goal of this project is to create and navigate interesting procedurally-generated terrain.<br/>
 You can create your own terrain by tweaking the parameters available in the control panels.
 
+<h3>Controls</h3>
+<ul>
+  <li><strong>WASD</strong> to move</li>
+  <li><strong>Mouse wheel</strong> to zoom</li>
+  <li><strong>Left click + mouse</strong> to pan around the map</li>
+  <li><strong>Right click + mouse</strong> to rotate the camera</li>
+</ul>
+
 <h3>Overview of the UI</h3>
 <ul>
-    <li><strong>Terrain Generation</strong> - Mix different noise types to create varied landscapes</li>
-<li><strong>Buttons</strong>
-<ul>
-<li><strong ${smallcaps}>Copy URL</strong> - Save the terrain as a shareable URL and copy it to the clipboard</li>
-<li><strong ${smallcaps}>Download</strong> - Download the terrain as a JSON file</li>
-<li><strong ${smallcaps}>Screenshot</strong> - Download a JPEG screenshot of the terrain</li>
-</ul>
-</li>
-    <li><strong>Chunks</strong> - Control how much terrain is rendered around the avatar</li>
-    <li><strong>Render</strong> - Adjust how the terrain is rendered</li>
-    <li><strong>Camera</strong> - Switch between free camera movement and following the avatar</li>
-    <li><strong>Avatar</strong> - Tweak the red sphere representing the avatar</li>
+  <li><strong>Terrain Generation</strong> - Mix different noise types to create varied landscapes</li>
+
+  <li><strong>Buttons</strong>
+    <ul>
+      <li><strong ${smallcaps}>Copy URL</strong> - Save the terrain as a shareable URL and copy it to the clipboard</li>
+      <li><strong ${smallcaps}>Download</strong> - Download the terrain as a JSON file</li>
+      <li><strong ${smallcaps}>Screenshot</strong> - Download a JPEG screenshot of the terrain</li>
+    </ul>
+  </li>
+
+  <li><strong>Chunks</strong> - Control how much terrain is rendered around the avatar</li>
+  <li><strong>Render</strong> - Adjust how the terrain is rendered</li>
+  <li><strong>Camera</strong> - Switch between free camera movement and following the avatar</li>
+  <li><strong>Avatar</strong> - Tweak the red sphere representing the avatar</li>
 </ul>
 
 <h3>Feedback</h3>
