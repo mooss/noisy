@@ -6,7 +6,7 @@ import { Gardener } from "./style.js";
  * A closeable window floating in the foreground.
  */
 export class Window {
-    private container: HtmlCssElement<HTMLDivElement>;
+    container: HtmlCssElement<HTMLDivElement>;
     private header: HtmlCssElement<HTMLDivElement>;
     private closeButton: HtmlCssElement<HTMLButtonElement>;
     private content: HtmlCssElement<HTMLDivElement>;

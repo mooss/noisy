@@ -117,3 +117,28 @@ export class GraphWidget extends Label {
         return { step, precision };
     }
 }
+
+/** A bar containing a checkbox and a button. */
+export class CheckBar {
+    constructor(
+        parent: HTMLElement, onClick: (checked: boolean) => void,
+        checkboxText: string, buttonText: string,
+    ) {
+        const bar = spawn('div', parent, Gardener.checkBar);
+        const checkboxContainer = spawn('div', bar);
+
+        const checkbox: HtmlCssElement<HTMLInputElement> = spawn(
+            'input', checkboxContainer, Gardener.checkBarCheckbox,
+        );
+        checkbox.type = 'checkbox';
+        checkbox.id = `checkbox-${Math.random().toString(36)}`;
+
+        const checkboxLabel = spawn('label', checkboxContainer, Gardener.labelText);
+        checkboxLabel.textContent = checkboxText;
+        checkboxLabel.setAttribute('for', checkbox.id);
+
+        const button = spawn('button', bar, Gardener.button);
+        button.textContent = buttonText;
+        button.addEventListener('click', () => onClick(checkbox.checked));
+    }
+}

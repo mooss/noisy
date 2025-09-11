@@ -70,12 +70,19 @@ export type MultiCssProperties = CssProperties[] & { merged(): CssProperties };
 export class Facet {
     facets: SingleFacet[] = []; // Public to make sure it is cloneable.
 
-    constructor(className: string, properties: CssProperties, public prefix?: string) {
-        this.add(className, properties);
+    constructor(className?: string, properties?: CssProperties, public prefix?: string) {
+        if (className != null && properties != null) this.add(className, properties);
     }
 
     add(className: string, properties: CssProperties) {
         this.facets.push(new SingleFacet(className, properties, this.prefix));
+    }
+
+    /** Build a new Facet based on this one but with additional properties. */
+    derive(className: string, properties: CssProperties, prefix?: string): Facet {
+        const res = new Facet();
+        // The additional facet must be added last to override the others.
+        return res.merge(this, new Facet(className, properties, prefix));
     }
 
     merge(...facets: Facet[]): this {
@@ -101,6 +108,9 @@ export class Appearance {
 
     checkbox: Facet;
     checkboxIndicator: string;
+
+    checkBar: Facet;
+    checkBarCheckbox: Facet;
 
     collapsibleBar: Facet;
 
@@ -222,6 +232,19 @@ export class Appearance {
         });
         this.checkboxIndicator = `input[type="checkbox"]:checked { background-color: ${this.colors.input}; }`;
 
+        this.checkBar = this.mk('dismiss-bar', {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '4px 6px',
+            backgroundColor: this.colors.inputBg,
+            borderTop: `1px solid ${this.colors.border}`,
+            marginTop: 'auto',
+        });
+        this.checkBarCheckbox = this.checkbox.derive('dismiss-bar-checkbox', {
+            marginRight: '5px',
+        });
+
         this.collapsibleBar = this.mk('collapsible-bar', {
             height: '6px',
             width: '100%',
@@ -332,7 +355,6 @@ export class Appearance {
             flex: '1',
             marginRight: '4px',
             color: this.colors.label,
-            height: '16px',
         });
 
         this.numberInput = this.mk('number-input', {
