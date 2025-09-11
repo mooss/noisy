@@ -1,5 +1,5 @@
 import { Avatar } from './avatar.js';
-import { CHUNK_UNIT } from './constants.js';
+import { CHUNK_UNIT, VERSION } from './constants.js';
 import { Position } from './coordinates.js';
 import { AutoCodec, Codec, Lexon64 } from './encoding/codecs.js';
 import { decrec, encrec } from './encoding/self-encoder.js';
@@ -18,8 +18,10 @@ import { FpsWidget, Keyboard } from './ui.js';
 import { tips } from './ui/tips.js';
 import { downloadData, dragAndDrop, toClipBoard } from './utils/utils.js';
 import { Window } from './gui/window.js';
+import { CheckBar } from './gui/widget.js';
 
 const STATE_STORAGE_KEY = 'load-state';
+const DONT_SHOW_WELCOME_STORAGE_KEY = VERSION.storageKey('dont-show-welcome');
 const smallcaps = 'style="font-variant: small-caps;"';
 const welcomeMessage = `
 Welcome to Noisy, the procedural terrain sandbox.<br/>
@@ -75,9 +77,6 @@ class Game {
         this.recomputeTerrain();
         this.updateAvatar();
         this.startAnimationLoop();
-
-        // Open the welcome window in the middle of the screen
-        new Window('Welcome!', welcomeMessage);
     }
 
     /** Create the noise codec and potentially load state from session storage or GET parameters. */
@@ -128,6 +127,8 @@ class Game {
 
         const tergen = new GUI(GUI.POSITION_RIGHT).title('Terrain Generation').collapsible();
         noiseUI(this.state.noise, tergen, this.callbacks);
+
+        this.welcome();
     }
 
     saveStateToUrl(): string {
@@ -187,6 +188,17 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
             zScoreGraph.update(stats.zScores);
         };
+    }
+
+    welcome(): void {
+        if (localStorage.getItem(DONT_SHOW_WELCOME_STORAGE_KEY) === 'true') return;
+
+        const win = new Window(`Noisy ${VERSION.string()}`, welcomeMessage);
+        new CheckBar(win.container, (checked: boolean) => {
+            if (checked)
+                localStorage.setItem(DONT_SHOW_WELCOME_STORAGE_KEY, 'true');
+            win.close();
+        }, "Don't show again", 'Close');
     }
 
     ///////////////
