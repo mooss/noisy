@@ -1,4 +1,4 @@
-import { initialState } from '../init.js';
+import { INITIAL_STATE } from '../init.js';
 import { ContinentalMix, Layered, Ridge, Simplex } from '../noise/algorithms.js';
 import { NoiseMap } from '../noise/containers.js';
 import { NoiseMakerI } from '../noise/foundations.js';
@@ -132,7 +132,7 @@ describe('NoiseCodec', () => {
         });
 
         it('should roundtrip complete game state unchanged from codec trained on subset', () => {
-            const gameState = initialState();
+            const gameState = INITIAL_STATE;
             const roundtripped = codec.roundtrip(gameState);
             expect(codec.encode(roundtripped)).toEqual(codec.encode(gameState));
         });
