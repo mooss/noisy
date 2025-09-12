@@ -10,9 +10,9 @@ abstract class NoiseWrapper<Params = any>
 }
 
 //TIP: terracing Adds steps in the terrain, creating terraces.
-//TIP: terracing_constant Use the same amount of terraces everywhere. Generates a blocky terrain with evenly-spaced terrain.
+//TIP: terracing_constant Use the same amount of terraces everywhere. \nCreates a blocky terrain with evenly-spaced terrain.
 interface TerracingP {
-    //TIP: terracing_steps Number of terraces used in the terrain. More terraces will create a smoother terrain.
+    //TIP: terracing_steps Number of terraces used in the terrain. \nMore terraces will create a smoother terrain.
     steps: number;
 }
 export class Terracing extends NoiseWrapper<TerracingP> {
@@ -26,15 +26,15 @@ export class Terracing extends NoiseWrapper<TerracingP> {
 }
 register('Terracing', Terracing);
 
-//TIP: terracing_noisy Use a different amount of terraces in different places. Creates a stepped and wobbly surface that increases in wobbleliness when the difference between the minimum and the maximum of terraces increases.
+//TIP: terracing_noisy Use a different amount of terraces in different places. \nCreates a stepped and wobbly surface that increases in wobbleliness when the difference between the minimum and the maximum of terraces increases.
 interface NoisyTerracingP {
-    //TIP: noisy_terrace_min Minimum number of terraces used in the terrain. More terraces will create smoother terrain.
+    //TIP: noisy_terrace_min Minimum number of terraces used in the terrain. \nMore terraces will create smoother terrain.
     min: number;
 
-    //TIP: noisy_terrace_max Maximum number of terraces used in the terrain. More terraces will create smoother terrain.
+    //TIP: noisy_terrace_max Maximum number of terraces used in the terrain. \nMore terraces will create smoother terrain.
     max: number;
 
-    //TIP: noisy_terracer Noise dictating how much terraces will be used at a given point, normalized between min and max.
+    //TIP: noisy_terracer Noise dictating how many terraces will be used at a given point, normalized between min and max.
     terracer: NoiseMakerI;
 }
 export class NoisyTerracing extends NoiseWrapper<NoisyTerracingP> {
@@ -62,10 +62,10 @@ register('NoisyTerracing', NoisyTerracing);
 
 //TIP: warping Distorts the coordinates to hide straight lines in the terrain, introducing vortex-like perturbations.
 interface WarpingP {
-    //TIP: warping_frequency Scale factor for the warping coordinates, dictating how dense the warping is. Higher values will make the warping effect repeat more frequently, making the effect more visible.
+    //TIP: warping_frequency Scale factor for the warping coordinates, dictating how dense the warping is. \nHigher values will make the warping effect repeat more frequently, making the effect more visible.
     frequency: number;
 
-    //TIP: warping_strength How much the warping effect distorts the coordinates. Higher value will make the terrain more swirly, making the effect more visible.
+    //TIP: warping_strength How much the warping effect distorts the coordinates. \nHigher values will make the terrain more swirly, making the effect more visible.
     strength: number;
 
     //TIP: warper Noise dictating the magnitude of the warping effect.
@@ -122,15 +122,15 @@ export class ProcessingPipeline extends NoiseMakerBase<ProcessingPipelineP> {
 }
 register('ProcessingPipeline', ProcessingPipeline);
 
-//TIP: tiling Groups neighboring coordinates together to form chunks of uniform height. Can create shapes looking like continents.
+//TIP: tiling Groups neighboring coordinates together to form chunks of uniform height. \nCreates shapes looking like continents, camouflage pattern or biomes.
 interface TilingP {
-    //TIP: tiling_coorscale Multiplier for the tile coordinates, dictates the tile density. Higher values will result in more tiles packed into a chunk.
+    //TIP: tiling_coorscale Multiplier for the tile coordinates, dictates the tile density. \nHigher values will result in more tiles packed into a chunk.
     coorscale: number;
 
     //TIP: tiling_enabled Toggles tiling on or off.
     enabled: boolean;
 
-    //TIP: tiling_noisescale Magnitude of the distortion applied to each tile. Higher values will make the tiles less square and more chaotic.
+    //TIP: tiling_noisescale Magnitude of the distortion applied to each tile. \nHigher values will make the tiles less square and more chaotic.
     noisescale: number;
 }
 export class Tiling extends NoiseWrapper<TilingP> {

@@ -36,10 +36,10 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             const mix = root.folder('Mixing').tooltip(tips.continental_threshold);
             mix.range(noise.p.threshold, 'low', 0, 1, .02)
                 .label('Low').tooltip(tips.continental_low).onChange(cb);
-            mix.range(noise.p.threshold, 'mid', 0, 1, .02)
-                .label('Mid').tooltip(tips.continental_mid).onChange(cb);
             mix.range(noise.p.threshold, 'high', 0, 1, .02)
                 .label('High').tooltip(tips.continental_high).onChange(cb);
+            mix.range(noise.p.threshold, 'mid', 0, 1, .02)
+                .label('Mid').tooltip(tips.continental_mid).onChange(cb);
             return;
         case 'ProcessingMap':
             mapUI(noise as ProcessingPipelineMap, root, cb, 'Terracing');

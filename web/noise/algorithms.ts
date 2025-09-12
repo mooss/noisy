@@ -28,10 +28,10 @@ function noiseStats(gen: NoiseFun, sampling: NoiseSamplerP): noiseStats {
 ///////////
 // Noise //
 
-//TIP: simplex Raw simplex noise, the foundamental terrain generation building block. Creates a landscape of smooth hills.
+//TIP: simplex Raw simplex noise, the fundamental terrain generation building block. \nCreates a landscape of smooth hills.
 export interface SimplexP {
     // Random source for simplex noise.
-    //TIP: simplex_seed Seed for the simplex noise generator. Altering the seed changes the pattern of the generated noise.
+    //TIP: simplex_seed Seed for the simplex noise generator. \nChanging the seed results in completely different values, but with similar properties.
     seed: number;
 }
 export class Simplex extends NoiseMakerBase<SimplexP> {
@@ -42,16 +42,16 @@ export class Simplex extends NoiseMakerBase<SimplexP> {
 }
 register('Simplex', Simplex);
 
-//TIP: ridge Simplex noise with a post-processing step to create a sharper terrain reminescent of a mountain chain.
+//TIP: ridge Simplex noise with a post-processing step. \nCreates a sharper terrain reminescent of a mountain chain.
 export interface RidgeP extends SimplexP {
     // When true, flips the signal, thus inverting the height.
     // Occurs after squaring the signal.
-    //TIP: ridge_invert Inverts the height, making valleys appear as ridges and vice versa.
+    //TIP: ridge_invert Inverts the height. \nMakes valleys appear as ridges and vice versa.
     invert: boolean;
 
     // When true, squares the signal.
     // Occurs after taking the absolute value.
-    //TIP: ridge_square Squares the height, giving a flatter appearance, with less dramatic peaks and hiding the folds.
+    //TIP: ridge_square Squares the height. \nGives a flatter appearance, with less dramatic peaks and hiding the folds.
     square: boolean;
 }
 export class Ridge extends NoiseMakerBase<RidgeP> {
@@ -72,16 +72,16 @@ register('Ridge', Ridge);
 //TIP: layered_simplex Multiple values (called octaves) of simplex noise layered on top of each other. Creates a more complex hilly terrain than plain simplex noise, with each octave adding more details.
 //TIP: layered_ridge Multiple values (called octaves) of simplex noise layered on top of each other. Creates a more complex mountaineous terrain than plain ridge noise, with each octave adding more details.
 export interface LayersP {
-    //TIP: layers_fundamental Base frequency for the first noise layer, controls the size of terrain features. Lower values creates broader, smoother terrain. Higher values will bring everything close together, resulting sharper terrain with steeper slopes.
+    //TIP: layers_fundamental Base frequency for the first noise layer, controls the size of terrain features. \nLower values creates broader, smoother terrain. Higher values will bring everything close together, resulting sharper terrain with steeper slopes.
     fundamental: number;
 
-    //TIP: layers_octaves Number of noise layers. More octaves will add details to the terrain.
+    //TIP: layers_octaves Number of noise layers. \nMore octaves will add details to the terrain.
     octaves: number;
 
-    //TIP: layers_persistence Amount by which the height of each successive octave is decreased. Lower values makes every subsequent octave contribute less to the terrain.
+    //TIP: layers_persistence Amount by which the height of each successive octave is decreased. \nHigher values makes every subsequent octave have a bigger impact, resulting in more bumpy terrain.
     persistence: number;
 
-    //TIP: layers_lacunarity Multiplier for the frequency of each successive octave. Higher values makes every subsequent octave pack more details, resulting in sharper terrain with steeper slopes.
+    //TIP: layers_lacunarity Multiplier for the frequency of each successive octave. \nHigher values makes every subsequent octave pack more details, resulting in sharper terrain with steeper slopes.
     lacunarity: number;
 }
 function layerNoise(noise: NoiseFun, layers: LayersP): NoiseFun {
@@ -140,23 +140,23 @@ register('Layered', Layered<any>);
 ///////////////
 // Noise mix //
 
-//TIP: continental_mix Ridge noise and simplex noise combined together. The ridge part (mountains) is what dictates the general shape of the terrain, whereas the simplex part (hills) influences the lower part of the terrain. The result is a montaineous terrain with the lower elevations made of smoother hills.
+//TIP: continental_mix Ridge noise and simplex noise combined together. \nCreates a montaineous terrain with the lower elevations made of smoother hills. \nThe mountains noise (ridge) is what dictates the general shape of the terrain. The hill noise (simplex) influences the lower part of the terrain. \nHighly experimental, it's hard to understand the parameters behaviour, this is mostly to test the concept of using a 'selecting' noise.
 interface ContinentalMixP<I extends NoiseMakerI> {
     //TIP: continental_bass The lower, hilly part of the terrain.
     bass: I;
 
-    //TIP: continental_treble The mountaineous part of the terrain. When its height is below the high threshold, the hill height is added to the mix. When above the high threshold, only mountains are present.
+    //TIP: continental_treble The higher, mountaineous part of the terrain.
     treble: I;
 
     //TIP: continental_threshold Thresholds dictating which noise (mountain or hill) will be used to decide the height and how to mix them.
     threshold: {
-        //TIP: continental_low Low cutoff point. When the mountain height is below this value, it fully decides the final height.
+        //TIP: continental_low Low cutoff point. \nWhen the mountain height is below this threshold, only the hill height is taken into account.
         low: number;
 
-        //TIP: continental_mid Controls the transition between mountains and hills when the mountain height is between the low and high thresholds. When lower, hill height has a bigger influence. When higher, mountain height has a bigger influence.
+        //TIP: continental_mid Controls the transition between mountains and hills when the mountain height is between the low and high thresholds. \nWhen lower, hill height has a bigger influence. When higher, mountain height has a bigger influence.
         mid: number;
 
-        //TIP: continental_high High cutoff point. When the mountain height is above this value, it fully decides the final height.
+        //TIP: continental_high High cutoff point. \nWhen the mountain height is above this value, it fully decides the final height.
         high: number;
     }
 }
