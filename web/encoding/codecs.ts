@@ -1,7 +1,7 @@
 import { compressToBase64, decompressFromBase64 } from "lz-string";
 import { combinations, mapit } from "../utils/iteration.js";
 import { sortedMap } from "../utils/maps.js";
-import { countNodes, cultivateObjectOrArray } from "../utils/tree.js";
+import { countNodes, cultivateTree } from "../utils/tree.js";
 import { Creator, decrec, encrec } from "./self-encoder.js";
 
 export interface Codec<From, To> {
@@ -59,7 +59,7 @@ export class Lexicon extends CodecABC<any, any> {
 
             return item;
         }
-        return cultivateObjectOrArray(translate, translate, document);
+        return cultivateTree(translate, translate, document);
     }
 
     decode(document: any): any {
@@ -70,7 +70,7 @@ export class Lexicon extends CodecABC<any, any> {
                 return item.slice(1);
             return item;
         }
-        return cultivateObjectOrArray(translate, translate, document);
+        return cultivateTree(translate, translate, document);
     }
 }
 
