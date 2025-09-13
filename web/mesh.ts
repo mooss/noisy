@@ -30,7 +30,7 @@ function _createHexagonGeometry(radius: number, height: number): THREE.ExtrudeGe
     });
 }
 
-// Computes the surface indices of for a square mesh.
+// Computes the surface indices for a square mesh.
 function surfaceIndices(size: number): number[] {
     const indices = [];
     for (let i = 0; i < size - 1; i++) {
@@ -57,7 +57,7 @@ function surfaceIndices(size: number): number[] {
 export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
     let { nblocks } = heights;
     const sampling = 1 / nblocks; // Distance between each vertex.
-    nblocks+=1; // Create one additional row and column to overlap this mesh and the next one.
+    nblocks += 1; // Create one additional row and column to overlap this mesh and the next one.
     const geometry = new THREE.BufferGeometry();
 
     const vertices = [];
@@ -66,18 +66,21 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     // Vertices and colors.
     for (let i = 0; i < nblocks; i++) {
         for (let j = 0; j < nblocks; j++) {
-            const height = heights.at(i * sampling, j * sampling);
-            const color = interpolateColors(palette, height);
+            const x = i * sampling; const y = j * sampling;
 
+            const height = heights.at(x, y);
             vertices.push(i, j, height);
+
+            const color = interpolateColors(palette, height);
             colors.push(color.r, color.g, color.b);
         }
     }
 
-    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+    const posbuffer = new THREE.BufferAttribute(new Float32Array(vertices), 3);
+    geometry.setAttribute('position', posbuffer);
     geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
     geometry.setIndex(surfaceIndices(nblocks));
-    geometry.computeVertexNormals();
+    geometry.setAttribute('normal', computeSquareNormals(posbuffer, nblocks));
 
     const material = new THREE.MeshStandardMaterial({
         vertexColors: true,
@@ -106,19 +109,19 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
  * @param palette - Color palette for height-based interpolation
  * @returns The generated prism mesh.
  */
-function createPrismMeshes(type: 'hexagon'|'square', heights: HeightGenerator, palette: Palette): THREE.Mesh {
+function createPrismMeshes(type: 'hexagon' | 'square', heights: HeightGenerator, palette: Palette): THREE.Mesh {
     const { nblocks } = heights;
     const sampling = 1 / nblocks; // Distance between each vertex.
     const isHex = type === 'hexagon';
     const ySpacingFactor = isHex ? Math.sqrt(3) / 2 : 1;
-    const hexRadius = Math.sqrt(1/3);
+    const hexRadius = Math.sqrt(1 / 3);
 
     const positions = [], normals = [], colors = [], indices = [];
     let indexOffset = 0;
 
     const baseGeometry = isHex
-          ? _createHexagonGeometry(hexRadius, 1).rotateZ(Math.PI / 2)
-          : new THREE.BoxGeometry().translate(0, 0, 0.5);
+        ? _createHexagonGeometry(hexRadius, 1).rotateZ(Math.PI / 2)
+        : new THREE.BoxGeometry().translate(0, 0, 0.5);
 
     const posAttr = baseGeometry.getAttribute('position');
     const normAttr = baseGeometry.getAttribute('normal');
@@ -169,4 +172,71 @@ export function createHexagonMesh(heights: HeightGenerator, palette: Palette): T
 
 export function createSquareMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
     return createPrismMeshes('square', heights, palette);
+}
+
+/**
+ * Computes vertex normals for the given vertex data.
+ * Adapted from THREE.BufferGeometry.computeVertexNormals
+ *
+ * @param positions - The vertices to work on.
+ * @param side      - The number of vertices on one side of a square.
+ * @returns the computed vertex normals.
+ */
+function computeSquareNormals(positions: THREE.BufferAttribute, side: number): THREE.BufferAttribute {
+    const normals = new THREE.BufferAttribute(new Float32Array(positions.count * 3), 3);
+    const pA = new THREE.Vector3(), pB = new THREE.Vector3(), pC = new THREE.Vector3();
+    const nA = new THREE.Vector3(), nB = new THREE.Vector3(), nC = new THREE.Vector3();
+    const cb = new THREE.Vector3(), ab = new THREE.Vector3();
+
+    const setFromIndex = (dest: THREE.Vector3, idx: number) => {
+        dest.fromBufferAttribute(positions, idx);
+    }
+
+    // Compute the normals for the triangle vertices at index a, b, and c.
+    const compute = (a: number, b: number, c: number) => {
+        setFromIndex(pA, a);
+        setFromIndex(pB, b);
+        setFromIndex(pC, c);
+
+        cb.subVectors(pC, pB);
+        ab.subVectors(pA, pB);
+        cb.cross(ab);
+
+        nA.fromBufferAttribute(normals, a);
+        nB.fromBufferAttribute(normals, b);
+        nC.fromBufferAttribute(normals, c);
+
+        nA.add(cb);
+        nB.add(cb);
+        nC.add(cb);
+
+        normals.setXYZ(a, nA.x, nA.y, nA.z);
+        normals.setXYZ(b, nB.x, nB.y, nB.z);
+        normals.setXYZ(c, nC.x, nC.y, nC.z);
+    }
+
+    for (let i = 0; i < side - 1; i++) {
+        for (let j = 0; j < side - 1; j++) {
+            const topLeft = i * side + j;
+            const topRight = i * side + (j + 1);
+            const bottomLeft = (i + 1) * side + j;
+            const bottomRight = (i + 1) * side + (j + 1);
+
+            compute(topLeft, bottomLeft, topRight);
+            compute(topRight, bottomLeft, bottomRight);
+        }
+    }
+
+    normalizeBufferAttribute(normals);
+    normals.needsUpdate = true;
+    return normals;
+}
+
+function normalizeBufferAttribute(buffer: THREE.BufferAttribute) {
+    const _vec = new THREE.Vector3();
+    for (let i = 0, ilen = buffer.count; i < ilen; i++) {
+        _vec.fromBufferAttribute(buffer, i);
+        _vec.normalize();
+        buffer.setXYZ(i, _vec.x, _vec.y, _vec.z);
+    }
 }
