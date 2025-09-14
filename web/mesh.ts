@@ -80,22 +80,11 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     geometry.setAttribute('position', posbuffer);
     geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
     geometry.setIndex(surfaceIndices(nblocks));
-    geometry.setAttribute('normal', computeSquareNormals(posbuffer, nblocks));
+    geometry.setAttribute('normal', computeSquareNormals(posbuffer, nblocks, heights));
 
     const material = new THREE.MeshStandardMaterial({
         vertexColors: true,
         side: THREE.FrontSide,
-        // Shading is clunky because the vertices at the edge of a mesh don't take into account
-        // vertices from the neighboring chunk and therefore have incorrect normal data which makes
-        // the seams very visible.
-        //
-        // Using flat shading has a pretty interesting old-school effect, so it can stay like that
-        // for now.
-        // The seams are still visible, but much less.
-        //
-        // Should shading be desirable in the future, it shouldn't be too hard to compute normals
-        // manually by taking inspiration from `computeVertexNormals` at https://github.com/mrdoob/three.js/blob/64b50b0910427c1bbeae01888ddc5be896dae227/src/core/BufferGeometry.js#L975.
-        flatShading: true,
     });
 
     return new THREE.Mesh(geometry, material);
@@ -176,56 +165,103 @@ export function createSquareMesh(heights: HeightGenerator, palette: Palette): TH
 
 /**
  * Computes vertex normals for the given vertex data.
- * Adapted from THREE.BufferGeometry.computeVertexNormals
+ * Adapted from THREE.BufferGeometry.computeVertexNormals.
  *
- * @param positions - The vertices to work on.
+ * The reason for all this complexity is that out-of-chunks vertices must be taken into account in
+ * order to compute correct normals.
+ * Without this, there are visible seams between the chunks.
+ *
+ * @param positions - The vertices to work on (acting as the cache).
  * @param side      - The number of vertices on one side of a square.
+ * @param height    - The height generator used for out-of-cache vertices.
  * @returns the computed vertex normals.
  */
-function computeSquareNormals(positions: THREE.BufferAttribute, side: number): THREE.BufferAttribute {
+function computeSquareNormals(
+    positions: THREE.BufferAttribute, side: number, heights: HeightGenerator,
+): THREE.BufferAttribute {
+    /////////////////////////
+    // Setup and utilities //
+
+    const sampling = 1 / (side - 1); // -1 to compensate for the overlap increment.
     const normals = new THREE.BufferAttribute(new Float32Array(positions.count * 3), 3);
     const pA = new THREE.Vector3(), pB = new THREE.Vector3(), pC = new THREE.Vector3();
     const nA = new THREE.Vector3(), nB = new THREE.Vector3(), nC = new THREE.Vector3();
     const cb = new THREE.Vector3(), ab = new THREE.Vector3();
 
-    const setFromIndex = (dest: THREE.Vector3, idx: number) => {
-        dest.fromBufferAttribute(positions, idx);
-    }
+    // Get the index corresponding to the given coordinates (returns null if out-of-bounds).
+    const indexOf = (x: number, y: number): number | null => {
+        if (x >= 0 && x < side && y >= 0 && y < side) {
+            return x * side + y;
+        }
+        return null;
+    };
 
-    // Compute the normals for the triangle vertices at index a, b, and c.
-    const compute = (a: number, b: number, c: number) => {
-        setFromIndex(pA, a);
-        setFromIndex(pB, b);
-        setFromIndex(pC, c);
+    // Returns the height at the given grid coordinates, using cache if within bounds.
+    const get = (gx: number, gy: number): number => {
+        if (gx >= 0 && gx < side && gy >= 0 && gy < side) {
+            const idx = (gx * side + gy) * 3 + 2;
+            return positions.array[idx];
+        }
+        return heights.at(gx * sampling, gy * sampling);
+    };
 
+    const setFromCoordinates = (dest: THREE.Vector3, x: number, y: number) => {
+        dest.x = x;
+        dest.y = y;
+        dest.z = get(x, y);
+    };
+
+    // Computes the normals for the current pA, pB and pC, but only adds to valid indices.
+    const compute = (a: number | null, b: number | null, c: number | null) => {
+        // Compute face normal.
         cb.subVectors(pC, pB);
         ab.subVectors(pA, pB);
         cb.cross(ab);
 
-        nA.fromBufferAttribute(normals, a);
-        nB.fromBufferAttribute(normals, b);
-        nC.fromBufferAttribute(normals, c);
+        const count = normals.count;
 
-        nA.add(cb);
-        nB.add(cb);
-        nC.add(cb);
-
-        normals.setXYZ(a, nA.x, nA.y, nA.z);
-        normals.setXYZ(b, nB.x, nB.y, nB.z);
-        normals.setXYZ(c, nC.x, nC.y, nC.z);
-    }
-
-    for (let i = 0; i < side - 1; i++) {
-        for (let j = 0; j < side - 1; j++) {
-            const topLeft = i * side + j;
-            const topRight = i * side + (j + 1);
-            const bottomLeft = (i + 1) * side + j;
-            const bottomRight = (i + 1) * side + (j + 1);
-
-            compute(topLeft, bottomLeft, topRight);
-            compute(topRight, bottomLeft, bottomRight);
+        if (a !== null && a >= 0 && a < count) {
+            nA.fromBufferAttribute(normals, a).add(cb);
+            normals.setXYZ(a, nA.x, nA.y, nA.z);
         }
-    }
+        if (b !== null && b >= 0 && b < count) {
+            nB.fromBufferAttribute(normals, b).add(cb);
+            normals.setXYZ(b, nB.x, nB.y, nB.z);
+        }
+        if (c !== null && c >= 0 && c < count) {
+            nC.fromBufferAttribute(normals, c).add(cb);
+            normals.setXYZ(c, nC.x, nC.y, nC.z);
+        }
+    };
+
+    // Computes the normals for the given coordinates, pointing at the top-right corner of the quad
+    // the normal must be computed on.
+    const computeFromCoordinates = (x: number, y: number) => {
+        // Get valid indices (null if out-of-bounds).
+        const topLeft = indexOf(x, y);
+        const topRight = indexOf(x, y + 1);
+        const bottomLeft = indexOf(x + 1, y);
+        const bottomRight = indexOf(x + 1, y + 1);
+
+        // First triangle: topLeft, bottomLeft, topRight.
+        setFromCoordinates(pA, x, y);        // Top left
+        setFromCoordinates(pB, x + 1, y);    // Bottom left
+        setFromCoordinates(pC, x, y + 1);    // Top right
+        compute(topLeft, topRight, bottomLeft);
+
+        // Second triangle: topRight, bottomRight, bottomLeft.
+        setFromCoordinates(pA, x, y + 1);        // Top right
+        setFromCoordinates(pC, x + 1, y + 1);    // Bottom right
+        // pB remains bottom left.
+        compute(topRight, bottomLeft, bottomRight);
+    };
+
+    ////////////////////////
+    // Actual computation //
+
+    for (let i = -1; i < side; i++)
+        for (let j = -1; j < side; j++)
+            computeFromCoordinates(i, j);
 
     normalizeBufferAttribute(normals);
     normals.needsUpdate = true;
