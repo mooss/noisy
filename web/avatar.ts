@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { GameCallbacks } from "./state/state.js";
-import { Keyboard } from './ui.js';
+import { Keyboard } from './ui/ui.js';
 import { AvatarState } from './state/avatar.js';
 import { vector3 } from './utils/maths.js';
 

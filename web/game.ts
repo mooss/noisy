@@ -14,7 +14,7 @@ import { renderUI } from './state/render.js';
 import { GameCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
-import { FpsWidget, Keyboard } from './ui.js';
+import { FpsWidget, Keyboard } from './ui/ui.js';
 import { tips } from './ui/tips.js';
 import { downloadData, dragAndDrop, toClipBoard } from './utils/utils.js';
 import { Window } from './gui/window.js';
