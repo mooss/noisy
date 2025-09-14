@@ -27,11 +27,19 @@ export interface GameState {
  */
 export const REFERENCE_STATE = mkReferenceState();
 
+const initialencd = encrec(REFERENCE_STATE);
+// With flat shading disabled, rendering without terraces is a much better default.
+// This default value cannot be set directly in the noise algorithms initialization function because
+// it would break the encoding.
+// The akwardness of this fields chain really highlights the importance of finding a better way to
+// organize the processing stack.
+initialencd.noise.params.top.params.algorithms.Constant.params.steps = 0;
+
 /**
  * The initial game state, i.e. the reference state updated with what changed between the last
  * compatible version and this version.
  */
-export const INITIAL_STATE: GameState = StateRegistry.decode(encrec(REFERENCE_STATE));
+export const INITIAL_STATE: GameState = StateRegistry.decode(initialencd);
 INITIAL_STATE.version = VERSION;
 
 function mkReferenceState(): GameState {
