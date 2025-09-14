@@ -44,9 +44,13 @@ export class Terrain {
     }
 
     private get blockSize() { return this.conf.chunks.blockSize }
-    private get verticalUnit() { return this.conf.render.verticalUnit }
     private get nblocks() { return this.conf.chunks.nblocks }
     private get loadRadius() { return this.conf.chunks.loadRadius }
+    private get verticalUnit() {
+        // Prevent the verticality to be exactly zero because it messes up with shading, basically
+        // negating directional light.
+        return Math.max(this.conf.render.verticalUnit, .0000001);
+    }
 
     /**
      * Returns the height function of the given chunk.
