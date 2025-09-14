@@ -68,7 +68,8 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             noiseUI_impl(noise.p.terracer, root.folder('Noise').tooltip(tips.noisy_terracer), cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'Tiling':
-            const tilef = root.folder('Tiling').close().tooltip(tips.tiling);
+            const tilef = root.folder('Tiling').tooltip(tips.tiling);
+            if (!noise.p.enabled) tilef.close();
             tilef.bool(noise.p, 'enabled')
                 .label('Enabled').tooltip(tips.tiling_enabled).onInput(cb);
             tilef.range(noise.p, 'coorscale', 1, 50, 1)
