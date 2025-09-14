@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## Alpha 3 "coriander" – Tooltips, welcome dialog & smooth shading
+
+This release adds user-facing documentation in the UI in the form of tooltips for most elements of the control panels and a welcome dialog presenting the project and how to use it.
+It also fixes normal computation at the edge of chunks, thus allowing to hide seams between chunks and to re-enable smooth shading.
+
+### Core engine & world model
+- **Default terrace steps set to 0**: the terrain looks better without terraces now that flat shading is disabled.
+- **Minimum vertical unit**: prevents shading artifacts when the terrain height multiplier is set to zero.
+
+### Rendering pipeline
+- **Fixed normal at the edges**: the normals now take vertices from neighboring chunks into account, removing seams that appeared between chunks.
+- **Smooth shading re-enabled**: flat shading was only enabled to hide the seams between chunks.
+
+### UI
+- **Welcome dialog**: a dismissible welcome window is displayed with project presentation, controls and UI overview.
+- **Tooltips**: algorithms, processing steps and most parameters now shows tooltips explaining what they do and how to use them.
+- **Reduce folder nesting**: most "Noise" folders have been removed, reducing nesting and clutter.
+
+### Storage & sharing
+- **Maintained URL compatibility**: URLs encoded for "bean" still work for "coriander".
+- **Persistent dismiss-state**: saves the choice to not show the welcome dialog again.
+
+## Implementation details
+- **Reference state encoding**: introduces `REFERENCE_STATE` used as dictionary for codec to keep URLs encoding stable when possible.
+- **Clean-build Makefile target**: splits `dist` into `clean-build` then `dist` to enable a clean build without producing the Go binary.
+- **Rename/reorganize**: `ui.ts` -> `ui/ui.ts`, `climbObjectOrArray` -> `climbTree` -> `cultivateTree`, remove redundant tree helpers.
+- **Tooltip class**: GUI element implementing the tooltips.
+- **Window widget**: draggable and closable floating windows with themed styling and header, used for the welcome dialog.
+- **CheckBar widget**: new UI widget pairing a checkbox with a button, used in the welcome dialog.
+
 ## Alpha 2 "bean" – post-processing & positions persistence
 
 The main improvements of this release are:
@@ -17,7 +47,7 @@ The main improvements of this release are:
 - **Flat terrain**: the 'Height multiplier' slider can be set to zero for completely flat terrains.
 - **Color palettes**: removed the 'Tectonic' palette and added a 'Rainbow' and a 'Coffe & milk' palettes.
 
-### UI & widgets
+### UI
 - **Improved folder indentation**: adjusted the UI styling to make the first level of folders more readable.
 - **Intuitive terracing control**: replaced the previous terracing 'interval' parameter with the more user-friendly 'steps' parameter.
 - **Removed 'Tectonic' palette**: the 'Tectonic' color palette can no longer be selected.
@@ -54,7 +84,7 @@ This initial release features a sandbox to edit and explore procedurally generat
 - **Red sphere avatar placeholder**: WASD keyboard control, follows terrain height at a fixed offset.
 - **Camera**: camera can be free or follow the avatar at the same angle and distance, rotate holding right click, pan around the map holding left click.
 
-### UI & widgets
+### UI
 - **Collapsible GUI**: left/right sidebars holding widgets, thin tab bar to show/hide.
 - **Parameter widgets**: boolean, number, range, select and deck widgets all wired to callbacks.
 - **FPS and stats graphs**: FPS counter and optional live charts to show terrain height distribution.
