@@ -29,8 +29,8 @@ const brightMountains: Palette = [
 ];
 
 const brightContinent: Palette = brightLow.concat(brightHills, brightMountains);
-
 const brightTerrain: Palette = brightSea.concat(brightLow, brightMountains);
+const paradise: Palette = brightSea.concat(brightLow, brightHills);
 
 // Interesting for the underside which can be used to seed continents.
 const tectonic: Palette = [
@@ -89,6 +89,7 @@ const rainbow: Palette = [
 ];
 
 export const palettes: Record<string, Palette> = {
+    'Paradise': paradise,
     'Bright terrain': brightTerrain,
     'Bright continent': brightContinent,
     'Fantasy': fantasy,

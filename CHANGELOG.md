@@ -12,6 +12,7 @@ It also fixes normal computation at the edge of chunks, thus allowing to hide se
 ### Rendering pipeline
 - **Fixed normal at the edges**: the normals now take vertices from neighboring chunks into account, removing seams that appeared between chunks.
 - **Smooth shading re-enabled**: flat shading was only enabled to hide the seams between chunks.
+- **Paradise palette**: bright colors; water -> sand -> grass -> forest -> hills.
 
 ### UI
 - **Welcome dialog**: a dismissible welcome window is displayed with project presentation, controls and UI overview.
