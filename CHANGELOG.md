@@ -32,6 +32,8 @@ It also fixes normal computation at the edge of chunks, thus allowing to hide se
 
 ## Alpha 2 "bean" – post-processing & positions persistence
 
+**Commit** `076b5b20470ad26c994e38d3023c537e9e29b84c`.
+
 The main improvements of this release are:
 - Additional post-processing options (warping, noisy terracing and tiling).
 - Persistence of avatar and camera positions.
@@ -65,6 +67,8 @@ The main improvements of this release are:
 - **UI naming consistency**: harmonized UI method and class names (e.g., `readOnly` → `static`, `buttonBar` → `buttons`).
 
 ## Alpha 1 "acorn" – initial public release
+
+**Commit** `a019e99ec7670826a31ce9a27bf46f301abfa34d`.
 
 This initial release features a sandbox to edit and explore procedurally generated terrain, with:
 - A WASD-controllable avatar.
