@@ -48,7 +48,7 @@ export abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params
     abstract get low(): number;
     abstract get high(): number;
     recompute(): void { }
-    encode(): SelfEncoded { return { meta: { class: this.class }, params: encrec(this.p) } }
+    encode(): SelfEncoded { return { '#meta': { class: this.class }, params: encrec(this.p) } }
 
     normalised(low: number, high: number): NoiseFun {
         const mapper = rangeMapper(this.low, this.high, low, high);

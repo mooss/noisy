@@ -4,7 +4,7 @@ import { AutoAssign, mapObjectOrArray, mapRequired } from "../utils/objects.js";
 // Primitives //
 
 export interface SelfEncoded {
-    meta: { class: string };
+    '#meta': { class: string };
     params: any;
 }
 export interface SelfEncoder {
@@ -34,7 +34,7 @@ export function encrec(obj: any): any {
     // Self-encoded object through a string property or a method returning a string.
     const cls = classof(obj);
     if (typeof cls === 'string')
-        return { params: { ...mapRequired(encrec, obj) }, meta: { class: cls } }
+        return { params: { ...mapRequired(encrec, obj) }, '#meta': { class: cls } }
 
     // A plain object, array or primitive that will be encoded as-is.
     return mapObjectOrArray(encrec, obj);
@@ -48,9 +48,9 @@ export interface Creator<Type> {
 }
 
 export function decrec<Type>(data: any, creator: Creator<Type>): any {
-    if (typeof data?.meta?.class !== 'string' || data?.params === undefined)
+    if (typeof data?.['#meta']?.class !== 'string' || data?.params === undefined)
         return mapObjectOrArray((nested: any) => decrec(nested, creator), data);
-    return creator.create(data.meta.class, decrec(data.params, creator));
+    return creator.create(data['#meta'].class, decrec(data.params, creator));
 }
 
 export type Ctor<Type, Params = any> = new (params: Params) => Type;
