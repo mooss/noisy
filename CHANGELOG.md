@@ -23,7 +23,7 @@ It also fixes normal computation at the edge of chunks, thus allowing to hide se
 - **Maintained URL compatibility**: URLs encoded for "bean" still work for "coriander".
 - **Persistent dismiss-state**: saves the choice to not show the welcome dialog again.
 
-## Implementation details
+### Implementation details
 - **Reference state encoding**: introduces `REFERENCE_STATE` used as dictionary for codec to keep URLs encoding stable when possible.
 - **Clean-build Makefile target**: splits `dist` into `clean-build` then `dist` to enable a clean build without producing the Go binary.
 - **Rename/reorganize**: `ui.ts` -> `ui/ui.ts`, `climbObjectOrArray` -> `climbTree` -> `cultivateTree`, remove redundant tree helpers.
