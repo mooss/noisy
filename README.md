@@ -45,6 +45,14 @@ Try it [now](https://mooss.github.io/noisy/coriander).
   </tr>
 </table>
 
+## Resources
+
+If you are curious about procedural generation, [Red Blob Games](https://www.redblobgames.com) is a fantastic source of inspiration that provides great explanations and interactive examples.
+A few particularly interesting posts:
+ - [Making maps with noise functions](https://www.redblobgames.com/maps/terrain-from-noise/)
+ - [Voronoi maps tutorial](https://www.redblobgames.com/x/2022-voronoi-maps-tutorial/)
+ - [Mapgen4](https://www.redblobgames.com/maps/mapgen4/)
+
 ## Run locally
 
 ```bash
