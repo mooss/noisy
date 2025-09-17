@@ -2,6 +2,8 @@
 
 ## Alpha 3 "coriander" – Tooltips, welcome dialog & smooth shading
 
+**Commit** `718a1b1fdf1a30ff7d9de4b99fbc75bc34d3eeb9`.
+
 This release adds user-facing documentation in the UI in the form of tooltips for most elements of the control panels and a welcome dialog presenting the project and how to use it.
 It also fixes normal computation at the edge of chunks, thus allowing to hide seams between chunks and to re-enable smooth shading.
 
