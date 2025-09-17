@@ -32,12 +32,12 @@ const initialencd = encrec(REFERENCE_STATE);
 // With flat shading disabled, rendering without terraces is a much better default.
 // This default value cannot be set directly in the noise algorithms initialization function because
 // it would break the encoding.
-initialencd.noise.params.top.params.algorithms.Constant.params.steps = 0;
+initialencd.noise.top.algorithms.Constant.steps = 0;
 
 // Simplex is simpler to experiment with than continental mix because of all its parameters.
 // The akwardness of this fields chain really highlights the importance of finding a better way to
 // organize the processing stack.
-initialencd.noise.params.top.params.wrapped.params.wrapped.params.wrapped.params.current = 'Simplex';
+initialencd.noise.top.wrapped.wrapped.wrapped.current = 'Simplex';
 
 /**
  * The initial game state, i.e. the reference state updated with what changed between the last
@@ -64,7 +64,7 @@ function mkReferenceState(): GameState {
         avatar: new AvatarState({
             size: 3,
             heightOffset: 0,
-            position: {x: .5, y: .5, z: 0}, // Middle of the first chunk.
+            position: { x: .5, y: .5, z: 0 }, // Middle of the first chunk.
         }),
         render: new RenderState({
             style: 'surface',

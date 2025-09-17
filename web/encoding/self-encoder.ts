@@ -3,12 +3,12 @@ import { AutoAssign, mapObjectOrArray, mapRequired } from "../utils/objects.js";
 ////////////////
 // Primitives //
 
-export interface SelfEncoded {
+export type SelfEncoded<T> = T & {
     '#meta': { class: string };
-    params: any;
 }
-export interface SelfEncoder {
-    encode(): SelfEncoded;
+
+export interface SelfEncoder<T> {
+    encode(): SelfEncoded<T>;
 }
 
 export abstract class AutoEncoder<T> extends AutoAssign<T> {
@@ -34,7 +34,7 @@ export function encrec(obj: any): any {
     // Self-encoded object through a string property or a method returning a string.
     const cls = classof(obj);
     if (typeof cls === 'string')
-        return { params: { ...mapRequired(encrec, obj) }, '#meta': { class: cls } }
+        return { ...mapRequired(encrec, obj), '#meta': { class: cls } };
 
     // A plain object, array or primitive that will be encoded as-is.
     return mapObjectOrArray(encrec, obj);
@@ -44,13 +44,14 @@ export function encrec(obj: any): any {
 // Decoding //
 
 export interface Creator<Type> {
-    create(name: string, params: any): Type;
+    create(data: SelfEncoded<Type>): Type;
 }
 
 export function decrec<Type>(data: any, creator: Creator<Type>): any {
-    if (typeof data?.['#meta']?.class !== 'string' || data?.params === undefined)
-        return mapObjectOrArray((nested: any) => decrec(nested, creator), data);
-    return creator.create(data['#meta'].class, decrec(data.params, creator));
+    const res = mapObjectOrArray((nested: any) => decrec(nested, creator), data);
+    if (typeof res?.['#meta']?.class === 'string')
+        return creator.create(res);
+    return res;
 }
 
 export type Ctor<Type, Params = any> = new (params: Params) => Type;
@@ -68,9 +69,11 @@ export class Registry<Type> {
         return true;
     }
 
-    create(name: string, params: any): any {
-        const ructor = this.classes.get(name);
-        return ructor ? new ructor(params) : params;
+    create(data: SelfEncoded<Type>): any {
+        const ructor = this.classes.get(data['#meta'].class);
+        // Keeping the metadata will corrupt the encoding with nested #meta fields when re-encoding.
+        delete data['#meta'];
+        return ructor ? new ructor(data) : data;
     }
 
     registered(name: string): boolean { return this.classes.has(name) }

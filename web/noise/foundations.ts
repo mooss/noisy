@@ -10,7 +10,7 @@ export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'M
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;
 
-export interface NoiseMakerI<Params = any> extends SelfEncoder {
+export interface NoiseMakerI<Params = any> extends SelfEncoder<Params> {
     p: Params;
     readonly class: NoiseClass;
 
@@ -48,7 +48,9 @@ export abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params
     abstract get low(): number;
     abstract get high(): number;
     recompute(): void { }
-    encode(): SelfEncoded { return { '#meta': { class: this.class }, params: encrec(this.p) } }
+    encode(): SelfEncoded<Params> {
+        return { '#meta': { class: this.class }, ...encrec(this.p) };
+    }
 
     normalised(low: number, high: number): NoiseFun {
         const mapper = rangeMapper(this.low, this.high, low, high);
