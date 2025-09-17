@@ -5,7 +5,7 @@ Try it [now](https://mooss.github.io/noisy/coriander).
 
 ## Features
 
-- **Read-time feedback** - See terrain change as you adjust parameters
+- **Real-time feedback** - See terrain change as you adjust parameters
 - **Shareable creations** - Save and load state via URL or JSON drag-and-drop
 - **Infinite terrain** - Move across the infinite terrain thanks to dynamic chunks loading
 
