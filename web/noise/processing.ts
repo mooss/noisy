@@ -1,12 +1,15 @@
 import { register } from "../state/state.js";
+import { AlgoPicker } from "./containers.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
 
-interface NoiseWrapperP { wrapped?: NoiseMakerI }
-abstract class NoiseWrapper<Params = any>
-    extends NoiseMakerBase<Params & NoiseWrapperP> {
-    get low(): number { return this.p.wrapped.low }
-    get high(): number { return this.p.wrapped.high }
-    recompute(): void { this.p.wrapped.recompute() }
+////////////////////
+// Noise wrappers //
+
+abstract class NoiseWrapper<Params = any> extends NoiseMakerBase<Params> {
+    wrapped: NoiseMakerI;
+    get low(): number { return this.wrapped.low }
+    get high(): number { return this.wrapped.high }
+    recompute(): void { this.wrapped.recompute() }
 }
 
 //TIP: terracing Adds steps in the terrain, creating terraces.
@@ -17,9 +20,8 @@ interface TerracingP {
 }
 export class Terracing extends NoiseWrapper<TerracingP> {
     get class(): NoiseClass { return 'Terracing' }
-    static build(params: TerracingP): Terracing { return new Terracing({ ...params, wrapped: null }) }
     make(): NoiseFun {
-        const fun = this.p.wrapped.make();
+        const fun = this.wrapped.make();
         if (this.p.steps == 0) return fun;
         return (x, y) => Math.round(fun(x, y) * this.p.steps) / this.p.steps;
     }
@@ -39,12 +41,8 @@ interface NoisyTerracingP {
 }
 export class NoisyTerracing extends NoiseWrapper<NoisyTerracingP> {
     get class(): NoiseClass { return 'NoisyTerracing' }
-    static build(params: NoisyTerracingP): NoisyTerracing {
-        return new NoisyTerracing({ ...params, wrapped: null });
-    }
-
     make(): NoiseFun {
-        const fun = this.p.wrapped.make();
+        const fun = this.wrapped.make();
         const min = this.p.min; const max = this.p.max;
         if (min == 0 && max == 0) return fun;
 
@@ -73,10 +71,9 @@ interface WarpingP {
 }
 export class Warping extends NoiseWrapper<WarpingP> {
     get class(): NoiseClass { return 'Warping' }
-    static build(params: WarpingP): Warping { return new Warping({ ...params, wrapped: null }) }
 
     make(): NoiseFun {
-        const fun = this.p.wrapped.make();
+        const fun = this.wrapped.make();
         if (this.p.strength == 0) return fun;
         const warp = this.p.warper.normalised(0, 1);
         return (x, y) => {
@@ -89,38 +86,11 @@ export class Warping extends NoiseWrapper<WarpingP> {
     }
 
     recompute(): void {
-        this.p.wrapped.recompute();
+        this.wrapped.recompute();
         this.p.warper.recompute();
     }
 }
 register('Warping', Warping);
-
-interface ProcessingPipelineP { top: NoiseMakerI }
-export class ProcessingPipeline extends NoiseMakerBase<ProcessingPipelineP> {
-    get class(): NoiseClass { return 'ProcessingPipeline' }
-    get low(): number { return this.p.top.low }
-    get high(): number { return this.p.top.high }
-    make(): NoiseFun { return this.p.top.make() }
-    recompute(): void { this.p.top.recompute() }
-
-    /**
-     * Returns an empty tower, use this and the stack method to define the tower with empty
-     * wrappers.
-     */
-    static build(top: NoiseMakerI): ProcessingPipeline { return new ProcessingPipeline({ top }) }
-
-    /**
-     * Stacks noise wrappers on top of the previous, linking each with the one below.
-     */
-    stack(...floors: Array<NoiseMakerI<NoiseWrapperP>>): this {
-        for (let i = floors.length - 1; i >= 0; --i) {
-            floors[i].p.wrapped = this.p.top;
-            this.p.top = floors[i];
-        }
-        return this;
-    }
-}
-register('ProcessingPipeline', ProcessingPipeline);
 
 //TIP: tiling Groups neighboring coordinates together to form chunks of uniform height. \nCreates shapes looking like continents, camouflage pattern or biomes.
 interface TilingP {
@@ -136,7 +106,7 @@ interface TilingP {
 export class Tiling extends NoiseWrapper<TilingP> {
     get class(): NoiseClass { return 'Tiling' }
     make(): NoiseFun {
-        const fun = this.p.wrapped.normalised(0, 1);
+        const fun = this.wrapped.normalised(0, 1);
         if (!this.p.enabled) return fun;
         return (x, y) => {
             const raw = fun(x, y);
@@ -149,3 +119,43 @@ export class Tiling extends NoiseWrapper<TilingP> {
     get high() { return 1; }
 }
 register('Tiling', Tiling)
+
+////////////////////
+// Noise pipeline //
+
+interface NoisePipelineP {
+    pipeline: NoiseWrapper[];
+    base: NoiseMakerI;
+}
+export class NoisePipeline extends NoiseMakerBase<NoisePipelineP> {
+    assembled: NoiseMakerI;
+    constructor(params: NoisePipelineP) {
+        super(params);
+        this.assembled = this.p.base;
+        for (const wrapper of this.p.pipeline) {
+            wrapper.wrapped = this.assembled;
+            this.assembled = wrapper;
+        }
+    }
+
+    class: NoiseClass = 'NoisePipeline';
+    make(): NoiseFun { return this.assembled.make() }
+    get low(): number { return this.assembled.low }
+    get high(): number { return this.assembled.high }
+}
+register('NoisePipeline', NoisePipeline);
+
+/////////////////////
+// Pipeline picker //
+
+export class PipelinePicker extends AlgoPicker<NoiseWrapper> {
+    wrapped: NoiseMakerI;
+    get algorithm(): NoiseWrapper {
+        const res = super.algorithm;
+        res.wrapped = this.wrapped;
+        return res;
+    }
+    set algorithm(algo: string) { this.p.current = algo }
+    get class(): NoiseClass { return 'PipelinePicker' };
+}
+register('PipelinePicker', PipelinePicker);

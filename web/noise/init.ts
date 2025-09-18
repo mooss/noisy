@@ -1,8 +1,8 @@
 import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, Ridge, Simplex } from "./algorithms.js";
-import { NoiseMap, ProcessingPipelineMap } from "./containers.js";
+import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
-import { NoisyTerracing, ProcessingPipeline, Terracing, Tiling, Warping } from "./processing.js";
+import { NoisePipeline, NoisyTerracing, PipelinePicker, Terracing, Tiling, Warping } from "./processing.js";
 
 export function noiseAlgorithms(): NoiseMakerI {
     const f = {
@@ -54,20 +54,19 @@ export function noiseAlgorithms(): NoiseMakerI {
         threshold: { low: .28, mid: .64, high: .56 },
     });
 
-    const map = new NoiseMap({
+    const map = new AlgoPicker({
         algorithms: {
             'Simplex': simplex,
             'Ridge': ridge,
             'Continental mix': comix,
         },
-        current: 'Continental mix',
+        current: 'Simplex',
     });
-    map.recompute();
 
-    const terracing = new ProcessingPipelineMap({
+    const terracing = new PipelinePicker({
         algorithms: {
-            'Constant': Terracing.build({ steps: 25 }),
-            'Noisy': NoisyTerracing.build({
+            'Constant': new Terracing({ steps: 0 }),
+            'Noisy': new NoisyTerracing({
                 min: 40, max: 50,
                 terracer: new Layered({
                     noise: new Simplex(c(f.sbase)),
@@ -82,20 +81,25 @@ export function noiseAlgorithms(): NoiseMakerI {
             }),
         },
         current: 'Constant',
-        wrapped: undefined,
     });
 
-    return ProcessingPipeline.build(map).stack(
-        terracing,
-        Warping.build({
-            frequency: 2.25,
-            strength: .08,
-            warper: new Simplex(c(f.sbase)),
-        }),
-        new Tiling({
-            coorscale: 3,
-            noisescale: 2,
-            enabled: false,
-        }),
-    )
+    const res = new NoisePipeline({
+        base: map,
+        pipeline: [
+            new Tiling({
+                coorscale: 3,
+                noisescale: 2,
+                enabled: false,
+            }),
+            new Warping({
+                frequency: 2.25,
+                strength: .08,
+                warper: new Simplex(c(f.sbase)),
+            }),
+            terracing,
+        ],
+    });
+    res.recompute();
+
+    return res;
 }

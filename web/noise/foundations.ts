@@ -4,8 +4,14 @@ import { rangeMapper } from "../utils/maths.js";
 /////////////////
 // Noisemaking //
 
-export type NoiseClass = 'Simplex' | 'Layered' | 'Ridge' | 'ContinentalMix' | 'Map' | 'Terracing'
-    | 'Warping' | 'ProcessingPipeline' | 'NoisyTerracing' | 'ProcessingMap' | 'Tiling';
+// Noise functions, processing and data structures that can be encoded and decoded.
+export type NoiseClass =
+    // Noise functions.
+    'Simplex' | 'Ridge' | 'Layered' | 'ContinentalMix'
+    // Noise processing.
+  | 'Terracing' | 'NoisyTerracing' | 'Warping' | 'Tiling'
+    // Noise data structures.
+  | 'NoisePipeline' | 'AlgoPicker' | 'PipelinePicker';
 
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;

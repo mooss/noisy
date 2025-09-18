@@ -1,10 +1,11 @@
 import { Panel } from "../gui/gui.js";
 import { GameCallbacks } from "../state/state.js";
+import { tips } from "../ui/tips.js";
 import { foreachEntries } from "../utils/objects.js";
 import { Layered } from "./algorithms.js";
-import { NoiseMap, ProcessingPipelineMap } from "./containers.js";
+import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
-import { tips } from "../ui/tips.js";
+import { PipelinePicker } from "./processing.js";
 
 export function noiseUI(noise: NoiseMakerI, root: Panel, cb: GameCallbacks) {
     noiseUI_impl(noise, root, () => {
@@ -41,11 +42,11 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             mix.range(noise.p.threshold, 'mid', 0, 1, .02)
                 .label('Mid').tooltip(tips.continental_mid).onChange(cb);
             return;
-        case 'ProcessingMap':
-            mapUI(noise as ProcessingPipelineMap, root, cb, 'Terracing');
+        case 'PipelinePicker':
+            mapUI(noise as PipelinePicker, root, cb, 'Terracing');
             return noiseUI_impl(noise.p.wrapped, root, cb);
-        case 'Map':
-            return mapUI(noise as NoiseMap<any>, root, cb, 'Height');
+        case 'AlgoPicker':
+            return mapUI(noise as AlgoPicker<any>, root, cb, 'Height');
         case 'Terracing':
             root.range(noise.p, 'steps', 0, 100, 1)
                 .label('Terraces').onInput(cb).tooltip(tips.terracing_steps);
@@ -58,8 +59,12 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
                 .label('Frequency').tooltip(tips.warping_frequency).onInput(cb);
             noiseUI_impl(noise.p.warper, wrp, cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
-        case 'ProcessingPipeline':
-            return noiseUI_impl(noise.p.top, root, cb);
+        case 'NoisePipeline':
+            noiseUI_impl(noise.p.base, root, cb);
+            for (const pipe of noise.p.pipeline) {
+                noiseUI_impl(pipe, root, cb);
+            }
+            return
         case 'NoisyTerracing':
             root.range(noise.p, 'min', 0, 100, 1)
                 .label('Min terraces').tooltip(tips.noisy_terrace_min).onInput(cb);
@@ -106,12 +111,12 @@ function title2tooltip(title: string): string {
 }
 interface tooltiper { tooltip(tip: string): void; }
 function addTooltip(title: string, ui: tooltiper) {
-        const tooltip = title2tooltip(title);
-        if (tooltip != null) ui.tooltip(tooltip);
+    const tooltip = title2tooltip(title);
+    if (tooltip != null) ui.tooltip(tooltip);
 }
 
-function mapUI(noise: NoiseMap<any>, root: Panel, cb: () => void, title: string) {
-    const pick = noise as NoiseMap<any>;
+function mapUI(noise: AlgoPicker<any>, root: Panel, cb: () => void, title: string) {
+    const pick = noise as AlgoPicker<any>;
     const algos = pick.p.algorithms;
     const fold = root.folder(title);
     const deck = fold.deck();
@@ -127,7 +132,6 @@ function mapUI(noise: NoiseMap<any>, root: Panel, cb: () => void, title: string)
         const alg = algos[key];
 
         addTooltip(key, card);
-
         noiseUI_impl(alg, card, cb);
     }
 }
