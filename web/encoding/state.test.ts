@@ -1,9 +1,9 @@
 import { INITIAL_STATE } from '../init.js';
 import { ContinentalMix, Layered, Ridge, Simplex } from '../noise/algorithms.js';
-import { NoiseMap } from '../noise/containers.js';
+import { AlgoPicker } from '../noise/containers.js';
 import { NoiseMakerI } from '../noise/foundations.js';
 import { noiseAlgorithms } from '../noise/init.js';
-import { Terracing } from '../noise/processing.js';
+import { NoisePipeline, Terracing } from '../noise/processing.js';
 import { StateRegistry } from '../state/state.js';
 import { AutoCodec, Lexon64 } from './codecs.js';
 
@@ -29,24 +29,29 @@ describe('NoiseCodec', () => {
     });
 
     describe('encode/decode', () => {
-        it('should roundtrip a noise algorithm unchanged', () => {
-            const terraced = new Terracing({
-                steps: 27,
-                wrapped: new NoiseMap({
+        it('should roundtrip a noise pipeline unchanged', () => {
+            const terraced = new NoisePipeline({
+                pipeline: [
+                    new Terracing({
+                        steps: 27,
+                    })
+                ],
+                base: new AlgoPicker({
                     algorithms: {
                         'test': new Simplex({ seed: 42 })
-                    }
+                    },
+                    current: 'test',
                 })
             });
+
             const decoded = codec.roundtrip(terraced);
+            expect(decoded).toBeInstanceOf(NoisePipeline);
+            expect(decoded.class).toBe('NoisePipeline');
+            expect(decoded.assembled.p.steps).toEqual(27);
 
-            expect(decoded).toBeInstanceOf(Terracing);
-            expect(decoded.class).toBe('Terracing');
-            expect(decoded.p.steps).toEqual(27);
-
-            const inner = decoded.p.wrapped;
-            expect(inner).toBeInstanceOf(NoiseMap);
-            expect(inner.class).toBe('Map');
+            const inner = decoded.assembled.wrapped;
+            expect(inner).toBeInstanceOf(AlgoPicker<Simplex>);
+            expect(inner.class).toBe('AlgoPicker');
             expect(inner.p.algorithms['test']).toBeInstanceOf(Simplex);
         });
 
@@ -103,17 +108,18 @@ describe('NoiseCodec', () => {
             expect(decoded.p.treble).toBeInstanceOf(Ridge);
         });
 
-        it('should handle NoiseMap', () => {
-            const map = new NoiseMap({
+        it('should handle AlgoPicker', () => {
+            const map = new AlgoPicker({
                 algorithms: {
                     'test1': new Simplex({ seed: 1 }),
                     'test2': new Ridge({ seed: 2, invert: true, square: false })
-                }
+                },
+                current: 'test1',
             });
             const decoded = codec.roundtrip(map);
 
-            expect(decoded).toBeInstanceOf(NoiseMap);
-            expect(decoded.class).toBe('Map');
+            expect(decoded).toBeInstanceOf(AlgoPicker);
+            expect(decoded.class).toBe('AlgoPicker');
             expect(Object.keys(decoded.p.algorithms)).toEqual(['test1', 'test2']);
             expect(decoded.p.algorithms['test1']).toBeInstanceOf(Simplex);
         });

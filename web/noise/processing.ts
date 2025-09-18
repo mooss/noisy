@@ -5,6 +5,9 @@ import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations
 ////////////////////
 // Noise wrappers //
 
+// Applies pre-processing and/or post-processing to a noise algorithm.
+// Meant to be used as part of a NoisePipeline, otherwise the wrapped noise must be set manually and
+// it will anyway not encode/decode properly.
 abstract class NoiseWrapper<Params = any> extends NoiseMakerBase<Params> {
     wrapped: NoiseMakerI;
     get low(): number { return this.wrapped.low }
