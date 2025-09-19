@@ -8,6 +8,7 @@
     "@types/jest": "^30.0.0",
     "@types/three": "^0.178.1",
     "jest": "^30.1.3",
+    "tinybench": "^5.0.1",
     "ts-jest": "^29.4.1",
     "vite": "^7.1.5"
   }
