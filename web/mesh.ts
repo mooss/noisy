@@ -7,19 +7,27 @@ import { interpolateColors } from './utils/graphics.js';
 // Surface mesh //
 
 // Computes the surface indices for a square mesh.
-function surfaceIndices(size: number): number[] {
-    const indices = [];
-    for (let i = 0; i < size - 1; i++) {
-        for (let j = 0; j < size - 1; j++) {
-            const topLeft = i * size + j;
-            const topRight = i * size + (j + 1);
-            const bottomLeft = (i + 1) * size + j;
-            const bottomRight = (i + 1) * size + (j + 1);
+function surfaceIndices(nvertices: number): number[] {
+    const side = nvertices - 1; // Length of the side of the indices matrix.
+    const indices = new Array<number>(6 * side * side);
 
-            indices.push(topLeft, bottomLeft, topRight);
-            indices.push(topRight, bottomLeft, bottomRight);
+    let k = 0; // Running index.
+    for (let i = 0; i < side; i++) {
+        for (let j = 0; j < side; j++) {
+            const topLeft = i * nvertices + j;
+            const topRight = i * nvertices + (j + 1);
+            const bottomLeft = (i + 1) * nvertices + j;
+            const bottomRight = (i + 1) * nvertices + (j + 1);
+
+            indices[k++] = topLeft;
+            indices[k++] = bottomLeft;
+            indices[k++] = topRight;
+            indices[k++] = topRight;
+            indices[k++] = bottomLeft;
+            indices[k++] = bottomRight;
         }
     }
+
     return indices;
 }
 

@@ -76,3 +76,16 @@ Manual normalization lowers it back to ~188 it/s but it's still a big improvemen
 |   3 |  189 ± 0.41% |  189 ± 5 |     378 |
 |   4 |  189 ± 0.37% |  189 ± 5 |     378 |
 |   5 |  189 ± 0.37% |  189 ± 5 |     378 |
+
+### Pre-allocate index array
+
+Pre-allocating this array is a much bigger performance improvement that I expected:
+| Run | Mean         | Median   | Samples |
+|-----|--------------|----------|---------|
+|   1 |  203 ± 0.58% |  205 ± 2 |     404 |
+|   2 |  206 ± 0.52% |  208 ± 1 |     410 |
+|   3 |  207 ± 0.48% |  208 ± 3 |     412 |
+|   4 |  208 ± 0.36% |  207 ± 4 |     415 |
+|   5 |  208 ± 0.23% |  207 ± 4 |     417 |
+
+This improvement actually makes a lot of sense because of the size of the array (`size² * 6` because there are two triangles per cell).
