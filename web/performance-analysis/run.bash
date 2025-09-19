@@ -25,6 +25,5 @@ function bench() {
 
 setup
 compile
-for i in {1..10}; do
-    bench
-done
+bench | tee $TEMPDIR/bench.md
+

@@ -11,20 +11,30 @@ const mkmesh = (side: number) => {
     });
 };
 
-const b = new Bench({
-    time: 2 * 1000,
-    warmupIterations: 128,
-});
-b.add('mesh128', () => mkmesh(128));
-b.runSync();
-
-function logThroughput(res: TaskResult) {
+function throughput(res: TaskResult) {
     const mean = Math.round(res.throughput.mean).toString();
     const rme = res.throughput.rme.toFixed(2);
     const med = Math.round(res.throughput.p50!).toString();
     const mad = Math.round(res.throughput.mad!).toString();
-    console.log(`:MEAN ${mean} ± ${rme}%`, `:MED ${med} ± ${mad}`);
+    return {
+        'mean': `${mean} ± ${rme}%`,
+        'med': `${med} ± ${mad}`,
+        'samples': res.throughput.samples.length,
+    };
 }
-logThroughput(b.tasks[0].result);
 
+console.log('')
+console.log('| Run | Mean         | Median   | Samples |');
+console.log('|-----|--------------|----------|---------|');
 
+const b = new Bench({
+    time: 1000,
+    warmupIterations: 128,
+});
+b.add('mesh128', () => mkmesh(128));
+
+for (let i = 1; i <= 5; i++) {
+    const res = b.runSync()[0].result;
+    const thp = throughput(res);
+    console.log(`| ${i.toString().padStart(3)} | ${thp.mean.toString().padStart(12)} | ${thp.med.toString().padStart(8)} | ${thp.samples.toString().padStart(7)} |`);
+}
