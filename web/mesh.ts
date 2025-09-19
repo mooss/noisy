@@ -3,32 +3,8 @@ import type { HeightGenerator } from './height-generator.js';
 import { Palette } from './palettes.js';
 import { interpolateColors } from './utils/graphics.js';
 
-/**
- * Creates a hexagonal extruded prism.
- * @param radius - The radius of the hexagon.
- * @param height - The height of the extrusion.
- * @returns The generated geometry.
- */
-function _createHexagonGeometry(radius: number, height: number): THREE.ExtrudeGeometry {
-    const shape = new THREE.Shape();
-    const sides = 6;
-    const angle = (2 * Math.PI) / sides;
-
-    shape.moveTo(radius, 0); // The top point.
-
-    // The five remaining points.
-    for (let i = 1; i <= sides; i++) {
-        const x = radius * Math.cos(angle * i);
-        const y = radius * Math.sin(angle * i);
-        shape.lineTo(x, y);
-    }
-
-    return new THREE.ExtrudeGeometry(shape, {
-        steps: 1,
-        depth: height,
-        bevelEnabled: false
-    });
-}
+//////////////////
+// Surface mesh //
 
 // Computes the surface indices for a square mesh.
 function surfaceIndices(size: number): number[] {
@@ -99,79 +75,6 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     });
 
     return new THREE.Mesh(geometry, material);
-}
-
-/**
- * Creates prism meshes (hexagonal or square) from a height field.
- *
- * @param type    - Shape of the prism ('hexagon' or 'square').
- * @param heights - Terrain data.
- * @param palette - Color palette for height-based interpolation
- * @returns The generated prism mesh.
- */
-function createPrismMeshes(type: 'hexagon' | 'square', heights: HeightGenerator, palette: Palette): THREE.Mesh {
-    const { nblocks } = heights;
-    const sampling = 1 / nblocks; // Distance between each vertex.
-    const isHex = type === 'hexagon';
-    const ySpacingFactor = isHex ? Math.sqrt(3) / 2 : 1;
-    const hexRadius = Math.sqrt(1 / 3);
-
-    const positions = [], normals = [], colors = [], indices = [];
-    let indexOffset = 0;
-
-    const baseGeometry = isHex
-        ? _createHexagonGeometry(hexRadius, 1).rotateZ(Math.PI / 2)
-        : new THREE.BoxGeometry().translate(0, 0, 0.5);
-
-    const posAttr = baseGeometry.getAttribute('position');
-    const normAttr = baseGeometry.getAttribute('normal');
-    const idxAttr = baseGeometry.getIndex();
-
-    for (let i = 0; i < nblocks; i++) {
-        for (let j = 0; j < nblocks; j++) {
-            const height = heights.at(i * sampling, j * sampling);
-            const xOffset = isHex && (j % 2 !== 0) ? .5 : 0;
-            const xPos = i + xOffset;
-            const yPos = j * ySpacingFactor;
-
-            const color = interpolateColors(palette, height);
-            const matrix = new THREE.Matrix4().makeScale(1, 1, height).setPosition(xPos, yPos, 0);
-
-            for (let v = 0; v < posAttr.count; v++) {
-                const vertex = new THREE.Vector3().fromBufferAttribute(posAttr, v).applyMatrix4(matrix);
-                positions.push(vertex.x, vertex.y, vertex.z);
-                normals.push(...normAttr.array.slice(v * 3, v * 3 + 3));
-                colors.push(color.r, color.g, color.b);
-            }
-
-            if (idxAttr) { // Hexagons don't have an index.
-                for (let idx = 0; idx < idxAttr.count; idx++) {
-                    indices.push(idxAttr.array[idx] + indexOffset);
-                }
-            } else {
-                for (let v = 0; v < posAttr.count; v++) {
-                    indices.push(indexOffset + v);
-                }
-            }
-            indexOffset += posAttr.count;
-        }
-    }
-
-    const mergedGeometry = new THREE.BufferGeometry();
-    mergedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    mergedGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    mergedGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    mergedGeometry.setIndex(indices);
-
-    return new THREE.Mesh(mergedGeometry, new THREE.MeshStandardMaterial({ vertexColors: true }));
-}
-
-export function createHexagonMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
-    return createPrismMeshes('hexagon', heights, palette);
-}
-
-export function createSquareMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
-    return createPrismMeshes('square', heights, palette);
 }
 
 /**
@@ -264,4 +167,107 @@ function computeVertexNormals(paddedHeights: Float32Array, side: number): THREE.
     const res = new THREE.BufferAttribute(normals, 3);
     res.needsUpdate = true;
     return res;
+}
+
+////////////////
+// Prism mesh //
+
+/**
+ * Creates a hexagonal extruded prism.
+ * @param radius - The radius of the hexagon.
+ * @param height - The height of the extrusion.
+ * @returns The generated geometry.
+ */
+function _createHexagonGeometry(radius: number, height: number): THREE.ExtrudeGeometry {
+    const shape = new THREE.Shape();
+    const sides = 6;
+    const angle = (2 * Math.PI) / sides;
+
+    shape.moveTo(radius, 0); // The top point.
+
+    // The five remaining points.
+    for (let i = 1; i <= sides; i++) {
+        const x = radius * Math.cos(angle * i);
+        const y = radius * Math.sin(angle * i);
+        shape.lineTo(x, y);
+    }
+
+    return new THREE.ExtrudeGeometry(shape, {
+        steps: 1,
+        depth: height,
+        bevelEnabled: false
+    });
+}
+
+/**
+ * Creates prism meshes (hexagonal or square) from a height field.
+ *
+ * @param type    - Shape of the prism ('hexagon' or 'square').
+ * @param heights - Terrain data.
+ * @param palette - Color palette for height-based interpolation
+ * @returns The generated prism mesh.
+ */
+function createPrismMeshes(type: 'hexagon' | 'square', heights: HeightGenerator, palette: Palette): THREE.Mesh {
+    const { nblocks } = heights;
+    const sampling = 1 / nblocks; // Distance between each vertex.
+    const isHex = type === 'hexagon';
+    const ySpacingFactor = isHex ? Math.sqrt(3) / 2 : 1;
+    const hexRadius = Math.sqrt(1 / 3);
+
+    const positions = [], normals = [], colors = [], indices = [];
+    let indexOffset = 0;
+
+    const baseGeometry = isHex
+        ? _createHexagonGeometry(hexRadius, 1).rotateZ(Math.PI / 2)
+        : new THREE.BoxGeometry().translate(0, 0, 0.5);
+
+    const posAttr = baseGeometry.getAttribute('position');
+    const normAttr = baseGeometry.getAttribute('normal');
+    const idxAttr = baseGeometry.getIndex();
+
+    for (let i = 0; i < nblocks; i++) {
+        for (let j = 0; j < nblocks; j++) {
+            const height = heights.at(i * sampling, j * sampling);
+            const xOffset = isHex && (j % 2 !== 0) ? .5 : 0;
+            const xPos = i + xOffset;
+            const yPos = j * ySpacingFactor;
+
+            const color = interpolateColors(palette, height);
+            const matrix = new THREE.Matrix4().makeScale(1, 1, height).setPosition(xPos, yPos, 0);
+
+            for (let v = 0; v < posAttr.count; v++) {
+                const vertex = new THREE.Vector3().fromBufferAttribute(posAttr, v).applyMatrix4(matrix);
+                positions.push(vertex.x, vertex.y, vertex.z);
+                normals.push(...normAttr.array.slice(v * 3, v * 3 + 3));
+                colors.push(color.r, color.g, color.b);
+            }
+
+            if (idxAttr) { // Hexagons don't have an index.
+                for (let idx = 0; idx < idxAttr.count; idx++) {
+                    indices.push(idxAttr.array[idx] + indexOffset);
+                }
+            } else {
+                for (let v = 0; v < posAttr.count; v++) {
+                    indices.push(indexOffset + v);
+                }
+            }
+            indexOffset += posAttr.count;
+        }
+    }
+
+    const mergedGeometry = new THREE.BufferGeometry();
+    mergedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    mergedGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    mergedGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    mergedGeometry.setIndex(indices);
+
+    return new THREE.Mesh(mergedGeometry, new THREE.MeshStandardMaterial({ vertexColors: true }));
+}
+
+export function createHexagonMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
+    return createPrismMeshes('hexagon', heights, palette);
+}
+
+export function createSquareMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
+    return createPrismMeshes('square', heights, palette);
 }
