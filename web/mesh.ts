@@ -19,9 +19,9 @@ function surfaceIndices(vertexSide: number): Uint16Array | Uint32Array {
     for (let i = 0; i < indexSide; i++) {
         for (let j = 0; j < indexSide; j++) {
             const topLeft = i * vertexSide + j;
-            const topRight = i * vertexSide + (j + 1);
+            const topRight = topLeft + 1;
             const bottomLeft = (i + 1) * vertexSide + j;
-            const bottomRight = (i + 1) * vertexSide + (j + 1);
+            const bottomRight = bottomLeft + 1;
 
             indices[k++] = topLeft;
             indices[k++] = bottomLeft;
@@ -55,6 +55,7 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     const paddedSize = (nblocks + 2);
     // A height buffer, with an additional cell on every side to allow for easy computation of
     // normal for vertices at the edge.
+    // Performance note: fusing this loop with the next one is useless.
     const paddedHeights = new Float32Array(paddedSize * paddedSize);
     for (let i = 0; i < paddedSize; i++) {
         for (let j = 0; j < paddedSize; j++) {
@@ -63,11 +64,12 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
         }
     }
 
+    const color = new THREE.Color()
     // Vertices and colors.
     for (let i = 0; i < nblocks; i++) {
         for (let j = 0; j < nblocks; j++) {
             const height = paddedHeights[(i + 1) * paddedSize + j + 1];
-            const color = interpolateColors(palette, height);
+            interpolateColors(palette, height, color);
             const idx = (i * nblocks + j) * 3;
 
             vertices[idx] = i; vertices[idx + 1] = j; vertices[idx + 2] = height;
@@ -96,6 +98,8 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
  * The reason for all this complexity is that out-of-chunks vertices must be taken into account in
  * order to compute correct normals.
  * Without this, there are visible seams between the chunks.
+ *
+ * Performance note: reducing function calls does not work at all.
  *
  * @param paddedHeights - The heights to work on (with 1 additional cell on every side).
  * @param side      - The number of vertices on one side of a square.

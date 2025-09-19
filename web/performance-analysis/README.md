@@ -69,34 +69,47 @@ Even though normalizing manually used to be slower, here it is much better becau
 The other 10% it was above 190 it/s.
 
 Manual normalization lowers it back to ~188 it/s but it's still a big improvement:
-| Run | Mean         | Median   | Samples |
-|-----|--------------|----------|---------|
-|   1 |  188 ± 0.57% |  190 ± 1 |     374 |
-|   2 |  187 ± 0.68% |  189 ± 1 |     371 |
-|   3 |  189 ± 0.41% |  189 ± 5 |     378 |
-|   4 |  189 ± 0.37% |  189 ± 5 |     378 |
-|   5 |  189 ± 0.37% |  189 ± 5 |     378 |
+| Run | Mean        | Median  | Samples |
+|-----|-------------|---------|---------|
+| 1   | 188 ± 0.57% | 190 ± 1 | 374     |
+| 2   | 187 ± 0.68% | 189 ± 1 | 371     |
+| 3   | 189 ± 0.41% | 189 ± 5 | 378     |
+| 4   | 189 ± 0.37% | 189 ± 5 | 378     |
+| 5   | 189 ± 0.37% | 189 ± 5 | 378     |
 
 ### Pre-allocate index array
 
 Pre-allocating this array is a much bigger performance improvement that I expected:
-| Run | Mean         | Median   | Samples |
-|-----|--------------|----------|---------|
-|   1 |  203 ± 0.58% |  205 ± 2 |     404 |
-|   2 |  206 ± 0.52% |  208 ± 1 |     410 |
-|   3 |  207 ± 0.48% |  208 ± 3 |     412 |
-|   4 |  208 ± 0.36% |  207 ± 4 |     415 |
-|   5 |  208 ± 0.23% |  207 ± 4 |     417 |
+| Run | Mean        | Median  | Samples |
+|-----|-------------|---------|---------|
+| 1   | 203 ± 0.58% | 205 ± 2 | 404     |
+| 2   | 206 ± 0.52% | 208 ± 1 | 410     |
+| 3   | 207 ± 0.48% | 208 ± 3 | 412     |
+| 4   | 208 ± 0.36% | 207 ± 4 | 415     |
+| 5   | 208 ± 0.23% | 207 ± 4 | 417     |
 
 This improvement actually makes a lot of sense because of the size of the array (`size² * 6` because there are two triangles per cell).
 
 ### 16 or 32 bits index array
 
 A bit mindblowing to me:
-| Run | Mean         | Median   | Samples |
-|-----|--------------|----------|---------|
-|   1 |  236 ± 0.55% |  238 ± 1 |     469 |
-|   2 |  239 ± 0.47% |  242 ± 1 |     477 |
-|   3 |  240 ± 0.52% |  242 ± 2 |     478 |
-|   4 |  243 ± 0.25% |  243 ± 2 |     485 |
-|   5 |  243 ± 0.24% |  243 ± 2 |     486 |
+| Run | Mean        | Median  | Samples |
+|-----|-------------|---------|---------|
+| 1   | 236 ± 0.55% | 238 ± 1 | 469     |
+| 2   | 239 ± 0.47% | 242 ± 1 | 477     |
+| 3   | 240 ± 0.52% | 242 ± 2 | 478     |
+| 4   | 243 ± 0.25% | 243 ± 2 | 485     |
+| 5   | 243 ± 0.24% | 243 ± 2 | 486     |
+
+### Removed color construction
+
+`interpolateColors` turned to create a new color which was called for every block.
+A `dest` parameter defaulting to `new THREE.Color()` squeezes a few additional iterations per second.
+
+| Run | Mean        | Median  | Samples |
+|-----|-------------|---------|---------|
+| 1   | 242 ± 0.56% | 244 ± 2 | 481     |
+| 2   | 246 ± 0.45% | 248 ± 1 | 491     |
+| 3   | 245 ± 0.55% | 248 ± 1 | 487     |
+| 4   | 249 ± 0.19% | 250 ± 2 | 499     |
+| 5   | 249 ± 0.13% | 250 ± 2 | 499     |

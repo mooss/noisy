@@ -9,9 +9,12 @@ import { clamp } from './maths.js';
  *
  * @returns The interpolated color.
  */
-export function interpolateColors(colors: THREE.Color[], value: number): THREE.Color {
-    if (colors.length === 0) return new THREE.Color(1, 1, 1);
-    if (colors.length === 1) return colors[0].clone();
+export function interpolateColors(colors: THREE.Color[], value: number, dest = new THREE.Color()): THREE.Color {
+    if (colors.length === 0) {
+        dest.r = 1; dest.g = 1; dest.b = 1;
+        return dest;
+    }
+    if (colors.length === 1) return dest.copy(colors[0]);
 
     value = clamp(value, 0, 1);
 
@@ -22,5 +25,5 @@ export function interpolateColors(colors: THREE.Color[], value: number): THREE.C
     const color2 = colors[segment + 1];
     const ratio = value * nsegments - segment;
 
-    return color1.clone().lerp(color2, ratio);
+    return dest.copy(color1).lerp(color2, ratio);
 }
