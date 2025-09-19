@@ -186,15 +186,13 @@ function computeVertexNormals(
     const sampling = 1 / (side - 1); // -1 to compensate for the overlap increment.
     const count = side * side;
     const normals = new THREE.BufferAttribute(new Float32Array(count * 3), 3);
-    const pA = new THREE.Vector3(), pB = new THREE.Vector3(), pC = new THREE.Vector3();
-    const cb = new THREE.Vector3(), ab = new THREE.Vector3();
 
-    // Get the index corresponding to the given coordinates (returns null if out-of-bounds).
-    const indexOf = (x: number, y: number): number | null => {
+    // Get the index corresponding to the given coordinates (returns -1 if out-of-bounds).
+    const indexOf = (x: number, y: number): number => {
         if (x >= 0 && x < side && y >= 0 && y < side) {
             return x * side + y;
         }
-        return null;
+        return -1;
     };
 
     // Returns the height at the given grid coordinates, using cache if within bounds.
@@ -206,61 +204,39 @@ function computeVertexNormals(
         return heights.at(gx * sampling, gy * sampling);
     };
 
-    const setFromCoordinates = (dest: THREE.Vector3, x: number, y: number) => {
-        dest.x = x;
-        dest.y = y;
-        dest.z = get(x, y);
-    };
-
-    // Computes the normals for the current pA, pB and pC, but only adds to valid indices.
-    const compute = (a: number | null, b: number | null, c: number | null) => {
-        // Compute face normal.
-        cb.subVectors(pC, pB);
-        ab.subVectors(pA, pB);
-        cb.cross(ab);
-
-        const count = normals.count;
-        if (a !== null && a < count) {
-            const i = a * 3;
-            normals.array[i] += cb.x;
-            normals.array[i + 1] += cb.y;
-            normals.array[i + 2] += cb.z;
-        }
-        if (b !== null && b < count) {
-            const i = b * 3;
-            normals.array[i] += cb.x;
-            normals.array[i + 1] += cb.y;
-            normals.array[i + 2] += cb.z;
-        }
-        if (c !== null && c < count) {
-            const i = c * 3;
-            normals.array[i] += cb.x;
-            normals.array[i + 1] += cb.y;
-            normals.array[i + 2] += cb.z;
-        }
+    // Accumulate normal values at a given index.
+    const add = (i: number, nx: number, ny: number, nz: number) => {
+        const k = i * 3;
+        normals.array[k] += nx;
+        normals.array[k + 1] += ny;
+        normals.array[k + 2] += nz;
     };
 
     // Computes the normals for the given coordinates, pointing at the top-right corner of the quad
     // the normal must be computed on.
+    // Takes advantage of the fact that all vertices are on a square grid to avoid cross products.
     const computeFromCoordinates = (x: number, y: number) => {
-        // Get valid indices (null if out-of-bounds).
         const topLeft = indexOf(x, y);
         const topRight = indexOf(x, y + 1);
         const bottomLeft = indexOf(x + 1, y);
         const bottomRight = indexOf(x + 1, y + 1);
+        const tlHeight = get(x, y);
+        const trHeight = get(x, y + 1);
+        const blHeight = get(x + 1, y);
+        const brHeight = get(x + 1, y + 1);
 
-        // First triangle: topLeft, bottomLeft, topRight.
-        setFromCoordinates(pA, x, y);        // Top left
-        setFromCoordinates(pB, x + 1, y);    // Bottom left
-        setFromCoordinates(pC, x, y + 1);    // Top right
-        compute(topLeft, topRight, bottomLeft);
+        const normal1x = tlHeight - blHeight;
+        const normal1y = tlHeight - trHeight;
+        const normal2x = trHeight - brHeight;
+        const normal2y = blHeight - brHeight;
 
-        // Second triangle: topRight, bottomRight, bottomLeft.
-        setFromCoordinates(pA, x, y + 1);        // Top right
-        setFromCoordinates(pC, x + 1, y + 1);    // Bottom right
-        // pB remains bottom left.
-        compute(topRight, bottomLeft, bottomRight);
-    };
+        // The 1 and 2 constants here are present because of how cross-product works on a
+        // regular grid.
+        if (topLeft >= 0) add(topLeft, normal1x, normal1y, 1);
+        if (topRight >= 0) add(topRight, normal1x + normal2x, normal1y + normal2y, 2);
+        if (bottomLeft >= 0) add(bottomLeft, normal1x + normal2x, normal1y + normal2y, 2);
+        if (bottomRight >= 0) add(bottomRight, normal2x, normal2y, 1);
+    }
 
     ////////////////////////
     // Actual computation //
