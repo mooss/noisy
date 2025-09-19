@@ -5,7 +5,7 @@ This directory contains scripts to analyse the performance of the project and to
 ## Benchmarking `createSurfaceMesh`
 
 This section summarizes the optimization process of `createSurfaceMesh` that a quick profiling revealed to be a major bottleneck.
-The benchmark are executed several times to be sure that the results are actually consistent, because they can vary wildly on some machines (probably due to thermal throttling).
+The benchmarks are executed several times to be sure that the results are actually consistent, because they can vary wildly on some machines (probably due to thermal throttling).
 
 The benchmarks are executed on a Rizen 9 7950X and measure the throughput of mesh creation.
 
@@ -65,7 +65,7 @@ The improvement is smaller this time:
 
 Storing all the heights required for normal computation in a buffer avoids recomputing the height of cells beyond the border.
 
-Even though normalizing manually used to be slower, here it is much better because for some reason when using THREE.js' normal computation method reduced iterations per second to ~167 a good 90% of the time.
+Even though normalizing manually used to be slower, here it is much better because for some reason using THREE.js' normal computation method reduced iterations per second to ~167 a good 90% of the time.
 The other 10% it was above 190 it/s.
 
 Manual normalization lowers it back to ~188 it/s but it's still a big improvement:
@@ -89,3 +89,14 @@ Pre-allocating this array is a much bigger performance improvement that I expect
 |   5 |  208 ± 0.23% |  207 ± 4 |     417 |
 
 This improvement actually makes a lot of sense because of the size of the array (`size² * 6` because there are two triangles per cell).
+
+### 16 or 32 bits index array
+
+A bit mindblowing to me:
+| Run | Mean         | Median   | Samples |
+|-----|--------------|----------|---------|
+|   1 |  236 ± 0.55% |  238 ± 1 |     469 |
+|   2 |  239 ± 0.47% |  242 ± 1 |     477 |
+|   3 |  240 ± 0.52% |  242 ± 2 |     478 |
+|   4 |  243 ± 0.25% |  243 ± 2 |     485 |
+|   5 |  243 ± 0.24% |  243 ± 2 |     486 |

@@ -7,17 +7,21 @@ import { interpolateColors } from './utils/graphics.js';
 // Surface mesh //
 
 // Computes the surface indices for a square mesh.
-function surfaceIndices(nvertices: number): number[] {
-    const side = nvertices - 1; // Length of the side of the indices matrix.
-    const indices = new Array<number>(6 * side * side);
+function surfaceIndices(vertexSide: number): Uint16Array | Uint32Array {
+    const indexSide = vertexSide - 1; // Length of the side of the indices matrix.
+    const vertexCount = vertexSide * vertexSide;
+    const quadCount = indexSide * indexSide;
+    const length = quadCount * 6;
+    const use32 = vertexCount > 65535;
+    const indices = use32 ? new Uint32Array(length) : new Uint16Array(length);
 
     let k = 0; // Running index.
-    for (let i = 0; i < side; i++) {
-        for (let j = 0; j < side; j++) {
-            const topLeft = i * nvertices + j;
-            const topRight = i * nvertices + (j + 1);
-            const bottomLeft = (i + 1) * nvertices + j;
-            const bottomRight = (i + 1) * nvertices + (j + 1);
+    for (let i = 0; i < indexSide; i++) {
+        for (let j = 0; j < indexSide; j++) {
+            const topLeft = i * vertexSide + j;
+            const topRight = i * vertexSide + (j + 1);
+            const bottomLeft = (i + 1) * vertexSide + j;
+            const bottomRight = (i + 1) * vertexSide + (j + 1);
 
             indices[k++] = topLeft;
             indices[k++] = bottomLeft;
@@ -74,7 +78,7 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     const posbuffer = new THREE.BufferAttribute(vertices, 3);
     geometry.setAttribute('position', posbuffer);
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    geometry.setIndex(surfaceIndices(nblocks));
+    geometry.setIndex(new THREE.BufferAttribute(surfaceIndices(nblocks), 1));
     geometry.setAttribute('normal', computeVertexNormals(paddedHeights, nblocks));
 
     const material = new THREE.MeshStandardMaterial({
