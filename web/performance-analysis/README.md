@@ -31,9 +31,9 @@ An obvious and easy enhancement yielding visible improvements.
 | 4   | 146 ± 0.49% | 146 ± 3 | 291     |
 | 5   | 147 ± 0.44% | 146 ± 3 | 294     |
 
-### Flattening the normal computation
+### Flattening the normalization computation
 
-Computing the normals manually instead of using what THREE.js provides makes the throughput slightly lower (~148 it/s).
+Normalizing manually instead of using what THREE.js provides makes the throughput slightly lower (~148 it/s).
 
 ### Direct array access for normal accumulation
 
@@ -60,3 +60,19 @@ The improvement is smaller this time:
 | 3   | 173 ± 0.43% | 174 ± 4 | 346     |
 | 4   | 173 ± 0.44% | 174 ± 4 | 346     |
 | 5   | 173 ± 0.43% | 174 ± 4 | 346     |
+
+### Padded-height buffer
+
+Storing all the heights required for normal computation in a buffer avoids recomputing the height of cells beyond the border.
+
+Even though normalizing manually used to be slower, here it is much better because for some reason when using THREE.js' normal computation method reduced iterations per second to ~167 a good 90% of the time.
+The other 10% it was above 190 it/s.
+
+Manual normalization lowers it back to ~188 it/s but it's still a big improvement:
+| Run | Mean         | Median   | Samples |
+|-----|--------------|----------|---------|
+|   1 |  188 ± 0.57% |  190 ± 1 |     374 |
+|   2 |  187 ± 0.68% |  189 ± 1 |     371 |
+|   3 |  189 ± 0.41% |  189 ± 5 |     378 |
+|   4 |  189 ± 0.37% |  189 ± 5 |     378 |
+|   5 |  189 ± 0.37% |  189 ± 5 |     378 |

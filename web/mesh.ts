@@ -64,11 +64,21 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     const vertices = new Float32Array(nVertices);
     const colors = new Float32Array(nVertices);
 
+    const paddedSize = (nblocks + 2);
+    // A height buffer, with an additional cell on every side to allow for easy computation of
+    // normal for vertices at the edge.
+    const paddedHeights = new Float32Array(paddedSize * paddedSize);
+    for (let i = 0; i < paddedSize; i++) {
+        for (let j = 0; j < paddedSize; j++) {
+            const x = (i - 1) * sampling; const y = (j - 1) * sampling;
+            paddedHeights[i * paddedSize + j] = heights.at(x, y);
+        }
+    }
+
     // Vertices and colors.
     for (let i = 0; i < nblocks; i++) {
         for (let j = 0; j < nblocks; j++) {
-            const x = i * sampling; const y = j * sampling;
-            const height = heights.at(x, y);
+            const height = paddedHeights[(i + 1) * paddedSize + j + 1];
             const color = interpolateColors(palette, height);
             const idx = (i * nblocks + j) * 3;
 
@@ -81,7 +91,7 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     geometry.setAttribute('position', posbuffer);
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.setIndex(surfaceIndices(nblocks));
-    geometry.setAttribute('normal', computeVertexNormals(posbuffer, nblocks, heights));
+    geometry.setAttribute('normal', computeVertexNormals(paddedHeights, nblocks));
 
     const material = new THREE.MeshStandardMaterial({
         vertexColors: true,
@@ -165,27 +175,24 @@ export function createSquareMesh(heights: HeightGenerator, palette: Palette): TH
 }
 
 /**
- * Computes vertex normals for the given vertex data.
+ * Computes vertex normals for the given height data.
  * Adapted from THREE.BufferGeometry.computeVertexNormals.
  *
  * The reason for all this complexity is that out-of-chunks vertices must be taken into account in
  * order to compute correct normals.
  * Without this, there are visible seams between the chunks.
  *
- * @param positions - The vertices to work on (acting as the cache).
+ * @param paddedHeights - The heights to work on (with 1 additional cell on every side).
  * @param side      - The number of vertices on one side of a square.
- * @param height    - The height generator used for out-of-cache vertices.
  * @returns the computed vertex normals.
  */
-function computeVertexNormals(
-    positions: THREE.BufferAttribute, side: number, heights: HeightGenerator,
-): THREE.BufferAttribute {
+function computeVertexNormals(paddedHeights: Float32Array, side: number): THREE.BufferAttribute {
     /////////////////////////
     // Setup and utilities //
 
-    const sampling = 1 / (side - 1); // -1 to compensate for the overlap increment.
+    const paddedSide = side + 2;
     const count = side * side;
-    const normals = new THREE.BufferAttribute(new Float32Array(count * 3), 3);
+    const normals = new Float32Array(count * 3);
 
     // Get the index corresponding to the given coordinates (returns -1 if out-of-bounds).
     const indexOf = (x: number, y: number): number => {
@@ -197,19 +204,15 @@ function computeVertexNormals(
 
     // Returns the height at the given grid coordinates, using cache if within bounds.
     const get = (gx: number, gy: number): number => {
-        if (gx >= 0 && gx < side && gy >= 0 && gy < side) {
-            const idx = (gx * side + gy) * 3 + 2;
-            return positions.array[idx];
-        }
-        return heights.at(gx * sampling, gy * sampling);
+        return paddedHeights[gx * paddedSide + gy];
     };
 
     // Accumulate normal values at a given index.
     const add = (i: number, nx: number, ny: number, nz: number) => {
         const k = i * 3;
-        normals.array[k] += nx;
-        normals.array[k + 1] += ny;
-        normals.array[k + 2] += nz;
+        normals[k] += nx;
+        normals[k + 1] += ny;
+        normals[k + 2] += nz;
     };
 
     // Computes the normals for the given coordinates, pointing at the top-right corner of the quad
@@ -220,10 +223,11 @@ function computeVertexNormals(
         const topRight = indexOf(x, y + 1);
         const bottomLeft = indexOf(x + 1, y);
         const bottomRight = indexOf(x + 1, y + 1);
-        const tlHeight = get(x, y);
-        const trHeight = get(x, y + 1);
-        const blHeight = get(x + 1, y);
-        const brHeight = get(x + 1, y + 1);
+
+        const tlHeight = get(x + 1, y + 1);
+        const trHeight = get(x + 1, y + 2);
+        const blHeight = get(x + 2, y + 1);
+        const brHeight = get(x + 2, y + 2);
 
         const normal1x = tlHeight - blHeight;
         const normal1y = tlHeight - trHeight;
@@ -245,16 +249,19 @@ function computeVertexNormals(
         for (let j = -1; j < side; j++)
             computeFromCoordinates(i, j);
 
-    normalizeBufferAttribute(normals);
-    normals.needsUpdate = true;
-    return normals;
-}
-
-function normalizeBufferAttribute(buffer: THREE.BufferAttribute) {
-    const _vec = new THREE.Vector3();
-    for (let i = 0, ilen = buffer.count; i < ilen; i++) {
-        _vec.fromBufferAttribute(buffer, i);
-        _vec.normalize();
-        buffer.setXYZ(i, _vec.x, _vec.y, _vec.z);
+    // Normalization.
+    for (let i = 0; i < count; i++) {
+        const k = i * 3;
+        const nx = normals[k];
+        const ny = normals[k + 1];
+        const nz = normals[k + 2];
+        const len = Math.hypot(nx, ny, nz);
+        normals[k] = nx / len;
+        normals[k + 1] = ny / len;
+        normals[k + 2] = nz / len;
     }
+
+    const res = new THREE.BufferAttribute(normals, 3);
+    res.needsUpdate = true;
+    return res;
 }
