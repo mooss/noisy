@@ -184,9 +184,9 @@ function computeVertexNormals(
     // Setup and utilities //
 
     const sampling = 1 / (side - 1); // -1 to compensate for the overlap increment.
-    const normals = new THREE.BufferAttribute(new Float32Array(positions.count * 3), 3);
+    const count = side * side;
+    const normals = new THREE.BufferAttribute(new Float32Array(count * 3), 3);
     const pA = new THREE.Vector3(), pB = new THREE.Vector3(), pC = new THREE.Vector3();
-    const nA = new THREE.Vector3(), nB = new THREE.Vector3(), nC = new THREE.Vector3();
     const cb = new THREE.Vector3(), ab = new THREE.Vector3();
 
     // Get the index corresponding to the given coordinates (returns null if out-of-bounds).
@@ -220,18 +220,23 @@ function computeVertexNormals(
         cb.cross(ab);
 
         const count = normals.count;
-
-        if (a !== null && a >= 0 && a < count) {
-            nA.fromBufferAttribute(normals, a).add(cb);
-            normals.setXYZ(a, nA.x, nA.y, nA.z);
+        if (a !== null && a < count) {
+            const i = a * 3;
+            normals.array[i] += cb.x;
+            normals.array[i + 1] += cb.y;
+            normals.array[i + 2] += cb.z;
         }
-        if (b !== null && b >= 0 && b < count) {
-            nB.fromBufferAttribute(normals, b).add(cb);
-            normals.setXYZ(b, nB.x, nB.y, nB.z);
+        if (b !== null && b < count) {
+            const i = b * 3;
+            normals.array[i] += cb.x;
+            normals.array[i + 1] += cb.y;
+            normals.array[i + 2] += cb.z;
         }
-        if (c !== null && c >= 0 && c < count) {
-            nC.fromBufferAttribute(normals, c).add(cb);
-            normals.setXYZ(c, nC.x, nC.y, nC.z);
+        if (c !== null && c < count) {
+            const i = c * 3;
+            normals.array[i] += cb.x;
+            normals.array[i + 1] += cb.y;
+            normals.array[i + 2] += cb.z;
         }
     };
 

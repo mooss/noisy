@@ -30,3 +30,20 @@ An obvious and easy enhancement yielding visible improvements.
 |   3 |  146 ± 0.49% |  146 ± 3 |     291 |
 |   4 |  146 ± 0.49% |  146 ± 3 |     291 |
 |   5 |  147 ± 0.44% |  146 ± 3 |     294 |
+
+### Flattening the normal computation
+
+Computing the normals manually instead of using what THREE.js provides makes the throughput slightly lower (~148 it/s).
+
+### Direct array access for normal accumulation
+
+The `nA`, `nB` and `nC` buffers and the calls to THREE.js methods (`fromBufferAttributes` and `setXYZ`) add some unnecessary overhead.
+
+Replacing them with basic array accumulation gives those results:
+| Run | Mean         | Median   | Samples |
+|-----|--------------|----------|---------|
+|   1 |  165 ± 0.67% |  168 ± 2 |     329 |
+|   2 |  166 ± 0.65% |  168 ± 1 |     331 |
+|   3 |  167 ± 0.28% |  167 ± 4 |     335 |
+|   4 |  167 ± 0.43% |  167 ± 4 |     333 |
+|   5 |  167 ± 0.38% |  167 ± 4 |     334 |
