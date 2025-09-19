@@ -60,27 +60,28 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     nblocks += 1; // Create one additional row and column to overlap this mesh and the next one.
     const geometry = new THREE.BufferGeometry();
 
-    const vertices = [];
-    const colors = [];
+    const nVertices = 3 * nblocks * nblocks;
+    const vertices = new Float32Array(nVertices);
+    const colors = new Float32Array(nVertices);
 
     // Vertices and colors.
     for (let i = 0; i < nblocks; i++) {
         for (let j = 0; j < nblocks; j++) {
             const x = i * sampling; const y = j * sampling;
-
             const height = heights.at(x, y);
-            vertices.push(i, j, height);
-
             const color = interpolateColors(palette, height);
-            colors.push(color.r, color.g, color.b);
+            const idx = (i * nblocks + j) * 3;
+
+            vertices[idx] = i; vertices[idx + 1] = j; vertices[idx + 2] = height;
+            colors[idx] = color.r; colors[idx + 1] = color.g; colors[idx + 2] = color.b;
         }
     }
 
-    const posbuffer = new THREE.BufferAttribute(new Float32Array(vertices), 3);
+    const posbuffer = new THREE.BufferAttribute(vertices, 3);
     geometry.setAttribute('position', posbuffer);
-    geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.setIndex(surfaceIndices(nblocks));
-    geometry.setAttribute('normal', computeSquareNormals(posbuffer, nblocks, heights));
+    geometry.setAttribute('normal', computeVertexNormals(posbuffer, nblocks, heights));
 
     const material = new THREE.MeshStandardMaterial({
         vertexColors: true,
@@ -176,7 +177,7 @@ export function createSquareMesh(heights: HeightGenerator, palette: Palette): TH
  * @param height    - The height generator used for out-of-cache vertices.
  * @returns the computed vertex normals.
  */
-function computeSquareNormals(
+function computeVertexNormals(
     positions: THREE.BufferAttribute, side: number, heights: HeightGenerator,
 ): THREE.BufferAttribute {
     /////////////////////////

@@ -18,3 +18,15 @@ The benchmarks are executed on a Rizen 9 7950X and measure the throughput of mes
 |   3 |  125 ± 0.85% |  129 ± 1 |     249 |
 |   4 |  125 ± 0.85% |  128 ± 1 |     249 |
 |   5 |  124 ± 0.85% |  128 ± 1 |     248 |
+
+### Pre-allocation of position and color buffers
+
+An obvious and easy enhancement yielding visible improvements.
+
+| Run | Mean         | Median   | Samples |
+|-----|--------------|----------|---------|
+|   1 |  147 ± 0.77% |  149 ± 1 |     292 |
+|   2 |  147 ± 0.71% |  149 ± 2 |     292 |
+|   3 |  146 ± 0.49% |  146 ± 3 |     291 |
+|   4 |  146 ± 0.49% |  146 ± 3 |     291 |
+|   5 |  147 ± 0.44% |  146 ± 3 |     294 |
