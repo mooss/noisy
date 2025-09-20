@@ -9,7 +9,6 @@ import { PipelinePicker } from "./processing.js";
 
 export function noiseUI(noise: NoiseMakerI, root: Panel, cb: GameCallbacks) {
     noiseUI_impl(noise, root, () => {
-        noise.recompute();
         cb.terrain.recompute();
     });
 }

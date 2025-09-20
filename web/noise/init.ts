@@ -99,7 +99,6 @@ export function noiseAlgorithms(): NoiseMakerI {
             terracing,
         ],
     });
-    res.recompute();
 
     return res;
 }

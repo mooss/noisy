@@ -62,6 +62,7 @@ export class Terrain {
 
     /** Recomputes the height function and updates the mesh of all active chunks. */
     recompute(): void {
+        this.conf.noise.recompute();
         this.height = this.conf.noise.normalised(.01, 1);
         this.rangeActive(this.updateMesh.bind(this));
     }

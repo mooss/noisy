@@ -141,6 +141,7 @@ export class NoisePipeline extends NoiseMakerBase<NoisePipelineP> {
         }
     }
 
+    recompute(): void { this.assembled.recompute() }
     class: NoiseClass = 'NoisePipeline';
     make(): NoiseFun { return this.assembled.make() }
     get low(): number { return this.assembled.low }
