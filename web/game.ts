@@ -247,7 +247,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     }
 
     recomputeTerrain(): void {
-        this.terrain.recompute();
+        this.terrain.recomputeLazy();
         this.renderer.updateLighting();
         this.updateStats();
         this.updateAvatar();

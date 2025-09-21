@@ -170,6 +170,48 @@ export class Terrain {
      * @param fun - The function to apply to each chunk.
      */
     private rangeActive(fun: (chunk: Chunk) => void): void {
-        for (const [_, chunk] of this.chunks) fun(chunk);
+        for (const [_, chunk] of this.chunks) {
+            fun(chunk);
+        };
+    }
+
+    /////////////////////
+    // Async functions //
+
+    private abortController: AbortController = null;
+
+    /**
+     * Calls a function on all active chunks, cancellable at the loop level.
+     * @param fun - The function to apply to each chunk.
+     * @param signal - Signal to cancel the computation mid-loop.
+     */
+    private async rangeActiveLazy(
+        fun: (chunk: Chunk) => void,
+        signal: AbortSignal
+    ): Promise<void> {
+        for (const [_, chunk] of this.chunks) {
+            if (signal.aborted) return;
+            fun(chunk);
+
+            // Yield control after changing a chunk.
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+    }
+
+    /**
+     * Recomputes the height function and updates the mesh of all active chunks, cancelling
+     * computation triggered by previous calls to this method.
+     */
+    async recomputeLazy() {
+        // Cancel any previous job, the previous computation might still not get the memo about the
+        // cancellation.
+        this.abortController?.abort();
+        this.abortController = new AbortController();
+        const signal = this.abortController.signal;
+
+        this.conf.noise.recompute();
+        this.height = this.conf.noise.normalised(.01, 1);
+
+        await this.rangeActiveLazy(this.updateMesh.bind(this), signal);
     }
 }
