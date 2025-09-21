@@ -1,30 +1,99 @@
 import * as THREE from 'three';
 import { CHUNK_UNIT } from "./constants.js";
 import { Coordinates, Position } from "./coordinates.js";
-import { NoiseMakerI } from './noise/foundations.js';
+import { NoiseFun, NoiseMakerI } from './noise/foundations.js';
 import type { ChunkState } from './state/chunk.js';
 import type { RenderState } from './state/render.js';
 import { vector2 } from './utils/maths.js';
 
-class Chunk {
-    coords: Coordinates;
-    mesh: THREE.Mesh;
-    height: (x: number, y: number) => number;
-    constructor(coords: Coordinates, mesh: THREE.Mesh, height: (x: number, y: number) => number) {
-        this.coords = coords;
-        this.mesh = mesh;
-        this.height = height;
+class TerrainProperties {
+    private _height: NoiseFun;
+
+    constructor(
+        private chunks: ChunkState,
+        private noise: NoiseMakerI,
+        private render: RenderState,
+    ) {
+        this.recomputeNoise();
     }
+
+    get height(): NoiseFun { return this._height }
+    get blockSize() { return this.chunks.blockSize }
+    get nblocks() { return this.chunks.nblocks }
+    get loadRadius() { return this.chunks.loadRadius }
+    get radiusType() { return this.chunks.radiusType }
+
+    get verticalUnit() {
+        // Prevent the verticality to be exactly zero because it messes up with shading, basically
+        // negating directional light.
+        return Math.max(this.render.verticalUnit, .0000001);
+    }
+
+    heightAt(chunkCoords: vector2): (x: number, y: number) => number {
+        return (x, y) => this.height(x + chunkCoords.x, y + chunkCoords.y);
+    }
+
+    recomputeNoise() {
+        this.noise.recompute();
+        this._height = this.noise.normalised(.01, 1);
+    }
+
+    mesh(coords: Coordinates): THREE.Mesh {
+        return this.render.mesh({
+            at: this.heightAt(coords),
+            nblocks: this.nblocks,
+        })
+    }
+}
+
+class ChunkMesh {
+    three: THREE.Mesh;
+    constructor(coords: Coordinates, props: TerrainProperties) {
+        this.three = props.mesh(coords);
+        this.three.translateX(coords.x * CHUNK_UNIT);
+        this.three.translateY(coords.y * CHUNK_UNIT);
+        this.three.matrixAutoUpdate = false;
+        this.rescale(props);
+    }
+
+    rescale(props: TerrainProperties) {
+        this.three.scale.set(props.blockSize, props.blockSize, props.verticalUnit);
+        this.three.updateMatrix();
+    }
+
+    /**
+     * Frees the GPU resources allocated to the mesh.
+     * @returns the THREE.js mesh that has been disposed of.
+     */
+    dispose() {
+        this.three.geometry.dispose();
+        (this.three.material as any).dispose();
+    }
+}
+
+class Chunk {
+    _mesh: ChunkMesh;
+    constructor(private coords: Coordinates, props: TerrainProperties) {
+        this._mesh = new ChunkMesh(coords, props);
+    }
+
+    /**
+     * Replaces the mesh with a new one computed from the given properties.
+     * @param props - the properties used to compute the new mesh.
+     * @returns the mesh that was replaced (must be disposed of if not needed anymore).
+     */
+    replace(props: TerrainProperties): ChunkMesh {
+        const replaced = this._mesh;
+        this._mesh = new ChunkMesh(this.coords, props);
+        return replaced;
+    }
+
+    rescale(props: TerrainProperties) { this._mesh.rescale(props) }
 }
 
 /** Dynamically manages terrain as a collection of chunks. */
 export class Terrain {
-    /** References to the relevant configurations */
-    private conf: {
-        chunks: ChunkState;
-        noise: NoiseMakerI,
-        render: RenderState;
-    };
+    private props: TerrainProperties;
 
     /**
      * Height generator normalised between .01 and 1.
@@ -33,79 +102,42 @@ export class Terrain {
      *
      * The unit is the chunk, i.e. the first chunk is within [0 <= x <= 1], [0 <= y <= 1].
      */
-    height: (x: number, y: number) => number;
+    get height() { return this.props.height };
+
+    heightAt(chunkCoords: vector2) { return this.props.heightAt(chunkCoords) }
 
     constructor(
         chunks: ChunkState,
         noise: NoiseMakerI,
         render: RenderState
     ) {
-        this.conf = { chunks, noise, render };
-    }
-
-    private get blockSize() { return this.conf.chunks.blockSize }
-    private get nblocks() { return this.conf.chunks.nblocks }
-    private get loadRadius() { return this.conf.chunks.loadRadius }
-    private get verticalUnit() {
-        // Prevent the verticality to be exactly zero because it messes up with shading, basically
-        // negating directional light.
-        return Math.max(this.conf.render.verticalUnit, .0000001);
-    }
-
-    /**
-     * Returns the height function of the given chunk.
-     * The chunk is the height field between 0 and 1 (for both coordinates).
-     */
-    chunkHeightFun(chunkCoords: vector2): (x: number, y: number) => number {
-        return (x, y) => this.height(x + chunkCoords.x, y + chunkCoords.y);
-    }
-
-    /** Recomputes the height function and updates the mesh of all active chunks. */
-    recompute(): void {
-        this.conf.noise.recompute();
-        this.height = this.conf.noise.normalised(.01, 1);
-        this.rangeActive(this.updateMesh.bind(this));
+        this.props = new TerrainProperties(chunks, noise, render);
     }
 
     ////////////
     // Meshes //
 
     /** The mesh group of every active chunk. */
-    mesh = new THREE.Group();
-
-    /** Creates a new mesh at the given coordinates, scales it and positions it in the world. */
-    private newMesh(coords: Coordinates): THREE.Mesh {
-        const res = this.conf.render.mesh({
-            at: this.chunkHeightFun(coords),
-            nblocks: this.nblocks,
-        });
-        res.scale.set(this.blockSize, this.blockSize, this.verticalUnit);
-        res.translateX(coords.x * CHUNK_UNIT);
-        res.translateY(coords.y * CHUNK_UNIT);
-        res.matrixAutoUpdate = false;
-        res.updateMatrix();
-        return res;
-    }
+    meshGroup = new THREE.Group();
 
     /**
      * Updates the mesh of a single chunk.
      * @param chunk - The chunk whose mesh needs to be updated.
      */
-    private updateMesh(chunk: Chunk): void {
-        const oldMesh = chunk.mesh;
-        chunk.mesh = this.newMesh(chunk.coords);
-        this.mesh.add(chunk.mesh);
-        this.removeMesh(oldMesh);
+    private updateMesh(chunk: Chunk) {
+        const replaced = chunk.replace(this.props);
+        // Removing the old mesh before adding the new one seems a bit smoother.
+        this.removeMesh(replaced);
+        this.meshGroup.add(chunk._mesh.three);
     }
 
     /**
      * Removes a mesh from the mesh group and disposes of its resources.
      * @param mesh - The mesh to remove.
      */
-    private removeMesh(mesh: THREE.Mesh): void {
-        this.mesh.remove(mesh);
-        mesh.geometry.dispose();
-        (mesh.material as THREE.Material).dispose();
+    private removeMesh(mesh: ChunkMesh) {
+        this.meshGroup.remove(mesh.three);
+        mesh.dispose();
     }
 
     ////////////
@@ -114,18 +146,17 @@ export class Terrain {
     /** Map of the chunks that are currently loaded and displayed. */
     private chunks: Map<string, Chunk> = new Map();
 
-    private loadChunk(coords: Coordinates): Chunk {
-        const chunk = new Chunk(coords, this.newMesh(coords), this.chunkHeightFun(coords));
-        this.mesh.add(chunk.mesh);
+    private loadChunk(coords: Coordinates) {
+        const chunk = new Chunk(coords, this.props);
+        this.meshGroup.add(chunk._mesh.three);
         this.chunks.set(coords.string(), chunk);
-        return chunk;
     }
 
     /** Loads all the chunks in the load radius that are not yet loaded. */
-    ensureLoaded(): void {
+    ensureLoaded() {
         const oldChunks = this.chunks;
         this.chunks = new Map();
-        this.within(this.loadRadius, (coords: Coordinates) => {
+        this.within(this.props.loadRadius, (coords: Coordinates) => {
             const chunk = oldChunks.get(coords.string());
             if (chunk === undefined) return this.loadChunk(coords); // Load new chunk.
             // Transfer old chunk.
@@ -133,17 +164,9 @@ export class Terrain {
             oldChunks.delete(coords.string());
         });
 
-        // The remaining old chunks can be thrown away.
-        oldChunks.forEach((chunk) => this.removeMesh(chunk.mesh));
+        // The out-of-radius chunks must be disposed of.
+        oldChunks.forEach(chunk => this.removeMesh(chunk._mesh));
         oldChunks.clear(); // Don't wait for GC, there might be lots of memory in here.
-    }
-
-    /** Resets the scale of all loaded meshes. */
-    rescaleMesh() {
-        this.rangeActive((chk) => {
-            chk.mesh.scale.set(this.blockSize, this.blockSize, this.verticalUnit);
-            chk.mesh.updateMatrix();
-        });
     }
 
     private center: Coordinates = undefined;
@@ -151,16 +174,24 @@ export class Terrain {
     /**
      * Loads the blocks within range of worldPosition and unloads the blocks outside its range.
      */
-    centerOn(worldPosition: Position): void {
+    centerOn(worldPosition: Position) {
         const chunkCoords = worldPosition.toChunk();
         if (this.center != undefined && chunkCoords.equals(this.center)) return;
         this.center = chunkCoords;
         this.ensureLoaded();
     }
 
+    /////////////////////////
+    // Iteration utilities //
+
+    /** Resets the scale of all loaded meshes. */
+    rescaleMeshes() {
+        this.rangeActive(chunk => chunk.rescale(this.props));
+    }
+
     private within(...args: Parameters<Coordinates['withinSquare']>) {
         let res = Coordinates.prototype.withinSquare;
-        if (this.conf.chunks.radiusType === 'circle')
+        if (this.props.radiusType === 'circle')
             res = Coordinates.prototype.withinCircle;
         return res.bind(this.center)(...args);
     }
@@ -169,7 +200,7 @@ export class Terrain {
      * Calls a function on all active chunks.
      * @param fun - The function to apply to each chunk.
      */
-    private rangeActive(fun: (chunk: Chunk) => void): void {
+    private rangeActive(fun: (chunk: Chunk) => void) {
         for (const [_, chunk] of this.chunks) {
             fun(chunk);
         };
@@ -182,18 +213,18 @@ export class Terrain {
 
     /**
      * Calls a function on all active chunks, cancellable at the loop level.
-     * @param fun - The function to apply to each chunk.
+     * @param fun    - The function to apply to each chunk.
      * @param signal - Signal to cancel the computation mid-loop.
      */
     private async rangeActiveLazy(
         fun: (chunk: Chunk) => void,
         signal: AbortSignal
-    ): Promise<void> {
+    ) {
         for (const [_, chunk] of this.chunks) {
             if (signal.aborted) return;
             fun(chunk);
 
-            // Yield control after changing a chunk.
+            // Yield control after processing a chunk.
             await new Promise(resolve => setTimeout(resolve, 0));
         }
     }
@@ -203,15 +234,9 @@ export class Terrain {
      * computation triggered by previous calls to this method.
      */
     async recomputeLazy() {
-        // Cancel any previous job, the previous computation might still not get the memo about the
-        // cancellation.
         this.abortController?.abort();
         this.abortController = new AbortController();
-        const signal = this.abortController.signal;
-
-        this.conf.noise.recompute();
-        this.height = this.conf.noise.normalised(.01, 1);
-
-        await this.rangeActiveLazy(this.updateMesh.bind(this), signal);
+        this.props.recomputeNoise();
+        await this.rangeActiveLazy(this.updateMesh.bind(this), this.abortController.signal);
     }
 }

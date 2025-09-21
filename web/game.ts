@@ -80,7 +80,7 @@ class Game {
         this.avatar = new Avatar(this.state.avatar);
 
         this.renderer = new Renderer(this.state.render, this.state.camera);
-        this.renderer.addMesh(this.terrain.mesh);
+        this.renderer.addMesh(this.terrain.meshGroup);
         this.renderer.addMesh(this.avatar.mesh);
 
         this.setupUI();
@@ -182,7 +182,7 @@ class Game {
 
         this.updateStats = (): void => {
             const pos = this.avatar.coords;
-            const heightfun = this.terrain.chunkHeightFun({ x: Math.floor(pos.x), y: Math.floor(pos.y) });
+            const heightfun = this.terrain.heightAt({ x: Math.floor(pos.x), y: Math.floor(pos.y) });
             const heights: number[] = [];
             for (let i = 0; i < this.state.chunks.nblocks; ++i)
                 for (let j = 0; j < this.state.chunks.nblocks; ++j)
@@ -259,7 +259,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
     updateRender(): void {
         this.renderer.updateLighting();
-        this.terrain.rescaleMesh();
+        this.terrain.rescaleMeshes();
     }
 
     updateCamera(): void {
