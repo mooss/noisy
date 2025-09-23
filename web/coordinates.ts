@@ -39,39 +39,65 @@ export class Coordinates {
     }
 
     /**
-     * Generates a list of coordinates within the circle of the specified radius around this block.
-     * @param radius - The radius (in chunks or blocks) around the center.
-     * @param fun - Callback function that receives each coordinate.
+     * Iterates in spiral around the current point, staying within the specified square radius.
+     * Assumes integer coordinates.
+     *
+     * @param radius - The radius around the center.
+     * @param fun    - Callback function that receives each coordinate.
      */
-    withinCircle(radius: number, fun: (coord: Coordinates) => void): void {
+    spiralCircle(radius: number, fun: (coord: Coordinates) => void): void {
         const radiusSquared = radius * radius;
-        const minX = Math.floor(this.x - radius);
-        const maxX = Math.floor(this.x + radius);
-        const minY = Math.floor(this.y - radius);
-        const maxY = Math.floor(this.y + radius);
 
-        for (let x = minX; x <= maxX; x++) {
-            for (let y = minY; y <= maxY; y++) {
-                const dx = x - this.x;
-                const dy = y - this.y;
-                if (dx * dx + dy * dy <= radiusSquared) {
-                    fun(new Coordinates(x, y));
-                }
+        this.spiralSquare(radius, (coor) => {
+            const dx = coor.x - this.x;
+            const dy = coor.y - this.y;
+            if (dx * dx + dy * dy <= radiusSquared) {
+                fun(new Coordinates(coor.x, coor.y));
             }
-        }
+        });
     }
 
     /**
-     * Generates a list of coordinates within a specified square radius around this block.
-     * @param radius - The radius (in chunks or blocks) around the center.
-     * @param fun - Callback function that receives each coordinate.
+     * Iterates in spiral around the current point, staying within the specified square radius.
+     * Assumes integer coordinates.
+     * The goal is to iterate first on the coordinates closest to the center, but it's actually not
+     * optimal because it iterates in a square spiral whereas a circle spiral is necessary to stay
+     * the closest to the center.
+     *
+     * @param radius - The radius around the center.
+     * @param fun    - Callback function that receives each coordinate.
      */
-    withinSquare(radius: number, fun: (coord: Coordinates) => void): void {
-        for (let x = this.x - radius; x <= this.x + radius; x++) {
-            for (let y = this.y - radius; y <= this.y + radius; y++) {
-                fun(new Coordinates(x, y));
+    spiralSquare(radius: number, fun: (coord: Coordinates) => void): void {
+        let x = this.x; let y = this.y;
+        const call = () => {
+            console.log(':X', x, ':Y', y);
+            fun(new Coordinates(x, y));
+        }
+        call(); // Center.
+
+        // The general formula to add the radius i to the spiral is:
+        //  - 1       left
+        //  - 2i - 1  down
+        //  - 2i      right
+        //  - 2i      up
+        //  - 2i      left
+        for (let i = 1; i <= radius; ++i) {
+            x--; call();     // Left.
+            for (let j = 1; j <= 2 * i - 1; ++j) {
+                y--; call(); // Down.
+            }
+            for (let j = 1; j <= 2 * i; ++j) {
+                x++; call(); // Right.
+            }
+            for (let j = 1; j <= 2 * i; ++j) {
+                y++; call(); // Up.
+            }
+            for (let j = 1; j <= 2 * i; ++j) {
+                x--; call(); // Left.
             }
         }
+
+        return;
     }
 
     equals(other: Coordinates): boolean { return this.x === other.x && this.y === other.y }

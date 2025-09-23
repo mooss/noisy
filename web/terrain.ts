@@ -189,10 +189,10 @@ export class Terrain {
         this.rangeActive(chunk => chunk.rescale(this.props));
     }
 
-    private within(...args: Parameters<Coordinates['withinSquare']>) {
-        let res = Coordinates.prototype.withinSquare;
+    private within(...args: Parameters<Coordinates['spiralSquare']>) {
+        let res = Coordinates.prototype.spiralSquare;
         if (this.props.radiusType === 'circle')
-            res = Coordinates.prototype.withinCircle;
+            res = Coordinates.prototype.spiralCircle;
         return res.bind(this.center)(...args);
     }
 
