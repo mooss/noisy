@@ -26,7 +26,7 @@ export class Terracing extends NoiseWrapper<TerracingP> {
     make(): NoiseFun {
         const fun = this.wrapped.make();
         if (this.p.steps == 0) return fun;
-        return (x, y) => Math.round(fun(x, y) * this.p.steps) / this.p.steps;
+        return (x, y) => Math.round(fun(x, y) * (this.p.steps-1)) / this.p.steps;
     }
 }
 register('Terracing', Terracing);
