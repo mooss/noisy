@@ -28,3 +28,13 @@ export function* mapit<From, To>(fun: (x: From) => To, source: Iterable<From>): 
     for (const value of source)
         yield fun(value);
 }
+
+// A Python-like range iterator.
+export function* range(start: number, stop: number = null, step: number = 1) {
+    if (stop == null) { // range(x) -> from 0 to x;
+        stop = start;
+        start = 0;
+    }
+
+    for (let i = 0; step > 0 ? i < stop : i > stop; i+= step) yield i;
+}
