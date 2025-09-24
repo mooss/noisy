@@ -6,7 +6,7 @@ import { interpolateColors } from './utils/graphics.js';
 //////////////////
 // Surface mesh //
 
-// Computes the surface indices for a square mesh.
+/* Computes the surface indices for a square mesh. */
 function surfaceIndices(vertexSide: number): Uint16Array | Uint32Array {
     const indexSide = vertexSide - 1; // Length of the side of the indices matrix.
     const vertexCount = vertexSide * vertexSide;
@@ -62,38 +62,26 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     const meshResolution = heights.nblocks + 1; // Number of vertices on one side of the grid.
     const nVertices = 3 * meshResolution * meshResolution;
     const vertices = new Float32Array(nVertices);
-    const colors = new Float32Array(nVertices);
     const paddedSize = (meshResolution + 2);
 
     // Height buffer with additional cells on every side for edge vertex normal computation.
     const paddedHeights = heightMatrix(heights, paddedSize);
 
-    const color = new THREE.Color()
     // Vertices and colors.
     for (let i = 0; i < meshResolution; i++) {
         for (let j = 0; j < meshResolution; j++) {
             const height = paddedHeights[(i + 1) * paddedSize + j + 1];
-            interpolateColors(palette, height, color);
             const idx = (i * meshResolution + j) * 3;
-
             vertices[idx] = i; vertices[idx + 1] = j; vertices[idx + 2] = height;
-            colors[idx] = color.r; colors[idx + 1] = color.g; colors[idx + 2] = color.b;
         }
     }
 
     const posbuffer = new THREE.BufferAttribute(vertices, 3);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', posbuffer);
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     geometry.setIndex(new THREE.BufferAttribute(surfaceIndices(meshResolution), 1));
     geometry.setAttribute('normal', computeVertexNormals(paddedHeights, meshResolution));
-
-    const material = new THREE.MeshStandardMaterial({
-        vertexColors: true,
-        side: THREE.FrontSide,
-    });
-
-    return new THREE.Mesh(geometry, material);
+    return new THREE.Mesh(geometry, paletteShader(palette));
 }
 
 /**
@@ -253,7 +241,7 @@ function createPrismMeshes(type: 'hexagon' | 'square', heights: HeightGenerator,
             const xPos = i + xOffset;
             const yPos = j * ySpacingFactor;
 
-            const color = interpolateColors(palette, height);
+            const color = interpolateColors(palette.colors, height);
             const matrix = new THREE.Matrix4().makeScale(1, 1, height).setPosition(xPos, yPos, 0);
 
             for (let v = 0; v < posAttr.count; v++) {
@@ -291,4 +279,56 @@ export function createHexagonMesh(heights: HeightGenerator, palette: Palette): T
 
 export function createSquareMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
     return createPrismMeshes('square', heights, palette);
+}
+
+/////////////
+// Shaders //
+
+/**
+ * Create a mesh material that interpolates colors from height in the shaders by storing the color
+ * palette in a texture.
+ */
+function paletteShader(palette: Palette): THREE.MeshStandardMaterial {
+    // The color palette is stored as a texture.
+    const paletteTex = new THREE.DataTexture(
+        palette.toArray(),
+        palette.size, // Width.
+        1,            // Height.
+        THREE.RGBAFormat,
+        THREE.FloatType,
+    );
+    paletteTex.needsUpdate = true;
+    paletteTex.magFilter = THREE.LinearFilter;
+    paletteTex.minFilter = THREE.LinearMipMapLinearFilter;
+    paletteTex.wrapS = THREE.ClampToEdgeWrapping;
+
+    // The shader created by THREE.js contains a lot of useful things so it is simpler for now to
+    // inject additional instructions rather than to write a shader from scratch.
+    const material = new THREE.MeshStandardMaterial();
+    material.onBeforeCompile = shader => {
+        // Vertex shader: forward the vertex height to the fragment shader.
+        const vertexWithMeshPosition = shader.vertexShader.replace(
+            `#include <begin_vertex>`,
+            `#include <begin_vertex>
+v_z = position.z;`
+        );
+        shader.vertexShader = `varying float v_z;
+${vertexWithMeshPosition}`;
+
+        // Fragment shader: smoothly interpolate the color from the height using the palette.
+        const injectColor = `#include <color_fragment>
+vec2 colorIdx = vec2(v_z, 0.5);
+colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, v_z), 0.5);
+diffuseColor.rgb = texture2D(u_palette, colorIdx).rgb;`
+        const fragmentWithColor = shader.fragmentShader.replace('#include <color_fragment>', injectColor);
+        shader.uniforms.u_palette = { value: paletteTex };
+        shader.uniforms.u_paletteWidth = { value: palette.size };
+        shader.fragmentShader = `uniform sampler2D u_palette;
+
+uniform float u_paletteWidth;
+varying float v_z;
+${fragmentWithColor}`;
+    };
+
+    return material;
 }
