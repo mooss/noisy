@@ -36,41 +36,45 @@ function surfaceIndices(vertexSide: number): Uint16Array | Uint32Array {
 }
 
 /**
+ * Returns a padded height matrix.
+ */
+function heightMatrix(heights: HeightGenerator, paddedSize: number): Float32Array {
+    const sampling = 1 / heights.nblocks;
+    const res = new Float32Array(paddedSize * paddedSize);
+    for (let i = 0; i < paddedSize; i++) {
+        for (let j = 0; j < paddedSize; j++) {
+            const x = (i - 1) * sampling; const y = (j - 1) * sampling;
+            res[i * paddedSize + j] = heights.at(x, y);
+        }
+    }
+
+    return res;
+}
+
+/**
  * Creates a surface mesh from a height field.
  *
  * @param heights - Terrain data.
  * @param palette - Color palette for height-based interpolation.
- * @returns The generated surface mesh.
+ * @returns The surface mesh.
  */
 export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
-    let { nblocks } = heights;
-    const sampling = 1 / nblocks; // Distance between each vertex.
-    nblocks += 1; // Create one additional row and column to overlap this mesh and the next one.
-    const geometry = new THREE.BufferGeometry();
-
-    const nVertices = 3 * nblocks * nblocks;
+    const meshResolution = heights.nblocks + 1; // Number of vertices on one side of the grid.
+    const nVertices = 3 * meshResolution * meshResolution;
     const vertices = new Float32Array(nVertices);
     const colors = new Float32Array(nVertices);
+    const paddedSize = (meshResolution + 2);
 
-    const paddedSize = (nblocks + 2);
-    // A height buffer, with an additional cell on every side to allow for easy computation of
-    // normal for vertices at the edge.
-    // Performance note: fusing this loop with the next one is useless.
-    const paddedHeights = new Float32Array(paddedSize * paddedSize);
-    for (let i = 0; i < paddedSize; i++) {
-        for (let j = 0; j < paddedSize; j++) {
-            const x = (i - 1) * sampling; const y = (j - 1) * sampling;
-            paddedHeights[i * paddedSize + j] = heights.at(x, y);
-        }
-    }
+    // Height buffer with additional cells on every side for edge vertex normal computation.
+    const paddedHeights = heightMatrix(heights, paddedSize);
 
     const color = new THREE.Color()
     // Vertices and colors.
-    for (let i = 0; i < nblocks; i++) {
-        for (let j = 0; j < nblocks; j++) {
+    for (let i = 0; i < meshResolution; i++) {
+        for (let j = 0; j < meshResolution; j++) {
             const height = paddedHeights[(i + 1) * paddedSize + j + 1];
             interpolateColors(palette, height, color);
-            const idx = (i * nblocks + j) * 3;
+            const idx = (i * meshResolution + j) * 3;
 
             vertices[idx] = i; vertices[idx + 1] = j; vertices[idx + 2] = height;
             colors[idx] = color.r; colors[idx + 1] = color.g; colors[idx + 2] = color.b;
@@ -78,10 +82,11 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     }
 
     const posbuffer = new THREE.BufferAttribute(vertices, 3);
+    const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', posbuffer);
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    geometry.setIndex(new THREE.BufferAttribute(surfaceIndices(nblocks), 1));
-    geometry.setAttribute('normal', computeVertexNormals(paddedHeights, nblocks));
+    geometry.setIndex(new THREE.BufferAttribute(surfaceIndices(meshResolution), 1));
+    geometry.setAttribute('normal', computeVertexNormals(paddedHeights, meshResolution));
 
     const material = new THREE.MeshStandardMaterial({
         vertexColors: true,
@@ -102,7 +107,7 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
  * Performance note: reducing function calls does not work at all.
  *
  * @param paddedHeights - The heights to work on (with 1 additional cell on every side).
- * @param side      - The number of vertices on one side of a square.
+ * @param side          - The number of vertices on one side of a square.
  * @returns the computed vertex normals.
  */
 function computeVertexNormals(paddedHeights: Float32Array, side: number): THREE.BufferAttribute {
@@ -192,7 +197,7 @@ function computeVertexNormals(paddedHeights: Float32Array, side: number): THREE.
  * Creates a hexagonal extruded prism.
  * @param radius - The radius of the hexagon.
  * @param height - The height of the extrusion.
- * @returns The generated geometry.
+ * @returns the generated geometry.
  */
 function _createHexagonGeometry(radius: number, height: number): THREE.ExtrudeGeometry {
     const shape = new THREE.Shape();
@@ -221,7 +226,7 @@ function _createHexagonGeometry(radius: number, height: number): THREE.ExtrudeGe
  * @param type    - Shape of the prism ('hexagon' or 'square').
  * @param heights - Terrain data.
  * @param palette - Color palette for height-based interpolation
- * @returns The generated prism mesh.
+ * @returns the generated prism mesh.
  */
 function createPrismMeshes(type: 'hexagon' | 'square', heights: HeightGenerator, palette: Palette): THREE.Mesh {
     const { nblocks } = heights;
