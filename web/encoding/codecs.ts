@@ -1,7 +1,7 @@
 import { compressToBase64, decompressFromBase64 } from "lz-string";
 import { combinations, mapit } from "../utils/iteration.js";
 import { sortedMap } from "../utils/maps.js";
-import { countNodes, cultivateTree } from "../utils/tree.js";
+import { climbTree, countNodes, cultivateTree } from "../utils/tree.js";
 import { Creator, decrec, encrec } from "./self-encoder.js";
 
 export interface Codec<From, To> {
@@ -17,6 +17,48 @@ export abstract class CodecABC<From, To> implements Codec<From, To> {
     roundtrip(document: From): From { return this.decode(this.encode(document)) }
 }
 
+/*
+ * Roughly estimate the size of a primitive encoded through Lexon64.
+ * Does not return a byte size estimation, but an arbitrary unit.
+ *
+ * @param obj - The object whose size to estimate.
+ * @returns the estimated size.
+ */
+function estimatePrimitiveSize(obj: any): number {
+    if (obj == null) return 4; // Special case because typeof null is object.
+    switch (typeof obj) {
+        case 'symbol': // Encoded in JSON as undefined.
+        case 'function': // Same.
+        case 'undefined':
+            return 9;
+        case 'boolean':
+            if (obj) return 4;
+            return 5;
+        case 'bigint':
+        case 'number':
+        case 'string': // .length does not exist here somehow.
+            obj.toString().length;
+        case 'object':
+            return JSON.stringify(obj).length; // Accurate but more costly.
+    }
+}
+
+interface nodeFootprint { size: number; count: number; }
+function estimateNodeFootprints(obj: any): Map<any, nodeFootprint> {
+    const footprints = new Map<any, nodeFootprint>();
+    const accumulate = (node: any) => {
+        let current = footprints.get(node);
+        if (current === undefined) {
+            current = {size: estimatePrimitiveSize(node), count: 0};
+            footprints.set(node, current);
+        }
+        current.count++;
+    }
+
+    climbTree(accumulate, accumulate, obj);
+    return footprints;
+}
+
 /**
  * Encodes and decodes a document using a Lexicon generated from a reference document.
  */
@@ -26,16 +68,13 @@ export class Lexicon extends CodecABC<any, any> {
 
     constructor(reference: Object, alphabet: string) {
         super();
-        const counter = sortedMap(countNodes(reference), ([lk, lv], [rk, rv]) => {
-            const res = rv - lv;
-            if (res != 0) return res;
-            // Hopefully deterministic across all machines.
-            return String(lk).localeCompare(String(rk), 'en-US');
-        });
+        const fp = estimateNodeFootprints(reference);
+        const sizeSortedNodes = sortedMap(fp, ([_0, lv], [_1, rv]) => rv.size * rv.count - lv.size * lv.count);
+
         // Combinations on the alphabet (e.g. for latin alphabet [a, b, c, ..., aa, ab, ...]).
         const combos = mapit((x) => x.join(''), combinations(alphabet));
 
-        for (const [term] of counter) {
+        for (const [term] of sizeSortedNodes) {
             const compressed = combos.next().value;
             this.forward.set(term, compressed);
             this.backward.set(compressed, term);
@@ -74,6 +113,15 @@ export class Lexicon extends CodecABC<any, any> {
     }
 }
 
+/**
+ * Translate all the caracters in a string by mapping its characters from one set to another (like
+ * the tr command).
+ *
+ * @param source - The initial string to transform.
+ * @param from   - The characters to replace.
+ * @param to     - The replacement characters (must contain the same amount as the caracters to replace).
+ * @returns a new string that has been translated.
+ */
 function tr(source: string, from: string, to: string): string {
     return source.split('').map((chr: string) => {
         const idx = from.indexOf(chr);
