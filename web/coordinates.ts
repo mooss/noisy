@@ -69,10 +69,7 @@ export class Coordinates {
      */
     spiralSquare(radius: number, fun: (coord: Coordinates) => void): void {
         let x = this.x; let y = this.y;
-        const call = () => {
-            console.log(':X', x, ':Y', y);
-            fun(new Coordinates(x, y));
-        }
+        const call = () => fun(new Coordinates(x, y));
         call(); // Center.
 
         // The general formula to add the radius i to the spiral is:
