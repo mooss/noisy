@@ -4,6 +4,7 @@ import { Coordinates, Position } from "./coordinates.js";
 import { NoiseFun, NoiseMakerI } from './noise/foundations.js';
 import type { ChunkState } from './state/chunk.js';
 import type { RenderState } from './state/render.js';
+import { Operation, Syncope } from './utils/async.js';
 import { vector2 } from './utils/maths.js';
 
 class TerrainProperties {
@@ -154,19 +155,28 @@ export class Terrain {
 
     /** Loads all the chunks in the load radius that are not yet loaded. */
     ensureLoaded() {
-        const oldChunks = this.chunks;
+        const inactive = this.chunks;
+
+        const updateOp = this.update.lock();
+
         this.chunks = new Map();
         this.within(this.props.loadRadius, (coords: Coordinates) => {
-            const chunk = oldChunks.get(coords.string());
-            if (chunk === undefined) return this.loadChunk(coords); // Load new chunk.
-            // Transfer old chunk.
+            const chunk = inactive.get(coords.string());
+            if (chunk === undefined)
+                return this.loadChunk(coords);
+
+            // When the terrain was in the process of being updated, reloading lazily can result in
+            // inconsistent chunks.
+            // In this case, all chunks must be (re)loaded.
+            if (updateOp.interrupted) this.updateMesh(chunk);
+
             this.chunks.set(coords.string(), chunk);
-            oldChunks.delete(coords.string());
+            inactive.delete(coords.string());
         });
 
         // The out-of-radius chunks must be disposed of.
-        oldChunks.forEach(chunk => this.removeMesh(chunk._mesh));
-        oldChunks.clear(); // Don't wait for GC, there might be lots of memory in here.
+        inactive.forEach(chunk => this.removeMesh(chunk._mesh));
+        inactive.clear(); // Don't wait for GC, there might be lots of memory in here.
     }
 
     private center: Coordinates = undefined;
@@ -209,8 +219,6 @@ export class Terrain {
     /////////////////////
     // Async functions //
 
-    private abortController: AbortController = null;
-
     /**
      * Calls a function on all active chunks, cancellable at the loop level.
      * @param fun    - The function to apply to each chunk.
@@ -218,25 +226,26 @@ export class Terrain {
      */
     private async rangeActiveAsync(
         fun: (chunk: Chunk) => void,
-        signal: AbortSignal
+        operation: Operation,
     ) {
         for (const [_, chunk] of this.chunks) {
-            if (signal.aborted) return;
+            if (operation.abort()) return operation.done();
             fun(chunk);
-
             // Yield control after processing a chunk.
-            await new Promise(resolve => setTimeout(resolve, 0));
+            await operation.yield();
         }
+        operation.done();
     }
+
+    private update = new Syncope();
 
     /**
      * Recomputes the height function and updates the mesh of all active chunks, cancelling
      * computation triggered by previous calls to this method.
      */
     async recomputeAsync() {
-        this.abortController?.abort();
-        this.abortController = new AbortController();
+        const op = this.update.lock();
         this.props.recomputeNoise();
-        await this.rangeActiveAsync(this.updateMesh.bind(this), this.abortController.signal);
+        await this.rangeActiveAsync(chunk => this.updateMesh(chunk), op);
     }
 }
