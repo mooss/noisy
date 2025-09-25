@@ -64,7 +64,6 @@ class ChunkMesh {
 
     /**
      * Frees the GPU resources allocated to the mesh.
-     * @returns the THREE.js mesh that has been disposed of.
      */
     dispose() {
         this.three.geometry.dispose();
@@ -73,8 +72,9 @@ class ChunkMesh {
 }
 
 class Chunk {
-    _mesh: ChunkMesh;
-    constructor(private coords: Coordinates, props: TerrainProperties) {
+    _mesh?: ChunkMesh = null;
+    constructor(private coords: Coordinates, props?: TerrainProperties) {
+        if (props === undefined) return;
         this._mesh = new ChunkMesh(coords, props);
     }
 
@@ -83,7 +83,7 @@ class Chunk {
      * @param props - the properties used to compute the new mesh.
      * @returns the mesh that was replaced (must be disposed of if not needed anymore).
      */
-    replace(props: TerrainProperties): ChunkMesh {
+    replace(props: TerrainProperties): ChunkMesh | null {
         const replaced = this._mesh;
         this._mesh = new ChunkMesh(this.coords, props);
         return replaced;
@@ -136,7 +136,8 @@ export class Terrain {
      * Removes a mesh from the mesh group and disposes of its resources.
      * @param mesh - The mesh to remove.
      */
-    private removeMesh(mesh: ChunkMesh) {
+    private removeMesh(mesh?: ChunkMesh) {
+        if (mesh === null) return;
         this.meshGroup.remove(mesh.three);
         mesh.dispose();
     }
@@ -147,24 +148,30 @@ export class Terrain {
     /** Map of the chunks that are currently loaded and displayed. */
     private chunks: Map<string, Chunk> = new Map();
 
-    private loadChunk(coords: Coordinates) {
-        const chunk = new Chunk(coords, this.props);
-        this.meshGroup.add(chunk._mesh.three);
-        this.chunks.set(coords.string(), chunk);
-    }
-
     /** Loads all the chunks in the load radius that are not yet loaded. */
-    ensureLoaded() {
+    async ensureLoaded() {
         const inactive = this.chunks;
         this.chunks = new Map<string, Chunk>();
-        const missing = new Set<Coordinates>();
+        const missing = new Set<Chunk>();
         const untouched = new Set<Chunk>();
 
         this.within(this.props.loadRadius, (coords: Coordinates) => {
             const id = coords.string();
             const chunk = inactive.get(id);
-            if (chunk === undefined)
-                return missing.add(coords);
+
+            // New chunks that need to be loaded.
+            if (chunk === undefined) {
+                // Draft chunks (chunks without mesh) are immediately added to the active chunks so
+                // that if the current loading operation is interrupted by another chunk update,
+                // they will still be considered active in the new update.
+                // Otherwise the chunks can stay missing for a while, creating gaps in the terrain.
+                const draft = new Chunk(coords);
+                missing.add(draft);
+                this.chunks.set(id, draft);
+                return;
+            }
+
+            // Chunks that are already loaded but might need to be reloaded.
             this.chunks.set(id, chunk);
             untouched.add(chunk);
             inactive.delete(id);
@@ -177,13 +184,23 @@ export class Terrain {
         inactive.clear();
 
         // Load missing chunks.
-        missing.forEach(coords => this.loadChunk(coords));
+        for (const draft of missing) {
+            if (updateOp.abort()) return updateOp.done();
+            this.updateMesh(draft);
+            await updateOp.yield();
+        }
 
         // When the terrain was in the process of being updated, reloading lazily can result in
         // inconsistent chunks.
         // In this case, even the in-radius chunks that already existed must be (re)loaded.
-        if (updateOp.interrupted)
-            untouched.forEach(chunk => this.updateMesh(chunk));
+        if (updateOp.interrupted) {
+            for (const chunk of untouched) {
+                if (updateOp.abort()) return updateOp.done();
+                this.updateMesh(chunk);
+                await updateOp.yield();
+            }
+        }
+
         updateOp.done();
     }
 
