@@ -63,12 +63,12 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
 
     root.range(state.light.ambient, 'intensity', 0, 10, .2)
         .label('Ambient light')
-        .onChange(cb.render.update)
+        .onInput(cb.render.update)
         .tooltip(tips.light_ambient);
 
     root.range(state.light.directional, 'intensity', 0, 10, .2)
         .label('Directional light')
-        .onChange(cb.render.update)
+        .onInput(cb.render.update)
         .tooltip(tips.light_directional);
 
     root.range(state, 'heightMultiplier', 0, 5.0, 0.02)

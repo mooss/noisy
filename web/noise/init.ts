@@ -14,7 +14,7 @@ export function noiseAlgorithms(): NoiseMakerI {
             persistence: .65,
             lacunarity: 1.5,
         },
-        sampling: { size: 30, threshold: 2.5, fundamental: 3 },
+        sampling: { size: 30, threshold: 4, fundamental: 3 },
     };
     const c = clone;
 
