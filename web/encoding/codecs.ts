@@ -1,7 +1,7 @@
 import { compressToBase64, decompressFromBase64 } from "lz-string";
 import { combinations, mapit } from "../utils/iteration.js";
 import { sortedMap } from "../utils/maps.js";
-import { climbTree, countNodes, cultivateTree } from "../utils/tree.js";
+import { climbTree, cultivateTree } from "../utils/tree.js";
 import { Creator, decrec, encrec } from "./self-encoder.js";
 
 export interface Codec<From, To> {
@@ -39,7 +39,7 @@ function estimatePrimitiveSize(obj: any): number {
         case 'string': // .length does not exist here somehow.
             obj.toString().length;
         case 'object':
-            return JSON.stringify(obj).length; // Accurate but more costly.
+            return JSON.stringify(obj).length; // More accurate but more costly.
     }
 }
 

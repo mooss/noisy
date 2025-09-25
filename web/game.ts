@@ -14,11 +14,9 @@ import { renderUI } from './state/render.js';
 import { GameCallbacks, StateRegistry } from './state/state.js';
 import { numStats } from './stats.js';
 import { Terrain } from './terrain.js';
-import { FpsWidget, Keyboard } from './ui/ui.js';
 import { tips } from './ui/tips.js';
+import { FpsWidget, Keyboard } from './ui/ui.js';
 import { downloadData, dragAndDrop, toClipBoard } from './utils/utils.js';
-import { Window } from './gui/window.js';
-import { CheckBar } from './gui/widget.js';
 
 const STATE_STORAGE_KEY = 'load-state';
 const DONT_SHOW_WELCOME_STORAGE_KEY = VERSION.storageKey('dont-show-welcome');
@@ -247,7 +245,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     }
 
     recomputeTerrain(): void {
-        this.terrain.recomputeLazy();
+        this.terrain.recomputeAsync();
         this.renderer.updateLighting();
         this.updateStats();
         this.updateAvatar();

@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import { CHUNK_UNIT } from '../constants.js';
 import { Panel } from '../gui/gui.js';
 import type { HeightGenerator } from '../height-generator.js';
-import { createHexagonMesh, createSquareMesh, createSurfaceMesh } from '../mesh.js';
-import { palettes } from '../palettes.js';
+import { createBoxMesh, createSurfaceMesh } from '../mesh.js';
+import { Palette, palettes } from '../palettes.js';
+import { tips } from '../ui/tips.js';
 import { AutoAssign } from '../utils/objects.js';
 import { GameCallbacks, register } from './state.js';
-import { tips } from '../ui/tips.js';
 
 interface LightConfig {
     //TIP: light_ambient Ambient light intensity.
@@ -16,7 +16,7 @@ interface LightConfig {
     directional: { intensity: number };
 }
 
-type RenderStyle = 'surface' | 'quadPrism' | 'hexPrism';
+type RenderStyle = 'surface' | 'boxes';
 
 class RenderStateP extends AutoAssign<RenderStateP> {
     //TIP: render_style Fundamental shape the terrain is made of.
@@ -34,14 +34,12 @@ class RenderStateP extends AutoAssign<RenderStateP> {
 export class RenderState extends RenderStateP {
     class(): string { return 'RenderState' };
     get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }
-    get palette(): THREE.Color[] { return palettes[this.paletteName] }
+    get palette(): Palette { return palettes[this.paletteName] }
 
     mesh(heights: HeightGenerator): THREE.Mesh {
         switch (this.style) {
-            case 'hexPrism':
-                return createHexagonMesh(heights, this.palette);
-            case 'quadPrism':
-                return createSquareMesh(heights, this.palette);
+            case 'boxes':
+                return createBoxMesh(heights, this.palette);
             case 'surface':
                 return createSurfaceMesh(heights, this.palette);
         }
@@ -52,8 +50,7 @@ register('RenderState', RenderState);
 export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
     root.select(state, 'style', {
         'Surface': 'surface',
-        'Squares': 'quadPrism',
-        // 'Hexagons': 'hexPrism', //TODO: decide whether to fix or remove it.
+        'Boxes': 'boxes',
     })
         .label('Shape')
         .onChange(cb.terrain.recompute)

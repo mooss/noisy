@@ -24,7 +24,7 @@ class TerrainProperties {
     get radiusType() { return this.chunks.radiusType }
 
     get verticalUnit() {
-        // Prevent the verticality to be exactly zero because it messes up with shading, basically
+        // Prevents the verticality to be exactly zero because it messes up with shading, basically
         // negating directional light.
         return Math.max(this.render.verticalUnit, .0000001);
     }
@@ -216,7 +216,7 @@ export class Terrain {
      * @param fun    - The function to apply to each chunk.
      * @param signal - Signal to cancel the computation mid-loop.
      */
-    private async rangeActiveLazy(
+    private async rangeActiveAsync(
         fun: (chunk: Chunk) => void,
         signal: AbortSignal
     ) {
@@ -233,10 +233,10 @@ export class Terrain {
      * Recomputes the height function and updates the mesh of all active chunks, cancelling
      * computation triggered by previous calls to this method.
      */
-    async recomputeLazy() {
+    async recomputeAsync() {
         this.abortController?.abort();
         this.abortController = new AbortController();
         this.props.recomputeNoise();
-        await this.rangeActiveLazy(this.updateMesh.bind(this), this.abortController.signal);
+        await this.rangeActiveAsync(this.updateMesh.bind(this), this.abortController.signal);
     }
 }
