@@ -211,6 +211,13 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     ///////////////
     // Game loop //
 
+    // alwaysRender and mustRender are used with a timeout call when starting the animation loop to
+    // force rendering when the game starts, so that the initial terrain can be fully drawn when the
+    // window is out-of-focus.
+    private readonly alwaysRenderDuration = 1000; // ms.
+    private alwaysRender = true;
+    private mustRender(): boolean { return this.alwaysRender || document.hasFocus() }
+
     startAnimationLoop(): void {
         this.renderer.render(); // Render at least once if out of focus.
         let prev = performance.now();
@@ -220,9 +227,10 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
             const now = performance.now();
             this.onFrame((now - prev) / 1000);
             prev = now;
-            if (document.hasFocus()) this.renderer.render();
+            if (this.mustRender()) this.renderer.render();
         };
 
+        setTimeout(() => this.alwaysRender = false, this.alwaysRenderDuration);
         animate();
     }
 
