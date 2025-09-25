@@ -156,27 +156,35 @@ export class Terrain {
     /** Loads all the chunks in the load radius that are not yet loaded. */
     ensureLoaded() {
         const inactive = this.chunks;
+        this.chunks = new Map<string, Chunk>();
+        const missing = new Set<Coordinates>();
+        const untouched = new Set<Chunk>();
+
+        this.within(this.props.loadRadius, (coords: Coordinates) => {
+            const id = coords.string();
+            const chunk = inactive.get(id);
+            if (chunk === undefined)
+                return missing.add(coords);
+            this.chunks.set(id, chunk);
+            untouched.add(chunk);
+            inactive.delete(id);
+        });
 
         const updateOp = this.update.lock();
 
-        this.chunks = new Map();
-        this.within(this.props.loadRadius, (coords: Coordinates) => {
-            const chunk = inactive.get(coords.string());
-            if (chunk === undefined)
-                return this.loadChunk(coords);
-
-            // When the terrain was in the process of being updated, reloading lazily can result in
-            // inconsistent chunks.
-            // In this case, all chunks must be (re)loaded.
-            if (updateOp.interrupted) this.updateMesh(chunk);
-
-            this.chunks.set(coords.string(), chunk);
-            inactive.delete(coords.string());
-        });
-
-        // The out-of-radius chunks must be disposed of.
+        // Remove out-of-radius chunks.
         inactive.forEach(chunk => this.removeMesh(chunk._mesh));
-        inactive.clear(); // Don't wait for GC, there might be lots of memory in here.
+        inactive.clear();
+
+        // Load missing chunks.
+        missing.forEach(coords => this.loadChunk(coords));
+
+        // When the terrain was in the process of being updated, reloading lazily can result in
+        // inconsistent chunks.
+        // In this case, even the in-radius chunks that already existed must be (re)loaded.
+        if (updateOp.interrupted)
+            untouched.forEach(chunk => this.updateMesh(chunk));
+        updateOp.done();
     }
 
     private center: Coordinates = undefined;
