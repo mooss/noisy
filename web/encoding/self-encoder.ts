@@ -1,4 +1,5 @@
 import { AutoAssign, mapObjectOrArray, mapRequired } from "../utils/objects.js";
+import { CodecABC } from "./encoding.js";
 
 ////////////////
 // Primitives //
@@ -105,7 +106,7 @@ export type Ctor<Type, Params = any> = new (params: Params) => Type;
  * Registry of self-encoded classes, allowing to instantiate objects from the class annotations of
  * self-encoded data (#meta.class).
  */
-export class Registry<Type> {
+export class Registry<Type> extends CodecABC<any, any> {
     /** Internal map from registered metadata class names to their constructors. */
     private classes = new Map<string, Ctor<Type>>;
 
@@ -141,9 +142,14 @@ export class Registry<Type> {
     registered(name: string): boolean { return this.classes.has(name) }
 
     /**
+     * Recursively encodes self-encodable objects.
+     */
+    encode(document: any): any { return encrec(document) }
+
+    /**
      * Decodes self-encoded data by recursively instantiating objects where possible.
-     * @param data - The data to decode.
+     * @param document - The data to decode.
      * @returns The decoded data.
      */
-    decode(data: any): any { return decrec(data, this) }
+    decode(document: any): any { return decrec(document, this) }
 }

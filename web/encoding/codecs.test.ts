@@ -1,4 +1,5 @@
-import { CompressedBase64Codec, Codec, CodecChain, JSONCodec, Lexicon } from "./codecs.js";
+import { CodecChain, CompressedBase64Codec, JSONCodec, Lexicon } from "./codecs.js";
+import { Codec } from "./encoding.js";
 
 describe('Lexicon', () => {
     let lexicon: Lexicon;

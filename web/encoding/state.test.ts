@@ -5,7 +5,8 @@ import { NoiseMakerI } from '../noise/foundations.js';
 import { noiseAlgorithms } from '../noise/init.js';
 import { NoisePipeline, Terracing } from '../noise/processing.js';
 import { StateRegistry } from '../state/state.js';
-import { Codec, CodecChain, lexon64 } from './codecs.js';
+import { CodecChain, lexon64 } from './codecs.js';
+import { Codec } from './encoding.js';
 
 describe('NoiseCodec', () => {
     let reference: NoiseMakerI;

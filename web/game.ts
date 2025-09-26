@@ -1,7 +1,8 @@
 import { Avatar } from './avatar.js';
 import { CHUNK_UNIT, VERSION } from './constants.js';
 import { Position } from './coordinates.js';
-import { Codec, lexon64 } from './encoding/codecs.js';
+import { lexon64 } from './encoding/codecs.js';
+import { Codec } from './encoding/encoding.js';
 import { decrec, encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
 import { CheckBar } from './gui/widget.js';

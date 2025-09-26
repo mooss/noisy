@@ -2,20 +2,8 @@ import { compressToBase64, decompressFromBase64 } from "lz-string";
 import { combinations, mapit, reverse } from "../utils/iteration.js";
 import { sortedMap } from "../utils/maps.js";
 import { climbTree, cultivateTree } from "../utils/tree.js";
-import { Creator, decrec, encrec } from "./self-encoder.js";
-
-export interface Codec<From, To> {
-    encode(document: From): To;
-    decode(document: To): From;
-    /** Encodes and decodes the document, supposed to result in the same document. */
-    roundtrip(document: From): From;
-}
-
-export abstract class CodecABC<From, To> implements Codec<From, To> {
-    abstract encode(document: From): To;
-    abstract decode(document: To): From;
-    roundtrip(document: From): From { return this.decode(this.encode(document)) }
-}
+import { Creator, decrec, encrec, Registry } from "./self-encoder.js";
+import { Codec, CodecABC } from "./encoding.js";
 
 //////////////////
 // Basic codecs //
@@ -53,12 +41,6 @@ export class JSONCodec extends CodecABC<any, string> {
 export class CompressedBase64Codec extends CodecABC<string, string> {
     encode(s: string): string { return base64ToGet(compressToBase64(s)); }
     decode(s: string): string { return decompressFromBase64(getToBase64(s)); }
-}
-
-export class CreatorCodec<To> extends CodecABC<any, To> {
-    constructor(private creator: Creator<any>) { super() }
-    encode(document: any): To { return encrec(document) }
-    decode(document: To): any { return decrec(document, this.creator) }
 }
 
 ///////////////////////////////////
@@ -188,14 +170,14 @@ export class CodecChain<F, T> extends CodecABC<F, T> {
 
 /**
  * Compressed encoding and decoding utility using the following pipeline:
- *  - A creator to recursively encode and decode complex pre-defined objects.
- *  - A lexicon performing dictionary compression.
+ *  - A self-encoders registry to recursively encode and decode complex pre-defined objects.
+ *  - A lexicon to perform dictionary compression.
  *  - JSON to transform the raw object into a string.
- *  - lz-based base64-encoded string compression.
+ *  - A lz-based compressor to compress to a base64-encoded string.
  */
-export function lexon64(creator: Creator<any>, source: Object, alphabet: string): CodecChain<any, string> {
+export function lexon64(creator: Registry<any>, source: Object, alphabet: string): CodecChain<any, string> {
     return new CodecChain(
-        new CreatorCodec(creator),
+        creator,
         new Lexicon(source, alphabet),
         new JSONCodec(),
         new CompressedBase64Codec(),
