@@ -1,21 +1,11 @@
 import { CHUNK_UNIT, VERSION, Version } from "./constants.js";
 import { encrec } from "./encoding/self-encoder.js";
-import { NoiseMakerI } from "./noise/foundations.js";
 import { noiseAlgorithms } from "./noise/init.js";
 import { AvatarState } from "./state/avatar.js";
 import { CameraState } from "./state/camera.js";
 import { ChunkState } from "./state/chunk.js";
 import { RenderState } from "./state/render.js";
 import { StateRegistry } from "./state/state.js";
-
-export interface GameState {
-    avatar: AvatarState;
-    camera: CameraState;
-    chunks: ChunkState;
-    noise: NoiseMakerI;
-    render: RenderState;
-    version: Version;
-}
 
 /**
  * The reference state used to compress the state when saving to URL.
@@ -25,7 +15,44 @@ export interface GameState {
  * codec, so changing this reference state creates a completely different encoder, which is not
  * backwards compatible.
  */
-export const REFERENCE_STATE = mkReferenceState();
+export const REFERENCE_STATE = {
+    camera: mkCamState(),
+    chunks: new ChunkState({
+        _power: 7,
+        loadRadius: 1,
+        radiusType: 'square',
+    }),
+    avatar: new AvatarState({
+        size: 3,
+        heightOffset: 0,
+        position: { x: .5, y: .5, z: 0 }, // Middle of the first chunk.
+    }),
+    render: new RenderState({
+        style: 'surface',
+        paletteName: 'Bright terrain',
+        light: {
+            ambient: { intensity: .5 },
+            directional: { intensity: 4 },
+        },
+        heightMultiplier: 1,
+    }),
+    noise:  noiseAlgorithms(),
+
+    // The last version with a URL-compatible state.
+    version: new Version('alpha', '2', 'bean'),
+};
+
+export type GameState = typeof REFERENCE_STATE;
+
+function mkCamState() {
+    const camDist = CHUNK_UNIT * 1.2 + 50;
+    const center = CHUNK_UNIT / 2;
+    return new CameraState({
+        cameraMode: 'Follow',
+        position: { x: center, y: center - camDist * 0.7, z: camDist * 0.7 },
+        focus: { x: center, y: center, z: 0 },
+    });
+}
 
 /**
  * The initial game state, i.e. the reference state updated with what changed between the last
@@ -33,39 +60,3 @@ export const REFERENCE_STATE = mkReferenceState();
  */
 export const INITIAL_STATE: GameState = StateRegistry.decode(encrec(REFERENCE_STATE));
 INITIAL_STATE.version = VERSION;
-
-function mkReferenceState(): GameState {
-    const camDist = CHUNK_UNIT * 1.2 + 50;
-    const center = CHUNK_UNIT / 2;
-
-    return {
-        camera: new CameraState({
-            cameraMode: 'Follow',
-            position: { x: center, y: center - camDist * 0.7, z: camDist * 0.7 },
-            focus: { x: center, y: center, z: 0 },
-        }),
-        chunks: new ChunkState({
-            _power: 7,
-            loadRadius: 1,
-            radiusType: 'square',
-        }),
-        avatar: new AvatarState({
-            size: 3,
-            heightOffset: 0,
-            position: { x: .5, y: .5, z: 0 }, // Middle of the first chunk.
-        }),
-        render: new RenderState({
-            style: 'surface',
-            paletteName: 'Bright terrain',
-            light: {
-                ambient: { intensity: .5 },
-                directional: { intensity: 4 },
-            },
-            heightMultiplier: 1,
-        }),
-        noise: noiseAlgorithms(),
-
-        // The last version with a URL-compatible state.
-        version: new Version('alpha', '2', 'bean'),
-    }
-}

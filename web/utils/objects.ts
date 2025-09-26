@@ -19,6 +19,13 @@ export function isObject(obj: any) {
     return typeof obj === 'object' && obj !== null;
 }
 
+export function isEmptyObject(value: unknown): value is {} {
+    return value != null &&
+        value.constructor === Object &&
+        Object.getPrototypeOf(value) === Object.prototype &&
+        Object.keys(value).length === 0;
+}
+
 /** Maps fun to each value of obj, creating a new object. */
 export function mapRequired<T extends object>(
     fun: (x: any) => any, obj: Required<T>,

@@ -9,9 +9,9 @@ export type NoiseClass =
     // Noise functions.
     'Simplex' | 'Ridge' | 'Layered' | 'ContinentalMix'
     // Noise processing.
-  | 'Terracing' | 'NoisyTerracing' | 'Warping' | 'Tiling'
+    | 'Terracing' | 'NoisyTerracing' | 'Warping' | 'Tiling'
     // Noise data structures.
-  | 'NoisePipeline' | 'AlgoPicker' | 'PipelinePicker';
+    | 'NoisePipeline' | 'AlgoPicker' | 'PipelinePicker';
 
 /** A height function, takes (x,y) coordinates and returns a height. */
 export type NoiseFun = (x: number, y: number) => number;

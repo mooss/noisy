@@ -7,7 +7,7 @@ import { Creator, decrec, encrec } from "./self-encoder.js";
 export interface Codec<From, To> {
     encode(document: From): To;
     decode(document: To): From;
-    /** Encodes and decodes the document, hopefully resulting in the same document. */
+    /** Encodes and decodes the document, supposed to result in the same document. */
     roundtrip(document: From): From;
 }
 

@@ -2,8 +2,8 @@
 export const CHUNK_UNIT: number = 256;
 
 export const VERSION_PERIOD: string = 'alpha';
-export const VERSION_NUMBER: string = '3';
-export const VERSION_NAME: string = 'coriander';
+export const VERSION_NUMBER: string = '4';
+export const VERSION_NAME: string = 'dandelion';
 
 export class Version {
     constructor(public period: string, public number: string, public name: string) { }

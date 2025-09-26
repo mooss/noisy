@@ -56,7 +56,7 @@ You can create your own terrain by tweaking the parameters available in the cont
 </ul>
 
 <h3>Feedback</h3>
-Feedback is most welcome, in particular concerning the UI layout, the UI style, the tooltips and the general approachability and understandability of the project.`
+Feedback is most welcome, in particular concerning the UI layout, the UI style, the tooltips and the general approachability and understandability of the project.`;
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
