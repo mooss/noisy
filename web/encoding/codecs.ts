@@ -1,5 +1,5 @@
 import { compressToBase64, decompressFromBase64 } from "lz-string";
-import { combinations, mapit } from "../utils/iteration.js";
+import { combinations, mapit, reverse } from "../utils/iteration.js";
 import { sortedMap } from "../utils/maps.js";
 import { climbTree, cultivateTree } from "../utils/tree.js";
 import { Creator, decrec, encrec } from "./self-encoder.js";
@@ -181,7 +181,7 @@ export class CodecChain<F, T> extends CodecABC<F, T> {
 
     decode(document: T): F {
         let res = document as any;
-        for (let i = this.codecs.length - 1; i >= 0; i--) res = this.codecs[i].decode(res);
+        for (const codec of reverse(this.codecs)) res = codec.decode(res);
         return res;
     }
 }

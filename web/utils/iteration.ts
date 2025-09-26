@@ -29,12 +29,17 @@ export function* mapit<From, To>(fun: (x: From) => To, source: Iterable<From>): 
         yield fun(value);
 }
 
-// A Python-like range iterator.
+/** Iterate on a range of number, similar to Python's range. */
 export function* range(start: number, stop: number = null, step: number = 1) {
     if (stop == null) { // range(x) -> from 0 to x;
         stop = start;
         start = 0;
     }
 
-    for (let i = 0; step > 0 ? i < stop : i > stop; i+= step) yield i;
+    for (let i = 0; step > 0 ? i < stop : i > stop; i += step) yield i;
+}
+
+/** Iterate on a container in reverse. */
+export function* reverse<T>(container: ArrayLike<T>): Generator<T> {
+    for (let i = container.length - 1; i >= 0; --i) yield container[i];
 }
