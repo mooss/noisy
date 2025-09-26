@@ -5,24 +5,20 @@ import { NoiseMakerI } from '../noise/foundations.js';
 import { noiseAlgorithms } from '../noise/init.js';
 import { NoisePipeline, Terracing } from '../noise/processing.js';
 import { StateRegistry } from '../state/state.js';
-import { AutoCodec, Lexon64 } from './codecs.js';
+import { Codec, CodecChain, lexon64 } from './codecs.js';
 
 describe('NoiseCodec', () => {
     let reference: NoiseMakerI;
-    let codec: AutoCodec<string>;
+    let codec: Codec<any, string>;
 
     beforeEach(() => {
         reference = noiseAlgorithms();
-        const strCodec = new Lexon64(
-            reference.encode(),
-            'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ',
-        );
-        codec = new AutoCodec(strCodec, StateRegistry);
+        codec = lexon64(StateRegistry, reference, 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ');
     });
 
     describe('constructor', () => {
         it('should create a codec instance', () => {
-            expect(codec).toBeInstanceOf(AutoCodec);
+            expect(codec).toBeInstanceOf(CodecChain);
             expect(codec.encode).toBeDefined();
             expect(codec.decode).toBeDefined();
         });

@@ -1,9 +1,11 @@
 import { Avatar } from './avatar.js';
 import { CHUNK_UNIT, VERSION } from './constants.js';
 import { Position } from './coordinates.js';
-import { AutoCodec, Codec, Lexon64 } from './encoding/codecs.js';
+import { Codec, lexon64 } from './encoding/codecs.js';
 import { decrec, encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
+import { CheckBar } from './gui/widget.js';
+import { Window } from './gui/window.js';
 import { GameState, INITIAL_STATE, REFERENCE_STATE } from './init.js';
 import { noiseUI } from './noise/ui.js';
 import { Renderer } from './renderer.js';
@@ -91,8 +93,7 @@ class Game {
     prepareState(): void {
         const alphabet = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';
         const encodedRef = encrec(REFERENCE_STATE);
-        const urlCodec = new Lexon64(encodedRef, alphabet);
-        this.codec = new AutoCodec(urlCodec, StateRegistry);
+        this.codec = lexon64(StateRegistry, encodedRef, alphabet);
 
         const reload = sessionStorage.getItem(STATE_STORAGE_KEY);
         if (reload) {

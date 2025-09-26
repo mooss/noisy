@@ -1,4 +1,4 @@
-import { Lexicon, Lexon64 } from "./codecs.js";
+import { CompressedBase64Codec, Codec, CodecChain, JSONCodec, Lexicon } from "./codecs.js";
 
 describe('Lexicon', () => {
     let lexicon: Lexicon;
@@ -132,7 +132,7 @@ describe('Lexicon', () => {
 });
 
 describe('Lexon64', () => {
-    let lexon64: Lexon64;
+    let codec: Codec<any, string>;
     const reference = {
         name: 'test',
         value: 42,
@@ -144,21 +144,25 @@ describe('Lexon64', () => {
     };
 
     beforeEach(() => {
-        lexon64 = new Lexon64(reference, 'abc');
+        codec = new CodecChain(
+            new Lexicon(reference, 'abc'),
+            new JSONCodec(),
+            new CompressedBase64Codec(),
+        );
     });
 
     describe('constructor', () => {
         it('should create a Lexon64 instance', () => {
-            expect(lexon64).toBeInstanceOf(Lexon64);
-            expect(lexon64.encode).toBeDefined();
-            expect(lexon64.decode).toBeDefined();
+            expect(codec).toBeInstanceOf(CodecChain);
+            expect(codec.encode).toBeDefined();
+            expect(codec.decode).toBeDefined();
         });
     });
 
     describe('encode', () => {
         it('should encode and compress to Base64 string', () => {
             const testDoc = { name: 'test', value: 42 };
-            const encoded = lexon64.encode(testDoc);
+            const encoded = codec.encode(testDoc);
             expect(typeof encoded).toBe('string');
             expect(encoded).toMatch(/^[A-Za-z0-9+/=]+$/); // Base64 pattern
         });
@@ -171,13 +175,13 @@ describe('Lexon64', () => {
                 item4: 'nested',
                 name: 'test'
             };
-            const encoded = lexon64.encode(testDoc);
+            const encoded = codec.encode(testDoc);
             expect(typeof encoded).toBe('string');
             expect(encoded.length).toBeGreaterThan(0);
         });
 
         it('should handle empty objects', () => {
-            const encoded = lexon64.encode({});
+            const encoded = codec.encode({});
             expect(typeof encoded).toBe('string');
             expect(encoded.length).toBeGreaterThan(0);
         });
@@ -186,8 +190,8 @@ describe('Lexon64', () => {
     describe('decode', () => {
         it('should decode Base64 string back to original', () => {
             const testDoc = { name: 'test', value: 42 };
-            const encoded = lexon64.encode(testDoc);
-            const decoded = lexon64.decode(encoded);
+            const encoded = codec.encode(testDoc);
+            const decoded = codec.decode(encoded);
             expect(decoded).toEqual(testDoc);
         });
 
@@ -201,14 +205,14 @@ describe('Lexon64', () => {
                     }
                 }
             };
-            const encoded = lexon64.encode(complex);
-            const decoded = lexon64.decode(encoded);
+            const encoded = codec.encode(complex);
+            const decoded = codec.decode(encoded);
             expect(decoded).toEqual(complex);
         });
 
         it('should not error on invalid Base64', () => {
             expect(() => {
-                lexon64.decode('invalid-base64!');
+                codec.decode('invalid-base64!');
             }).not.toThrow();
         });
     });
@@ -237,8 +241,8 @@ describe('Lexon64', () => {
                 }
             };
 
-            const encoded = lexon64.encode(original);
-            const decoded = lexon64.decode(encoded);
+            const encoded = codec.encode(original);
+            const decoded = codec.decode(encoded);
             expect(decoded).toEqual(original);
         });
 
@@ -248,8 +252,8 @@ describe('Lexon64', () => {
                 unicode: '🎉🚀',
                 escaped: 'test\\nwith\\ttabs'
             };
-            const encoded = lexon64.encode(special);
-            const decoded = lexon64.decode(encoded);
+            const encoded = codec.encode(special);
+            const decoded = codec.decode(encoded);
             expect(decoded).toEqual(special);
         });
 
@@ -264,8 +268,8 @@ describe('Lexon64', () => {
                     value: Math.random()
                 };
             }
-            const encoded = lexon64.encode(large);
-            const decoded = lexon64.decode(encoded);
+            const encoded = codec.encode(large);
+            const decoded = codec.decode(encoded);
             expect(decoded).toEqual(large);
         });
     });

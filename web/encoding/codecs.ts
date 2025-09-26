@@ -17,6 +17,53 @@ export abstract class CodecABC<From, To> implements Codec<From, To> {
     roundtrip(document: From): From { return this.decode(this.encode(document)) }
 }
 
+//////////////////
+// Basic codecs //
+
+/**
+ * Translate all the caracters in a string by mapping its characters from one set to another (like
+ * the tr command).
+ *
+ * @param source - The initial string to transform.
+ * @param from   - The characters to replace.
+ * @param to     - The replacement characters (must contain the same amount as the caracters to replace).
+ * @returns a new string that has been translated.
+ */
+function tr(source: string, from: string, to: string): string {
+    return source.split('').map((chr: string) => {
+        const idx = from.indexOf(chr);
+        if (from.includes(chr)) return to[idx];
+        return chr;
+    }).join('');
+}
+
+function base64ToGet(b64: string) {
+    return tr(b64, '+/=', '-_.');
+}
+
+function getToBase64(url: string) {
+    return tr(url, '-_.', '+/=');
+}
+
+export class JSONCodec extends CodecABC<any, string> {
+    encode(obj: any): string { return JSON.stringify(obj); }
+    decode(str: string): any { return JSON.parse(str); }
+}
+
+export class CompressedBase64Codec extends CodecABC<string, string> {
+    encode(s: string): string { return base64ToGet(compressToBase64(s)); }
+    decode(s: string): string { return decompressFromBase64(getToBase64(s)); }
+}
+
+export class CreatorCodec<To> extends CodecABC<any, To> {
+    constructor(private creator: Creator<any>) { super() }
+    encode(document: any): To { return encrec(document) }
+    decode(document: To): any { return decrec(document, this.creator) }
+}
+
+///////////////////////////////////
+// Lexicon (dictionary encoding) //
+
 /*
  * Roughly estimate the size of a primitive encoded through Lexon64.
  * Does not return a byte size estimation, but an arbitrary unit.
@@ -36,20 +83,26 @@ function estimatePrimitiveSize(obj: any): number {
             return 5;
         case 'bigint':
         case 'number':
+            return obj.toString().length;
         case 'string': // .length does not exist here somehow.
-            obj.toString().length;
+            return obj.toString().length + 2; // Account for quotes.
         case 'object':
             return JSON.stringify(obj).length; // More accurate but more costly.
     }
 }
 
 interface nodeFootprint { size: number; count: number; }
+/**
+ * Recursively traverse an object and estimates the accumulated sizes that its keys and nodes would
+ * have when encoded with Lexon64.
+ * The goal is to identify which values are the most interesting to compress.
+ */
 function estimateNodeFootprints(obj: any): Map<any, nodeFootprint> {
     const footprints = new Map<any, nodeFootprint>();
     const accumulate = (node: any) => {
         let current = footprints.get(node);
         if (current === undefined) {
-            current = {size: estimatePrimitiveSize(node), count: 0};
+            current = { size: estimatePrimitiveSize(node), count: 0 };
             footprints.set(node, current);
         }
         current.count++;
@@ -113,50 +166,38 @@ export class Lexicon extends CodecABC<any, any> {
     }
 }
 
+//////////////////
+// Codec chains //
+
+export class CodecChain<F, T> extends CodecABC<F, T> {
+    private codecs: Codec<any, any>[];
+    constructor(...codecs: Codec<any, any>[]) { super(); this.codecs = codecs; }
+
+    encode(document: F): T {
+        let res = document as any;
+        for (const codec of this.codecs) res = codec.encode(res);
+        return res;
+    }
+
+    decode(document: T): F {
+        let res = document as any;
+        for (let i = this.codecs.length - 1; i >= 0; i--) res = this.codecs[i].decode(res);
+        return res;
+    }
+}
+
 /**
- * Translate all the caracters in a string by mapping its characters from one set to another (like
- * the tr command).
- *
- * @param source - The initial string to transform.
- * @param from   - The characters to replace.
- * @param to     - The replacement characters (must contain the same amount as the caracters to replace).
- * @returns a new string that has been translated.
+ * Compressed encoding and decoding utility using the following pipeline:
+ *  - A creator to recursively encode and decode complex pre-defined objects.
+ *  - A lexicon performing dictionary compression.
+ *  - JSON to transform the raw object into a string.
+ *  - lz-based base64-encoded string compression.
  */
-function tr(source: string, from: string, to: string): string {
-    return source.split('').map((chr: string) => {
-        const idx = from.indexOf(chr);
-        if (from.includes(chr)) return to[idx];
-        return chr;
-    }).join('');
-}
-
-function base64ToGet(b64: string) {
-    return tr(b64, '+/=', '-_.');
-}
-
-function getToBase64(url: string) {
-    return tr(url, '-_.', '+/=');
-}
-
-/** Compression utility using a lexicon, JSON and base64. */
-export class Lexon64 extends CodecABC<any, string> {
-    private lex: Lexicon;
-    constructor(source: Object, alphabet: string) {
-        super();
-        this.lex = new Lexicon(source, alphabet);
-    }
-
-    encode(document: any): string {
-        return base64ToGet(compressToBase64(JSON.stringify(this.lex.encode(document))));
-    }
-
-    decode(document: string): any {
-        return this.lex.decode(JSON.parse(decompressFromBase64(getToBase64(document))));
-    }
-}
-
-export class AutoCodec<To> extends CodecABC<any, To> {
-    constructor(private wrapped: Codec<any, To>, private creator: Creator<any>) { super() }
-    encode(document: any): To { return this.wrapped.encode(encrec(document)) }
-    decode(document: To): any { return decrec(this.wrapped.decode(document), this.creator) }
+export function lexon64(creator: Creator<any>, source: Object, alphabet: string): CodecChain<any, string> {
+    return new CodecChain(
+        new CreatorCodec(creator),
+        new Lexicon(source, alphabet),
+        new JSONCodec(),
+        new CompressedBase64Codec(),
+    );
 }
