@@ -1,5 +1,5 @@
 import { Avatar } from './avatar.js';
-import { CHUNK_UNIT, VERSION } from './constants.js';
+import { CHUNK_UNIT, LATIN_ALPHABET, VERSION } from './constants.js';
 import { Position } from './coordinates.js';
 import { lexon64 } from './encoding/codecs.js';
 import { Codec } from './encoding/encoding.js';
@@ -92,9 +92,8 @@ class Game {
 
     /** Create the noise codec and potentially load state from session storage or GET parameters. */
     prepareState(): void {
-        const alphabet = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';
         const encodedRef = encrec(REFERENCE_STATE);
-        this.codec = lexon64(StateRegistry, encodedRef, alphabet);
+        this.codec = lexon64(StateRegistry, encodedRef, LATIN_ALPHABET);
 
         const reload = sessionStorage.getItem(STATE_STORAGE_KEY);
         if (reload) {

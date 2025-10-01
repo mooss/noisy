@@ -27,3 +27,5 @@ export class Version {
     }
 }
 export const VERSION: Version = new Version(VERSION_PERIOD, VERSION_NUMBER, VERSION_NAME);
+
+export const LATIN_ALPHABET = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';

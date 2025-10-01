@@ -1,4 +1,6 @@
-import { AutoAssign, mapObjectOrArray, mapRequired } from "../utils/objects.js";
+import { LATIN_ALPHABET } from "../constants.js";
+import { combinations, mapit } from "../utils/iteration.js";
+import { AutoAssign, isObject, mapObjectOrArray, mapRequired } from "../utils/objects.js";
 import { CodecABC } from "./encoding.js";
 
 ////////////////
@@ -148,5 +150,95 @@ export class Registry<Type> extends CodecABC<any, any> {
         if (typeof res?.['#meta']?.class === 'string')
             return this.create(res);
         return res;
+    }
+}
+
+class Aliaser {
+    private seen = new Set();
+    private gen = mapit((x) => x.join(''), combinations(LATIN_ALPHABET));
+    aliases = new Map<any, string>();
+
+    get(obj: any): string {
+        if (!this.seen.has(obj)) { // First time?
+            this.seen.add(obj);
+            return null;
+        }
+
+        if (obj in this.aliases) return this.aliases[obj];
+
+        const ali = this.gen.next().value;
+        this.aliases.set(obj, ali);
+        return ali;
+    }
+}
+
+class AliasingEncoder {
+    aliaser = new Aliaser();
+    private raw2encoded = new Map();
+
+    encode(document: any): any {
+        const res = this.encodeAlias(document);
+        if (this.aliaser.aliases.size == 0) return res;
+
+        // Map encoded objects to their alias and aliases to their encoded object.
+        const encoded2alias = new Map<any, string>();
+        const alias2encoded = {};
+        for (const [raw, alias] of this.aliaser.aliases) {
+            const encd = this.raw2encoded.get(raw);
+            encoded2alias.set(encd, '$' + alias);
+            alias2encoded[alias] = encd;
+        }
+
+        // Make sure that aliased encoded objects are referenced through their alias.
+        this.substitute(res, encoded2alias);
+
+        // Add aliasing information.
+        res['$'] = alias2encoded;
+
+        return res;
+    }
+
+    private encodeAlias(document: any): any {
+        if (!isObject(document)) return document;
+
+        // Duplicated documents will not be encoded twice (also prevent cycles).
+        const alias = this.aliaser.get(document);
+        if (alias !== null) return '$' + alias;
+
+        // Every encoded document is registered for alias switching purposes.
+        const res = this.encodeImpl(document);
+        this.raw2encoded.set(document, res);
+        return res;
+    }
+
+    private encodeImpl(document: any): any {
+        // Encoding handled by the object itself.
+        if (document?.encode && typeof document.encode === 'function')
+            return document.encode();
+
+        // Self-encoded object through a string property or a method returning a string.
+        const cls = classof(document);
+        if (typeof cls === 'string')
+            return {
+                ...mapRequired(
+                    this.encodeAlias.bind(this), document),
+                '#meta': { class: cls },
+            };
+
+        // A plain object, array or primitive that will be encoded as-is.
+        return mapObjectOrArray(this.encodeAlias.bind(this), document);
+    }
+
+    private substitute(encoded: any, aliases: Map<any, string>) {
+        if (!isObject(encoded)) return encoded;
+        for (const [prop, value] of Object.entries(encoded)) {
+            const ali = aliases.get(value);
+            if (ali === undefined) {
+                this.substitute(value, aliases);
+                continue;
+            }
+
+            encoded[prop] = ali;
+        }
     }
 }
