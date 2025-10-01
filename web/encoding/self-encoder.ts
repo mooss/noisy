@@ -35,8 +35,8 @@ export abstract class AutoEncoder<T> extends AutoAssign<T> {
     abstract class(): string;
 }
 
-//////////////
-// Encoding //
+//////////////////////////////////////
+// Recursive self encoding/decoding //
 
 /**
  * Determines the class name of an object, obtained either from a string property or from a method
@@ -68,7 +68,7 @@ export function encrec(obj: any): any {
 }
 
 //////////////
-// Decoding //
+// Registry //
 
 /**
  * Interface for objects that can create instances of Type from SelfEncoded data.
@@ -84,20 +84,6 @@ export interface Creator<Type> {
 }
 
 /**
- * Recursively decodes data by instantiating objects where possible using a Creator.
- *
- * @param data    - The data to decode.
- * @param creator - The Creator instance used to instantiate objects.
- * @returns The decoded data with instantiated objects where applicable.
- */
-export function decrec<Type>(data: any, creator: Creator<Type>): any {
-    const res = mapObjectOrArray((nested: any) => decrec(nested, creator), data);
-    if (typeof res?.['#meta']?.class === 'string')
-        return creator.create(res);
-    return res;
-}
-
-/**
  * Type alias for a constructor function that creates instances of Type with exactly one parameter.
  */
 export type Ctor<Type, Params = any> = new (params: Params) => Type;
@@ -109,6 +95,9 @@ export type Ctor<Type, Params = any> = new (params: Params) => Type;
 export class Registry<Type> extends CodecABC<any, any> {
     /** Internal map from registered metadata class names to their constructors. */
     private classes = new Map<string, Ctor<Type>>;
+
+    //////////////
+    // Registry //
 
     /**
      * Tries to register the a constructor, returns true when the registration is successful and false
@@ -141,15 +130,23 @@ export class Registry<Type> extends CodecABC<any, any> {
      */
     registered(name: string): boolean { return this.classes.has(name) }
 
+    ///////////
+    // Codec //
+
     /**
      * Recursively encodes self-encodable objects.
      */
     encode(document: any): any { return encrec(document) }
 
     /**
-     * Decodes self-encoded data by recursively instantiating objects where possible.
+     * Decodes self-encoded data by recursively instantiating registered objects where possible.
      * @param document - The data to decode.
-     * @returns The decoded data.
+     * @returns The decoded and instantiated data.
      */
-    decode(document: any): any { return decrec(document, this) }
+    decode(document: any): any {
+        const res = mapObjectOrArray((nested: any) => this.decode(nested), document);
+        if (typeof res?.['#meta']?.class === 'string')
+            return this.create(res);
+        return res;
+    }
 }

@@ -3,7 +3,7 @@ import { CHUNK_UNIT, VERSION } from './constants.js';
 import { Position } from './coordinates.js';
 import { lexon64 } from './encoding/codecs.js';
 import { Codec } from './encoding/encoding.js';
-import { decrec, encrec } from './encoding/self-encoder.js';
+import { encrec } from './encoding/self-encoder.js';
 import { GUI, Panel } from './gui/gui.js';
 import { CheckBar } from './gui/widget.js';
 import { Window } from './gui/window.js';
@@ -99,7 +99,7 @@ class Game {
         const reload = sessionStorage.getItem(STATE_STORAGE_KEY);
         if (reload) {
             sessionStorage.removeItem(STATE_STORAGE_KEY);
-            this.state = decrec(JSON.parse(reload), StateRegistry);
+            this.state = StateRegistry.decode(JSON.parse(reload));
             this.saveStateToUrl();
             return;
         }

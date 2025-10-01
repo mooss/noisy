@@ -2,8 +2,8 @@ import { compressToBase64, decompressFromBase64 } from "lz-string";
 import { combinations, mapit, reverse } from "../utils/iteration.js";
 import { sortedMap } from "../utils/maps.js";
 import { climbTree, cultivateTree } from "../utils/tree.js";
-import { Creator, decrec, encrec, Registry } from "./self-encoder.js";
 import { Codec, CodecABC } from "./encoding.js";
+import { Registry } from "./self-encoder.js";
 
 //////////////////
 // Basic codecs //
@@ -170,15 +170,17 @@ export class CodecChain<F, T> extends CodecABC<F, T> {
 
 /**
  * Compressed encoding and decoding utility using the following pipeline:
- *  - A self-encoders registry to recursively encode and decode complex pre-defined objects.
- *  - A lexicon to perform dictionary compression.
+ *  - A registry of self-encoders to recursively encode and decode complex objects.
+ *  - A lexicon to perform dictionary compression based on a reference object.
  *  - JSON to transform the raw object into a string.
  *  - A lz-based compressor to compress to a base64-encoded string.
  */
-export function lexon64(creator: Registry<any>, source: Object, alphabet: string): CodecChain<any, string> {
+export function lexon64(
+    registry: Registry<any>, reference: Object, alphabet: string,
+): CodecChain<any, string> {
     return new CodecChain(
-        creator,
-        new Lexicon(source, alphabet),
+        registry,
+        new Lexicon(reference, alphabet),
         new JSONCodec(),
         new CompressedBase64Codec(),
     );
