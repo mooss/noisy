@@ -54,10 +54,19 @@ export abstract class NoiseMakerBase<Params = any> implements NoiseMakerI<Params
     abstract get low(): number;
     abstract get high(): number;
     recompute(): void { }
-    encode(): SelfEncoded<Params> {
-        return { '#meta': { class: this.class }, ...encrec(this.p) };
+
+    /**
+     * Encodes the instance into a self-contained decodable object.
+     * @param encoder – Function that converts the parameters into a plain object
+     */
+    encode(encoder = encrec): SelfEncoded<Params> {
+        return { '#meta': { class: this.class }, ...encoder(this.p) };
     }
 
+    /**
+     * Returns a noise function whose output is linearly mapped from the estimated `[low, high]`
+     * range of the raw noise into the specified `[low, high]` interval.
+     */
     normalised(low: number, high: number): NoiseFun {
         const mapper = rangeMapper(this.low, this.high, low, high);
         const fun = this.make();

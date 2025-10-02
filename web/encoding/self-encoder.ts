@@ -252,7 +252,8 @@ class AliasingEncoder {
     private encodeImpl(document: any): any {
         // Encoding handled by the object itself.
         if (document?.encode && typeof document.encode === 'function')
-            return document.encode();
+            // Use the custom encoding but request to use this encoder for recursion.
+            return document.encode(this.encodeAlias.bind(this));
 
         // Self-encoded object through a string property or a method returning a string.
         const cls = classof(document);
