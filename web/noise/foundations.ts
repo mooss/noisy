@@ -9,7 +9,7 @@ export type NoiseClass =
     // Noise functions.
     'Simplex' | 'Ridge' | 'Layered' | 'ContinentalMix'
     // Noise processing.
-    | 'Terracing' | 'NoisyTerracing' | 'Warping' | 'Tiling'
+    | 'Terracing' | 'NoisyTerracing' | 'VoxelTerracing' | 'Warping' | 'Tiling'
     // Noise data structures.
     | 'NoisePipeline' | 'AlgoPicker' | 'PipelinePicker';
 
@@ -17,7 +17,9 @@ export type NoiseClass =
 export type NoiseFun = (x: number, y: number) => number;
 
 export interface NoiseMakerI<Params = any> extends SelfEncoder<Params> {
+    /** Configuration parameters for the noise generator. */
     p: Params;
+    /** Tag identifying the concrete class implementing the NoiseMakerI interface. */
     readonly class: NoiseClass;
 
     /** The estimated low bound of the noise function. */
@@ -26,21 +28,18 @@ export interface NoiseMakerI<Params = any> extends SelfEncoder<Params> {
     /** The estimated high bound of the noise function. */
     get high(): number;
 
-    /** Returns a raw noise function. */
+    /** Returns a function that generates raw noise values for the given coordinates. */
     make(): NoiseFun;
 
     /**
-     * Recomputes the noise parameters, which may be costly but necessary when important parameters
-     * have changed.
+     * Recomputes any internal state or derived parameters.
+     * This operation may be expensive but is required when critical parameters have changed.
      */
     recompute(): void;
 
-    /** Returns an EncodedNoise instance that can be used to recreate the noise class. */
-    // encode(): any;
-
     /**
-     * Returns a noise function roughly normalised through linear interpolation between the
-     * estimated low and high bound.
+     * Returns a noise function whose output is linearly mapped from the estimated `[low, high]`
+     * range of the raw noise into the specified `[low, high]` interval.
      */
     normalised(low: number, high: number): NoiseFun;
 }

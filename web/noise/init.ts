@@ -1,10 +1,11 @@
+import { ChunkState } from "../state/chunk.js";
 import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, Ridge, Simplex } from "./algorithms.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
-import { NoisePipeline, NoisyTerracing, PipelinePicker, Terracing, Tiling, Warping } from "./processing.js";
+import { NoisePipeline, NoisyTerracing, PipelinePicker, Terracing, Tiling, VoxelTerracing, Warping } from "./processing.js";
 
-export function noiseAlgorithms(): NoiseMakerI {
+export function noiseAlgorithms(chunks: ChunkState): NoiseMakerI {
     const f = {
         sbase: { seed: 23 },
         base: { invert: true, square: false, seed: 23 },
@@ -66,6 +67,7 @@ export function noiseAlgorithms(): NoiseMakerI {
     const terracing = new PipelinePicker({
         algorithms: {
             'Constant': new Terracing({ steps: 0 }),
+            'Voxel': new VoxelTerracing({ chunks }),
             'Noisy': new NoisyTerracing({
                 min: 40, max: 50,
                 terracer: new Layered({

@@ -1,9 +1,13 @@
 // Base dimension of a chunk in 3d space in world units.
-export const CHUNK_UNIT: number = 256;
+export const CHUNK_UNIT = 256;
 
-export const VERSION_PERIOD: string = 'alpha';
-export const VERSION_NUMBER: string = '4';
-export const VERSION_NAME: string = 'dandelion';
+// How much smaller the approximate maximum block height is compared to the side of a chunk
+// (CHUNK_UNIT).
+export const CHUNK_HEIGHT_DENOMINATOR = 5;
+
+export const VERSION_PERIOD = 'alpha';
+export const VERSION_NUMBER = '4';
+export const VERSION_NAME = 'dandelion';
 
 export class Version {
     constructor(public period: string, public number: string, public name: string) { }

@@ -81,6 +81,8 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             tilef.range(noise.p, 'noisescale', 0, 6, .2)
                 .label('Noise scale').tooltip(tips.tiling_noisescale).onInput(cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
+        case 'VoxelTerracing':
+            return;
         default:
     }
     console.warn('Unknow noise class in UI:', noise.class, 'recursing anyway');
@@ -93,6 +95,8 @@ function title2tooltip(title: string): string {
     switch (title) {
         case 'Constant':
             return tips.terracing_constant;
+        case 'Voxel':
+            return tips.terracing_voxels;
         case 'Noisy':
             return tips.terracing_noisy;
         case 'Simplex':

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CHUNK_UNIT } from '../constants.js';
+import { CHUNK_HEIGHT_DENOMINATOR, CHUNK_UNIT } from '../constants.js';
 import { Panel } from '../gui/gui.js';
 import type { HeightGenerator } from '../height-generator.js';
 import { createBoxMesh, createSurfaceMesh } from '../mesh.js';
@@ -33,7 +33,7 @@ class RenderStateP extends AutoAssign<RenderStateP> {
 
 export class RenderState extends RenderStateP {
     class(): string { return 'RenderState' };
-    get verticalUnit(): number { return (CHUNK_UNIT / 5) * this.heightMultiplier }
+    get verticalUnit(): number { return (CHUNK_UNIT / CHUNK_HEIGHT_DENOMINATOR) * this.heightMultiplier }
     get palette(): Palette { return palettes[this.paletteName] }
 
     mesh(heights: HeightGenerator): THREE.Mesh {

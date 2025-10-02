@@ -1,4 +1,4 @@
-import { INITIAL_STATE } from '../init.js';
+import { INITIAL_STATE, REFERENCE_STATE } from '../init.js';
 import { ContinentalMix, Layered, Ridge, Simplex } from '../noise/algorithms.js';
 import { AlgoPicker } from '../noise/containers.js';
 import { NoiseMakerI } from '../noise/foundations.js';
@@ -13,7 +13,7 @@ describe('NoiseCodec', () => {
     let codec: Codec<any, string>;
 
     beforeEach(() => {
-        reference = noiseAlgorithms();
+        reference = noiseAlgorithms(REFERENCE_STATE.chunks);
         codec = lexon64(StateRegistry, reference, 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ');
     });
 

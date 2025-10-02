@@ -1,5 +1,5 @@
-import { CHUNK_UNIT, VERSION, Version } from "./constants.js";
-import { encrec } from "./encoding/self-encoder.js";
+import { CHUNK_UNIT, VERSION } from "./constants.js";
+import { NoiseMakerI } from "./noise/foundations.js";
 import { noiseAlgorithms } from "./noise/init.js";
 import { AvatarState } from "./state/avatar.js";
 import { CameraState } from "./state/camera.js";
@@ -36,11 +36,13 @@ export const REFERENCE_STATE = {
         },
         heightMultiplier: 1,
     }),
-    noise:  noiseAlgorithms(),
+    noise: null as NoiseMakerI,
 
     // The last version with a URL-compatible state.
-    version: new Version('alpha', '2', 'bean'),
+    version: VERSION,
 };
+
+REFERENCE_STATE.noise = noiseAlgorithms(REFERENCE_STATE.chunks);
 
 export type GameState = typeof REFERENCE_STATE;
 
@@ -57,6 +59,6 @@ function mkCamState() {
 /**
  * The initial game state, i.e. the reference state updated with what changed between the last
  * compatible version and this version.
+ * Will just default to the reference state when breaking compatibility.
  */
-export const INITIAL_STATE: GameState = StateRegistry.decode(encrec(REFERENCE_STATE));
-INITIAL_STATE.version = VERSION;
+export const INITIAL_STATE: GameState = StateRegistry.roundtrip(REFERENCE_STATE);

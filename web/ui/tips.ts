@@ -20,6 +20,7 @@ export const tips = {
     terracing: "Adds steps in the terrain, creating terraces.",
     terracing_constant: "Use the same amount of terraces everywhere.\n\nCreates a blocky terrain with evenly-spaced terrain.",
     terracing_steps: "Number of terraces used in the terrain.\n\nMore terraces will create a smoother terrain.",
+    terracing_voxels: "Make the number of terraces proportional to the chunk resolution.\n\nCreates square blocks reminiscent of Minecraft.",
     terracing_noisy: "Use a different amount of terraces in different places.\n\nCreates a stepped and wobbly surface that increases in wobbleliness when the difference between the minimum and the maximum of terraces increases.",
     noisy_terrace_min: "Minimum number of terraces used in the terrain.\n\nMore terraces will create smoother terrain.",
     noisy_terrace_max: "Maximum number of terraces used in the terrain.\n\nMore terraces will create smoother terrain.",

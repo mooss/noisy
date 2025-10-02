@@ -1,3 +1,5 @@
+import { CHUNK_HEIGHT_DENOMINATOR } from "../constants.js";
+import { ChunkState } from "../state/chunk.js";
 import { register } from "../state/state.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
@@ -26,10 +28,25 @@ export class Terracing extends NoiseWrapper<TerracingP> {
     make(): NoiseFun {
         const fun = this.wrapped.make();
         if (this.p.steps == 0) return fun;
-        return (x, y) => Math.round(fun(x, y) * (this.p.steps-1)) / this.p.steps;
+        return (x, y) => Math.round(fun(x, y) * (this.p.steps - 1)) / this.p.steps;
     }
 }
 register('Terracing', Terracing);
+
+//TIP: terracing_voxels Make the number of terraces proportional to the chunk resolution. \nCreates square blocks reminiscent of Minecraft.
+interface VoxelTerracingP {
+    chunks: ChunkState;
+}
+export class VoxelTerracing extends NoiseWrapper<VoxelTerracingP> {
+    get class(): NoiseClass { return 'VoxelTerracing' }
+    make(): NoiseFun {
+        const fun = this.wrapped.make();
+        const interval = 1 / this.p.chunks.nblocks * CHUNK_HEIGHT_DENOMINATOR;
+        const step = interval * (this.high - this.low);
+        return (x, y) => Math.round(fun(x, y) / step) * step;
+    }
+}
+register('VoxelTerracing', VoxelTerracing);
 
 //TIP: terracing_noisy Use a different amount of terraces in different places. \nCreates a stepped and wobbly surface that increases in wobbleliness when the difference between the minimum and the maximum of terraces increases.
 interface NoisyTerracingP {
