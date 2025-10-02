@@ -156,6 +156,7 @@ class Game {
             downloadData(state, 'noisy-savefile.json', { type: 'application/json' });
         });
         actions.button('Screenshot').onClick(() => this.renderer.screenshot('noisy-screenshot.jpeg'));
+        actions.button('?').onClick(() => this.welcomeWindow.show());
 
         dragAndDrop((file) => {
             if (file.type === 'application/json') {
@@ -198,15 +199,19 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
         };
     }
 
+    private welcomeWindow: Window;
     welcome(): void {
-        if (localStorage.getItem(DONT_SHOW_WELCOME_STORAGE_KEY) === 'true') return;
-
-        const win = new Window(`Noisy ${VERSION.string()}`, welcomeMessage);
-        new CheckBar(win.container, (checked: boolean) => {
+        this.welcomeWindow = new Window(`Noisy ${VERSION.string()}`, welcomeMessage);
+        const check = new CheckBar(this.welcomeWindow.container, (checked: boolean) => {
             if (checked)
                 localStorage.setItem(DONT_SHOW_WELCOME_STORAGE_KEY, 'true');
-            win.close();
+            this.welcomeWindow.hide();
+            check.hide();
         }, "Don't show again", 'Close');
+        if (localStorage.getItem(DONT_SHOW_WELCOME_STORAGE_KEY) === 'true') {
+            this.welcomeWindow.hide();
+            check.hide();
+        }
     }
 
     ///////////////

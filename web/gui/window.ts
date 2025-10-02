@@ -1,5 +1,5 @@
 import { vec2 } from "../utils/maths.js";
-import { spawn, HtmlCssElement } from "./html.js";
+import { HtmlCssElement, spawn } from "./html.js";
 import { Gardener } from "./style.js";
 
 /**
@@ -20,7 +20,7 @@ export class Window {
         titleSpan.textContent = title;
         this.closeButton = spawn('button', this.header, Gardener.windowCloseButton);
         this.closeButton.textContent = '🗙';
-        this.closeButton.addEventListener('click', () => this.close());
+        this.closeButton.addEventListener('click', () => this.hide());
 
         this.content = spawn('div', this.container, Gardener.windowContent);
         this.content.innerHTML = html;
@@ -66,5 +66,14 @@ export class Window {
 
     close(): void {
         this.container.remove();
+    }
+
+    show(): this {
+        this.container.style.display = '';
+        return this;
+    }
+    hide(): this {
+        this.container.style.display = 'none';
+        return this;
     }
 }

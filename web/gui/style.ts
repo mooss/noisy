@@ -329,7 +329,7 @@ export class Appearance {
             top: '4px',
             left: '4px',
             zIndex: '1000',
-            width: '230px',
+            width: '240px',
             maxHeight: '90vh',
             padding: '3px',
             backgroundColor: transparent(this.colors.background, .9),

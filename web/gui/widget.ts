@@ -1,5 +1,5 @@
-import { spawn, HtmlCssElement } from "./html.js";
 import { Label } from "./foundations.js";
+import { HtmlCssElement, spawn } from "./html.js";
 import { Gardener } from "./style.js";
 
 const colors = Gardener.colors;
@@ -25,7 +25,7 @@ export class GraphWidget extends Label {
         });
     }
 
-    private get width():  number { return this.canvas.clientWidth }
+    private get width(): number { return this.canvas.clientWidth }
     private get height(): number { return this.canvas.clientHeight }
 
     /** Updates the plot with new data points. */
@@ -35,13 +35,13 @@ export class GraphWidget extends Label {
     }
 
     visible(show: boolean): void {
-        this.canvas.style.display = show ? '': 'none';
-        this.elt.style.textDecoration = show ? 'none': 'underline';
+        this.canvas.style.display = show ? '' : 'none';
+        this.elt.style.textDecoration = show ? 'none' : 'underline';
     }
 
-    close():  GraphWidget { this.visible(false); return this; }
-    open():   GraphWidget { this.visible(true); this.draw(); return this; }
-    opened(): boolean     { return this.canvas.style.display === '' }
+    close(): GraphWidget { this.visible(false); return this; }
+    open(): GraphWidget { this.visible(true); this.draw(); return this; }
+    opened(): boolean { return this.canvas.style.display === '' }
 
     // Displays a tooltip when hovering over the graph.
     tooltip(text: string): this {
@@ -120,12 +120,13 @@ export class GraphWidget extends Label {
 
 /** A bar containing a checkbox and a button. */
 export class CheckBar {
+    private bar: HtmlCssElement;
     constructor(
         parent: HTMLElement, onClick: (checked: boolean) => void,
         checkboxText: string, buttonText: string,
     ) {
-        const bar = spawn('div', parent, Gardener.checkBar);
-        const checkboxContainer = spawn('div', bar);
+        this.bar = spawn('div', parent, Gardener.checkBar);
+        const checkboxContainer = spawn('div', this.bar);
 
         const checkbox: HtmlCssElement<HTMLInputElement> = spawn(
             'input', checkboxContainer, Gardener.checkBarCheckbox,
@@ -137,8 +138,17 @@ export class CheckBar {
         checkboxLabel.textContent = checkboxText;
         checkboxLabel.setAttribute('for', checkbox.id);
 
-        const button = spawn('button', bar, Gardener.button);
+        const button = spawn('button', this.bar, Gardener.button);
         button.textContent = buttonText;
         button.addEventListener('click', () => onClick(checkbox.checked));
+    }
+
+    show(): this {
+        this.bar.style.display = '';
+        return this;
+    }
+    hide(): this {
+        this.bar.style.display = 'none';
+        return this;
     }
 }
