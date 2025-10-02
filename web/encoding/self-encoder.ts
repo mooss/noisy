@@ -138,7 +138,9 @@ export class Registry<Type> extends CodecABC<any, any> {
     /**
      * Recursively encodes self-encodable objects.
      */
-    encode(document: any): any { return encrec(document) }
+    encode(document: any): any {
+        return new AliasingEncoder().encode(document);
+    }
 
     /**
      * Decodes self-encoded data by recursively instantiating registered objects where possible.
@@ -146,10 +148,7 @@ export class Registry<Type> extends CodecABC<any, any> {
      * @returns The decoded and instantiated data.
      */
     decode(document: any): any {
-        const res = mapObjectOrArray((nested: any) => this.decode(nested), document);
-        if (typeof res?.['#meta']?.class === 'string')
-            return this.create(res);
-        return res;
+        return new AliasingDecoder(this).decode(document);
     }
 }
 
@@ -240,5 +239,36 @@ class AliasingEncoder {
 
             encoded[prop] = ali;
         }
+    }
+}
+
+
+class AliasingDecoder {
+    constructor(private registry: Registry<any>) { }
+
+    decode(document: any): any {
+        let aliases = document['$'];
+        if (aliases === undefined) return this.rawDecode(document);
+
+        aliases = this.rawDecode(aliases);
+        delete document['$'];
+
+        return this.aliasDecode(document, aliases);
+    }
+
+    private rawDecode(document: any): any {
+        const res = mapObjectOrArray((nested: any) => this.rawDecode(nested), document);
+        if (typeof res?.['#meta']?.class === 'string')
+            return this.registry.create(res);
+        return res;
+    }
+
+    private aliasDecode(document: any, aliases: Object) {
+        if (typeof document === 'string' && document.startsWith('$'))
+            return aliases[document.slice(1)];
+        const res = mapObjectOrArray((nested: any) => this.aliasDecode(nested, aliases), document);
+        if (typeof res?.['#meta']?.class === 'string')
+            return this.registry.create(res);
+        return res;
     }
 }
