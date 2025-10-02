@@ -93,17 +93,23 @@ export type Ctor<Type, Params = any> = new (params: Params) => Type;
 /**
  * Registry of self-encoded classes, allowing to instantiate objects from the class annotations of
  * self-encoded data (#meta.class).
+ *
+ * @template Type - The base type of objects that can be registered and instantiated.
  */
 export class Registry<Type> extends CodecABC<any, any> {
     /** Internal map from registered metadata class names to their constructors. */
-    private classes = new Map<string, Ctor<Type>>;
+    private classes = new Map<string, Ctor<Type>>();
 
     //////////////
     // Registry //
 
     /**
-     * Tries to register the a constructor, returns true when the registration is successful and false
+     * Tries to register a constructor, returns true when the registration is successful and false
      * when a constructor is already registered under this name.
+     *
+     * @param name        - The unique name under which the constructor will be registered.
+     * @param constructor - The constructor function to register.
+     * @returns true if the registration succeeded, false if the name was already taken.
      */
     register(name: string, constructor: Ctor<Type>): boolean {
         if (this.classes.has(name)) return false;
@@ -115,8 +121,13 @@ export class Registry<Type> extends CodecABC<any, any> {
      * Instantiates an object from self-encoded data (returns the data as-is if it does not
      * correspond to a registered class).
      *
+     * The method looks for a `#meta.class` property inside the provided data.
+     * If a constructor bearing that name has been registered, a new instance is created by passing
+     * the **remaining** properties (excluding `#meta`) to the constructor.
+     * When there is no `#meta.class` or the class is unknown, the original data is returned as-is.
+     *
      * @param data - Self-encoded data to instantiate.
-     * @returns the instantiated object when successful or the data itself.
+     * @returns the instantiated object when successful or raw data when the class is unknown.
      */
     create(data: SelfEncoded<Type>): any {
         const ructor = this.classes.get(data['#meta']?.class);
@@ -137,6 +148,13 @@ export class Registry<Type> extends CodecABC<any, any> {
 
     /**
      * Recursively encodes self-encodable objects.
+     *
+     * The operation respects object-level `encode()` methods and injects `#meta.class` annotations
+     * when required.
+     * Circular references and duplicated references are preserved through an aliasing mechanism.
+     *
+     * @param document - The value to encode.
+     * @returns the encoded representation ready for serialization.
      */
     encode(document: any): any {
         return new AliasingEncoder().encode(document);
@@ -144,6 +162,10 @@ export class Registry<Type> extends CodecABC<any, any> {
 
     /**
      * Decodes self-encoded data by recursively instantiating registered objects where possible.
+     *
+     * The method re-creates class instances based on `#meta.class` annotations and resolves
+     * aliases generated during encoding.
+     *
      * @param document - The data to decode.
      * @returns The decoded and instantiated data.
      */
@@ -152,15 +174,24 @@ export class Registry<Type> extends CodecABC<any, any> {
     }
 }
 
+/**
+ * Helper that tracks previously seen values and assigns short unique aliases to them.
+ * Used to detect and encode circular references / duplicated objects.
+ */
 class Aliaser {
     private seen = new Set();
     private gen = mapit((x) => x.join(''), combinations(LATIN_ALPHABET));
     aliases = new Map<any, string>();
 
+    /**
+     * Retrieves an alias for a previously seen value.
+     * @param obj - The object to test.
+     * @returns the alias string if the object was seen before, `undefined` on first encounter.
+     */
     get(obj: any): string {
         if (!this.seen.has(obj)) { // First time?
             this.seen.add(obj);
-            return null;
+            return undefined;
         }
 
         if (obj in this.aliases) return this.aliases[obj];
@@ -171,10 +202,18 @@ class Aliaser {
     }
 }
 
+/**
+ * Encoder that transparently handles aliasing for circular references and duplicated objects.
+ */
 class AliasingEncoder {
     aliaser = new Aliaser();
     private raw2encoded = new Map();
 
+    /**
+     * Encodes a document, injecting alias information when needed.
+     * @param document - The value to encode.
+     * @returns the encoded payload, potentially augmented with an alias dictionary under key `'$'`.
+     */
     encode(document: any): any {
         const res = this.encodeAlias(document);
         if (this.aliaser.aliases.size == 0) return res;
@@ -202,7 +241,7 @@ class AliasingEncoder {
 
         // Duplicated documents will not be encoded twice (also prevent cycles).
         const alias = this.aliaser.get(document);
-        if (alias !== null) return '$' + alias;
+        if (alias !== undefined) return '$' + alias;
 
         // Every encoded document is registered for alias switching purposes.
         const res = this.encodeImpl(document);
@@ -219,8 +258,7 @@ class AliasingEncoder {
         const cls = classof(document);
         if (typeof cls === 'string')
             return {
-                ...mapRequired(
-                    this.encodeAlias.bind(this), document),
+                ...mapRequired(this.encodeAlias.bind(this), document),
                 '#meta': { class: cls },
             };
 
@@ -242,10 +280,17 @@ class AliasingEncoder {
     }
 }
 
-
+/**
+ * Decoder that re-creates original objects, resolving aliases and instantiating registered classes.
+ */
 class AliasingDecoder {
     constructor(private registry: Registry<any>) { }
 
+    /**
+     * Decodes a document, re-instantiating registered classes and resolving aliases.
+     * @param document - The encoded payload.
+     * @returns the decoded value graph.
+     */
     decode(document: any): any {
         let aliases = document['$'];
         if (aliases === undefined) return this.rawDecode(document);
