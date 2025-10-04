@@ -29,7 +29,7 @@ export function* mapit<From, To>(fun: (x: From) => To, source: Iterable<From>): 
         yield fun(value);
 }
 
-/** Iterate on a range of number, similar to Python's range. */
+/** Iterate on a range of number, similar to Python's `range`. */
 export function* range(start: number, stop: number = null, step: number = 1) {
     if (stop == null) { // range(x) -> from 0 to x;
         stop = start;
@@ -42,4 +42,11 @@ export function* range(start: number, stop: number = null, step: number = 1) {
 /** Iterate on a container in reverse. */
 export function* reverse<T>(container: ArrayLike<T>): Generator<T> {
     for (let i = container.length - 1; i >= 0; --i) yield container[i];
+}
+
+
+/** Yield [index, value] pairs like Python’s `enumerate`. */
+export function* enumerate<T>(iterable: Iterable<T>): Generator<[number, T]> {
+    let i = 0;
+    for (const value of iterable) yield [i++, value];
 }

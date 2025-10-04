@@ -268,7 +268,7 @@ export class Terrain {
      * Recomputes the height function and updates the mesh of all active chunks, cancelling
      * computation triggered by previous calls to this method.
      */
-    async recomputeAsync() {
+    async recomputeAll() {
         const op = this.update.lock();
         this.props.recomputeNoise();
         await this.rangeActiveAsync(chunk => this.updateMesh(chunk), op);

@@ -15,6 +15,8 @@ export function mapLeaves<T>(fun: (leaf: any) => T, obj: any): T | Object {
 /**
  * Recurses through an object or array, calling node on each intermediate node and leaf on each
  * terminal node.
+ * Note: terminal nodes will be called twice: once as the second argument of `node` and `once` as
+ * the argument of `leaf`.
  */
 export function climbTree(
     node: (stem: any, branch: any) => void,

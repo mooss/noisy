@@ -80,7 +80,7 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', posbuffer);
     geometry.setIndex(new THREE.BufferAttribute(surfaceIndices(meshResolution), 1));
-    geometry.setAttribute('normal', computeVertexNormals(paddedHeights, meshResolution));
+    geometry.setAttribute('normal', computeSurfaceNormals(paddedHeights, meshResolution));
     return new THREE.Mesh(geometry, paletteShader(palette));
 }
 
@@ -98,7 +98,7 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
  * @param side          - The number of vertices on one side of a square.
  * @returns the computed vertex normals.
  */
-function computeVertexNormals(paddedHeights: Float32Array, side: number): THREE.BufferAttribute {
+function computeSurfaceNormals(paddedHeights: Float32Array, side: number): THREE.BufferAttribute {
     /////////////////////////
     // Setup and utilities //
 
@@ -274,9 +274,10 @@ v_z = position.z;`
 ${vertexWithMeshPosition}`;
 
         // Fragment shader: smoothly interpolate the color from the height using the palette.
+        // Without this, the transition between two colors is too fast, which is particularly
+        // visible with a bicolor palette.
         const injectColor = `#include <color_fragment>
-vec2 colorIdx = vec2(v_z, 0.5);
-colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, v_z), 0.5);
+vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, v_z), 0.5);
 diffuseColor.rgb = texture2D(u_palette, colorIdx).rgb;`
         const fragmentWithColor = shader.fragmentShader.replace('#include <color_fragment>', injectColor);
         shader.uniforms.u_palette = { value: paletteTex };

@@ -25,5 +25,6 @@ function bench() {
 
 setup
 compile
+# profile && exit
 bench | tee $TEMPDIR/bench.md
 
