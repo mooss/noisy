@@ -3,24 +3,27 @@ import type { HeightGenerator } from './height-generator.js';
 import { Palette } from './palettes.js';
 import { interpolateColors } from './utils/graphics.js';
 
+function allocateIndexArray(nindices: number, nvertices: number = null): Uint16Array | Uint32Array {
+    const use32 = nvertices === null || nvertices > 65535;
+    return use32 ? new Uint32Array(nindices) : new Uint16Array(nindices);
+}
+
 //////////////////
 // Surface mesh //
 
 /* Computes the surface indices for a square mesh. */
-function surfaceIndices(vertexSide: number): Uint16Array | Uint32Array {
-    const indexSide = vertexSide - 1; // Length of the side of the indices matrix.
-    const vertexCount = vertexSide * vertexSide;
+function surfaceIndices(verticesPerSide: number): Uint16Array | Uint32Array {
+    const indexSide = verticesPerSide - 1; // Length of the side of the indices matrix.
     const quadCount = indexSide * indexSide;
     const length = quadCount * 6;
-    const use32 = vertexCount > 65535;
-    const indices = use32 ? new Uint32Array(length) : new Uint16Array(length);
+    const indices = allocateIndexArray(length, verticesPerSide * verticesPerSide);
 
     let k = 0; // Running index.
     for (let i = 0; i < indexSide; i++) {
         for (let j = 0; j < indexSide; j++) {
-            const topLeft = i * vertexSide + j;
+            const topLeft = i * verticesPerSide + j;
             const topRight = topLeft + 1;
-            const bottomLeft = (i + 1) * vertexSide + j;
+            const bottomLeft = (i + 1) * verticesPerSide + j;
             const bottomRight = bottomLeft + 1;
 
             indices[k++] = topLeft;
@@ -59,28 +62,27 @@ function heightMatrix(heights: HeightGenerator, paddedSize: number): Float32Arra
  * @returns The surface mesh.
  */
 export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
-    const meshResolution = heights.nblocks + 1; // Number of vertices on one side of the grid.
-    const nVertices = 3 * meshResolution * meshResolution;
+    const verticesPerSide = heights.nblocks + 1; // Number of vertices on one side of the grid.
+    const nVertices = 3 * verticesPerSide * verticesPerSide;
     const vertices = new Float32Array(nVertices);
-    const paddedSize = (meshResolution + 2);
+    const paddedSize = (verticesPerSide + 2);
 
     // Height buffer with additional cells on every side for edge vertex normal computation.
     const paddedHeights = heightMatrix(heights, paddedSize);
 
-    // Vertices and colors.
-    for (let i = 0; i < meshResolution; i++) {
-        for (let j = 0; j < meshResolution; j++) {
+    // Vertices.
+    for (let i = 0; i < verticesPerSide; i++) {
+        for (let j = 0; j < verticesPerSide; j++) {
             const height = paddedHeights[(i + 1) * paddedSize + j + 1];
-            const idx = (i * meshResolution + j) * 3;
+            const idx = (i * verticesPerSide + j) * 3;
             vertices[idx] = i; vertices[idx + 1] = j; vertices[idx + 2] = height;
         }
     }
 
-    const posbuffer = new THREE.BufferAttribute(vertices, 3);
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', posbuffer);
-    geometry.setIndex(new THREE.BufferAttribute(surfaceIndices(meshResolution), 1));
-    geometry.setAttribute('normal', computeSurfaceNormals(paddedHeights, meshResolution));
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(new THREE.BufferAttribute(surfaceIndices(verticesPerSide), 1));
+    geometry.setAttribute('normal', computeSurfaceNormals(paddedHeights, verticesPerSide));
     return new THREE.Mesh(geometry, paletteShader(palette));
 }
 
