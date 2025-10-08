@@ -15,7 +15,7 @@ import (
 	"github.com/getlantern/systray"
 )
 
-//go:embed web/dist
+//go:embed web/src/app/noisy/dist
 var content embed.FS
 
 //go:embed res/sat-icon.png
@@ -37,7 +37,7 @@ func main() {
 		port = p
 	}
 
-	root, err := fs.Sub(content, "web/dist")
+	root, err := fs.Sub(content, "web/src/app/noisy/dist")
 	if err != nil {
 		log.Fatal(err)
 	}

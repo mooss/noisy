@@ -4,7 +4,7 @@
 .PHONY: build setup update-modules serve test
 
 build:
-	npx vite build
+	npx vite build src/app/noisy
 
 setup:
 	npm ci
@@ -14,7 +14,7 @@ update-modules:
 	npm install --save-dev vite @types/three jest @types/jest ts-jest tinybench
 
 serve:
-	npx vite
+	npx vite src/app/noisy
 
 test:
 	npx jest
@@ -25,9 +25,9 @@ test:
 TS_FILES := $(shell git ls-files '**/*.ts' '*.ts')
 
 dependencies.svg: $(TS_FILES)
-	npx madge game.ts -i $@
+	npx madge src/app/noisy/noisy.ts -i $@
 
-ui/tips.ts: noise/algorithms.ts noise/processing.ts noise/ui.ts state/*
+src/ui/tips.ts: src/noise/algorithms.ts src/noise/processing.ts src/ui/noise.ts src/state/*
 	echo 'export const tips = {' > $@
 	sed -rn 's| *//TIP: ([^ ]+) (.*)$$|    \1: "\2",|p' $^ | sed -r 's/\. /.\\n/g' >> $@
 	echo '}' >> $@
