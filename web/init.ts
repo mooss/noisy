@@ -31,8 +31,8 @@ export const REFERENCE_STATE = {
         style: 'surface',
         paletteName: 'Bright terrain',
         light: {
-            ambient: { intensity: .5 },
-            directional: { intensity: 4 },
+            ambient: { intensity: 2 },
+            directional: { intensity: 3 },
         },
         heightMultiplier: 1,
     }),
