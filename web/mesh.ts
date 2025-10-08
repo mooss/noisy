@@ -233,7 +233,7 @@ export function createBoxMesh(heights: HeightGenerator, palette: Palette): THREE
     const stride = 3; // Number of components of one vertex (xyz for both positions and normals).
     const nvertices = heights.nblocks * heights.nblocks * verticesPerBox;
     const positions = new Float32Array(nvertices * stride);
-    const normals = new Float32Array(nvertices * stride);
+    const normals = new Int8Array(nvertices * stride);
 
     let idver = 0, idnor = 0;
     for (let blockX = 0; blockX < heights.nblocks; ++blockX) {
@@ -294,7 +294,7 @@ export function createBoxMesh(heights: HeightGenerator, palette: Palette): THREE
     const posbuffer = new THREE.BufferAttribute(positions, stride);
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', posbuffer);
-    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    geometry.setAttribute('normal', new THREE.Int8BufferAttribute(normals, 3));
     return new THREE.Mesh(geometry, paletteShader(palette));
 }
 
