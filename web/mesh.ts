@@ -38,16 +38,22 @@ function surfaceIndices(verticesPerSide: number): Uint16Array | Uint32Array {
     return indices;
 }
 
+interface paddingSpec { up: number; down: number; left: number; right: number }
+
 /**
  * Returns a padded height matrix.
  */
-function heightMatrix(heights: HeightGenerator, paddedSize: number): Float32Array {
+function heightMatrix(
+    heights: HeightGenerator, coreSize: number, padding: paddingSpec,
+): Float32Array {
+    const width = coreSize + padding.left + padding.right;
+    const height = coreSize + padding.up + padding.down;
     const sampling = 1 / heights.nblocks;
-    const res = new Float32Array(paddedSize * paddedSize);
-    for (let i = 0; i < paddedSize; i++) {
-        for (let j = 0; j < paddedSize; j++) {
-            const x = (i - 1) * sampling; const y = (j - 1) * sampling;
-            res[i * paddedSize + j] = heights.at(x, y);
+    const res = new Float32Array(width * height);
+    for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+            const x = (i - padding.left); const y = (j - padding.down);
+            res[i * width + j] = heights.at(x * sampling, y * sampling);
         }
     }
 
@@ -68,14 +74,14 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
     const paddedSize = (verticesPerSide + 2);
 
     // Height buffer with additional cells on every side for edge vertex normal computation.
-    const paddedHeights = heightMatrix(heights, paddedSize);
+    const paddedHeights = heightMatrix(heights, verticesPerSide, { up: 1, down: 1, left: 1, right: 1 });
 
     // Vertices.
+    let vid = 0;
     for (let i = 0; i < verticesPerSide; i++) {
         for (let j = 0; j < verticesPerSide; j++) {
             const height = paddedHeights[(i + 1) * paddedSize + j + 1];
-            const idx = (i * verticesPerSide + j) * 3;
-            vertices[idx] = i; vertices[idx + 1] = j; vertices[idx + 2] = height;
+            vertices[vid++] = i; vertices[vid++] = j; vertices[vid++] = height;
         }
     }
 
@@ -180,65 +186,116 @@ function computeSurfaceNormals(paddedHeights: Float32Array, side: number): THREE
     return res;
 }
 
-////////////////
-// Prism mesh //
+//////////////
+// Box mesh //
 
-/**
- * Creates a box mesh from a height field.
- *
- * @param heights - Terrain data.
- * @param palette - Color palette for height-based interpolation
- * @returns the generated prism mesh.
- */
 export function createBoxMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
-    const { nblocks } = heights;
-    const sampling = 1 / nblocks; // Distance between each vertex.
+    // The mesh from one box requires only 3 faces:
+    //  - F1, the top face (dcgh).
+    //  - F2, the right face (efgc).
+    //  - F3, the down face (abcd).
+    //
+    // It is necessary to get the heights from the adjacent boxes (the right and down boxes) for the
+    // z value of a, b, e and f.
+    //
+    //        Top box
+    //           v
+    //        h------g
+    //       /      /|
+    //      /  F1  / |
+    //     /      /  |
+    //    /      /   |
+    //   d------c    |
+    //   |      | F3 f------*
+    //   |  F2  |   /      /|
+    //   a------b  /      / |
+    //  /      /| /      /  ⋮
+    // *------* |/      /
+    // |      | e------*     < Right box
+    // |      | |      |
+    // ⋮      ⋮ |      |
+    //     ^    ⋮      ⋮
+    // Down box
 
-    const positions = [], normals = [], colors = [], indices = [];
-    let indexOffset = 0;
 
-    const baseGeometry = new THREE.BoxGeometry().translate(0, 0, 0.5);
+    // Since each block needs the heights of the neighboring down and right blocks,
+    //  - Each block needs the heights of 3 blocks to construct all its faces.
+    //    So it's pertinent to store a height matrix since computing heights can be somewhat
+    //    expensive.
+    //  - Some out-of-chunk heights are needed (in the right column and in the down row).
+    //    Which means that the height matrix needs an additional row and column.
+    const heightCache = heightMatrix(heights, heights.nblocks, { up: 0, down: 1, left: 0, right: 1 });
+    const heightSide = heights.nblocks + 1;
 
-    const posAttr = baseGeometry.getAttribute('position');
-    const normAttr = baseGeometry.getAttribute('normal');
-    const idxAttr = baseGeometry.getIndex();
+    // Each block has 3 faces made of 2 triangles with 3 vertices each.
+    // This means 18 vertices per box and 18 * nblocks vertices per side.
+    const verticesPerBox = 18;
+    const stride = 3; // Number of components of one vertex (xyz for both positions and normals).
+    const nvertices = heights.nblocks * heights.nblocks * verticesPerBox;
+    const positions = new Float32Array(nvertices * stride);
+    const normals = new Float32Array(nvertices * stride);
 
-    for (let i = 0; i < nblocks; i++) {
-        for (let j = 0; j < nblocks; j++) {
-            const height = heights.at(i * sampling, j * sampling);
-            const xPos = i;
-            const yPos = j;
+    let idver = 0, idnor = 0;
+    for (let blockX = 0; blockX < heights.nblocks; ++blockX) {
+        for (let blockY = 0; blockY < heights.nblocks; ++blockY) {
+            const adhx = blockX;
+            const bcefgx = blockX + 1;
+            const abcdey = blockY;
+            const fghy = blockY + 1;
+            const topz = heightCache[blockX * heightSide + blockY + 1];
+            const downz = heightCache[blockX * heightSide + blockY];
+            const rightz = heightCache[(blockX + 1) * heightSide + blockY + 1];
 
-            const color = interpolateColors(palette.colors, height);
-            const matrix = new THREE.Matrix4().makeScale(1, 1, height).setPosition(xPos, yPos, 0);
-
-            for (let v = 0; v < posAttr.count; v++) {
-                const vertex = new THREE.Vector3().fromBufferAttribute(posAttr, v).applyMatrix4(matrix);
-                positions.push(vertex.x, vertex.y, vertex.z);
-                normals.push(...normAttr.array.slice(v * 3, v * 3 + 3));
-                colors.push(color.r, color.g, color.b);
+            const position = (x: number, y: number, z: number) => {
+                positions[idver++] = x; positions[idver++] = y; positions[idver++] = z;
             }
+            const a = () => position(adhx, abcdey, downz);
+            const b = () => position(bcefgx, abcdey, downz);
+            const c = () => position(bcefgx, abcdey, topz);
+            const d = () => position(adhx, abcdey, topz);
+            const e = () => position(bcefgx, abcdey, rightz);
+            const f = () => position(bcefgx, fghy, rightz);
+            const g = () => position(bcefgx, fghy, topz);
+            const h = () => position(adhx, fghy, topz);
 
-            if (idxAttr) { // Hexagons don't have an index.
-                for (let idx = 0; idx < idxAttr.count; idx++) {
-                    indices.push(idxAttr.array[idx] + indexOffset);
-                }
-            } else {
-                for (let v = 0; v < posAttr.count; v++) {
-                    indices.push(indexOffset + v);
-                }
+            // Normals for a face (2 triangles * 3 vertices).
+            const normal = (x: number, y: number, z: number) => {
+                normals[idnor++] = x; normals[idnor++] = y; normals[idnor++] = z;
+                normals[idnor++] = x; normals[idnor++] = y; normals[idnor++] = z;
+                normals[idnor++] = x; normals[idnor++] = y; normals[idnor++] = z;
+                normals[idnor++] = x; normals[idnor++] = y; normals[idnor++] = z;
+                normals[idnor++] = x; normals[idnor++] = y; normals[idnor++] = z;
+                normals[idnor++] = x; normals[idnor++] = y; normals[idnor++] = z;
             }
-            indexOffset += posAttr.count;
+            // Normals are trivial to compute because everything is facing only one direction.
+            const top = () => normal(0, 0, 1);
+            const bottom = () => normal(0, 0, -1);
+            const left = () => normal(-1, 0, 0);
+            const right = () => normal(1, 0, 0);
+            const up = () => normal(0, -1, 0);
+
+            // Top face.
+            c(); g(); h();
+            c(); h(); d();
+            top();
+
+            // Right face.
+            c(); e(); f();
+            c(); f(); g();
+            topz > rightz ? right() : left();
+
+            // Down face.
+            a(); b(); c();
+            a(); c(); d();
+            topz > downz ? bottom() : up();
         }
     }
 
-    const mergedGeometry = new THREE.BufferGeometry();
-    mergedGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    mergedGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-    mergedGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    mergedGeometry.setIndex(indices);
-
-    return new THREE.Mesh(mergedGeometry, new THREE.MeshStandardMaterial({ vertexColors: true }));
+    const posbuffer = new THREE.BufferAttribute(positions, stride);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', posbuffer);
+    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    return new THREE.Mesh(geometry, paletteShader(palette));
 }
 
 /////////////
