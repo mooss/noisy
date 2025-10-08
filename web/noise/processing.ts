@@ -4,6 +4,13 @@ import { register } from "../state/state.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
 
+function quantize(value: number, delta: number) {
+    return delta * Math.floor(value / delta + .5);
+}
+function terrace(value: number, steps: number) {
+    return Math.round(value * (steps - 1)) / steps;
+}
+
 ////////////////////
 // Noise wrappers //
 
@@ -28,7 +35,7 @@ export class Terracing extends NoiseWrapper<TerracingP> {
     make(): NoiseFun {
         const fun = this.wrapped.make();
         if (this.p.steps == 0) return fun;
-        return (x, y) => Math.round(fun(x, y) * (this.p.steps - 1)) / this.p.steps;
+        return (x, y) => terrace(fun(x, y), this.p.steps);
     }
 }
 register('Terracing', Terracing);
@@ -41,9 +48,9 @@ export class VoxelTerracing extends NoiseWrapper<VoxelTerracingP> {
     get class(): NoiseClass { return 'VoxelTerracing' }
     make(): NoiseFun {
         const fun = this.wrapped.make();
-        const interval = 1 / this.p.chunks.nblocks * CHUNK_HEIGHT_DENOMINATOR;
-        const step = interval * (this.high - this.low);
-        return (x, y) => Math.round(fun(x, y) / step) * step;
+        const range = (this.high - this.low);
+        const delta = range / this.p.chunks.nblocks * CHUNK_HEIGHT_DENOMINATOR;
+        return (x, y) => quantize(fun(x, y), delta);
     }
 }
 register('VoxelTerracing', VoxelTerracing);
@@ -71,8 +78,7 @@ export class NoisyTerracing extends NoiseWrapper<NoisyTerracingP> {
         if (max > min) interval = this.p.terracer.normalised(min, max);
 
         return (x, y) => {
-            const step = interval(x, y);
-            return Math.round(fun(x, y) * step) / step
+            return terrace(fun(x, y), interval(x, y));
         };
     }
 }
