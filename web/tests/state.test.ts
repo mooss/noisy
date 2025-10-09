@@ -1,4 +1,4 @@
-import { INITIAL_STATE, REFERENCE_STATE } from "../src/app/init.js";
+import { INITIAL_STATE, REFERENCE_STATE } from "../src/app/noisy/init.js";
 import { CodecChain, lexon64 } from "../src/encoding/codecs.js";
 import { Codec } from "../src/encoding/encoding.js";
 import { ContinentalMix, Layered, Ridge, Simplex } from "../src/noise/algorithms.js";
