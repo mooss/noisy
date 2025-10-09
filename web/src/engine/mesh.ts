@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { NoiseFun } from '../noise/foundations.js';
-import { HeightGenerator } from '../noise/noise.js';
 import { CachedArray, CachedBuffer } from './cache.js';
 import { Palette } from './palettes.js';
 
@@ -18,8 +17,8 @@ export class SurfaceMesher implements ChunkMesher {
 
     constructor(private ncells: number) { }
 
-    weave(gen: NoiseFun, palette: Palette): THREE.Mesh {
-        fillSurfacePositions(this.position, this.height, gen, this.ncells);
+    weave(fun: NoiseFun, palette: Palette): THREE.Mesh {
+        fillSurfacePositions(this.position, this.height, fun, this.ncells);
         this.position.buffer.needsUpdate = true;
         this.geometry.setAttribute('position', this.position.buffer);
 
@@ -40,6 +39,25 @@ export class SurfaceMesher implements ChunkMesher {
     }
 
     //TODO: must be careful about geometry disposal.
+}
+
+export class BoxMesher implements ChunkMesher {
+    private geometry = new THREE.BufferGeometry();
+    private position = new CachedBuffer();
+    private normal = new CachedBuffer();
+    private height = new CachedArray();
+
+    constructor(private ncells: number) { }
+
+    weave(fun: NoiseFun, palette: Palette): THREE.Mesh {
+        fillBoxData(this.position, this.normal, this.height, fun, this.ncells);
+        this.position.buffer.needsUpdate = true;
+        this.normal.buffer.needsUpdate = true;
+        this.geometry.setAttribute('position', this.position.buffer);
+        this.geometry.setAttribute('normal', this.normal.buffer);
+
+        return new THREE.Mesh(this.geometry, paletteShader(palette));
+    }
 }
 
 //////////////////
@@ -72,15 +90,15 @@ function heightMatrix(
 function fillSurfacePositions(
     positionCache: CachedBuffer,
     heightCache: CachedArray,
-    gen: NoiseFun,
+    fun: NoiseFun,
     nblocks: number,
-) {
+): void {
     const verticesPerSide = nblocks + 1;
-    const nVertices = 3 * verticesPerSide * verticesPerSide;
+    const nVertices = verticesPerSide * verticesPerSide;
     const positions = positionCache.asFloat32(nVertices, 3);
     const paddedSize = (verticesPerSide + 2);
 
-    const paddedHeights = heightMatrix(heightCache, gen, nblocks, {
+    const paddedHeights = heightMatrix(heightCache, fun, nblocks, {
         up: 1, // Edge vertex for normal computation.
         down: 2, // Edge vertex and complementary line.
         left: 1, // Edge vertex.
@@ -145,7 +163,7 @@ function fillSurfaceNormals(
 
     const paddedSide = side + 2;
     const count = side * side;
-    const normals = normalCache.asFloat32(count * 3, 3);
+    const normals = normalCache.asFloat32(count, 3);
 
     // Get the index corresponding to the given coordinates (returns -1 if out-of-bounds).
     const indexOf = (x: number, y: number): number => {
@@ -218,7 +236,10 @@ function fillSurfaceNormals(
 //////////////
 // Box mesh //
 
-export function createBoxMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
+export function fillBoxData(
+    positionCache: CachedBuffer, normalCache: CachedBuffer, heightCache: CachedArray,
+    fun: NoiseFun, nblocks: number,
+): void {
     // The mesh from one box requires only 3 faces:
     //  - F1, the top face (dcgh).
     //  - F2, the right face (efgc).
@@ -253,30 +274,30 @@ export function createBoxMesh(heights: HeightGenerator, palette: Palette): THREE
     //    expensive.
     //  - Some out-of-chunk heights are needed (in the right column and in the down row).
     //    Which means that the height matrix needs an additional row and column.
-    const heightCache = heightMatrix(
-        new CachedArray(), heights.at, heights.nblocks,
+    const heights = heightMatrix(
+        heightCache, fun, nblocks,
         { up: 0, down: 1, left: 0, right: 1 },
     );
-    const heightSide = heights.nblocks + 1;
+    const heightSide = nblocks + 1;
 
     // Each block has 3 faces made of 2 triangles with 3 vertices each.
     // This means 18 vertices per box and 18 * nblocks vertices per side.
     const verticesPerBox = 18;
     const stride = 3; // Number of components of one vertex (xyz for both positions and normals).
-    const nvertices = heights.nblocks * heights.nblocks * verticesPerBox;
-    const positions = new Float32Array(nvertices * stride);
-    const normals = new Int8Array(nvertices * stride);
+    const nvertices = nblocks * nblocks * verticesPerBox;
+    const positions = positionCache.asFloat32(nvertices, stride);
+    const normals = normalCache.asInt8(nvertices, stride);
 
     let idver = 0, idnor = 0;
-    for (let blockX = 0; blockX < heights.nblocks; ++blockX) {
-        for (let blockY = 0; blockY < heights.nblocks; ++blockY) {
+    for (let blockX = 0; blockX < nblocks; ++blockX) {
+        for (let blockY = 0; blockY < nblocks; ++blockY) {
             const adhx = blockX;
             const bcefgx = blockX + 1;
             const abcdey = blockY;
             const fghy = blockY + 1;
-            const topz = heightCache[blockX * heightSide + blockY + 1];
-            const downz = heightCache[blockX * heightSide + blockY];
-            const rightz = heightCache[(blockX + 1) * heightSide + blockY + 1];
+            const topz = heights[blockX * heightSide + blockY + 1];
+            const downz = heights[blockX * heightSide + blockY];
+            const rightz = heights[(blockX + 1) * heightSide + blockY + 1];
 
             const position = (x: number, y: number, z: number) => {
                 positions[idver++] = x; positions[idver++] = y; positions[idver++] = z;
@@ -322,12 +343,6 @@ export function createBoxMesh(heights: HeightGenerator, palette: Palette): THREE
             topz > downz ? bottom() : up();
         }
     }
-
-    const posbuffer = new THREE.BufferAttribute(positions, stride);
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', posbuffer);
-    geometry.setAttribute('normal', new THREE.Int8BufferAttribute(normals, 3));
-    return new THREE.Mesh(geometry, paletteShader(palette));
 }
 
 /////////////

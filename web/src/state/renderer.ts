@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CHUNK_HEIGHT_DENOMINATOR, CHUNK_UNIT } from '../../config/constants.js';
-import { createBoxMesh, SurfaceMesher } from '../engine/mesh.js';
+import { BoxMesher, SurfaceMesher } from '../engine/mesh.js';
 import { Palette, palettes } from '../engine/palettes.js';
 import { Panel } from '../gui/gui.js';
 import { HeightGenerator } from '../noise/noise.js';
@@ -39,7 +39,7 @@ export class RenderState extends RenderStateP {
     mesh(heights: HeightGenerator): THREE.Mesh {
         switch (this.style) {
             case 'boxes':
-                return createBoxMesh(heights, this.palette);
+                return new BoxMesher(heights.nblocks).weave(heights.at, this.palette)
             case 'surface':
                 return new SurfaceMesher(heights.nblocks).weave(heights.at, this.palette);
         }
