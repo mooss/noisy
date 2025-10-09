@@ -83,3 +83,8 @@ export class AutoAssign<T> {
         }
     }
 }
+
+/**
+ * Type alias for a constructor function that creates instances of Type with exactly one parameter.
+ */
+export type Ctor<Type, Params = any> = new (params: Params) => Type;

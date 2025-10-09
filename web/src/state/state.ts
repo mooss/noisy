@@ -1,4 +1,5 @@
-import { Ctor, Registry } from "../encoding/self-encoder.js";
+import { Registry } from "../encoding/self-encoder.js";
+import { Ctor } from "../utils/objects.js";
 
 export const StateRegistry = new Registry();
 export function register(name: string, ctor: Ctor<any>) {

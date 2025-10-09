@@ -1,6 +1,6 @@
 import { LATIN_ALPHABET } from "../../config/constants.js";
 import { combinations, mapit } from "../utils/iteration.js";
-import { AutoAssign, isObject, mapObjectOrArray, mapRequired } from "../utils/objects.js";
+import { AutoAssign, Ctor, isObject, mapObjectOrArray, mapRequired } from "../utils/objects.js";
 import { CodecABC } from "./encoding.js";
 
 ////////////////
@@ -84,11 +84,6 @@ export interface Creator<Type> {
      */
     create(data: SelfEncoded<Type>): Type;
 }
-
-/**
- * Type alias for a constructor function that creates instances of Type with exactly one parameter.
- */
-export type Ctor<Type, Params = any> = new (params: Params) => Type;
 
 /**
  * Registry of self-encoded classes, allowing to instantiate objects from the class annotations of
