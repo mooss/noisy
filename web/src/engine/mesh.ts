@@ -3,11 +3,24 @@ import { NoiseFun } from '../noise/foundations.js';
 import { CachedArray, CachedBuffer } from './cache.js';
 import { Palette } from './palettes.js';
 
+/**
+ * Object generating a mesh from a noise function and a color palette.
+ */
 export interface ChunkMesher {
+    /**
+     * Generates a mesh from the given noise function and palette.
+     * @param fun     - The noise function to sample height values from.
+     * @param palette - The color palette used for shading the mesh.
+     *
+     * @returns a mesh representing the chunk.
+     */
     weave(fun: NoiseFun, palette: Palette): THREE.Mesh;
     //TODO: dispose(): void;
 }
 
+/**
+ * Mesher that creates a continuous surface mesh.
+ */
 export class SurfaceMesher implements ChunkMesher {
     private geometry = new THREE.BufferGeometry();
     private position = new CachedBuffer();
@@ -41,6 +54,9 @@ export class SurfaceMesher implements ChunkMesher {
     //TODO: must be careful about geometry disposal.
 }
 
+/**
+ * Mesher that creates a box-based, voxel-like mesh.
+ */
 export class BoxMesher implements ChunkMesher {
     private geometry = new THREE.BufferGeometry();
     private position = new CachedBuffer();
@@ -66,7 +82,14 @@ export class BoxMesher implements ChunkMesher {
 interface paddingSpec { up: number; down: number; left: number; right: number }
 
 /**
- * Returns a padded height matrix.
+ * Returns a padded height matrix by sampling a noise function over an extended grid.
+ *
+ * @param heightCache - Cache for storing resulting height values.
+ * @param fun         - The noise function to sample height values from.
+ * @param nblocks     - Number of cells in the grid.
+ * @param padding     - Amount of up, down, left and right padding to add to the matrix.
+ *
+ * @returns the padded height matrix.
  */
 function heightMatrix(
     heightCache: CachedArray, fun: NoiseFun,
@@ -87,6 +110,14 @@ function heightMatrix(
     return res;
 }
 
+/**
+ * Fills the position buffer and the height array with vertex positions for a surface mesh.
+ *
+ * @param positionCache - Cache for storing vertex positions.
+ * @param heightCache   - Cache for storing height values.
+ * @param fun           - The noise function to sample height values from.
+ * @param nblocks       - Number of cells in the grid.
+ */
 function fillSurfacePositions(
     positionCache: CachedBuffer,
     heightCache: CachedArray,
@@ -115,7 +146,12 @@ function fillSurfacePositions(
     }
 }
 
-/* Computes the surface indices for a square mesh. */
+/**
+ * Computes the indices for a surface mesh by generating two triangles per quad.
+ *
+ * @param indexCache - Cache for storing index data.
+ * @param verticesPerSide - Number of vertices along one side of the grid.
+ */
 function fillSurfaceIndices(indexCache: CachedBuffer, verticesPerSide: number): void {
     const indexSide = verticesPerSide - 1; // Length of the side of the indices matrix.
     const quadCount = indexSide * indexSide;
@@ -141,7 +177,7 @@ function fillSurfaceIndices(indexCache: CachedBuffer, verticesPerSide: number): 
 }
 
 /**
- * Computes vertex normals for the given height data.
+ * Computes vertex normals for a surface mesh.
  * Adapted from THREE.BufferGeometry.computeVertexNormals.
  *
  * The reason for all this complexity is that out-of-chunks vertices must be taken into account in
@@ -150,10 +186,9 @@ function fillSurfaceIndices(indexCache: CachedBuffer, verticesPerSide: number): 
  *
  * Performance note: reducing function calls does not work at all.
  *
- * @param normalCache - The destination buffer.
+ * @param normalCache - Cache for storing normal data.
  * @param heights     - The heights to work on (with 1 additional cell on every side).
- * @param side        - The number of vertices on one side of a square.
- * @returns the computed vertex normals.
+ * @param side        - Number of vertices along one side of the grid.
  */
 function fillSurfaceNormals(
     normalCache: CachedBuffer, heights: Float32Array, side: number,
@@ -236,6 +271,15 @@ function fillSurfaceNormals(
 //////////////
 // Box mesh //
 
+/**
+ * Fills the position and normal buffers for a box-based, voxel-like mesh.
+ *
+ * @param positionCache - Cache for storing vertex positions.
+ * @param normalCache   - Cache for storing vertex normals.
+ * @param heightCache   - Cache for storing height values.
+ * @param fun           - The noise function to sample height values from.
+ * @param nblocks       - Number of cells in the grid.
+ */
 export function fillBoxData(
     positionCache: CachedBuffer, normalCache: CachedBuffer, heightCache: CachedArray,
     fun: NoiseFun, nblocks: number,
@@ -351,6 +395,9 @@ export function fillBoxData(
 /**
  * Create a mesh material that interpolates colors from height in the shaders by storing the color
  * palette in a texture.
+ *
+ * @param palette - The color palette used for shading.
+ * @returns a material configured with custom shader logic for palette-based coloring.
  */
 function paletteShader(palette: Palette): THREE.MeshStandardMaterial {
     //TODO: turn into a class and handle texture disposal.
