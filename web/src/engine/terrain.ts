@@ -43,7 +43,7 @@ class TerrainProperties {
         return this.render.mesh({
             at: this.heightAt(coords),
             nblocks: this.nblocks,
-        })
+        });
     }
 }
 

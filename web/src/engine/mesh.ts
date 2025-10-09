@@ -1,21 +1,108 @@
 import * as THREE from 'three';
+import { NoiseFun } from '../noise/foundations.js';
 import { HeightGenerator } from '../noise/noise.js';
+import { CachedArray, CachedBuffer } from './cache.js';
 import { Palette } from './palettes.js';
 
-function allocateIndexArray(nindices: number, nvertices: number = null): Uint16Array | Uint32Array {
-    const use32 = nvertices === null || nvertices > 65535;
-    return use32 ? new Uint32Array(nindices) : new Uint16Array(nindices);
+export interface ChunkMesher {
+    weave(fun: NoiseFun, palette: Palette): THREE.Mesh;
+    //TODO: dispose(): void;
+}
+
+export class SurfaceMesher implements ChunkMesher {
+    private geometry = new THREE.BufferGeometry();
+    private position = new CachedBuffer();
+    private normal = new CachedBuffer();
+    private index = new CachedBuffer();
+    private height = new CachedArray();
+
+    constructor(private ncells: number) { }
+
+    weave(gen: NoiseFun, palette: Palette): THREE.Mesh {
+        fillSurfacePositions(this.position, this.height, gen, this.ncells);
+        this.position.buffer.needsUpdate = true;
+        this.geometry.setAttribute('position', this.position.buffer);
+
+        // Number of vertices on one side of the grid.
+        // Each cell is a quad made of four vertices, which requires one complementary row and column.
+        const verticesPerSide = this.ncells + 1;
+
+        fillSurfaceNormals(this.normal, this.height.array as Float32Array, verticesPerSide);
+        this.normal.buffer.needsUpdate = true;
+        this.geometry.setAttribute('normal', this.normal.buffer);
+
+        // Index computation could be avoided by storing info about last mesh produced.
+        fillSurfaceIndices(this.index, verticesPerSide);
+        this.index.buffer.needsUpdate = true;
+        this.geometry.setIndex(this.index.buffer);
+
+        return new THREE.Mesh(this.geometry, paletteShader(palette));
+    }
+
+    //TODO: must be careful about geometry disposal.
 }
 
 //////////////////
 // Surface mesh //
 
+interface paddingSpec { up: number; down: number; left: number; right: number }
+
+/**
+ * Returns a padded height matrix.
+ */
+function heightMatrix(
+    heightCache: CachedArray, fun: NoiseFun,
+    nblocks: number, padding: paddingSpec,
+): Float32Array {
+    const width = nblocks + padding.left + padding.right;
+    const height = nblocks + padding.up + padding.down;
+    const sampling = 1 / nblocks;
+    const res = heightCache.asFloat32(width * height);
+
+    for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height; j++) {
+            const x = (i - padding.left); const y = (j - padding.down);
+            res[i * width + j] = fun(x * sampling, y * sampling);
+        }
+    }
+
+    return res;
+}
+
+function fillSurfacePositions(
+    positionCache: CachedBuffer,
+    heightCache: CachedArray,
+    gen: NoiseFun,
+    nblocks: number,
+) {
+    const verticesPerSide = nblocks + 1;
+    const nVertices = 3 * verticesPerSide * verticesPerSide;
+    const positions = positionCache.asFloat32(nVertices, 3);
+    const paddedSize = (verticesPerSide + 2);
+
+    const paddedHeights = heightMatrix(heightCache, gen, nblocks, {
+        up: 1, // Edge vertex for normal computation.
+        down: 2, // Edge vertex and complementary line.
+        left: 1, // Edge vertex.
+        right: 2, // Edge vertex and complementary column.
+    });
+
+    // Vertices.
+    let posidx = 0;
+    for (let i = 0; i < verticesPerSide; i++) {
+        for (let j = 0; j < verticesPerSide; j++) {
+            const height = paddedHeights[(i + 1) * paddedSize + j + 1];
+            positions[posidx++] = i; positions[posidx++] = j; positions[posidx++] = height;
+        }
+    }
+}
+
 /* Computes the surface indices for a square mesh. */
-function surfaceIndices(verticesPerSide: number): Uint16Array | Uint32Array {
+function fillSurfaceIndices(indexCache: CachedBuffer, verticesPerSide: number): void {
     const indexSide = verticesPerSide - 1; // Length of the side of the indices matrix.
     const quadCount = indexSide * indexSide;
     const length = quadCount * 6;
-    const indices = allocateIndexArray(length, verticesPerSide * verticesPerSide);
+    const indices = indexCache.asIndices(length, verticesPerSide * verticesPerSide)
 
     let k = 0; // Running index.
     for (let i = 0; i < indexSide; i++) {
@@ -33,62 +120,6 @@ function surfaceIndices(verticesPerSide: number): Uint16Array | Uint32Array {
             indices[k++] = bottomRight;
         }
     }
-
-    return indices;
-}
-
-interface paddingSpec { up: number; down: number; left: number; right: number }
-
-/**
- * Returns a padded height matrix.
- */
-function heightMatrix(
-    heights: HeightGenerator, coreSize: number, padding: paddingSpec,
-): Float32Array {
-    const width = coreSize + padding.left + padding.right;
-    const height = coreSize + padding.up + padding.down;
-    const sampling = 1 / heights.nblocks;
-    const res = new Float32Array(width * height);
-    for (let i = 0; i < width; i++) {
-        for (let j = 0; j < height; j++) {
-            const x = (i - padding.left); const y = (j - padding.down);
-            res[i * width + j] = heights.at(x * sampling, y * sampling);
-        }
-    }
-
-    return res;
-}
-
-/**
- * Creates a surface mesh from a height field.
- *
- * @param heights - Terrain data.
- * @param palette - Color palette for height-based interpolation.
- * @returns The surface mesh.
- */
-export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): THREE.Mesh {
-    const verticesPerSide = heights.nblocks + 1; // Number of vertices on one side of the grid.
-    const nVertices = 3 * verticesPerSide * verticesPerSide;
-    const vertices = new Float32Array(nVertices);
-    const paddedSize = (verticesPerSide + 2);
-
-    // Height buffer with additional cells on every side for edge vertex normal computation.
-    const paddedHeights = heightMatrix(heights, verticesPerSide, { up: 1, down: 1, left: 1, right: 1 });
-
-    // Vertices.
-    let vid = 0;
-    for (let i = 0; i < verticesPerSide; i++) {
-        for (let j = 0; j < verticesPerSide; j++) {
-            const height = paddedHeights[(i + 1) * paddedSize + j + 1];
-            vertices[vid++] = i; vertices[vid++] = j; vertices[vid++] = height;
-        }
-    }
-
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geometry.setIndex(new THREE.BufferAttribute(surfaceIndices(verticesPerSide), 1));
-    geometry.setAttribute('normal', computeSurfaceNormals(paddedHeights, verticesPerSide));
-    return new THREE.Mesh(geometry, paletteShader(palette));
 }
 
 /**
@@ -101,17 +132,20 @@ export function createSurfaceMesh(heights: HeightGenerator, palette: Palette): T
  *
  * Performance note: reducing function calls does not work at all.
  *
- * @param paddedHeights - The heights to work on (with 1 additional cell on every side).
- * @param side          - The number of vertices on one side of a square.
+ * @param normalCache - The destination buffer.
+ * @param heights     - The heights to work on (with 1 additional cell on every side).
+ * @param side        - The number of vertices on one side of a square.
  * @returns the computed vertex normals.
  */
-function computeSurfaceNormals(paddedHeights: Float32Array, side: number): THREE.BufferAttribute {
+function fillSurfaceNormals(
+    normalCache: CachedBuffer, heights: Float32Array, side: number,
+): void {
     /////////////////////////
     // Setup and utilities //
 
     const paddedSide = side + 2;
     const count = side * side;
-    const normals = new Float32Array(count * 3);
+    const normals = normalCache.asFloat32(count * 3, 3);
 
     // Get the index corresponding to the given coordinates (returns -1 if out-of-bounds).
     const indexOf = (x: number, y: number): number => {
@@ -123,7 +157,7 @@ function computeSurfaceNormals(paddedHeights: Float32Array, side: number): THREE
 
     // Returns the height at the given grid coordinates, using cache if within bounds.
     const get = (gx: number, gy: number): number => {
-        return paddedHeights[gx * paddedSide + gy];
+        return heights[gx * paddedSide + gy];
     };
 
     // Accumulate normal values at a given index.
@@ -179,10 +213,6 @@ function computeSurfaceNormals(paddedHeights: Float32Array, side: number): THREE
         normals[k + 1] = ny / len;
         normals[k + 2] = nz / len;
     }
-
-    const res = new THREE.BufferAttribute(normals, 3);
-    res.needsUpdate = true;
-    return res;
 }
 
 //////////////
@@ -223,7 +253,10 @@ export function createBoxMesh(heights: HeightGenerator, palette: Palette): THREE
     //    expensive.
     //  - Some out-of-chunk heights are needed (in the right column and in the down row).
     //    Which means that the height matrix needs an additional row and column.
-    const heightCache = heightMatrix(heights, heights.nblocks, { up: 0, down: 1, left: 0, right: 1 });
+    const heightCache = heightMatrix(
+        new CachedArray(), heights.at, heights.nblocks,
+        { up: 0, down: 1, left: 0, right: 1 },
+    );
     const heightSide = heights.nblocks + 1;
 
     // Each block has 3 faces made of 2 triangles with 3 vertices each.
@@ -305,6 +338,7 @@ export function createBoxMesh(heights: HeightGenerator, palette: Palette): THREE
  * palette in a texture.
  */
 function paletteShader(palette: Palette): THREE.MeshStandardMaterial {
+    //TODO: turn into a class and handle texture disposal.
     // The color palette is stored as a texture.
     const paletteTex = new THREE.DataTexture(
         palette.toArray(),
