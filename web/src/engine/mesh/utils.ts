@@ -1,5 +1,25 @@
 import * as THREE from 'three';
 
+/** Fluent interface for buffer geometry manipulation. */
+export class FluentGeometry {
+    buffer = new THREE.BufferGeometry();
+
+    set(name: string, cache: CachedBuffer): this {
+        cache.buffer.needsUpdate = true;
+        this.buffer.setAttribute(name, cache.buffer);
+        return this;
+    }
+
+    position(cache: CachedBuffer): this { return this.set('position', cache) }
+    normal(cache: CachedBuffer): this { return this.set('normal', cache) }
+
+    index(cache: CachedBuffer): this {
+        cache.buffer.needsUpdate = true;
+        this.buffer.setIndex(cache.buffer);
+        return this;
+    }
+}
+
 /////////////
 // Storage //
 

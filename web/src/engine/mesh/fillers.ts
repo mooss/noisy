@@ -1,96 +1,7 @@
 import * as THREE from 'three';
-import { NoiseFun } from '../noise/foundations.js';
-import { CachedArray, CachedBuffer } from './cache.js';
-import { Palette } from './palettes.js';
-
-/**
- * Object generating a mesh from a noise function and a color palette.
- */
-export interface ChunkMesher {
-    /**
-     * Generates a mesh from the given noise function and palette.
-     * @param fun     - The noise function to sample height values from.
-     * @param palette - The color palette used for shading the mesh.
-     *
-     * @returns a mesh representing the chunk.
-     */
-    weave(fun: NoiseFun, palette: Palette): THREE.Mesh;
-    //TODO: dispose(): void;
-}
-
-/**
- * Mesher that creates a continuous surface mesh.
- */
-export class SurfaceMesher implements ChunkMesher {
-    private geometry = new FluentGeometry();
-    private position = new CachedBuffer();
-    private normal = new CachedBuffer();
-    private index = new CachedBuffer();
-    private height = new CachedArray();
-
-    constructor(private ncells: number) { }
-
-    weave(fun: NoiseFun, palette: Palette): THREE.Mesh {
-        // Number of vertices on one side of the grid.
-        // Each cell is a quad made of four vertices, which requires one complementary row and column.
-        const verticesPerSide = this.ncells + 1;
-
-        fillSurfacePositions(this.position, this.height, fun, this.ncells);
-        fillSurfaceNormals(this.normal, this.height.array as Float32Array, verticesPerSide);
-        // Index computation could be avoided by storing info about last mesh produced.
-        fillSurfaceIndices(this.index, verticesPerSide);
-
-        this.geometry
-            .position(this.position)
-            .normal(this.normal)
-            .index(this.index);
-
-        return new THREE.Mesh(this.geometry.buffer, paletteShader(palette));
-    }
-
-    //TODO: must be careful about geometry disposal.
-}
-
-/**
- * Mesher that creates a box-based, voxel-like mesh.
- */
-export class BoxMesher implements ChunkMesher {
-    private geometry = new FluentGeometry();
-    private position = new CachedBuffer();
-    private normal = new CachedBuffer();
-    private height = new CachedArray();
-
-    constructor(private ncells: number) { }
-
-    weave(fun: NoiseFun, palette: Palette): THREE.Mesh {
-        fillBoxData(this.position, this.normal, this.height, fun, this.ncells);
-        this.geometry
-            .position(this.position)
-            .normal(this.normal);
-
-        return new THREE.Mesh(this.geometry.buffer, paletteShader(palette));
-    }
-}
-
-/** Fluent interface for buffer geometry manipulation. */
-export class FluentGeometry {
-    buffer = new THREE.BufferGeometry();
-
-    set(name: string, cache: CachedBuffer): this {
-        cache.buffer.needsUpdate = true;
-        this.buffer.setAttribute(name, cache.buffer);
-        return this;
-    }
-
-    position(cache: CachedBuffer): this { return this.set('position', cache) }
-    normal(cache: CachedBuffer): this { return this.set('normal', cache) }
-
-    index(cache: CachedBuffer): this {
-        cache.buffer.needsUpdate = true;
-        this.buffer.setIndex(cache.buffer);
-        return this;
-    }
-}
+import { NoiseFun } from '../../noise/foundations.js';
+import { Palette } from '../palettes.js';
+import { CachedArray, CachedBuffer } from './utils.js';
 
 //////////////////
 // Surface mesh //
@@ -134,7 +45,7 @@ function heightMatrix(
  * @param fun           - The noise function to sample height values from.
  * @param nblocks       - Number of cells in the grid.
  */
-function fillSurfacePositions(
+export function fillSurfacePositions(
     positionCache: CachedBuffer,
     heightCache: CachedArray,
     fun: NoiseFun,
@@ -168,7 +79,7 @@ function fillSurfacePositions(
  * @param indexCache - Cache for storing index data.
  * @param verticesPerSide - Number of vertices along one side of the grid.
  */
-function fillSurfaceIndices(indexCache: CachedBuffer, verticesPerSide: number): void {
+export function fillSurfaceIndices(indexCache: CachedBuffer, verticesPerSide: number): void {
     const indexSide = verticesPerSide - 1; // Length of the side of the indices matrix.
     const quadCount = indexSide * indexSide;
     const length = quadCount * 6;
@@ -206,7 +117,7 @@ function fillSurfaceIndices(indexCache: CachedBuffer, verticesPerSide: number): 
  * @param heights     - The heights to work on (with 1 additional cell on every side).
  * @param side        - Number of vertices along one side of the grid.
  */
-function fillSurfaceNormals(
+export function fillSurfaceNormals(
     normalCache: CachedBuffer, heights: Float32Array, side: number,
 ): void {
     /////////////////////////
@@ -415,7 +326,7 @@ export function fillBoxData(
  * @param palette - The color palette used for shading.
  * @returns a material configured with custom shader logic for palette-based coloring.
  */
-function paletteShader(palette: Palette): THREE.MeshStandardMaterial {
+export function paletteShader(palette: Palette): THREE.MeshStandardMaterial {
     //TODO: turn into a class and handle texture disposal.
     // The color palette is stored as a texture.
     const paletteTex = new THREE.DataTexture(

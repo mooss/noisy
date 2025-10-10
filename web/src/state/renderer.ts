@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CHUNK_HEIGHT_DENOMINATOR, CHUNK_UNIT } from '../../config/constants.js';
-import { BoxMesher, SurfaceMesher } from '../engine/mesh.js';
+import { BoxMesher, SurfaceMesher } from '../engine/mesh/mesher.js';
 import { Palette, palettes } from '../engine/palettes.js';
 import { Panel } from '../gui/gui.js';
 import { HeightGenerator } from '../noise/noise.js';
