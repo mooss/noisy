@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CHUNK_HEIGHT_DENOMINATOR, CHUNK_UNIT } from '../../config/constants.js';
-import { BoxMesher, SurfaceMesher } from '../engine/mesh/mesher.js';
+import { CachedMesher, MeshStyle } from '../engine/mesh/mesher.js';
 import { Palette, palettes } from '../engine/palettes.js';
 import { Panel } from '../gui/gui.js';
 import { HeightGenerator } from '../noise/noise.js';
@@ -16,11 +16,9 @@ interface LightConfig {
     directional: { intensity: number };
 }
 
-type RenderStyle = 'surface' | 'boxes';
-
 class RenderStateP extends AutoAssign<RenderStateP> {
     //TIP: render_style Fundamental shape the terrain is made of.
-    declare style: RenderStyle;
+    declare style: MeshStyle;
 
     //TIP: render_palette Color palette of the terrain.
     declare paletteName: string;
@@ -37,20 +35,15 @@ export class RenderState extends RenderStateP {
     get palette(): Palette { return palettes[this.paletteName] }
 
     mesh(heights: HeightGenerator): THREE.Mesh {
-        switch (this.style) {
-            case 'boxes':
-                return new BoxMesher(heights.nblocks).weave(heights.at, this.palette)
-            case 'surface':
-                return new SurfaceMesher(heights.nblocks).weave(heights.at, this.palette);
-        }
+        return new CachedMesher().weave(this.style, heights.at, heights.nblocks, this.palette);
     }
 }
 register('RenderState', RenderState);
 
 export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
     root.select(state, 'style', {
-        'Surface': 'surface',
-        'Boxes': 'boxes',
+        'Surface': 'Surface',
+        'Boxes': 'Box',
     })
         .label('Shape')
         .onChange(cb.terrain.recompute)

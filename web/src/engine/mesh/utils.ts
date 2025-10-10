@@ -26,7 +26,7 @@ export class FluentGeometry {
 type ArrayTag = 'Int8Array' | 'Uint16Array' | 'Uint32Array' | 'Float32Array';
 
 export class CachedArray {
-    tag: ArrayTag;
+    private tag: ArrayTag;
     array: THREE.TypedArray;
 
     asFloat32(size: number): Float32Array {

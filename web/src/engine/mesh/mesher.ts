@@ -2,8 +2,36 @@ import * as THREE from 'three';
 
 import { NoiseFun } from '../../noise/foundations.js';
 import { Palette } from '../palettes.js';
-import { CachedArray, CachedBuffer, FluentGeometry } from './utils.js';
 import { fillBoxData, fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions, paletteShader } from './fillers.js';
+import { CachedArray, CachedBuffer, FluentGeometry } from './utils.js';
+
+export type MeshStyle = 'Surface' | 'Box';
+
+/** Mesh generator that reuses allocated resources when possible. */
+export class CachedMesher {
+    private style: MeshStyle;
+    private mesher: ChunkMesher;
+    private ncells: number;
+
+    private allocate(tag: MeshStyle, ncells: number): ChunkMesher {
+        this.ncells = ncells;
+        switch (tag) {
+            case 'Surface':
+                return new SurfaceMesher(ncells);
+            case 'Box':
+                return new BoxMesher(ncells);
+        }
+    }
+
+    private ensure(tag: MeshStyle, ncells: number): ChunkMesher {
+        if (this.style === tag && this.ncells === ncells) return this.mesher;
+        return this.allocate(tag, ncells);
+    }
+
+    weave(shape: MeshStyle, fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh {
+        return this.ensure(shape, ncells).weave(fun, palette);
+    }
+x}
 
 /**
  * Object generating a mesh from a noise function and a color palette.
@@ -30,7 +58,7 @@ export class SurfaceMesher implements ChunkMesher {
     private index = new CachedBuffer();
     private height = new CachedArray();
 
-    constructor(private ncells: number) { }
+    constructor(public readonly ncells: number) { }
 
     weave(fun: NoiseFun, palette: Palette): THREE.Mesh {
         // Number of vertices on one side of the grid.
@@ -62,7 +90,7 @@ export class BoxMesher implements ChunkMesher {
     private normal = new CachedBuffer();
     private height = new CachedArray();
 
-    constructor(private ncells: number) { }
+    constructor(public readonly ncells: number) { }
 
     weave(fun: NoiseFun, palette: Palette): THREE.Mesh {
         fillBoxData(this.position, this.normal, this.height, fun, this.ncells);
