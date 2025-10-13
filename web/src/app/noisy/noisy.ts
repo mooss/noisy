@@ -54,10 +54,7 @@ You can create your own terrain by tweaking the parameters available in the cont
   <li><strong>Render</strong> - Adjust how the terrain is rendered</li>
   <li><strong>Camera</strong> - Switch between free camera movement and following the avatar</li>
   <li><strong>Avatar</strong> - Tweak the red sphere representing the avatar</li>
-</ul>
-
-<h3>Feedback</h3>
-Feedback is most welcome, in particular concerning the UI layout, the UI style, the tooltips and the general approachability and understandability of the project.`;
+</ul>`;
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
