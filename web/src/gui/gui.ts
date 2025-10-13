@@ -1,7 +1,7 @@
 import { clone } from "../utils/objects.js";
 import { ButtonBar } from "./components/buttons.js";
 import { ControlWidget } from "./components/control-widget.js";
-import { BooleanWidget, NumberWidget, RangeControlWidget, RangeWidget, SelectWidget, StaticText, StaticTextWidget } from "./components/parameters.js";
+import { ArrayWidget, BooleanWidget, MapWidget, NumberWidget, RangeControlWidget, RangeWidget, StaticText, StaticTextWidget } from "./components/parameters.js";
 import { GraphWidget } from "./components/widget.js";
 import { Tooltip } from "./foundations.js";
 import { HtmlCssElement, spawn } from "./html.js";
@@ -66,10 +66,16 @@ export abstract class Panel {
         return StaticTextWidget(this._elt, content);
     }
 
-    select(
+    map(
         target: Record<string, any>, property: string, options: Record<string, any>,
     ): ControlWidget<any> {
-        return SelectWidget(this._elt, target, property, options);
+        return MapWidget(this._elt, target, property, options);
+    }
+
+    array(
+        target: Record<string, any>, property: string, options: Array<string>,
+    ): ControlWidget<any> {
+        return ArrayWidget(this._elt, target, property, options);
     }
 }
 

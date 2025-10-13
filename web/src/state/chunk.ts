@@ -44,7 +44,7 @@ export function chunksUI(conf: ChunkState, root: Panel, cb: GameCallbacks) {
         .formatter(() => conf.nblocks)
         .tooltip(tips.chunk_size);
 
-    root.select(conf, 'radiusType', {
+    root.map(conf, 'radiusType', {
         'Square': 'square',
         'Circle': 'circle',
     })

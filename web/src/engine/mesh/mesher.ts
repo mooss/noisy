@@ -31,7 +31,7 @@ export class CachedMesher {
     weave(shape: MeshStyle, fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh {
         return this.ensure(shape, ncells).weave(fun, palette);
     }
-x}
+}
 
 /**
  * Object generating a mesh from a noise function and a color palette.

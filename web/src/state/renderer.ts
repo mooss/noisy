@@ -41,7 +41,7 @@ export class RenderState extends RenderStateP {
 register('RenderState', RenderState);
 
 export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
-    root.select(state, 'style', {
+    root.map(state, 'style', {
         'Surface': 'Surface',
         'Boxes': 'Box',
     })
@@ -49,7 +49,7 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         .onChange(cb.terrain.recompute)
         .tooltip(tips.render_style);
 
-    root.select(state, 'paletteName', palettes)
+    root.array(state, 'paletteName', Object.keys(palettes))
         .label('Palette')
         .onChange(cb.terrain.recompute)
         .tooltip(tips.render_palette);

@@ -120,67 +120,69 @@ export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
     }
 }
 
-/**
- * Select dropdown control.
- */
-export class SelectControl extends InputControlImpl<any, HTMLSelectElement> {
-    private dictmode: boolean = false;
+const SelectControlBase = InputControlImpl<any, HTMLSelectElement>;
 
-    constructor(parent: HTMLElement, initial: any, options: Record<string, any>) {
+/** Select control constructed from an array. */
+export class ArrayControl extends SelectControlBase {
+    constructor(
+        parent: HTMLElement, initial: any,
+        options: Array<string>,
+    ) {
         super('select', parent, Gardener.selectInput);
 
-        this.dictmode = Object.prototype.hasOwnProperty.call(options, initial);
-        if (this.dictmode) {
-            for (const key of Object.keys(options)) {
-                const option = spawn<HTMLOptionElement>('option', this.elt);
-                option.text = key;
-                option.value = key;
-                if (key === initial) option.selected = true;
-            }
-        } else {
-            for (const [key, value] of Object.entries(options)) {
-                const option = spawn<HTMLOptionElement>('option', this.elt);
-                option.text = key;
-                option.value = JSON.stringify(value);
-                if (value === initial) option.selected = true;
-            }
+        for (const value of options) {
+            const option = spawn<HTMLOptionElement>('option', this.elt);
+            option.text = value;
+            option.value = value;
+            if (value === initial) option.selected = true;
         }
 
-        // Mouse-wheel scrolling support.
-        this.elt.addEventListener('wheel', (event) => {
-            event.preventDefault();
-            const delta = event.deltaY > 0 ? 1 : -1;
-            const newIndex = clamp(
-                this.elt.selectedIndex + delta,
-                0,
-                this.elt.options.length - 1
-            );
-            if (newIndex === this.elt.selectedIndex) return;
-            this.elt.selectedIndex = newIndex;
-            this.elt.dispatchEvent(new Event('input'));
-            this.elt.dispatchEvent(new Event('change'));
-        });
+        selectMouseWheelSupport(this.elt); // Mouse-wheel scrolling support.
     }
 
-    get value(): any {
-        if (this.dictmode) {
-            return this.elt.value;
+    get value(): any { return this.elt.value }
+    set value(value: any) { this.elt.value = value }
+}
+
+
+/** Select control constructed from a map. */
+export class MapControl extends SelectControlBase {
+    // Lookup from option values to option keys, the goal is to support values of any type.
+    // Just storing the values themselves is not possible because the DOM expects a string, not any
+    // type.
+    // So when setting the value, this lookup is used to store the key instead and when getting the
+    // value, a reverse lookup is performed to transform the key stored into its proper value.
+    private lookup = new Map<any, string>();
+
+    constructor(
+        parent: HTMLElement, initial: any,
+        private options: Record<string, any>,
+    ) {
+        super('select', parent, Gardener.selectInput);
+
+        for (const [key, value] of Object.entries(options)) {
+            const option = spawn<HTMLOptionElement>('option', this.elt);
+            option.text = key;
+            option.value = key;
+            this.lookup.set(value, key);
+            if (value === initial) option.selected = true;
         }
-        return JSON.parse(this.elt.value);
+
+        selectMouseWheelSupport(this.elt); // Mouse-wheel scrolling support.
     }
 
-    set value(value: any) {
-        if (this.dictmode) {
-            this.elt.value = value;
-        } else {
-            // For non-dict mode, we need to find the option with matching value.
-            for (let i = 0; i < this.elt.options.length; i++) {
-                const option = this.elt.options[i];
-                if (JSON.parse(option.value) === value) {
-                    this.elt.selectedIndex = i;
-                    break;
-                }
-            }
-        }
-    }
+    get value(): any { return this.options[this.elt.value] }
+    set value(value: any) { this.elt.value = this.lookup.get(value) }
+}
+
+function selectMouseWheelSupport(elt: HtmlCssElement<HTMLSelectElement>) {
+    elt.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        const delta = event.deltaY > 0 ? 1 : -1;
+        const newIndex = clamp(elt.selectedIndex + delta, 0, elt.options.length - 1);
+        if (newIndex === elt.selectedIndex) return;
+        elt.selectedIndex = newIndex;
+        elt.dispatchEvent(new Event('input'));
+        elt.dispatchEvent(new Event('change'));
+    });
 }

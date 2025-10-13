@@ -2,7 +2,7 @@ import { Label } from "../foundations.js";
 import { HtmlCssElement, spawn } from "../html.js";
 import { Gardener } from "../style.js";
 import { ControlWidget } from "./control-widget.js";
-import { BooleanControl, NumberControl, RangeControl, SelectControl } from "./input-control.js";
+import { ArrayControl, BooleanControl, MapControl, NumberControl, RangeControl } from "./input-control.js";
 
 export function BooleanWidget(
     parent: HTMLElement, target: Record<string, boolean>, property: string,
@@ -70,10 +70,18 @@ export function StaticTextWidget(parent: HTMLElement, content: any): StaticText 
     return new StaticText(parent, content);
 }
 
-export function SelectWidget(
-    parent: HTMLElement, target: Record<string, any>,
-    property: string, options: Record<string, any>
+export function MapWidget(
+    parent: HTMLElement, target: Record<string, any>, property: string,
+    options: Record<string, any>,
 ): ControlWidget<any> {
-    const control = new SelectControl(parent, target[property], options);
+    const control = new MapControl(parent, target[property], options);
+    return new ControlWidget(parent, target, property, control);
+}
+
+export function ArrayWidget(
+    parent: HTMLElement, target: Record<string, any>, property: string,
+    options: Array<string>,
+): ControlWidget<any> {
+    const control = new ArrayControl(parent, target[property], options);
     return new ControlWidget(parent, target, property, control);
 }

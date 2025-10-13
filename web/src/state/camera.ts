@@ -19,10 +19,7 @@ export class CameraState extends AutoAssign<CameraState> {
 register('CameraState', CameraState);
 
 export function cameraUI(state: CameraState, root: Panel, cb: GameCallbacks) {
-    root.select(state, 'cameraMode', {
-        'Follow': 'Follow',
-        'Free': 'Free',
-    })
+    root.array(state, 'cameraMode', ['Follow', 'Free'])
         .label('Camera mode')
         .onChange(() => { cb.avatar.update(); cb.camera.update(); })
         .tooltip(tips.camera_mode);
