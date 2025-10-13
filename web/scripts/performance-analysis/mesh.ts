@@ -1,6 +1,7 @@
 import { Bench, TaskResult } from 'tinybench';
-import { Layered, Simplex } from '../noise/algorithms.js';
-import { RenderState } from '../state/render.js';
+import { Layered, Simplex } from '../../src/noise/algorithms.js';
+import { CachedMesher } from '../../src/engine/mesh/mesher.js';
+import { palettes } from '../../src/engine/palettes.js';
 
 (globalThis as any).sink = 0;
 
@@ -16,23 +17,15 @@ const noise = new Layered({
     sampling: { size: 30, threshold: 2.5, fundamental: 3 },
 });
 
-// Dictates the mesh function that will be used.
-const render = new RenderState({
-    style: 'surface', // Will use createSurfaceMesh.
-    // The rest is not relevant and only here to placate the type system.
-    paletteName: 'Bright terrain',
-    light: {
-        ambient: { intensity: .5 },
-        directional: { intensity: 4 },
-    },
-    heightMultiplier: 1,
-});
+const mesher = new CachedMesher();
 
 const mkmesh = (side: number) => {
-    (globalThis as any).sink = render.mesh({
-        at: noise.normalised(.01, 1),
-        nblocks: side,
-    });
+    (globalThis as any).sink = mesher.weave(
+        'Surface',
+        noise.normalised(.01, 1),
+        side,
+        palettes['Bright terrain'],
+    );
 };
 
 function throughput(res: TaskResult) {

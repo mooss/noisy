@@ -9,27 +9,24 @@ export type MeshStyle = 'Surface' | 'Box';
 
 /** Mesh generator that reuses allocated resources when possible. */
 export class CachedMesher {
-    private style: MeshStyle;
-    private mesher: ChunkMesher;
-    private ncells: number;
+    _mesher: ChunkMesher;
 
-    private allocate(tag: MeshStyle, ncells: number): ChunkMesher {
-        this.ncells = ncells;
-        switch (tag) {
+    private allocate(style: MeshStyle): ChunkMesher {
+        switch (style) {
             case 'Surface':
-                return new SurfaceMesher(ncells);
+                return new SurfaceMesher();
             case 'Box':
-                return new BoxMesher(ncells);
+                return new BoxMesher();
         }
     }
 
-    private ensure(tag: MeshStyle, ncells: number): ChunkMesher {
-        if (this.style === tag && this.ncells === ncells) return this.mesher;
-        return this.allocate(tag, ncells);
+    private ensure(style: MeshStyle): ChunkMesher {
+        if(this._mesher?.style !== style) this._mesher = this.allocate(style);
+        return this._mesher;
     }
 
     weave(shape: MeshStyle, fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh {
-        return this.ensure(shape, ncells).weave(fun, palette);
+        return this.ensure(shape).weave(fun, ncells, palette);
     }
 }
 
@@ -44,38 +41,41 @@ export interface ChunkMesher {
      *
      * @returns a mesh representing the chunk.
      */
-    weave(fun: NoiseFun, palette: Palette): THREE.Mesh;
+    weave(fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh;
+
+    readonly style: MeshStyle;
     //TODO: dispose(): void;
 }
 
 /**
  * Mesher that creates a continuous surface mesh.
  */
-export class SurfaceMesher implements ChunkMesher {
-    private geometry = new FluentGeometry();
-    private position = new CachedBuffer();
-    private normal = new CachedBuffer();
-    private index = new CachedBuffer();
-    private height = new CachedArray();
+class SurfaceMesher implements ChunkMesher {
+    _geometry = new FluentGeometry();
+    _position = new CachedBuffer();
+    _normal = new CachedBuffer();
+    _index = new CachedBuffer();
+    _height = new CachedArray();
+    readonly style = 'Surface';
 
-    constructor(public readonly ncells: number) { }
+    constructor() { }
 
-    weave(fun: NoiseFun, palette: Palette): THREE.Mesh {
+    weave(fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh {
         // Number of vertices on one side of the grid.
         // Each cell is a quad made of four vertices, which requires one complementary row and column.
-        const verticesPerSide = this.ncells + 1;
+        const verticesPerSide = ncells + 1;
 
-        fillSurfacePositions(this.position, this.height, fun, this.ncells);
-        fillSurfaceNormals(this.normal, this.height.array as Float32Array, verticesPerSide);
+        fillSurfacePositions(this._position, this._height, fun, ncells);
+        fillSurfaceNormals(this._normal, this._height.array as Float32Array, verticesPerSide);
         // Index computation could be avoided by storing info about last mesh produced.
-        fillSurfaceIndices(this.index, verticesPerSide);
+        fillSurfaceIndices(this._index, verticesPerSide);
 
-        this.geometry
-            .position(this.position)
-            .normal(this.normal)
-            .index(this.index);
+        this._geometry
+            .position(this._position)
+            .normal(this._normal)
+            .index(this._index);
 
-        return new THREE.Mesh(this.geometry.buffer, paletteShader(palette));
+        return new THREE.Mesh(this._geometry.buffer, paletteShader(palette));
     }
 
     //TODO: must be careful about geometry disposal.
@@ -84,20 +84,21 @@ export class SurfaceMesher implements ChunkMesher {
 /**
  * Mesher that creates a box-based, voxel-like mesh.
  */
-export class BoxMesher implements ChunkMesher {
-    private geometry = new FluentGeometry();
-    private position = new CachedBuffer();
-    private normal = new CachedBuffer();
-    private height = new CachedArray();
+class BoxMesher implements ChunkMesher {
+    _geometry = new FluentGeometry();
+    _position = new CachedBuffer();
+    _normal = new CachedBuffer();
+    _height = new CachedArray();
+    readonly style = 'Box';
 
-    constructor(public readonly ncells: number) { }
+    constructor() { }
 
-    weave(fun: NoiseFun, palette: Palette): THREE.Mesh {
-        fillBoxData(this.position, this.normal, this.height, fun, this.ncells);
-        this.geometry
-            .position(this.position)
-            .normal(this.normal);
+    weave(fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh {
+        fillBoxData(this._position, this._normal, this._height, fun, ncells);
+        this._geometry
+            .position(this._position)
+            .normal(this._normal);
 
-        return new THREE.Mesh(this.geometry.buffer, paletteShader(palette));
+        return new THREE.Mesh(this._geometry.buffer, paletteShader(palette));
     }
 }
