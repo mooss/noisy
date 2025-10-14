@@ -90,7 +90,7 @@ export function noiseAlgorithms(chunks: ChunkState) {
         algorithms: {
             'None': new IdentityWrapper({}),
             'Quad': new QuadTiling({}),
-            'Mirrored': new MirroredTiling({}),
+            'Mirrored': new MirroredTiling({normalizeX: false, normalizeY: false}),
             'Sine': new SineTiling({}),
         },
         current: 'None',

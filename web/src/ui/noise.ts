@@ -81,9 +81,13 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             tilef.range(noise.p, 'noisescale', 0, 6, .2)
                 .label('Noise scale').tooltip(tips.clustering_noisescale).onInput(cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
+        case 'MirroredTiling':
+            root.bool(noise.p, 'normalizeX')
+                .label('Normalize X').tooltip(tips.tilling_mirrored_fraction_x).onInput(cb);
+            root.bool(noise.p, 'normalizeY')
+                .label('Normalize Y').tooltip(tips.tilling_mirrored_fraction_y).onInput(cb);
         case 'QuadTiling':
         case 'SineTiling':
-        case 'MirroredTiling':
         case 'Identity':
         case 'VoxelTerracing':
             return;

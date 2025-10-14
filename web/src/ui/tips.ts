@@ -37,6 +37,8 @@ export const tips = {
     tiling_none: "No tiling, use the noise as-is.",
     tiling_quad: "Interpolates between four points.\n\nCreates a seamless texture that somewhat preserves the noise pattern without mirroring.",
     tiling_sine: "Use the sine function to transform the coordinates.\n\nCreate a seamless mirrored texture with very obvious circular artifacts.",
+    tilling_mirrored_fraction_x: "Force a repetition along the horizontal axis instead of infinite mirroring.",
+    tilling_mirrored_fraction_y: "Force a repetition along the vertical axis instead of infinite mirroring.",
     tiling_mirrored: "Mirror the x and y coordinates.\n\nCreate a seamless mirrored texture.",
     height: "Algorithm generating the height of the terrain.",
     avatar_size: "Size of the red sphere.",

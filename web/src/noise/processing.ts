@@ -194,21 +194,29 @@ export class SineTiling extends NoiseWrapper {
         }
     }
 }
-register('SineTiling',  SineTiling);
+register('SineTiling', SineTiling);
 
+interface MirroredTilingP {
+    //TIP: tilling_mirrored_fraction_x Force a repetition along the horizontal axis instead of infinite mirroring.
+    normalizeX: boolean;
+    //TIP: tilling_mirrored_fraction_y Force a repetition along the vertical axis instead of infinite mirroring.
+    normalizeY: boolean;
+}
 //TIP: tiling_mirrored Mirror the x and y coordinates. \nCreate a seamless mirrored texture.
-export class MirroredTiling extends NoiseWrapper {
+export class MirroredTiling extends NoiseWrapper<MirroredTilingP> {
     get class(): NoiseClass { return 'MirroredTiling' }
     make(): NoiseFun {
         const fun = this.wrapped.make();
         return (x, y) => {
+            if (this.p.normalizeX) x = fracpart(x);
+            if (this.p.normalizeY) y = fracpart(y);
             x = x > .5 ? 1 - x : x;
             y = y > .5 ? 1 - y : y;
             return fun(x, y);
         }
     }
 }
-register('MirroredTiling',  MirroredTiling);
+register('MirroredTiling', MirroredTiling);
 
 ////////////////////
 // Noise pipeline //
