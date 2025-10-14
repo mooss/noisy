@@ -96,13 +96,6 @@ const sunset = new Palette([
     rgb(3, 248, 252)    // Teal.
 ]);
 
-const coffeeAndMilk = new Palette([
-    rgb(76, 29, 13),    // Dark coffee.
-    rgb(139, 69, 19),   // Coffee.
-    rgb(160, 82, 45),   // Light coffee.
-    rgb(222, 184, 135), // Milk.
-    rgb(255, 255, 255), // Cream.
-]);
 
 const rainbow = new Palette([
     rgb(255, 0, 0),     // Red.
@@ -114,6 +107,77 @@ const rainbow = new Palette([
     rgb(238, 130, 238), // Violet.
 ]);
 
+const solarFlux = new Palette([
+    rgb(255, 255, 180),
+    rgb(255, 204, 0),
+    rgb(255, 102, 0),
+    rgb(255, 0, 85),
+    rgb(125, 0, 255),
+]);
+
+const neonLight = new Palette([
+    rgb(10, 10, 20),    // Near-black blue.
+    rgb(0, 255, 180),   // Neon mint.
+    rgb(255, 20, 147),  // Hot pink.
+    rgb(255, 255, 255), // White glint.
+]);
+
+const alpineMeadow = new Palette([
+    rgb(20, 60, 30),
+    rgb(86, 176, 80),
+    rgb(220, 120, 160),
+    rgb(140, 140, 150),
+    rgb(250, 250, 255),
+]);
+
+const orchidBloom = new Palette([
+    rgb(100, 200, 50),
+    rgb(90, 60, 40),
+    rgb(220, 40, 140),
+    rgb(135, 180, 220),
+    rgb(235, 245, 245),
+]);
+
+const savanna = new Palette([
+    rgb(208, 170, 60),
+    rgb(60, 110, 40),
+    rgb(110, 70, 30),
+    rgb(40, 45, 80),
+    rgb(245, 240, 210),
+]);
+
+const praclarush = new Palette([
+    rgb(255, 220, 120),
+    rgb(230, 80, 20),
+    rgb(60, 20, 20),
+    rgb(25, 25, 28),
+    rgb(130, 130, 140),
+]);
+
+const glacier = new Palette([
+    rgb(170, 220, 235),
+    rgb(245, 250, 255),
+    rgb(90, 80, 70),
+    rgb(0, 120, 140),
+    rgb(140, 150, 160),
+]);
+
+const camoWoodland = new Palette([
+    rgb(107, 142, 35),
+    rgb(34, 85, 34),
+    rgb(101, 67, 33),
+    rgb(160, 140, 90),
+    rgb(15, 15, 15),
+]);
+
+const camoJungle = new Palette([
+    rgb(16, 68, 32),
+    rgb(54, 104, 32),
+    rgb(84, 120, 60),
+    rgb(90, 60, 40),
+    rgb(55, 40, 30),
+]);
+
 export const palettes: Record<string, Palette> = {
     'Paradise': paradise,
     'Bright terrain': brightTerrain,
@@ -122,7 +186,15 @@ export const palettes: Record<string, Palette> = {
     'Sunset': sunset,
     'Black & white': blackWhite,
     'Cyberpuke': cyberPuke,
-    'Coffee & milk': coffeeAndMilk,
     'Rainbow': rainbow,
+    'Solar flux': solarFlux,
+    'Neon light': neonLight,
+    'Alpine meadow': alpineMeadow,
+    'Orchid bloom': orchidBloom,
+    'Savanna': savanna,
+    'Praclarush': praclarush,
+    'Glacier': glacier,
+    'Woodland camo': camoWoodland,
+    'Jungle camo': camoJungle,
     // 'Tectonic': tectonic,
 };
