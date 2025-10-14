@@ -9,7 +9,7 @@ export type NoiseClass =
     // Noise functions.
     'Simplex' | 'Ridge' | 'Layered' | 'ContinentalMix'
     // Noise processing.
-    | 'Terracing' | 'NoisyTerracing' | 'VoxelTerracing' | 'Warping' | 'Tiling'
+    | 'Terracing' | 'NoisyTerracing' | 'VoxelTerracing' | 'Warping' | 'Clustering'
     // Noise data structures.
     | 'NoisePipeline' | 'AlgoPicker' | 'PipelinePicker';
 

@@ -71,15 +71,15 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
                 .label('Max terraces').tooltip(tips.noisy_terrace_max).onInput(cb);
             noiseUI_impl(noise.p.terracer, root.folder('Noise').tooltip(tips.noisy_terracer), cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
-        case 'Tiling':
-            const tilef = root.folder('Tiling').tooltip(tips.tiling);
+        case 'Clustering':
+            const tilef = root.folder('Clustering').tooltip(tips.clustering);
             if (!noise.p.enabled) tilef.close();
             tilef.bool(noise.p, 'enabled')
-                .label('Enabled').tooltip(tips.tiling_enabled).onInput(cb);
+                .label('Enabled').tooltip(tips.clustering_enabled).onInput(cb);
             tilef.range(noise.p, 'coorscale', 1, 50, 1)
-                .label('Coordinates scale').tooltip(tips.tiling_coorscale).onInput(cb);
+                .label('Coordinates scale').tooltip(tips.clustering_coorscale).onInput(cb);
             tilef.range(noise.p, 'noisescale', 0, 6, .2)
-                .label('Noise scale').tooltip(tips.tiling_noisescale).onInput(cb);
+                .label('Noise scale').tooltip(tips.clustering_noisescale).onInput(cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'VoxelTerracing':
             return;

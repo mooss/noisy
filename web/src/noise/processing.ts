@@ -118,19 +118,19 @@ export class Warping extends NoiseWrapper<WarpingP> {
 }
 register('Warping', Warping);
 
-//TIP: tiling Groups neighboring coordinates together to form chunks of uniform height. \nCreates shapes looking like continents, camouflage pattern or biomes.
-interface TilingP {
-    //TIP: tiling_coorscale Multiplier for the tile coordinates, dictates the tile density. \nHigher values will result in more tiles packed into a chunk.
+//TIP: clustering Groups neighboring coordinates together to form chunks of uniform height. \nCreates shapes looking like continents, camouflage pattern or biomes.
+interface ClusteringP {
+    //TIP: clustering_coorscale Multiplier for the tile coordinates, dictates the tile density. \nHigher values will result in more tiles packed into a chunk.
     coorscale: number;
 
-    //TIP: tiling_enabled Toggles tiling on or off.
+    //TIP: clustering_enabled Toggles clustering on or off.
     enabled: boolean;
 
-    //TIP: tiling_noisescale Magnitude of the distortion applied to each tile. \nHigher values will make the tiles less square and more chaotic.
+    //TIP: clustering_noisescale Magnitude of the distortion applied to each tile. \nHigher values will make the tiles less square and more chaotic.
     noisescale: number;
 }
-export class Tiling extends NoiseWrapper<TilingP> {
-    get class(): NoiseClass { return 'Tiling' }
+export class Clustering extends NoiseWrapper<ClusteringP> {
+    get class(): NoiseClass { return 'Clustering' }
     make(): NoiseFun {
         const fun = this.wrapped.normalised(0, 1);
         if (!this.p.enabled) return fun;
@@ -144,7 +144,7 @@ export class Tiling extends NoiseWrapper<TilingP> {
     get low() { return 0; }
     get high() { return 1; }
 }
-register('Tiling', Tiling)
+register('Clustering', Clustering)
 
 ////////////////////
 // Noise pipeline //

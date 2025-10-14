@@ -3,7 +3,7 @@ import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, Ridge, Simplex } from "./algorithms.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
-import { NoisePipeline, NoisyTerracing, PipelinePicker, Terracing, Tiling, VoxelTerracing, Warping } from "./processing.js";
+import { NoisePipeline, NoisyTerracing, PipelinePicker, Terracing, Clustering, VoxelTerracing, Warping } from "./processing.js";
 
 export function noiseAlgorithms(chunks: ChunkState): NoiseMakerI {
     const f = {
@@ -88,7 +88,7 @@ export function noiseAlgorithms(chunks: ChunkState): NoiseMakerI {
     const res = new NoisePipeline({
         base: map,
         pipeline: [
-            new Tiling({
+            new Clustering({
                 coorscale: 3,
                 noisescale: 2,
                 enabled: false,
