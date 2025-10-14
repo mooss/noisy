@@ -82,6 +82,8 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
                 .label('Noise scale').tooltip(tips.clustering_noisescale).onInput(cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'QuadTiling':
+        case 'SineTiling':
+        case 'MirroredTiling':
         case 'Identity':
         case 'VoxelTerracing':
             return;
@@ -111,8 +113,12 @@ function title2tooltip(title: string): string {
             return tips.terracing;
         case 'Tiling':
             return tips.tiling;
-        case 'Quad tiling':
+        case 'Quad':
             return tips.tiling_quad;
+        case 'Mirrored':
+            return tips.tiling_mirrored;
+        case 'Sine':
+            return tips.tiling_sine;
         case 'None':
             return tips.tiling_none;
         case 'Height':

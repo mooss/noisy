@@ -11,7 +11,7 @@ export type NoiseClass =
     // Noise processing.
     | 'Terracing' | 'NoisyTerracing' | 'VoxelTerracing'
     // Tiling.
-    | 'QuadTiling'
+    | 'QuadTiling' | 'SineTiling' | 'MirroredTiling'
     // Other processing algorithms.
     | 'Warping' | 'Clustering' | 'Identity'
     // Noise data structures.

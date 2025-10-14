@@ -3,7 +3,7 @@ import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, Ridge, Simplex } from "./algorithms.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
-import { Clustering, IdentityWrapper, NoisePipeline, NoisyTerracing, PipelinePicker, QuadTiling, Terracing, VoxelTerracing, Warping } from "./processing.js";
+import { Clustering, IdentityWrapper, MirroredTiling, NoisePipeline, NoisyTerracing, PipelinePicker, QuadTiling, SineTiling, Terracing, VoxelTerracing, Warping } from "./processing.js";
 
 export function noiseAlgorithms(chunks: ChunkState) {
     const f = {
@@ -89,7 +89,9 @@ export function noiseAlgorithms(chunks: ChunkState) {
     const tiling = new PipelinePicker({
         algorithms: {
             'None': new IdentityWrapper({}),
-            'Quad tiling': new QuadTiling({}),
+            'Quad': new QuadTiling({}),
+            'Mirrored': new MirroredTiling({}),
+            'Sine': new SineTiling({}),
         },
         current: 'None',
         tag: 'Tiling',

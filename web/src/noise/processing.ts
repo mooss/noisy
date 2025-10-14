@@ -156,7 +156,7 @@ register('Clustering', Clustering);
 //TIP: tiling Transform the noise into a repeating texture.
 //TIP: tiling_none No tiling, use the noise as-is.
 
-//TIP: tiling_quad Interpolates between four points. \nCreates a seamless texture that somewhat preserves the noise pattern without any mirroring.
+//TIP: tiling_quad Interpolates between four points. \nCreates a seamless texture that somewhat preserves the noise pattern without mirroring.
 export class QuadTiling extends NoiseWrapper {
     get class(): NoiseClass { return 'QuadTiling' }
     make(): NoiseFun {
@@ -183,6 +183,32 @@ export class QuadTiling extends NoiseWrapper {
     }
 }
 register('QuadTiling', QuadTiling);
+
+//TIP: tiling_sine Use the sine function to transform the coordinates. \nCreate a seamless mirrored texture with very obvious circular artifacts.
+export class SineTiling extends NoiseWrapper {
+    get class(): NoiseClass { return 'SineTiling' }
+    make(): NoiseFun {
+        const fun = this.wrapped.make();
+        return (x, y) => {
+            return fun(Math.sin(x * Math.PI), Math.sin(y * Math.PI));
+        }
+    }
+}
+register('SineTiling',  SineTiling);
+
+//TIP: tiling_mirrored Mirror the x and y coordinates. \nCreate a seamless mirrored texture.
+export class MirroredTiling extends NoiseWrapper {
+    get class(): NoiseClass { return 'MirroredTiling' }
+    make(): NoiseFun {
+        const fun = this.wrapped.make();
+        return (x, y) => {
+            x = x > .5 ? 1 - x : x;
+            y = y > .5 ? 1 - y : y;
+            return fun(x, y);
+        }
+    }
+}
+register('MirroredTiling',  MirroredTiling);
 
 ////////////////////
 // Noise pipeline //
