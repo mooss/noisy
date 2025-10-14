@@ -35,11 +35,11 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             noiseUI_impl(noise.p.bass, root.folder('Hills').tooltip(tips.continental_bass), cb);
             const mix = root.folder('Mixing').tooltip(tips.continental_threshold);
             mix.range(noise.p.threshold, 'low', 0, 1, .02)
-                .label('Low').tooltip(tips.continental_low).onChange(cb);
+                .label('Low').tooltip(tips.continental_low).onInput(cb);
             mix.range(noise.p.threshold, 'high', 0, 1, .02)
-                .label('High').tooltip(tips.continental_high).onChange(cb);
+                .label('High').tooltip(tips.continental_high).onInput(cb);
             mix.range(noise.p.threshold, 'mid', 0, 1, .02)
-                .label('Mid').tooltip(tips.continental_mid).onChange(cb);
+                .label('Mid').tooltip(tips.continental_mid).onInput(cb);
             return;
         case 'PipelinePicker':
             mapUI(noise as PipelinePicker, root, cb, noise.p.tag);
