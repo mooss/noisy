@@ -17,7 +17,9 @@ export class vec2 {
  * @returns The clamped number.
  */
 export function clamp(x: number, min: number, max: number): number {
-    return Math.min(Math.max(x, min), max);
+    if (x <= min) return min;
+    if (x >= max) return max;
+    return x;
 }
 
 /**
@@ -39,4 +41,37 @@ export function rangeMapper(
     const fromSub = fromMax - fromMin, toSub = toMax - toMin;
     if (fromSub == 0) return () => toSub / 2;
     return x => toMin + ((x - fromMin) / fromSub) * toSub;
+}
+
+/**
+ * Performs linear interpolation between two numbers.
+ *
+ * @param left   - The start value.
+ * @param right  - The end value.
+ * @param factor - The interpolation factor, typically between 0 and 1.
+ * @returns the value interpolated between a and b.
+ */
+export function lerp(left: number, right: number, factor: number): number {
+    return left + factor * (right - left);
+}
+
+/**
+ * Applies a smooth, S-shaped mapping to a value in the unit range [0, 1].
+ * Equal to smoothstep, but without the clamping.
+ *
+ * @param unit - A number between 0 and 1 to be smoothed.
+ * @returns a smoothly interpolated value between 0 and 1 that has zero derivative at the endpoints.
+ */
+export function smoothunit(unit: number): number {
+    return unit * unit * (3 - 2 * unit);
+}
+
+/**
+ * Extract the fractional part of the input number.
+ * For example, -1.6 and 2.6 are mapped to 0.6.
+ */
+export function fracpart(input: number): number {
+    input %= 1;
+    if (input < 0) input += 1;
+    return input;
 }

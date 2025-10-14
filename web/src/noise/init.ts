@@ -3,9 +3,9 @@ import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, Ridge, Simplex } from "./algorithms.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
-import { NoisePipeline, NoisyTerracing, PipelinePicker, Terracing, Clustering, VoxelTerracing, Warping } from "./processing.js";
+import { Clustering, IdentityWrapper, NoisePipeline, NoisyTerracing, PipelinePicker, QuadTiling, Terracing, VoxelTerracing, Warping } from "./processing.js";
 
-export function noiseAlgorithms(chunks: ChunkState): NoiseMakerI {
+export function noiseAlgorithms(chunks: ChunkState) {
     const f = {
         sbase: { seed: 23 },
         base: { invert: true, square: false, seed: 23 },
@@ -83,6 +83,16 @@ export function noiseAlgorithms(chunks: ChunkState): NoiseMakerI {
             }),
         },
         current: 'Constant',
+        tag: 'Terracing',
+    });
+
+    const tiling = new PipelinePicker({
+        algorithms: {
+            'None': new IdentityWrapper({}),
+            'Quad tiling': new QuadTiling({}),
+        },
+        current: 'None',
+        tag: 'Tiling',
     });
 
     const res = new NoisePipeline({
@@ -98,9 +108,12 @@ export function noiseAlgorithms(chunks: ChunkState): NoiseMakerI {
                 strength: .08,
                 warper: new Simplex(c(f.sbase)),
             }),
+            tiling,
             terracing,
         ],
     });
 
     return res;
 }
+
+export type NoiseState = ReturnType<typeof noiseAlgorithms>;

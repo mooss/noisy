@@ -1,6 +1,5 @@
 import { CHUNK_UNIT, VERSION } from "../../../config/constants.js";
-import { NoiseMakerI } from "../../noise/foundations.js";
-import { noiseAlgorithms } from "../../noise/init.js";
+import { noiseAlgorithms, NoiseState } from "../../noise/init.js";
 import { AvatarState } from "../../state/avatar.js";
 import { CameraState } from "../../state/camera.js";
 import { ChunkState } from "../../state/chunk.js";
@@ -36,7 +35,7 @@ export const REFERENCE_STATE = {
         },
         heightMultiplier: 1,
     }),
-    noise: null as NoiseMakerI,
+    noise: null as NoiseState,
 
     // The last version with a URL-compatible state.
     version: VERSION,

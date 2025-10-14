@@ -1,4 +1,5 @@
 import { CHUNK_HEIGHT_DENOMINATOR } from "../../config/constants.js";
+import { fracpart, lerp, smoothunit } from "../maths/maths.js";
 import { ChunkState } from "../state/chunk.js";
 import { register } from "../state/state.js";
 import { AlgoPicker } from "./containers.js";
@@ -23,6 +24,12 @@ abstract class NoiseWrapper<Params = any> extends NoiseMakerBase<Params> {
     get high(): number { return this.wrapped.high }
     recompute(): void { this.wrapped.recompute() }
 }
+
+export class IdentityWrapper extends NoiseWrapper {
+    get class(): NoiseClass { return 'Identity' }
+    make() { return this.wrapped.make() }
+}
+register('Identity', IdentityWrapper);
 
 //TIP: terracing Adds steps in the terrain, creating terraces.
 //TIP: terracing_constant Use the same amount of terraces everywhere. \nCreates a blocky terrain with evenly-spaced terrain.
@@ -144,7 +151,38 @@ export class Clustering extends NoiseWrapper<ClusteringP> {
     get low() { return 0; }
     get high() { return 1; }
 }
-register('Clustering', Clustering)
+register('Clustering', Clustering);
+
+//TIP: tiling Transform the noise into a repeating texture.
+//TIP: tiling_none No tiling, use the noise as-is.
+
+//TIP: tiling_quad Interpolates between four points. \nCreates a seamless texture that somewhat preserves the noise pattern without any mirroring.
+export class QuadTiling extends NoiseWrapper {
+    get class(): NoiseClass { return 'QuadTiling' }
+    make(): NoiseFun {
+        const fun = this.wrapped.make();
+        return (x: number, y: number) => {
+            x = fracpart(x);
+            y = fracpart(y);
+
+            const xfactor = smoothunit(x); // Smooth horizontal proportion.
+            const yfactor = smoothunit(y); // Smooth vertical proportion.
+
+            const topleft = fun(x, y);
+            const topright = fun(x - 1, y);
+            const bottomleft = fun(x, y - 1);
+            const bottomright = fun(x - 1, y - 1);
+
+            // Horizontal interpolation.
+            const tophoz = lerp(topleft, topright, xfactor);
+            const bottomhoz = lerp(bottomleft, bottomright, xfactor);
+
+            // Vertical interpolation.
+            return lerp(tophoz, bottomhoz, yfactor);
+        }
+    }
+}
+register('QuadTiling', QuadTiling);
 
 ////////////////////
 // Noise pipeline //

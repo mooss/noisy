@@ -42,7 +42,7 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
                 .label('Mid').tooltip(tips.continental_mid).onChange(cb);
             return;
         case 'PipelinePicker':
-            mapUI(noise as PipelinePicker, root, cb, 'Terracing');
+            mapUI(noise as PipelinePicker, root, cb, noise.p.tag);
             return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'AlgoPicker':
             return mapUI(noise as AlgoPicker<any>, root, cb, 'Height');
@@ -81,6 +81,8 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             tilef.range(noise.p, 'noisescale', 0, 6, .2)
                 .label('Noise scale').tooltip(tips.clustering_noisescale).onInput(cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
+        case 'QuadTiling':
+        case 'Identity':
         case 'VoxelTerracing':
             return;
         default:
@@ -107,6 +109,12 @@ function title2tooltip(title: string): string {
             return tips.continental_mix;
         case 'Terracing':
             return tips.terracing;
+        case 'Tiling':
+            return tips.tiling;
+        case 'Quad tiling':
+            return tips.tiling_quad;
+        case 'None':
+            return tips.tiling_none;
         case 'Height':
             //TIP: height Algorithm generating the height of the terrain.
             return tips.height;

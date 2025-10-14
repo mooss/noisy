@@ -4,6 +4,7 @@ import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations
 export interface AlgoPickerP<Algo> {
     algorithms: Record<string, Algo>;
     current: string;
+    tag?: string;
 }
 export class AlgoPicker<Algo extends NoiseMakerI> extends NoiseMakerBase<AlgoPickerP<Algo>> {
     get algorithm(): Algo {
