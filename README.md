@@ -57,6 +57,9 @@ A few particularly interesting posts:
 
 ProcGen Space has [a page](https://procgen.space/resources) with a lot of links to procedural generation resources that can be filtered with tags.
 
+The [SimonDev](https://www.youtube.com/@simondev758) YouTube channel has a [3d World Generation playlist](https://www.youtube.com/watch?v=hHGshzIXFWY&list=PLRL3Z3lpLmH3PNGZuDNf2WXnLTHpN9hXy) exploring procedural generation techniques in JavaScript.
+It covers a surprising amount of ground in a few 6 to 10 minutes videos (from heightmap generation to level of details and biome generation and a lot of other things in-between).
+
 ## Run locally
 
 ```bash
