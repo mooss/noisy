@@ -69,11 +69,6 @@ const tectonic = new Palette([
     rgb(100, 200, 50), // Land.
 ]);
 
-const cyberPuke = new Palette([
-    rgb(255, 0, 255), // Magenta.
-    rgb(0, 255, 255), // Cyan.
-]);
-
 const blackWhite = new Palette([
     rgb(0, 0, 0),       // Black.
     rgb(255, 255, 255), // White.
@@ -95,7 +90,6 @@ const sunset = new Palette([
     rgb(129, 3, 252),   // Purple.
     rgb(3, 248, 252)    // Teal.
 ]);
-
 
 const rainbow = new Palette([
     rgb(255, 0, 0),     // Red.
@@ -185,7 +179,6 @@ export const palettes: Record<string, Palette> = {
     'Fantasy': fantasy,
     'Sunset': sunset,
     'Black & white': blackWhite,
-    'Cyberpuke': cyberPuke,
     'Rainbow': rainbow,
     'Solar flux': solarFlux,
     'Neon light': neonLight,

@@ -12,7 +12,7 @@ This is done in the project [`mooss.github.io`](https://github.com/mooss/mooss.g
 2. If pertinent, prepare new scene in `noisy/${version_name}/scenes` (screenshot, URL and JSON, see previous published versions).
    It's not always necessary to publish whole new scenes, old scenes can be kept if they can be recreated faithfully in the new version.
 
-## Update the [README examples](../README.md#examples)
+## Update the [README examples](../README.md#examples-click-to-open-scene)
 
 Update all the `github.io` links to point to the new version and also update the images if necessary (if the scene could not be recreated faithfully).
 Make sure the links work and that their scene is matches the image preview.

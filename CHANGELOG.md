@@ -1,5 +1,46 @@
 # CHANGELOG
 
+## Alpha 4 "dandelion" - Mesh creation performance and tiling
+
+**Commit** `9a2ddc5bf71d300bd9e72bde86d7b12f4672eb0a`.
+
+This release focuses on performance improvements to mesh creation, adds new tiling modes for creating seamless textures and expands the color palette collection.
+
+### Core engine & world model
+Mesh creation performance:
+- **Mesh caching**: setup the architecture to reuse mesh-related resources (not yet properly used, still requires a rework of chunk management).
+- **Asynchronous terrain updates**: terrain (re)generation is now non-blocking, making the UI much more responsive.
+- **GPU color interpolation**: colors are now interpolated on the GPU instead of pre-computed on the CPU.
+- **Box mesh optimization**: manually create a mesh using the minimal amount of faces instead of using THREE.js boxes.
+- **Surface mesh optimization**: remove method calls, pre-allocate buffers, bypass operations and change index type (see [performance analysis README](web/scripts/performance-analysis/README.md)).
+
+Tiling processing steps have been added to transform raw noise into a repeating texture:
+- **Quad tiling**: interpolates between four points to create a seamless texture that preserves the noise pattern without mirroring.
+- **Sine tiling**: uses the sine function to transform coordinates, creating a mirrored texture with circular artifacts.
+- **Mirrored tiling**: mirrors the x and y coordinates, with optional repetition on each axis.
+
+Other:
+- **Voxel terracing**: terracing mode that adapts to the resolution to create voxels.
+
+### Rendering pipeline
+- **Added 9 color palettes**: solar flux, neon light, alpine meadow, orchid bloom, savanna, praclarush, glacier, woodland camo, and jungle camo.
+- **Removed 2 color palettes**: coffee & milk and cyberpuke.
+
+### UI
+- **Welcome screen button**: a question mark button that will display the welcome dialog even if it has been dismissed.
+- **Continental mix reactivity**: the low, high and mid sliders update the terrain on input instead of waiting for the slider to be released.
+
+### Storage & sharing
+- **Improved state encoding**: remove unnecesary nesting and cleanup messy encodings.
+- **Aliasing codec**: the state codec now supports aliases/references meaning that any part of the state can get information from any other part (it should also make the encoding cycle-proof).
+
+### Implementation details
+- **Select widget redesign**: replaced the convoluted select widget with the specialized map and array widgets.
+- **Restructuring**: reorganized the code structure to something more acceptable.
+- **Benchmarking and profiling utilities**: added a performance analysis script and a mesh generation benchmark.
+- **Spiral chunk loading**: using a spiral pattern ensures that the first chunks loaded are closer to the avatar.
+- **Cleanup of the `Terrain` class**: splitted into a few more understandable classes but still extremely ugly.
+
 ## Alpha 3 "coriander" – Tooltips, welcome dialog & smooth shading
 
 **Commit** `718a1b1fdf1a30ff7d9de4b99fbc75bc34d3eeb9`.
@@ -9,12 +50,12 @@ It also fixes normal computation at the edge of chunks, thus allowing to hide se
 
 ### Core engine & world model
 - **Default terrace steps set to 0**: the terrain looks better without terraces now that flat shading is disabled.
-- **Minimum vertical unit**: prevents shading artifacts when the terrain height multiplier is set to zero.
 
 ### Rendering pipeline
 - **Fixed normal at the edges**: the normals now take vertices from neighboring chunks into account, removing seams that appeared between chunks.
 - **Smooth shading re-enabled**: flat shading was only enabled to hide the seams between chunks.
 - **Paradise palette**: bright colors; water -> sand -> grass -> forest -> hills.
+- **Minimum vertical unit**: prevents shading artifacts when the terrain height multiplier is set to zero.
 
 ### UI
 - **Welcome dialog**: a dismissible welcome window is displayed with project presentation, controls and UI overview.
