@@ -2,7 +2,9 @@ import * as THREE from 'three';
 
 import { NoiseFun } from '../../noise/foundations.js';
 import { Palette } from '../palettes.js';
-import { fillBoxData, fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions, paletteShader } from './fillers.js';
+import { fillBoxData } from './box.js';
+import { paletteShader } from './shaders.js';
+import { fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions } from './surface.js';
 import { CachedArray, CachedBuffer, FluentGeometry } from './utils.js';
 
 export type MeshStyle = 'Surface' | 'Box';
@@ -21,7 +23,7 @@ export class CachedMesher {
     }
 
     private ensure(style: MeshStyle): ChunkMesher {
-        if(this._mesher?.style !== style) this._mesher = this.allocate(style);
+        if (this._mesher?.style !== style) this._mesher = this.allocate(style);
         return this._mesher;
     }
 

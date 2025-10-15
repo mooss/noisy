@@ -6,8 +6,8 @@ export const CHUNK_UNIT = 256;
 export const CHUNK_HEIGHT_DENOMINATOR = 5;
 
 export const VERSION_PERIOD = 'alpha';
-export const VERSION_NUMBER = '4';
-export const VERSION_NAME = 'dandelion';
+export const VERSION_NUMBER = '5';
+export const VERSION_NAME = 'elderberry';
 
 export class Version {
     constructor(public period: string, public number: string, public name: string) { }
