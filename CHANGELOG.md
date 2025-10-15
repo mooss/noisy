@@ -24,14 +24,14 @@ Other:
 
 ### Rendering pipeline
 - **Added 9 color palettes**: solar flux, neon light, alpine meadow, orchid bloom, savanna, praclarush, glacier, woodland camo, and jungle camo.
-- **Removed 2 color palettes**: coffee & milk and cyberpuke.
+- **Removed 1 color palette**: coffee & milk.
 
 ### UI
 - **Welcome screen button**: a question mark button that will display the welcome dialog even if it has been dismissed.
 - **Continental mix reactivity**: the low, high and mid sliders update the terrain on input instead of waiting for the slider to be released.
 
 ### Storage & sharing
-- **Improved state encoding**: remove unnecesary nesting and cleanup messy encodings.
+- **Improved state encoding**: remove unnecessary nesting and cleanup messy encodings.
 - **Aliasing codec**: the state codec now supports aliases/references meaning that any part of the state can get information from any other part (it should also make the encoding cycle-proof).
 
 ### Implementation details

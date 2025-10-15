@@ -26,7 +26,7 @@ The changes for the new version must be added as a new section at the top.
 
 ## Make the GitHub release
 
-Can be done at this page: https://github.com/mooss/noisy/releases/new.
+Can be done at [this page](https://github.com/mooss/noisy/releases/new).
 
 Use the version period and number as the release tag (e.g. `alpha-1`).
 Copy the header of the changelog as the release title and the content of the changelog as the release notes.
