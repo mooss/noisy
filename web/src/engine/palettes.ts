@@ -25,7 +25,6 @@ export class Palette {
         }
         return res;
     }
-
 }
 
 function rgb(r: number, g: number, b: number): THREE.Color {

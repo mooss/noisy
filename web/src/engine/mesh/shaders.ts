@@ -9,7 +9,7 @@ import { Palette } from "../palettes.js";
  * @returns a material configured with custom shader logic for palette-based coloring.
  */
 export function paletteShader(palette: Palette): THREE.MeshStandardMaterial {
-    //TODO: turn into a class and handle texture disposal.
+    //TODO: Handle texture disposal.
     // The color palette is stored as a texture.
     const paletteTex = new THREE.DataTexture(
         palette.toArray(),

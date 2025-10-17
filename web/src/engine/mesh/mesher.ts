@@ -1,9 +1,7 @@
 import * as THREE from 'three';
 
 import { NoiseFun } from '../../noise/foundations.js';
-import { Palette } from '../palettes.js';
 import { fillBoxData } from './box.js';
-import { paletteShader } from './shaders.js';
 import { fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions } from './surface.js';
 import { CachedArray, CachedBuffer, FluentGeometry } from './utils.js';
 
@@ -27,8 +25,8 @@ export class CachedMesher {
         return this._mesher;
     }
 
-    weave(shape: MeshStyle, fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh {
-        return this.ensure(shape).weave(fun, ncells, palette);
+    weave(shape: MeshStyle, fun: NoiseFun, ncells: number, mat: THREE.Material): THREE.Mesh {
+        return this.ensure(shape).weave(fun, ncells, mat);
     }
 }
 
@@ -43,7 +41,7 @@ export interface ChunkMesher {
      *
      * @returns a mesh representing the chunk.
      */
-    weave(fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh;
+    weave(fun: NoiseFun, ncells: number, mat: THREE.Material): THREE.Mesh;
 
     readonly style: MeshStyle;
     //TODO: dispose(): void;
@@ -62,7 +60,7 @@ class SurfaceMesher implements ChunkMesher {
 
     constructor() { }
 
-    weave(fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh {
+    weave(fun: NoiseFun, ncells: number, mat: THREE.Material): THREE.Mesh {
         // Number of vertices on one side of the grid.
         // Each cell is a quad made of four vertices, which requires one complementary row and column.
         const verticesPerSide = ncells + 1;
@@ -77,7 +75,7 @@ class SurfaceMesher implements ChunkMesher {
             .normal(this._normal)
             .index(this._index);
 
-        return new THREE.Mesh(this._geometry.buffer, paletteShader(palette));
+        return new THREE.Mesh(this._geometry.buffer, mat);
     }
 
     //TODO: must be careful about geometry disposal.
@@ -95,12 +93,12 @@ class BoxMesher implements ChunkMesher {
 
     constructor() { }
 
-    weave(fun: NoiseFun, ncells: number, palette: Palette): THREE.Mesh {
+    weave(fun: NoiseFun, ncells: number, mat: THREE.Material): THREE.Mesh {
         fillBoxData(this._position, this._normal, this._height, fun, ncells);
         this._geometry
             .position(this._position)
             .normal(this._normal);
 
-        return new THREE.Mesh(this._geometry.buffer, paletteShader(palette));
+        return new THREE.Mesh(this._geometry.buffer, mat);
     }
 }

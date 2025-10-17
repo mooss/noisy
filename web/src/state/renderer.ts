@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { CHUNK_HEIGHT_DENOMINATOR, CHUNK_UNIT } from '../../config/constants.js';
 import { CachedMesher, MeshStyle } from '../engine/mesh/mesher.js';
+import { paletteShader } from '../engine/mesh/shaders.js';
 import { Palette, palettes } from '../engine/palettes.js';
 import { Panel } from '../gui/gui.js';
 import { HeightGenerator } from '../noise/noise.js';
@@ -35,7 +36,7 @@ export class RenderState extends RenderStateP {
     get palette(): Palette { return palettes[this.paletteName] }
 
     mesh(heights: HeightGenerator): THREE.Mesh {
-        return new CachedMesher().weave(this.style, heights.at, heights.nblocks, this.palette);
+        return new CachedMesher().weave(this.style, heights.at, heights.nblocks, paletteShader(this.palette));
     }
 }
 register('RenderState', RenderState);

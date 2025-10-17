@@ -1,7 +1,8 @@
 import { Bench, TaskResult } from 'tinybench';
-import { Layered, Simplex } from '../../src/noise/algorithms.js';
 import { CachedMesher } from '../../src/engine/mesh/mesher.js';
+import { paletteShade } from '../../src/engine/mesh/shaders.js';
 import { palettes } from '../../src/engine/palettes.js';
+import { Layered, Simplex } from '../../src/noise/algorithms.js';
 
 (globalThis as any).sink = 0;
 
@@ -24,7 +25,7 @@ const mkmesh = (side: number) => {
         'Surface',
         noise.normalised(.01, 1),
         side,
-        palettes['Bright terrain'],
+        paletteShade(palettes['Bright terrain']),
     );
 };
 
