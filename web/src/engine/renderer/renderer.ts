@@ -22,7 +22,7 @@ export class Renderer {
 
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
-            powerPreference: "high-performance",
+            powerPreference: 'low-power',
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
