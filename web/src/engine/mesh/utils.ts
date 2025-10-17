@@ -24,6 +24,9 @@ export class FluentGeometry {
 // Storage //
 
 type ArrayTag = 'Int8Array' | 'Uint16Array' | 'Uint32Array' | 'Float32Array';
+function tag2bytes(tag: ArrayTag): number {
+    return {'Int8Array': 1, 'Uint16Array': 2, 'Uint32Array': 4, 'Float32Array': 4}[tag] || 0;
+}
 
 export class CachedArray {
     private tag: ArrayTag;
@@ -67,6 +70,11 @@ export class CachedArray {
                 return new Float32Array(size);
         }
     }
+
+    bytes(): number {
+        if (this.array === null) return 0;
+        return tag2bytes(this.tag) * this.array.length;
+    }
 }
 
 type IdxArray = Uint16Array | Uint32Array;
@@ -96,5 +104,10 @@ export class CachedBuffer {
             this.buffer = new THREE.BufferAttribute(res, stride);
         }
         return res;
+    }
+
+    bytes(): number {
+        if(this.storage === null) return 0;
+        return this.storage.bytes();
     }
 }
