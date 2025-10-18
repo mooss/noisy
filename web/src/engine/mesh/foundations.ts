@@ -1,5 +1,5 @@
 import { NoiseFun } from "../../noise/foundations.js";
-import { CachedArray } from "./utils.js";
+import { ReusableArray } from "./utils.js";
 
 interface paddingSpec { up: number; down: number; left: number; right: number }
 
@@ -14,7 +14,7 @@ interface paddingSpec { up: number; down: number; left: number; right: number }
  * @returns the padded height matrix.
  */
 export function heightMatrix(
-    heightCache: CachedArray, fun: NoiseFun,
+    heightCache: ReusableArray, fun: NoiseFun,
     nblocks: number, padding: paddingSpec,
 ): Float32Array {
     const width = nblocks + padding.left + padding.right;

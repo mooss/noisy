@@ -1,6 +1,6 @@
 import { NoiseFun } from "../../noise/foundations.js";
 import { heightMatrix } from "./foundations.js";
-import { CachedArray, CachedBuffer } from "./utils.js";
+import { ReusableArray, ReusableBuffer } from "./utils.js";
 
 /**
  * Fills the position and normal buffers for a box-based, voxel-like mesh.
@@ -12,7 +12,7 @@ import { CachedArray, CachedBuffer } from "./utils.js";
  * @param nblocks       - Number of cells in the grid.
  */
 export function fillBoxData(
-    positionCache: CachedBuffer, normalCache: CachedBuffer, heightCache: CachedArray,
+    positionCache: ReusableBuffer, normalCache: ReusableBuffer, heightCache: ReusableArray,
     fun: NoiseFun, nblocks: number,
 ): void {
     // The mesh from one box requires only 3 faces:

@@ -1,13 +1,13 @@
 import * as THREE from 'three';
 import { CHUNK_HEIGHT_DENOMINATOR, CHUNK_UNIT } from '../../config/constants.js';
 import { paletteShader } from '../engine/mesh/shaders.js';
+import { GeometryStyle, ReusableWeaver } from '../engine/mesh/weavers.js';
 import { Palette, palettes } from '../engine/palettes.js';
 import { Panel } from '../gui/gui.js';
 import { HeightGenerator } from '../noise/noise.js';
 import { tips } from '../ui/tips.js';
 import { AutoAssign } from '../utils/objects.js';
 import { GameCallbacks, register } from './state.js';
-import { CachedWeaver, GeometryStyle } from '../engine/mesh/weavers.js';
 
 interface LightConfig {
     //TIP: light_ambient Ambient light intensity.
@@ -36,11 +36,9 @@ export class RenderState extends RenderStateP {
     get palette(): Palette { return palettes[this.paletteName] }
 
     mesh(heights: HeightGenerator): THREE.Mesh {
-        const weaver = new CachedWeaver();
-        return new THREE.Mesh(
-            weaver.weave(this.style, heights.at, heights.nblocks),
-            paletteShader(this.palette),
-        );
+        const weaver = new ReusableWeaver();
+        const geometry = weaver.weave(this.style, heights.at, heights.nblocks);
+        return new THREE.Mesh(geometry, paletteShader(this.palette));
     }
 }
 register('RenderState', RenderState);

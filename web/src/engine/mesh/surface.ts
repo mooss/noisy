@@ -1,6 +1,6 @@
 import { NoiseFun } from '../../noise/foundations.js';
 import { heightMatrix } from './foundations.js';
-import { CachedArray, CachedBuffer } from './utils.js';
+import { ReusableArray, ReusableBuffer } from './utils.js';
 
 //////////////////
 // Surface mesh //
@@ -11,20 +11,20 @@ import { CachedArray, CachedBuffer } from './utils.js';
  * @param positionCache - Cache for storing vertex positions.
  * @param heightCache   - Cache for storing height values.
  * @param fun           - The noise function to sample height values from.
- * @param nblocks       - Number of cells in the grid.
+ * @param resolution    - Number of cells on one side of the grid.
  */
 export function fillSurfacePositions(
-    positionCache: CachedBuffer,
-    heightCache: CachedArray,
+    positionCache: ReusableBuffer,
+    heightCache: ReusableArray,
     fun: NoiseFun,
-    nblocks: number,
+    resolution: number,
 ): void {
-    const verticesPerSide = nblocks + 1;
+    const verticesPerSide = resolution + 1;
     const nVertices = verticesPerSide * verticesPerSide;
     const positions = positionCache.asFloat32(nVertices, 3);
     const paddedSize = (verticesPerSide + 2);
 
-    const paddedHeights = heightMatrix(heightCache, fun, nblocks, {
+    const paddedHeights = heightMatrix(heightCache, fun, resolution, {
         up: 1, // Edge vertex for normal computation.
         down: 2, // Edge vertex and complementary line.
         left: 1, // Edge vertex.
@@ -47,7 +47,7 @@ export function fillSurfacePositions(
  * @param indexCache - Cache for storing index data.
  * @param verticesPerSide - Number of vertices along one side of the grid.
  */
-export function fillSurfaceIndices(indexCache: CachedBuffer, verticesPerSide: number): void {
+export function fillSurfaceIndices(indexCache: ReusableBuffer, verticesPerSide: number): void {
     const indexSide = verticesPerSide - 1; // Length of the side of the indices matrix.
     const quadCount = indexSide * indexSide;
     const length = quadCount * 6;
@@ -86,7 +86,7 @@ export function fillSurfaceIndices(indexCache: CachedBuffer, verticesPerSide: nu
  * @param side        - Number of vertices along one side of the grid.
  */
 export function fillSurfaceNormals(
-    normalCache: CachedBuffer, heights: Float32Array, side: number,
+    normalCache: ReusableBuffer, heights: Float32Array, side: number,
 ): void {
     /////////////////////////
     // Setup and utilities //
