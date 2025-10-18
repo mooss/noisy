@@ -22,48 +22,48 @@ describe('CachedWeaver', () => {
         it('creates new SurfaceWeaver when called first time with Surface style', () => {
             const geometry = weaver.weave('Surface', mockFun, 10);
             expect(geometry).toBeInstanceOf(THREE.BufferGeometry);
-            expect(weaver.tag).toBe('Surface');
+            expect(weaver.cache.tag).toBe('Surface');
         });
 
         it('creates new BoxWeaver when called first time with Box style', () => {
             const geometry = weaver.weave('Box', mockFun, 8);
             expect(geometry).toBeInstanceOf(THREE.BufferGeometry);
-            expect(weaver.tag).toBe('Box');
+            expect(weaver.cache.tag).toBe('Box');
         });
 
         it('reuses SurfaceWeaver when called again with same style and resolution', () => {
             const geometry1 = weaver.weave('Surface', mockFun, 5);
-            const cached = weaver.value;
+            const cached = weaver.cache.value;
             const geometry2 = weaver.weave('Surface', mockFun, 5);
             sameGeometry(geometry1, geometry2);
-            expect(weaver.value).toBe(cached);
+            expect(weaver.cache.value).toBe(cached);
         });
 
         it('reuses BoxWeaver when called again with same style and resolution', () => {
             const geometry1 = weaver.weave('Box', mockFun, 4);
-            const cached = weaver.value;
+            const cached = weaver.cache.value;
             const geometry2 = weaver.weave('Box', mockFun, 4);
             sameGeometry(geometry1, geometry2);
-            expect(weaver.value).toBe(cached);
+            expect(weaver.cache.value).toBe(cached);
         });
 
         it('allocates new weaver when style changes', () => {
             weaver.weave('Surface', mockFun, 6);
-            const first = weaver.value;
+            const first = weaver.cache.value;
             weaver.weave('Box', mockFun, 6);
-            expect(weaver.value).not.toBe(first);
-            expect(weaver.tag).toBe('Box');
+            expect(weaver.cache.value).not.toBe(first);
+            expect(weaver.cache.tag).toBe('Box');
         });
 
         it('uses the same weaver but reallocates the buffers when only the resolution changes', () => {
             weaver.weave('Surface', mockFun, 7);
-            const first = weaver.value;
+            const first = weaver.cache.value;
             const firstPosLen = (first as any)._position.storage.array.length;
             weaver.weave('Surface', mockFun, 9);
-            expect(weaver.value).toBe(first);
-            expect(weaver.tag).toBe('Surface');
+            expect(weaver.cache.value).toBe(first);
+            expect(weaver.cache.tag).toBe('Surface');
 
-            const newPosLen = (weaver.value as any)._position.storage.array.length;
+            const newPosLen = (weaver.cache.value as any)._position.storage.array.length;
             expect(firstPosLen).not.toEqual(newPosLen);
         });
 
@@ -71,15 +71,15 @@ describe('CachedWeaver', () => {
             const fun1: NoiseFun = () => 1;
             const fun2: NoiseFun = () => 2;
             const geometry1 = weaver.weave('Box', fun1, 3);
-            const cached = weaver.value;
+            const cached = weaver.cache.value;
             const geometry2 = weaver.weave('Box', fun2, 3);
             sameGeometry(geometry1, geometry2);
-            expect(weaver.value).toBe(cached);
+            expect(weaver.cache.value).toBe(cached);
         });
 
         it('allocates correct internal buffers for SurfaceWeaver', () => {
             weaver.weave('Surface', mockFun, 16);
-            const surface = weaver.value as any;
+            const surface = weaver.cache.value as any;
             expect(surface._geometry).toBeDefined();
             expect(surface._position).toBeDefined();
             expect(surface._normal).toBeDefined();

@@ -3,16 +3,16 @@ import * as THREE from 'three';
 import { NoiseFun } from '../../noise/foundations.js';
 import { fillBoxData } from './box.js';
 import { fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions } from './surface.js';
-import { FluentGeometry, Reusable, ReusableArray, ReusableBuffer } from './utils.js';
+import { FluentGeometry, Recycler, ReusableArray, ReusableBuffer } from './utils.js';
 
 export type GeometryStyle = 'Surface' | 'Box';
 
 /** Geometry generator that reuses allocated resources when possible. */
-export class ReusableWeaver extends Reusable<GeometryStyle, ChunkWeaver, []> {
-    allocators = {
+export class ReusableWeaver {
+    cache = new Recycler<GeometryStyle, ChunkWeaver, []>({
         Surface: () => new SurfaceWeaver(),
         Box: () => new BoxWeaver(),
-    };
+    });
 
     /**
      * Builds a geometry from the given noise function.
@@ -23,7 +23,7 @@ export class ReusableWeaver extends Reusable<GeometryStyle, ChunkWeaver, []> {
      * @returns a geometry representing the chunk.
      */
     weave(shape: GeometryStyle, fun: NoiseFun, resolution: number): THREE.BufferGeometry {
-        return this.ensure(shape).weave(fun, resolution);
+        return this.cache.ensure(shape).weave(fun, resolution);
     }
 }
 

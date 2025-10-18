@@ -35,6 +35,13 @@ export abstract class Reusable<Tag extends PropertyKey, Value, Args extends any[
     }
 }
 
+export class Recycler<Tag extends PropertyKey, Value, Args extends any[]> extends Reusable<Tag, Value, Args> {
+    constructor(
+        public allocators: { [K in Tag]: (...args: Args) => Value },
+        public reusable: (..._: Args) => boolean = () => true,
+    ) { super() }
+}
+
 /////////////
 // Storage //
 
