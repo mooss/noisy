@@ -1,7 +1,7 @@
 ###########
 # Phonies #
 
-.PHONY: build setup update-modules serve test
+.PHONY: build setup update-modules serve test codegen
 
 build:
 	npx vite build src/app/noisy
@@ -19,6 +19,8 @@ serve:
 test:
 	npx jest
 
+codegen: src/ui/tips.ts src/shaders/strings.ts
+
 ################
 # Actual files #
 
@@ -31,3 +33,6 @@ src/ui/tips.ts: src/noise/algorithms.ts src/noise/processing.ts src/ui/noise.ts 
 	echo 'export const tips = {' > $@
 	sed -rn 's| *//TIP: ([^ ]+) (.*)$$|    \1: "\2",|p' $^ | sed -r 's/\. /.\\n/g' >> $@
 	echo '}' >> $@
+
+src/shaders/strings.ts: src/shaders/literate.org
+	python3 scripts/tangle_shaders.py

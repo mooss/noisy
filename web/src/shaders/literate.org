@@ -1,0 +1,41 @@
+* Palette shader
+
+This shader builds the color of a fragment from a palette transfered as a texture.
+It extends the THREE.js shader implemented by =THREE.MeshStandardMaterial= and works by injecting in the vertex and fragment shader.
+
+Code is injected in two points:
+ 1. Above the main function (declaration).
+ 2. Inside the main function (implementation).
+
+** Vertex
+
+Most of the magic happens in the fragment shader, where the height is used to deduce the fragment color.
+The vertex shader's role is just to forward this height.
+
+#+name: vs_palette_decl
+#+begin_src glsl
+varying float v_z;
+#+end_src
+
+#+name: vs_palette_impl
+#+begin_src glsl
+v_z = position.z;
+#+end_src
+
+** Fragment
+
+Required uniforms:
+#+name: fs_palette_decl
+#+begin_src glsl
+uniform sampler2D u_palette;
+uniform float u_paletteWidth;
+varying float v_z;
+#+end_src
+
+Smoothly interpolate the color from the height using the palette.
+Without this, the transition between two colors is too fast, which is particularly visible with a bicolor palette.
+#+name: fs_palette_impl
+#+begin_src glsl
+vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, v_z), 0.5);
+diffuseColor.rgb = texture2D(u_palette, colorIdx).rgb;
+#+end_src

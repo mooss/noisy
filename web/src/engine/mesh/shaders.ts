@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { shaders } from '../../shaders/strings.js';
 import { Palette } from "../palettes.js";
 
 interface ShaderInjection { decl?: string; impl?: string; }
@@ -25,16 +26,6 @@ export function injectInShader(
     return material;
 }
 
-const paletteDecl = `
-uniform sampler2D u_palette;
-uniform float u_paletteWidth;
-varying float v_z;
-`;
-const paletteDiffuse = `
-vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, v_z), 0.5);
-diffuseColor.rgb = texture2D(u_palette, colorIdx).rgb;
-`
-
 /**
  * Create a mesh material that interpolates colors from height in the shaders by storing the color
  * palette in a texture.
@@ -50,8 +41,8 @@ export function paletteShader(palette: Palette): THREE.Material {
     // inject additional instructions rather than to write a shader from scratch.
     return injectInShader(
         new THREE.MeshStandardMaterial(),
-        { decl: 'varying float v_z;', impl: 'v_z = position.z;' },
-        { decl: paletteDecl, impl: paletteDiffuse },
+        { decl: shaders.vs_palette_decl, impl: shaders.vs_palette_impl },
+        { decl: shaders.fs_palette_decl, impl: shaders.fs_palette_impl },
         { u_palette: paletteTex, u_paletteWidth: palette.size },
     )
 }
