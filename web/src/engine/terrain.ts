@@ -48,44 +48,30 @@ class TerrainProperties {
     }
 }
 
-class ChunkMesh {
-    three: THREE.Mesh;
-    constructor(coords: Coordinates, props: TerrainProperties, weaver: ReusableWeaver) {
-        this.three = props.mesh(coords, weaver);
-        this.three.translateX(coords.x * CHUNK_UNIT);
-        this.three.translateY(coords.y * CHUNK_UNIT);
-        this.three.matrixAutoUpdate = false;
+class Chunk {
+    mesh?: THREE.Mesh;
+    private weaver = new ReusableWeaver();
+
+    constructor(private coords: Coordinates, private version: number) { }
+
+    rebuild(props: TerrainProperties, version: number): THREE.Mesh | null {
+        if (version === this.version) return null;
+        this.version = version;
+        const old = this.mesh;
+
+        this.mesh = props.mesh(this.coords, this.weaver);
+        this.mesh.translateX(this.coords.x * CHUNK_UNIT);
+        this.mesh.translateY(this.coords.y * CHUNK_UNIT);
+        this.mesh.matrixAutoUpdate = false;
         this.rescale(props);
+
+        return old;
     }
 
     rescale(props: TerrainProperties) {
-        this.three.scale.set(props.blockSize, props.blockSize, props.verticalUnit);
-        this.three.updateMatrix();
+        this.mesh.scale.set(props.blockSize, props.blockSize, props.verticalUnit);
+        this.mesh.updateMatrix();
     }
-
-    /**
-     * Frees the GPU resources allocated to the mesh.
-     */
-    dispose() {
-        this.three.geometry.dispose();
-        (this.three.material as any).dispose();
-    }
-}
-
-class Chunk {
-    _mesh?: ChunkMesh = null;
-    private weaver = new ReusableWeaver();
-    constructor(private coords: Coordinates, private version: number) { }
-
-    update(props: TerrainProperties, version: number): ChunkMesh | null {
-        if (version === this.version) return null;
-        this.version = version;
-        const replaced = this._mesh;
-        this._mesh = new ChunkMesh(this.coords, props, this.weaver);
-        return replaced;
-    }
-
-    rescale(props: TerrainProperties) { this._mesh.rescale(props) }
 }
 
 /** Dynamically manages terrain as a collection of chunks. */
@@ -122,20 +108,21 @@ export class Terrain {
      * @param chunk - The chunk whose mesh needs to be updated.
      */
     private updateMesh(chunk: Chunk, version: number) {
-        const replaced = chunk.update(this.props, version);
+        const replaced = chunk.rebuild(this.props, version);
         // Removing the old mesh before adding the new one seems a bit smoother.
         this.removeMesh(replaced);
-        this.meshGroup.add(chunk._mesh.three);
+        this.meshGroup.add(chunk.mesh);
     }
 
     /**
      * Removes a mesh from the mesh group and disposes of its resources.
      * @param mesh - The mesh to remove.
      */
-    private removeMesh(mesh?: ChunkMesh) {
-        if (mesh === null) return;
-        this.meshGroup.remove(mesh.three);
-        mesh.dispose();
+    private removeMesh(mesh?: THREE.Mesh) {
+        if (!mesh) return;
+        this.meshGroup.remove(mesh);
+        mesh.geometry.dispose();
+        (mesh.material as any).dispose();
     }
 
     ///////////////////
@@ -181,7 +168,7 @@ export class Terrain {
         });
 
         // Remove out-of-radius chunks.
-        inactive.forEach(chunk => this.removeMesh(chunk._mesh));
+        inactive.forEach(chunk => this.removeMesh(chunk.mesh));
         inactive.clear();
 
         this.updateController.abort();
