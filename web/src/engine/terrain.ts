@@ -5,7 +5,7 @@ import { vector2 } from '../maths/maths.js';
 import { NoiseFun, NoiseMakerI } from '../noise/foundations.js';
 import { ChunkState } from '../state/chunk.js';
 import { RenderState } from '../state/renderer.js';
-import { Operation, Syncope } from '../utils/async.js';
+import { race } from '../utils/async.js';
 
 class TerrainProperties {
     private _height: NoiseFun;
@@ -73,17 +73,11 @@ class ChunkMesh {
 
 class Chunk {
     _mesh?: ChunkMesh = null;
-    constructor(private coords: Coordinates, props?: TerrainProperties) {
-        if (props === undefined) return;
-        this._mesh = new ChunkMesh(coords, props);
-    }
+    constructor(private coords: Coordinates, private version: number) { }
 
-    /**
-     * Replaces the mesh with a new one computed from the given properties.
-     * @param props - the properties used to compute the new mesh.
-     * @returns the mesh that was replaced (must be disposed of if not needed anymore).
-     */
-    replace(props: TerrainProperties): ChunkMesh | null {
+    update(props: TerrainProperties, version: number): ChunkMesh | null {
+        if (version === this.version) return null;
+        this.version = version;
         const replaced = this._mesh;
         this._mesh = new ChunkMesh(this.coords, props);
         return replaced;
@@ -125,8 +119,8 @@ export class Terrain {
      * Updates the mesh of a single chunk.
      * @param chunk - The chunk whose mesh needs to be updated.
      */
-    private updateMesh(chunk: Chunk) {
-        const replaced = chunk.replace(this.props);
+    private updateMesh(chunk: Chunk, version: number) {
+        const replaced = chunk.update(this.props, version);
         // Removing the old mesh before adding the new one seems a bit smoother.
         this.removeMesh(replaced);
         this.meshGroup.add(chunk._mesh.three);
@@ -142,66 +136,61 @@ export class Terrain {
         mesh.dispose();
     }
 
-    ////////////
-    // Chunks //
+    ///////////////////
+    // Chunk updates //
 
-    /** Map of the chunks that are currently loaded and displayed. */
+    private updateController = new AbortController();
+
+    // Version to which the chunks must be updated.
+    private version = 0;
+
+    // Map of the chunks that are currently loaded and displayed.
     private chunks: Map<string, Chunk> = new Map();
+
+    /**
+     * Recomputes the height function and updates the mesh of all active chunks.
+     */
+    async update() {
+        // Register that all chunks must be reloaded.
+        // This is pertinent in case this update gets interrupted by a recenter.
+        this.version++;
+
+        this.props.recomputeNoise();
+        this.updateController.abort();
+        this.updateController = new AbortController();
+        const signal = this.updateController.signal;
+
+        for (const [_, chunk] of this.chunks) {
+            // Launch updates in the background.
+            race(signal, () => this.updateMesh(chunk, this.version));
+        }
+    }
 
     /** Loads all the chunks in the load radius that are not yet loaded. */
     async ensureLoaded() {
         const inactive = this.chunks;
         this.chunks = new Map<string, Chunk>();
-        const missing = new Set<Chunk>();
-        const untouched = new Set<Chunk>();
 
         this.within(this.props.loadRadius, (coords: Coordinates) => {
             const id = coords.string();
-            const chunk = inactive.get(id);
-
-            // New chunks that need to be loaded.
-            if (chunk === undefined) {
-                // Draft chunks (chunks without mesh) are immediately added to the active chunks so
-                // that if the current loading operation is interrupted by another chunk update,
-                // they will still be considered active in the new update.
-                // Otherwise the chunks can stay missing for a while, creating gaps in the terrain.
-                const draft = new Chunk(coords);
-                missing.add(draft);
-                this.chunks.set(id, draft);
-                return;
-            }
-
-            // Chunks that are already loaded but might need to be reloaded.
+            const chunk = inactive.get(id) || new Chunk(coords, 0);
             this.chunks.set(id, chunk);
-            untouched.add(chunk);
             inactive.delete(id);
         });
-
-        const updateOp = this.update.lock();
 
         // Remove out-of-radius chunks.
         inactive.forEach(chunk => this.removeMesh(chunk._mesh));
         inactive.clear();
 
-        // Load missing chunks.
-        for (const draft of missing) {
-            if (updateOp.abort()) return updateOp.done();
-            this.updateMesh(draft);
-            await updateOp.yield();
-        }
+        this.updateController.abort();
+        this.updateController = new AbortController();
+        const signal = this.updateController.signal;
 
-        // When the terrain was in the process of being updated, reloading lazily can result in
-        // inconsistent chunks.
-        // In this case, even the in-radius chunks that already existed must be (re)loaded.
-        if (updateOp.interrupted) {
-            for (const chunk of untouched) {
-                if (updateOp.abort()) return updateOp.done();
-                this.updateMesh(chunk);
-                await updateOp.yield();
-            }
+        // (Re)load missing chunks.
+        // The pre-existing chunks will only be reloaded if they have an anterior version.
+        for (const [_, chk] of this.chunks) {
+            race(signal, () => this.updateMesh(chk, this.version));
         }
-
-        updateOp.done();
     }
 
     private center: Coordinates = undefined;
@@ -221,7 +210,8 @@ export class Terrain {
 
     /** Resets the scale of all loaded meshes. */
     rescaleMeshes() {
-        this.rangeActive(chunk => chunk.rescale(this.props));
+        for (const [_, chunk] of this.chunks)
+            chunk.rescale(this.props);
     }
 
     private within(...args: Parameters<Coordinates['spiralSquare']>) {
@@ -229,48 +219,5 @@ export class Terrain {
         if (this.props.radiusType === 'circle')
             res = Coordinates.prototype.spiralCircle;
         return res.bind(this.center)(...args);
-    }
-
-    /**
-     * Calls a function on all active chunks.
-     * @param fun - The function to apply to each chunk.
-     */
-    private rangeActive(fun: (chunk: Chunk) => void) {
-        for (const [_, chunk] of this.chunks) {
-            fun(chunk);
-        };
-    }
-
-    /////////////////////
-    // Async functions //
-
-    /**
-     * Calls a function on all active chunks, cancellable at the loop level.
-     * @param fun    - The function to apply to each chunk.
-     * @param signal - Signal to cancel the computation mid-loop.
-     */
-    private async rangeActiveAsync(
-        fun: (chunk: Chunk) => void,
-        operation: Operation,
-    ) {
-        for (const [_, chunk] of this.chunks) {
-            if (operation.abort()) return operation.done();
-            fun(chunk);
-            // Yield control after processing a chunk.
-            await operation.yield();
-        }
-        operation.done();
-    }
-
-    private update = new Syncope();
-
-    /**
-     * Recomputes the height function and updates the mesh of all active chunks, cancelling
-     * computation triggered by previous calls to this method.
-     */
-    async recomputeAll() {
-        const op = this.update.lock();
-        this.props.recomputeNoise();
-        await this.rangeActiveAsync(chunk => this.updateMesh(chunk), op);
     }
 }
