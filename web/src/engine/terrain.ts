@@ -6,6 +6,7 @@ import { NoiseFun, NoiseMakerI } from '../noise/foundations.js';
 import { ChunkState } from '../state/chunk.js';
 import { RenderState } from '../state/renderer.js';
 import { race } from '../utils/async.js';
+import { ReusableWeaver } from './mesh/weavers.js';
 
 class TerrainProperties {
     private _height: NoiseFun;
@@ -39,8 +40,8 @@ class TerrainProperties {
         this._height = this.noise.normalised(.01, 1);
     }
 
-    mesh(coords: Coordinates): THREE.Mesh {
-        return this.render.mesh({
+    mesh(coords: Coordinates, weaver: ReusableWeaver): THREE.Mesh {
+        return this.render.mesh(weaver, {
             at: this.heightAt(coords),
             nblocks: this.nblocks,
         });
@@ -49,8 +50,8 @@ class TerrainProperties {
 
 class ChunkMesh {
     three: THREE.Mesh;
-    constructor(coords: Coordinates, props: TerrainProperties) {
-        this.three = props.mesh(coords);
+    constructor(coords: Coordinates, props: TerrainProperties, weaver: ReusableWeaver) {
+        this.three = props.mesh(coords, weaver);
         this.three.translateX(coords.x * CHUNK_UNIT);
         this.three.translateY(coords.y * CHUNK_UNIT);
         this.three.matrixAutoUpdate = false;
@@ -73,13 +74,14 @@ class ChunkMesh {
 
 class Chunk {
     _mesh?: ChunkMesh = null;
+    private weaver = new ReusableWeaver();
     constructor(private coords: Coordinates, private version: number) { }
 
     update(props: TerrainProperties, version: number): ChunkMesh | null {
         if (version === this.version) return null;
         this.version = version;
         const replaced = this._mesh;
-        this._mesh = new ChunkMesh(this.coords, props);
+        this._mesh = new ChunkMesh(this.coords, props, this.weaver);
         return replaced;
     }
 

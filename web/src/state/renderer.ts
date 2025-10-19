@@ -35,8 +35,7 @@ export class RenderState extends RenderStateP {
     get verticalUnit(): number { return (CHUNK_UNIT / CHUNK_HEIGHT_DENOMINATOR) * this.heightMultiplier }
     get palette(): Palette { return palettes[this.paletteName] }
 
-    mesh(heights: HeightGenerator): THREE.Mesh {
-        const weaver = new ReusableWeaver();
+    mesh(weaver: ReusableWeaver, heights: HeightGenerator): THREE.Mesh {
         const geometry = weaver.weave(this.style, heights.at, heights.nblocks);
         return new THREE.Mesh(geometry, paletteShader(this.palette));
     }
