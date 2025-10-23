@@ -153,14 +153,16 @@ export class Appearance {
     windowContent: Facet;
 
     colors: StyleColors = {
-        background: '#1a202c',
-        border: '#4a5568',
-        input: '#63b3ed',
-        inputBg: '#2d3748',
-        label: '#68d391',
-        param: '#f6ad55',
-        text: '#e2e8f0',
+        background: '#000000',
+        border: '#aaaaaa',
+        input: '#ffffff',
+        inputBg: '#000000',
+        label: '#ffffff',
+        param: '#ffffff',
+        text: '#ffffff',
     };
+
+    border(color = this.colors.border) { return `2px solid ${color}` }
 
     constructor(private prefix: string) {
         const base = {
@@ -172,50 +174,47 @@ export class Appearance {
         this.button = this.mk('button', {
             ...base,
             backgroundColor: 'transparent',
-            border: `1px solid ${this.colors.border}`,
+            border: this.border(),
             color: this.colors.label,
             cursor: 'pointer',
-            userSelect: 'none',
-            borderRadius: '2px',
             transition: 'all 0.1s',
             fontVariantCaps: 'small-caps',
             '&:hover': {
-                backgroundColor: 'rgba(100, 149, 237, 0.13)',
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 borderColor: this.colors.input,
             },
             '&:active': {
-                backgroundColor: 'rgba(100, 149, 237, 0.26)',
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
             },
         });
         this.buttonBar = this.mk('button-bar', {
             display: 'flex',
             gap: '2px',
-            marginTop: '2px',
+            marginTop: '1px',
             flexWrap: 'wrap',
-            padding: '2px'
+            paddingTop: '2px'
         });
 
         this.cardButton = this.mk('card-button', {
             ...base,
-            padding: '0 3px',
+            padding: '0 2px',
             textAlign: 'center',
             cursor: 'pointer',
             userSelect: 'none',
             color: this.colors.label,
             background: 'transparent',
             whiteSpace: 'nowrap',
-            border: '1px solid transparent',
             '&:hover': {
                 borderColor: this.colors.input,
             },
         });
         this.cardHighlight = this.mk('card-highlight', {
             backgroundColor: this.colors.inputBg,
-            border: `1px solid ${this.colors.param}`,
+            border: this.border(this.colors.param),
         });
         this.cardLowlight = this.mk('card-lowlight', {
             backgroundColor: 'transparent',
-            border: `1px solid ${this.colors.border}`,
+            border: this.border(),
         });
 
         this.checkbox = this.mk('checkbox', {
@@ -226,7 +225,7 @@ export class Appearance {
             width: '12px',
             height: '12px',
             backgroundColor: 'transparent',
-            border: `1px solid ${this.colors.input}`,
+            border: this.border(this.colors.input),
             position: 'relative',
             cursor: 'pointer',
         });
@@ -236,26 +235,25 @@ export class Appearance {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '4px 6px',
+            padding: '2px 4px',
             backgroundColor: this.colors.inputBg,
-            borderTop: `1px solid ${this.colors.border}`,
+            borderTop: this.border(),
             marginTop: 'auto',
         });
         this.checkBarCheckbox = this.checkbox.derive('dismiss-bar-checkbox', {
-            marginRight: '5px',
+            marginRight: '3px',
         });
 
         this.collapsibleBar = this.mk('collapsible-bar', {
-            height: '6px',
+            height: '8px',
             width: '100%',
             cursor: 'pointer',
             backgroundColor: this.colors.border,
-            margin: '2px 0',
             userSelect: 'none',
         });
 
         this.deck = this.mk('deck', {
-            marginTop: '4px',
+            marginTop: '2px',
             flexDirection: 'column',
         });
         this.deckArrowLeft = this.mk('deck-arrow-left', {
@@ -263,7 +261,7 @@ export class Appearance {
             left: '0',
             top: '0',
             bottom: '0',
-            width: '20px',
+            width: '15px',
             background: `linear-gradient(90deg, ${this.colors.background} 0%, transparent 100%)`,
             pointerEvents: 'none',
             opacity: 0,
@@ -274,7 +272,7 @@ export class Appearance {
             right: '0',
             top: '0',
             bottom: '0',
-            width: '20px',
+            width: '15px',
             background: `linear-gradient(270deg, ${this.colors.background} 0%, transparent 100%)`,
             pointerEvents: 'none',
             opacity: 0,
@@ -293,20 +291,25 @@ export class Appearance {
         });
 
         this.folder = (nested: boolean) => this.mk(`folder-${nested ? 'nested' : 'toplevel'}`, {
-            marginTop: '2px',
+            // The border-image with linear-gradient trick hides a few pixels on the left of the
+            // nested folder.
+            // This makes the nesting more visible and the interface more readable.
+            borderImage: nested ? `linear-gradient(to right, transparent 12px, ${this.colors.border} 0) 1 stretch` : '',
+            borderTop: this.border(),
+            marginTop: '4px',
             padding: '0',
-            paddingLeft: nested ? '8px' : '0',
+            paddingLeft: nested ? '6px' : '0',
         });
         this.folderContent = (nested: boolean) => this.mk(`folder-content-${nested ? 'nested' : 'toplevel'}`, {
-            borderLeft: nested ? `1px solid ${this.colors.border}` : 'none',
-            paddingLeft: nested ? '4px' : '2px',
+            borderLeft: nested ? this.border() : 'none',
+            paddingLeft: nested ? '3px' : '1px',
         });
         this.folderSummary = (nested: boolean) => this.mk(`folder-summary-${nested ? 'nested' : 'toplevel'}`, {
             cursor: 'pointer',
-            fontWeight: 500,
-            padding: '2px 0',
-            marginLeft: nested ? '-10px' : '0',
-            paddingLeft: nested ? '8px' : '0',
+            fontWeight: 400,
+            padding: '1px 0',
+            marginLeft: nested ? '-8px' : '0',
+            paddingLeft: nested ? '6px' : '0',
         });
 
         this.graphBox = this.mk('graph-box', {
@@ -315,28 +318,28 @@ export class Appearance {
         });
         this.graphCanvas = this.mk('graph-canvas', {
             width: '100%',
-            height: '60px',
+            height: '50px',
             backgroundColor: this.colors.inputBg,
         });
         this.graphLabel = this.mk('graph-label', {
-            marginBottom: '2px',
+            marginBottom: '1px',
             cursor: 'pointer',
         });
 
         this.gui = this.mk('gui', {
             ...base,
             position: 'absolute',
-            top: '4px',
-            left: '4px',
+            top: '0',
+            left: '0',
             zIndex: '1000',
-            width: '240px',
+            width: '245px',
             maxHeight: '90vh',
-            padding: '3px',
-            backgroundColor: transparent(this.colors.background, .9),
+            padding: '2px',
+            backgroundColor: transparent(this.colors.background, .8),
             color: this.colors.text,
-            borderRadius: '3px',
+            borderRadius: '0px',
             overflowY: 'auto',
-            border: `1px solid ${this.colors.border}`,
+            border: this.border(),
         });
         this.input = this.mk('input', {
             ...base,
@@ -348,12 +351,12 @@ export class Appearance {
         this.label = this.mk('label', {
             display: 'flex',
             alignItems: 'center',
-            padding: '2px 0',
+            padding: '1px 0',
             position: 'relative',
         });
         this.labelText = this.mk('label-text', {
             flex: '1',
-            marginRight: '4px',
+            marginRight: '3px',
             color: this.colors.label,
         });
 
@@ -361,14 +364,15 @@ export class Appearance {
             ...base,
             width: '100%',
             background: 'transparent',
-            border: `1px solid ${this.colors.border}`,
-            paddingLeft: '2px',
+            border: this.border(),
+            paddingLeft: '1px',
+            paddingRight: '0',
             color: this.colors.param,
-            height: '16px',
+            height: '18px',
             boxSizing: 'border-box',
         });
         this.paramValueContainer = this.mk('param-value-container', {
-            width: '100px',
+            width: '120px',
             display: 'flex',
             color: this.colors.param,
         });
@@ -383,38 +387,40 @@ export class Appearance {
             height: '12px',
             appearance: 'none',
             background: this.colors.inputBg,
+            border: this.border(),
             outline: 'none',
             cursor: 'pointer',
             padding: '0',
             margin: '0',
-            borderRadius: '2px',
+            borderRadius: '0px',
         });
         this.rangeThumb = `input[type="range"]::-webkit-slider-thumb {
     appearance: none;
-    width: 4px;
-    height: 16px;
+    width: 2px;
+    height: 12px;
     background: ${this.colors.input};
     cursor: pointer;
 }
 input[type="range"]::-moz-range-thumb {
-    width: 3px;
-    height: 16px;
+    width: 2px;
+    height: 12px;
     background: ${this.colors.input};
     cursor: pointer;
     border: none;
     border-radius: 0;
 }`;
         this.rangeValueSpan = this.mk('range-value-span', {
-            width: '30px',
-            marginLeft: '4px',
+            width: '40px',
+            marginLeft: '3px',
         });
 
         this.selectInput = this.mk('select-input', {
             ...base,
             width: '100%',
             background: 'transparent',
-            border: `1px solid ${this.colors.border}`,
-            paddingLeft: '2px',
+            border: this.border(),
+            paddingLeft: '1px',
+            marginRight: '2px',
             boxSizing: 'border-box',
             color: this.colors.param,
             fontSize: '11px',
@@ -423,18 +429,20 @@ input[type="range"]::-moz-range-thumb {
             ...base,
             textAlign: 'center',
             fontWeight: '600',
-            fontSize: '12px',
-            padding: '2px 0',
-            marginBottom: '2px',
+            fontSize: '14px',
+            padding: '1px 0',
+            marginBottom: '-3px',
             color: this.colors.text,
         });
         this.tooltip = this.mk('tooltip', {
-            backgroundColor: transparent(this.colors.background, .9),
+            backgroundColor: transparent(this.colors.background, .95),
             color: this.colors.text,
-            border: `1px solid ${this.colors.border}`,
-            borderRadius: '2px',
-            padding: '2px 4px',
+            border: this.border(),
+            borderRadius: '0px',
+            padding: '2px',
             fontSize: '10px',
+            maxWidth: '200px',
+            marginTop: '2px',
 
             // Without this, tooltip behaviour is inconsistent and sometimes the tooltip persist
             // when leaving the label and hovering it.
@@ -457,39 +465,39 @@ input[type="range"]::-moz-range-thumb {
         this.window = this.mk('window', {
             position: 'absolute',
             zIndex: '2000',
-            backgroundColor: transparent(this.colors.background, .9),
-            border: `1px solid ${this.colors.border}`,
-            borderRadius: '4px',
-            minWidth: '400px',
-            maxWidth: '800px',
+            backgroundColor: transparent(this.colors.background, .95),
+            border: this.border(),
+            borderRadius: '0px',
+            minWidth: '300px',
+            maxWidth: '600px',
         });
         this.windowHeader = this.mk('window-header', {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '2px 6px',
+            padding: '1px 4px',
             backgroundColor: this.colors.inputBg,
-            borderBottom: `1px solid ${this.colors.border}`,
+            borderBottom: this.border(),
             cursor: 'move',
         });
         this.windowTitle = this.mk('window-title', {
             color: this.colors.text,
-            fontWeight: 'bold',
+            fontWeight: 'normal',
         });
         this.windowCloseButton = this.mk('window-close-button', {
             background: 'transparent',
             border: 'none',
             color: this.colors.label,
             cursor: 'pointer',
-            fontSize: '14px',
+            fontSize: '12px',
             padding: '0',
-            marginTop: '-2px',
+            marginTop: '-1px',
             '&:hover': {
                 color: this.colors.input,
             },
         });
         this.windowContent = this.mk('window-content', {
-            padding: '6px 8px',
+            padding: '4px 6px',
             color: this.colors.text,
         });
     }
@@ -500,4 +508,4 @@ input[type="range"]::-moz-range-thumb {
 }
 
 // Placeholder appearance until implementing a proper way to pass an appearance around in GUI code.
-export const Gardener = new Appearance('gard');
+export const Blawhi = new Appearance('gard');

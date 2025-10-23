@@ -1,5 +1,5 @@
 import { HtmlCssElement, spawn } from "./html.js";
-import { Gardener } from "./style.js";
+import { Blawhi } from "./style.js";
 
 export class Label {
     box: HtmlCssElement;
@@ -7,8 +7,8 @@ export class Label {
 
     constructor(parent: HTMLElement) {
         // Setup UI elements.
-        this.box = spawn('div', parent, Gardener.label);
-        this.elt = spawn('label', this.box, Gardener.labelText);
+        this.box = spawn('div', parent, Blawhi.label);
+        this.elt = spawn('label', this.box, Blawhi.labelText);
     }
 
     // Sets the text content of the label.
@@ -28,7 +28,7 @@ export class Tooltip {
     private elt: HtmlCssElement;
 
     constructor(parent: HTMLElement, text: string, position: HTMLElement = parent) {
-        this.elt = spawn('div', document.body, Gardener.tooltip);
+        this.elt = spawn('div', document.body, Blawhi.tooltip);
         this.elt.textContent = text;
         this.elt.style.display = 'none';
 

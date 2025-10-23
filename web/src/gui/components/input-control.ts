@@ -1,6 +1,6 @@
 import { clamp } from "../../maths/maths.js";
 import { HtmlCssElement, spawn } from "../html.js";
-import { Facet, Gardener } from "../style.js";
+import { Facet, Blawhi } from "../style.js";
 
 /**
  * Interface required from graphical input controllers.
@@ -38,7 +38,7 @@ abstract class InputControlImpl<PRIM, ELT extends HTMLElement> {
  */
 export class BooleanControl extends InputControlImpl<boolean, HTMLInputElement> {
     constructor(parent: HTMLElement, initial: boolean = false) {
-        super('input', parent, Gardener.checkbox);
+        super('input', parent, Blawhi.checkbox);
         this.elt.type = 'checkbox';
         this.elt.checked = initial;
     }
@@ -52,7 +52,7 @@ export class BooleanControl extends InputControlImpl<boolean, HTMLInputElement> 
  */
 export class NumberControl extends InputControlImpl<number, HTMLInputElement> {
     constructor(parent: HTMLElement, initial: number = 0) {
-        super('input', parent, Gardener.numberInput);
+        super('input', parent, Blawhi.numberInput);
         this.elt.type = 'number';
         this.elt.value = String(initial);
         this.elt.addEventListener('wheel', (event) => {
@@ -77,16 +77,16 @@ export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
     private format: (v: number) => number = (v) => v;
 
     constructor(parent: HTMLElement, initial: number, min: number, max: number, step: number) {
-        super('div', parent, Gardener.rangeControlContainer);
+        super('div', parent, Blawhi.rangeControlContainer);
 
-        this.slider = spawn<HTMLInputElement>('input', this.elt, Gardener.rangeInput);
+        this.slider = spawn<HTMLInputElement>('input', this.elt, Blawhi.rangeInput);
         this.slider.type = 'range';
         this.slider.min = String(min);
         this.slider.max = String(max);
         this.slider.step = String(step);
         this.slider.value = String(initial);
 
-        this.valueSpan = spawn('span', this.elt, Gardener.rangeValueSpan);
+        this.valueSpan = spawn('span', this.elt, Blawhi.rangeValueSpan);
 
         this.slider.addEventListener('wheel', (event) => {
             event.preventDefault();
@@ -104,7 +104,7 @@ export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
         });
 
         const style = spawn('style', document.head);
-        style.textContent = Gardener.rangeThumb;
+        style.textContent = Blawhi.rangeThumb;
     }
 
     get value(): number { return parseFloat(this.slider.value) }
@@ -128,7 +128,7 @@ export class ArrayControl extends SelectControlBase {
         parent: HTMLElement, initial: any,
         options: Array<string>,
     ) {
-        super('select', parent, Gardener.selectInput);
+        super('select', parent, Blawhi.selectInput);
 
         for (const value of options) {
             const option = spawn<HTMLOptionElement>('option', this.elt);
@@ -158,7 +158,7 @@ export class MapControl extends SelectControlBase {
         parent: HTMLElement, initial: any,
         private options: Record<string, any>,
     ) {
-        super('select', parent, Gardener.selectInput);
+        super('select', parent, Blawhi.selectInput);
 
         for (const [key, value] of Object.entries(options)) {
             const option = spawn<HTMLOptionElement>('option', this.elt);

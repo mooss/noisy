@@ -1,8 +1,8 @@
 import { Label } from "../foundations.js";
 import { HtmlCssElement, spawn } from "../html.js";
-import { Gardener } from "../style.js";
+import { Blawhi } from "../style.js";
 
-const colors = Gardener.colors;
+const colors = Blawhi.colors;
 
 export class GraphWidget extends Label {
     private canvas: HtmlCssElement<HTMLCanvasElement>;
@@ -11,12 +11,12 @@ export class GraphWidget extends Label {
 
     constructor(parent: HTMLElement) {
         super(parent);
-        this.canvas = spawn('canvas', this.box, Gardener.graphCanvas);
+        this.canvas = spawn('canvas', this.box, Blawhi.graphCanvas);
         this.ctx = this.canvas.getContext('2d');
 
         // Put the label on top of the graph (instead of putting it left).
-        this.box.addFacet(Gardener.graphBox);
-        this.elt.addFacet(Gardener.graphLabel);
+        this.box.addFacet(Blawhi.graphBox);
+        this.elt.addFacet(Blawhi.graphLabel);
 
         // Toggle graph visibility when label is clicked
         this.elt.addEventListener('click', () => {
@@ -119,20 +119,20 @@ export class CheckBar {
         parent: HTMLElement, onClick: (checked: boolean) => void,
         checkboxText: string, buttonText: string,
     ) {
-        this.bar = spawn('div', parent, Gardener.checkBar);
+        this.bar = spawn('div', parent, Blawhi.checkBar);
         const checkboxContainer = spawn('div', this.bar);
 
         const checkbox: HtmlCssElement<HTMLInputElement> = spawn(
-            'input', checkboxContainer, Gardener.checkBarCheckbox,
+            'input', checkboxContainer, Blawhi.checkBarCheckbox,
         );
         checkbox.type = 'checkbox';
         checkbox.id = `checkbox-${Math.random().toString(36)}`;
 
-        const checkboxLabel = spawn('label', checkboxContainer, Gardener.labelText);
+        const checkboxLabel = spawn('label', checkboxContainer, Blawhi.labelText);
         checkboxLabel.textContent = checkboxText;
         checkboxLabel.setAttribute('for', checkbox.id);
 
-        const button = spawn('button', this.bar, Gardener.button);
+        const button = spawn('button', this.bar, Blawhi.button);
         button.textContent = buttonText;
         button.addEventListener('click', () => onClick(checkbox.checked));
     }

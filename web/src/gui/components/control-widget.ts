@@ -1,6 +1,6 @@
 import { Label } from "../foundations.js";
 import { spawn } from "../html.js";
-import { Gardener } from "../style.js";
+import { Blawhi } from "../style.js";
 import { InputControl } from "./input-control.js";
 
 /**
@@ -29,7 +29,7 @@ export class ControlWidget<PRIM> {
     ) {
         this.labelElt = new Label(parent);
 
-        const valueContainer = spawn('div', this.labelElt.box, Gardener.paramValueContainer);
+        const valueContainer = spawn('div', this.labelElt.box, Blawhi.paramValueContainer);
         valueContainer.appendChild(control.element);
 
         ////////////////////////////

@@ -5,7 +5,7 @@ import { ArrayWidget, BooleanWidget, MapWidget, NumberWidget, RangeControlWidget
 import { GraphWidget } from "./components/widget.js";
 import { Tooltip } from "./foundations.js";
 import { HtmlCssElement, spawn } from "./html.js";
-import { Facet, Gardener } from "./style.js";
+import { Facet, Blawhi } from "./style.js";
 
 /////////////////
 // Foundations //
@@ -91,9 +91,9 @@ export class GUI extends Panel {
 
     /** Creates a GUI instance and attach it to the document body. */
     constructor(...appearanceOverride: Facet[]) {
-        super(document.body, clone(Gardener.gui).merge(...appearanceOverride));
-        this.bar = spawn('div', this._elt, Gardener.collapsibleBar);
-        this._title = spawn('div', this._elt, Gardener.title);
+        super(document.body, clone(Blawhi.gui).merge(...appearanceOverride));
+        this.bar = spawn('div', this._elt, Blawhi.collapsibleBar);
+        this._title = spawn('div', this._elt, Blawhi.title);
     }
 
     /**
@@ -160,10 +160,10 @@ class Folder extends Panel {
         super(parent);
 
         const isNested = parent.closest('details') !== null;
-        this.details = spawn('details', parent, Gardener.folder(isNested));
-        this.summary = spawn('summary', this.details, Gardener.folderSummary(isNested));
+        this.details = spawn('details', parent, Blawhi.folder(isNested));
+        this.summary = spawn('summary', this.details, Blawhi.folderSummary(isNested));
         this.summary.textContent = title;
-        const content = spawn('div', this.details, Gardener.folderContent(isNested));
+        const content = spawn('div', this.details, Blawhi.folderContent(isNested));
 
         this.details.open = true;
         this._elt.style.paddingLeft = '0';
@@ -204,14 +204,14 @@ export class Deck {
     private _elt: HTMLElement;
 
     constructor(parent: HTMLElement) {
-        this._elt = spawn('div', parent, Gardener.deck);
+        this._elt = spawn('div', parent, Blawhi.deck);
 
-        this.headerContainer = spawn('div', this._elt, Gardener.deckHeaderContainer);
-        this.headerBar = spawn('div', this.headerContainer, Gardener.deckHeaderBar);
+        this.headerContainer = spawn('div', this._elt, Blawhi.deckHeaderContainer);
+        this.headerBar = spawn('div', this.headerContainer, Blawhi.deckHeaderBar);
 
         // Show "arrows" on the left and right of the bar to indicate scrollability.
-        this.leftArrow = spawn('div', this.headerContainer, Gardener.deckArrowLeft);
-        this.rightArrow = spawn('div', this.headerContainer, Gardener.deckArrowRight);
+        this.leftArrow = spawn('div', this.headerContainer, Blawhi.deckArrowLeft);
+        this.rightArrow = spawn('div', this.headerContainer, Blawhi.deckArrowRight);
 
         this.headerBar.addEventListener('scroll', () => this._updateArrows());
         this.headerBar.addEventListener('wheel', (e: WheelEvent) => {
@@ -262,7 +262,7 @@ export class Card extends Panel {
         this._deck = deck;
         this.name = name;
 
-        this._button = spawn('div', deck.headerBar, Gardener.cardButton);
+        this._button = spawn('div', deck.headerBar, Blawhi.cardButton);
         this._button.textContent = name;
         this._button.addEventListener('click', () => this.focus());
         this.lowlight(); // Spawns the border.
@@ -278,14 +278,14 @@ export class Card extends Panel {
 
     // Highlight the header, putting an accent color on its border.
     highlight(): void {
-        this._button.addFacet(Gardener.cardHighlight);
-        this._button.removeFacet(Gardener.cardLowlight);
+        this._button.addFacet(Blawhi.cardHighlight);
+        this._button.removeFacet(Blawhi.cardLowlight);
     }
 
     // Lowlight the header, enforcing a plain border.
     lowlight(): void {
-        this._button.addFacet(Gardener.cardLowlight);
-        this._button.removeFacet(Gardener.cardHighlight);
+        this._button.addFacet(Blawhi.cardLowlight);
+        this._button.removeFacet(Blawhi.cardHighlight);
     }
 
     // Show the content.

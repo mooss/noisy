@@ -1,6 +1,6 @@
 import { vec2 } from "../../maths/maths.js";
 import { HtmlCssElement, spawn } from "../html.js";
-import { Gardener } from "../style.js";
+import { Blawhi } from "../style.js";
 
 /**
  * A closeable window floating in the foreground.
@@ -12,17 +12,17 @@ export class Window {
     private content: HtmlCssElement<HTMLDivElement>;
 
     constructor(title: string, html: string) {
-        this.container = spawn('div', document.body, Gardener.window);
+        this.container = spawn('div', document.body, Blawhi.window);
 
         // Dress up the header.
-        this.header = spawn('div', this.container, Gardener.windowHeader);
-        const titleSpan = spawn('span', this.header, Gardener.windowTitle);
+        this.header = spawn('div', this.container, Blawhi.windowHeader);
+        const titleSpan = spawn('span', this.header, Blawhi.windowTitle);
         titleSpan.textContent = title;
-        this.closeButton = spawn('button', this.header, Gardener.windowCloseButton);
+        this.closeButton = spawn('button', this.header, Blawhi.windowCloseButton);
         this.closeButton.textContent = '🗙';
         this.closeButton.addEventListener('click', () => this.hide());
 
-        this.content = spawn('div', this.container, Gardener.windowContent);
+        this.content = spawn('div', this.container, Blawhi.windowContent);
         this.content.innerHTML = html;
         this.center();
     }

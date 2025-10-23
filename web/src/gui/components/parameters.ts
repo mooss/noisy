@@ -1,6 +1,6 @@
 import { Label } from "../foundations.js";
 import { HtmlCssElement, spawn } from "../html.js";
-import { Gardener } from "../style.js";
+import { Blawhi } from "../style.js";
 import { ControlWidget } from "./control-widget.js";
 import { ArrayControl, BooleanControl, MapControl, NumberControl, RangeControl } from "./input-control.js";
 
@@ -10,9 +10,9 @@ export function BooleanWidget(
     const control = new BooleanControl(parent, target[property]);
 
     const checkbox = control.element;
-    checkbox.addFacet(Gardener.checkbox);
+    checkbox.addFacet(Blawhi.checkbox);
     const style = spawn('style', document.head);
-    style.textContent = Gardener.checkboxIndicator;
+    style.textContent = Blawhi.checkboxIndicator;
 
     return new ControlWidget(parent, target, property, control);
 }
@@ -51,7 +51,7 @@ export class StaticText extends Label {
 
     constructor(parent: HTMLElement, content: any) {
         super(parent);
-        this.value = spawn('div', this.box, Gardener.paramValueContainer);
+        this.value = spawn('div', this.box, Blawhi.paramValueContainer);
         this.update(content);
     }
 
