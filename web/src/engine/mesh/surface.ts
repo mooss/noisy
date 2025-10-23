@@ -45,17 +45,16 @@ export function fillSurfacePositions(
  * Computes the indices for a surface mesh by generating two triangles per quad.
  *
  * @param indexCache - Cache for storing index data.
- * @param verticesPerSide - Number of vertices along one side of the grid.
+ * @param resolution - Resolution of the chunk.
  */
-export function fillSurfaceIndices(indexCache: ReusableBuffer, verticesPerSide: number): void {
-    const indexSide = verticesPerSide - 1; // Length of the side of the indices matrix.
-    const quadCount = indexSide * indexSide;
-    const length = quadCount * 6;
+export function fillSurfaceIndices(indexCache: ReusableBuffer, resolution: number): void {
+    const verticesPerSide = resolution + 1;
+    const length = resolution * resolution * 6; // 6 points per quad.
     const indices = indexCache.asIndices(length, verticesPerSide * verticesPerSide)
 
     let k = 0; // Running index.
-    for (let i = 0; i < indexSide; i++) {
-        for (let j = 0; j < indexSide; j++) {
+    for (let i = 0; i < resolution; i++) {
+        for (let j = 0; j < resolution; j++) {
             const topLeft = i * verticesPerSide + j;
             const topRight = topLeft + 1;
             const bottomLeft = (i + 1) * verticesPerSide + j;
@@ -83,14 +82,15 @@ export function fillSurfaceIndices(indexCache: ReusableBuffer, verticesPerSide: 
  *
  * @param normalCache - Cache for storing normal data.
  * @param heights     - The heights to work on (with 1 additional cell on every side).
- * @param side        - Number of vertices along one side of the grid.
+ * @param resolution  - Resolution of the chunk.
  */
 export function fillSurfaceNormals(
-    normalCache: ReusableBuffer, heights: Float32Array, side: number,
+    normalCache: ReusableBuffer, heights: Float32Array, resolution: number,
 ): void {
     /////////////////////////
     // Setup and utilities //
 
+    const side = resolution + 1;
     const paddedSide = side + 2;
     const count = side * side;
     const normals = normalCache.asFloat32(count, 3);

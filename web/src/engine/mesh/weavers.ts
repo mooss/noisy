@@ -16,9 +16,9 @@ export class ReusableWeaver {
 
     /**
      * Builds a geometry from the given noise function.
-     * @param shape       - The type of geometry to build.
-     * @param fun         - The noise function to sample height values from.
-     * @param resolution  - The resolution of one side of the geometry.
+     * @param shape      - The type of geometry to build.
+     * @param fun        - The noise function to sample height values from.
+     * @param resolution - The resolution of one side of the geometry.
      *
      * @returns a geometry representing the chunk.
      */
@@ -46,18 +46,14 @@ class SurfaceWeaver implements ChunkWeaver {
     _height = new ReusableArray();
 
     weave(fun: NoiseFun, resolution: number): THREE.BufferGeometry {
-        // Number of vertices on one side of the grid.
-        // Each cell is a quad made of four vertices, which requires one complementary row and column.
-        const verticesPerSide = resolution + 1;
-
         fillSurfacePositions(this._position, this._height, fun, resolution);
-        fillSurfaceNormals(this._normal, this._height.array as Float32Array, verticesPerSide);
+        fillSurfaceNormals(this._normal, this._height.array as Float32Array, resolution);
 
         // Indices will be the same for a given resolution and do not need to be always be
         // recomputed.
-        const indexCount = (verticesPerSide - 1) * (verticesPerSide - 1) * 6;
+        const indexCount = resolution * resolution * 6;
         if (indexCount != this._index?.buffer?.count)
-            fillSurfaceIndices(this._index, verticesPerSide);
+            fillSurfaceIndices(this._index, resolution);
 
         this._geometry
             .position(this._position)
