@@ -36,7 +36,7 @@ export interface ChunkWeaver {
 }
 
 /**
- * Weaver building a continuous surface geometry.
+ * Continuous surface weaver.
  */
 class SurfaceWeaver implements ChunkWeaver {
     _geometry = new FluentGeometry();
@@ -52,8 +52,12 @@ class SurfaceWeaver implements ChunkWeaver {
 
         fillSurfacePositions(this._position, this._height, fun, resolution);
         fillSurfaceNormals(this._normal, this._height.array as Float32Array, verticesPerSide);
-        // Index computation could be avoided by storing info about the last geometry produced.
-        fillSurfaceIndices(this._index, verticesPerSide);
+
+        // Indices will be the same for a given resolution and do not need to be always be
+        // recomputed.
+        const indexCount = (verticesPerSide - 1) * (verticesPerSide - 1) * 6;
+        if (indexCount != this._index?.buffer?.count)
+            fillSurfaceIndices(this._index, verticesPerSide);
 
         this._geometry
             .position(this._position)
@@ -65,7 +69,7 @@ class SurfaceWeaver implements ChunkWeaver {
 }
 
 /**
- * Weaver building a box-based, voxel-like geometry.
+ * Box-based, voxel-like veaver.
  */
 class BoxWeaver implements ChunkWeaver {
     _geometry = new FluentGeometry();
