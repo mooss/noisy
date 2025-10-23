@@ -5,7 +5,7 @@ import { ArrayWidget, BooleanWidget, MapWidget, NumberWidget, RangeControlWidget
 import { GraphWidget } from "./components/widget.js";
 import { Tooltip } from "./foundations.js";
 import { HtmlCssElement, spawn } from "./html.js";
-import { Facet, Blawhi } from "./style.js";
+import { Blawhi, Facet } from "./style.js";
 
 /////////////////
 // Foundations //
@@ -83,9 +83,6 @@ export abstract class Panel {
  * Main element of the graphical user interface.
  */
 export class GUI extends Panel {
-    static POSITION_RIGHT = new Facet('gui-right', { right: '8px', left: 'auto' });
-    static POSITION_LEFT = new Facet('gui-left', { left: '8px', right: 'auto' });
-
     private bar: HTMLDivElement;
     private _title: HTMLDivElement;
 
@@ -183,6 +180,21 @@ class Folder extends Panel {
     hide(): this { this.details.style.display = 'none'; return this; }
     open(): this { this.details.open = true; return this; }
     close(): this { this.details.open = false; return this; }
+}
+
+/**
+ * An element that stacks vertically existing Panel instances.
+ */
+export class VerticalStack extends Panel {
+    constructor(parent: HTMLElement, position: Facet, ...panels: Panel[]) {
+        super(parent, clone(Blawhi.verticalContainer).merge(position));
+        panels.forEach(p => {
+            this._elt.appendChild(p._elt);
+            p._elt.addFacet(Blawhi.verticalChild); // Shadows some unwanted attributes.
+        });
+    }
+
+    tooltip(): this { return this }
 }
 
 ////////////////////

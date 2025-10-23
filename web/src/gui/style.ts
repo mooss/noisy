@@ -146,6 +146,9 @@ export class Appearance {
     title: Facet;
     tooltip: Facet;
 
+    verticalContainer: Facet;
+    verticalChild: Facet;
+
     window: Facet;
     windowHeader: Facet;
     windowTitle: Facet;
@@ -190,7 +193,7 @@ export class Appearance {
         this.buttonBar = this.mk('button-bar', {
             display: 'flex',
             gap: '2px',
-            marginTop: '1px',
+            margin: '1px 0 0 2px',
             flexWrap: 'wrap',
             paddingTop: '2px'
         });
@@ -284,6 +287,7 @@ export class Appearance {
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             '&::-webkit-scrollbar': { display: 'none' },
+            marginBottom: '1px',
         });
         this.deckHeaderContainer = this.mk('deck-header-container', {
             position: 'relative',
@@ -303,12 +307,13 @@ export class Appearance {
         this.folderContent = (nested: boolean) => this.mk(`folder-content-${nested ? 'nested' : 'toplevel'}`, {
             borderLeft: nested ? this.border() : 'none',
             paddingLeft: nested ? '3px' : '1px',
+            marginLeft: '2px',
         });
         this.folderSummary = (nested: boolean) => this.mk(`folder-summary-${nested ? 'nested' : 'toplevel'}`, {
             cursor: 'pointer',
             fontWeight: 400,
             padding: '1px 0',
-            marginLeft: nested ? '-8px' : '0',
+            marginLeft: nested ? '-6px' : '4px',
             paddingLeft: nested ? '6px' : '0',
         });
 
@@ -329,12 +334,12 @@ export class Appearance {
         this.gui = this.mk('gui', {
             ...base,
             position: 'absolute',
+            display: 'block',
             top: '0',
             left: '0',
             zIndex: '1000',
             width: '245px',
             maxHeight: '90vh',
-            padding: '2px',
             backgroundColor: transparent(this.colors.background, .8),
             color: this.colors.text,
             borderRadius: '0px',
@@ -344,7 +349,7 @@ export class Appearance {
         this.input = this.mk('input', {
             ...base,
             color: this.colors.param,
-            padding: '0',
+            marginLeft: '2px',
             boxSizing: 'border-box',
         });
 
@@ -353,6 +358,7 @@ export class Appearance {
             alignItems: 'center',
             padding: '1px 0',
             position: 'relative',
+            marginLeft: '2px',
         });
         this.labelText = this.mk('label-text', {
             flex: '1',
@@ -365,8 +371,9 @@ export class Appearance {
             width: '100%',
             background: 'transparent',
             border: this.border(),
-            paddingLeft: '1px',
-            paddingRight: '0',
+            paddingLeft: 0,
+            marginRight: '2px',
+            paddingRight: 0,
             color: this.colors.param,
             height: '18px',
             boxSizing: 'border-box',
@@ -417,13 +424,13 @@ input[type="range"]::-moz-range-thumb {
         this.selectInput = this.mk('select-input', {
             ...base,
             width: '100%',
+            height: '18px',
             background: 'transparent',
             border: this.border(),
-            paddingLeft: '1px',
             marginRight: '2px',
-            boxSizing: 'border-box',
             color: this.colors.param,
-            fontSize: '11px',
+            // padding: '1px 10px 5px 4px',
+            fontSize: '10px',
         });
         this.title = this.mk('title', {
             ...base,
@@ -460,6 +467,23 @@ input[type="range"]::-moz-range-thumb {
 
             // Ensures that the tooltip is in front and that the transparency hides what is behind.
             zIndex: '1001',
+        });
+
+        this.verticalContainer = this.mk('vertical-stack', {
+            position: 'fixed',
+            display: 'flex',
+            flexDirection: 'column',
+
+            // Required for the scroll bar.
+            overflowY: 'auto',
+            maxHeight: '100vh',
+        });
+        this.verticalChild = this.mk('vertical-container', {
+            position: 'relative', // Make child appear within the container.
+
+            // Remove scroll bar of child element.
+            overflow: 'visible',
+            maxHeight: 'none',
         });
 
         this.window = this.mk('window', {
@@ -508,4 +532,10 @@ input[type="range"]::-moz-range-thumb {
 }
 
 // Placeholder appearance until implementing a proper way to pass an appearance around in GUI code.
-export const Blawhi = new Appearance('gard');
+export const Blawhi = new Appearance('blawhi');
+
+////////////////////
+// Utility facets //
+
+export const POSITION_TOP_RIGHT = new Facet('position-right', { top: 0, right: 0 });
+export const POSITION_TOP_LEFT = new Facet('position-left', { left: 0, top: 0 });

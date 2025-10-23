@@ -7,7 +7,8 @@ import { Renderer } from '../../engine/renderer/renderer.js';
 import { Terrain } from '../../engine/terrain.js';
 import { CheckBar } from '../../gui/components/widget.js';
 import { Window } from '../../gui/components/window.js';
-import { GUI, Panel } from '../../gui/gui.js';
+import { GUI, Panel, VerticalStack } from '../../gui/gui.js';
+import { POSITION_TOP_LEFT } from '../../gui/style.js';
 import { Position } from '../../maths/coordinates.js';
 import { numStats } from '../../maths/stats.js';
 import { avatarUI } from '../../state/avatar.js';
@@ -120,7 +121,7 @@ class Game {
     // UI //
 
     setupUI(): void {
-        const gui = new GUI(GUI.POSITION_LEFT).collapsible();
+        const gui = new GUI().collapsible();
         this.setupActions(gui);
         this.fps = new FpsWidget(gui);
         if (Game.ENABLE_STATS_GRAPH) this.setupStatsGraph(gui);
@@ -130,8 +131,9 @@ class Game {
         cameraUI(this.state.camera, gui.folder('Camera'), this.callbacks);
         avatarUI(this.state.avatar, gui.folder('Avatar').close(), this.callbacks);
 
-        const tergen = new GUI(GUI.POSITION_RIGHT).title('Terrain Generation').collapsible();
+        const tergen = new GUI().title('Terrain Generation').collapsible();
         noiseUI(this.state.noise, tergen, this.callbacks);
+        new VerticalStack(document.body, POSITION_TOP_LEFT, gui, tergen);
 
         this.welcome();
     }
