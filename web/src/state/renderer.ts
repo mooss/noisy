@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { CHUNK_HEIGHT_DENOMINATOR, CHUNK_UNIT } from '../../config/constants.js';
-import { paletteShader } from '../engine/mesh/shaders.js';
+import { PainterStyle } from '../engine/mesh/painters.js';
 import { GeometryStyle, ReusableWeaver } from '../engine/mesh/weavers.js';
 import { Palette, palettes } from '../engine/palettes.js';
 import { Panel } from '../gui/gui.js';
@@ -18,8 +18,11 @@ interface LightConfig {
 }
 
 class RenderStateP extends AutoAssign<RenderStateP> {
-    //TIP: render_style Fundamental shape the terrain is made of.
-    declare style: GeometryStyle;
+    //TIP: render_geometry Fundamental shape the terrain is made of.
+    declare geometryStyle: GeometryStyle;
+
+    //TIP: render_painter How the terrain will be rendered.
+    declare painterStyle: PainterStyle;
 
     //TIP: render_palette Color palette of the terrain.
     declare paletteName: string;
@@ -32,24 +35,27 @@ class RenderStateP extends AutoAssign<RenderStateP> {
 
 export class RenderState extends RenderStateP {
     class(): string { return 'RenderState' };
-    get verticalUnit(): number { return (CHUNK_UNIT / CHUNK_HEIGHT_DENOMINATOR) * this.heightMultiplier }
     get palette(): Palette { return palettes[this.paletteName] }
 
-    mesh(weaver: ReusableWeaver, heights: HeightGenerator): THREE.Mesh {
-        const geometry = weaver.weave(this.style, heights.at, heights.nblocks);
-        return new THREE.Mesh(geometry, paletteShader(this.palette));
+    get verticalUnit(): number {
+        return (CHUNK_UNIT / CHUNK_HEIGHT_DENOMINATOR) * this.heightMultiplier;
+    }
+
+    geometry(weaver: ReusableWeaver, heights: HeightGenerator): THREE.BufferGeometry {
+        return weaver.weave(this.geometryStyle, heights.at, heights.nblocks);
     }
 }
 register('RenderState', RenderState);
 
 export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
-    root.map(state, 'style', {
+    const geomap: Record<string, GeometryStyle> = {
         'Surface': 'Surface',
         'Boxes': 'Box',
-    })
+    };
+    root.map(state, 'geometryStyle', geomap)
         .label('Shape')
         .onChange(cb.terrain.recompute)
-        .tooltip(tips.render_style);
+        .tooltip(tips.render_geometry);
 
     root.array(state, 'paletteName', Object.keys(palettes))
         .label('Palette')

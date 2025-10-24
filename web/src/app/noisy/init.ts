@@ -27,7 +27,8 @@ export const REFERENCE_STATE = {
         position: { x: .5, y: .5, z: 0 }, // Middle of the first chunk.
     }),
     render: new RenderState({
-        style: 'Surface',
+        geometryStyle: 'Surface',
+        painterStyle: 'Palette',
         paletteName: 'Bright terrain',
         light: {
             ambient: { intensity: 2 },

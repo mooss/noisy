@@ -50,7 +50,8 @@ export const tips = {
     chunk_size: "Number of blocks in a chunk.\nIncreasing this increases the terrain resolution but makes the terrain slower to load.",
     light_ambient: "Ambient light intensity.",
     light_directional: "Directional light intensity.",
-    render_style: "Fundamental shape the terrain is made of.",
+    render_geometry: "Fundamental shape the terrain is made of.",
+    render_painter: "How the terrain will be rendered.",
     render_palette: "Color palette of the terrain.",
     height_multiplier: "Multiplier applied to the terrain height.\nSet to zero to display flat terrain.",
 }

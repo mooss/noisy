@@ -28,7 +28,8 @@ export abstract class Reusable<Tag extends PropertyKey, Value, Args extends any[
 
     ensure(tag: Tag, ...args: Args): Value {
         if (this.tag !== tag || !this.reusable(...args)) {
-            this.value = this.allocators[tag](...args);
+            const alloc = this.allocators[tag];
+            this.value = alloc ? alloc(...args) : undefined;
             this.tag = tag;
         }
         return this.value;
@@ -40,6 +41,18 @@ export class Recycler<Tag extends PropertyKey, Value, Args extends any[]> extend
         public allocators: { [K in Tag]: (...args: Args) => Value },
         public reusable: (..._: Args) => boolean = () => true,
     ) { super() }
+}
+
+export class KeyCache<Key, Value> {
+    private last: Key; private cached: Value;
+    constructor(public refresh: () => Value) { }
+    value(key: Key): Value {
+        if (key !== this.last) {
+            this.last = key;
+            this.cached = this.refresh();
+        }
+        return this.cached;
+    }
 }
 
 /////////////

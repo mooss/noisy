@@ -6,16 +6,19 @@ import { NoiseFun, NoiseMakerI } from '../noise/foundations.js';
 import { ChunkState } from '../state/chunk.js';
 import { RenderState } from '../state/renderer.js';
 import { race } from '../utils/async.js';
+import { ReusablePainter } from './mesh/painters.js';
 import { ReusableWeaver } from './mesh/weavers.js';
 
 class TerrainProperties {
     private _height: NoiseFun;
+    private painter: ReusablePainter;
 
     constructor(
         private chunks: ChunkState,
         private noise: NoiseMakerI,
         private render: RenderState,
     ) {
+        this.painter = new ReusablePainter(this.render);
         this.recomputeNoise();
     }
 
@@ -41,10 +44,11 @@ class TerrainProperties {
     }
 
     mesh(coords: Coordinates, weaver: ReusableWeaver): THREE.Mesh {
-        return this.render.mesh(weaver, {
+        const geometry = this.render.geometry(weaver, {
             at: this.heightAt(coords),
             nblocks: this.nblocks,
         });
+        return new THREE.Mesh(geometry, this.painter.paint());
     }
 }
 
@@ -121,7 +125,7 @@ export class Terrain {
     private removeMesh(mesh?: THREE.Mesh) {
         if (!mesh) return;
         this.meshGroup.remove(mesh);
-        mesh.geometry.dispose();
+        mesh.geometry?.dispose();
         (mesh.material as any).dispose();
     }
 
