@@ -42,6 +42,40 @@ export function fillSurfacePositions(
 }
 
 /**
+ * Fills the positions, normals and UVs corresponding to a plane.
+ *
+ * @param positionCache - Cache for storing vertex positions.
+ * @param normalCache   - Cache for storing vertex normals.
+ * @param uvCache       - Cache for storing texture coordinates.
+ * @param resolution    - Number of cells on one side of the plane.
+ */
+export function fillPlaneVertices(
+    positionCache: ReusableBuffer,
+    normalCache: ReusableBuffer,
+    uvCache: ReusableBuffer,
+    resolution: number,
+): void {
+    const verticesPerSide = resolution + 1;
+    const nVertices = verticesPerSide * verticesPerSide;
+    const positions = positionCache.asFloat32(nVertices, 3);
+    const normals = normalCache.asFloat32(nVertices, 3);
+    const uvs = uvCache.asFloat32(nVertices, 2);
+    let uvf = 1 / resolution; // uv scaling factor to normalize them.
+
+    let posidx = 0; let uvidx = 0;
+    for (let i = 0; i < verticesPerSide; i++) {
+        for (let j = 0; j < verticesPerSide; j++) {
+            normals[posidx] = 0; positions[posidx++] = i;
+            normals[posidx] = 0; positions[posidx++] = j;
+            normals[posidx] = 1; positions[posidx++] = 0;
+
+            // Not sure why, but x and y must be flipped in the UV.
+            uvs[uvidx++] = uvf * j; uvs[uvidx++] = uvf * i;
+        }
+    }
+}
+
+/**
  * Computes the indices for a surface mesh by generating two triangles per quad.
  *
  * @param indexCache - Cache for storing index data.

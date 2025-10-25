@@ -1,40 +1,82 @@
 import * as THREE from 'three';
+import { NoiseFun } from '../../noise/foundations.js';
 import { Palette } from '../palettes.js';
+import { buildDisplacement } from './materials.js';
 import { paletteShader } from './shaders.js';
-import { KeyCache, Recycler } from './utils.js';
+import { Recycler, ReusableArray } from './utils.js';
+import { GeometryStyle } from './weavers.js';
 
 export type PainterStyle = 'Palette';
 interface Renderer {
     painterStyle: PainterStyle;
+    geometryStyle: GeometryStyle;
     palette: Palette;
     paletteName: string;
 }
 
 export class ReusablePainter {
-    constructor(private renderer: Renderer) { }
-    private cache = new Recycler<PainterStyle, Painter, []>({
+    constructor(
+        private renderer: Renderer,
+    ) { }
+
+    private painter = new Recycler<PainterStyle, Painter, []>({
         Palette: () => new PalettePainter(this.renderer),
     });
 
-    paint(): THREE.Material {
-        return this.cache.ensure(this.renderer.painterStyle).paint();
+    // Only MappedSurface requires post-processing and is cached to reuse the height array.
+    private _previousStyle: GeometryStyle;
+    private _postProcess: MaterialPostProcess;
+    private postProcessor(fun: NoiseFun, resolution: number): MaterialPostProcess {
+        const now = this.renderer.geometryStyle, then = this._previousStyle;
+        if (now != then || then === undefined) {
+            if (now === 'MappedSurface') // From * to MappedSurface.
+                this._postProcess = new MappedPostProcess(fun, resolution);
+            else // From MappedSurface to *.
+                this._postProcess = new NoOpPostProcess();
+        }
+        return this._postProcess;
+    }
+
+    paint(fun: NoiseFun, resolution: number): THREE.MeshStandardMaterial {
+        const res = this.painter.ensure(this.renderer.painterStyle).paint();
+        return this.postProcessor(fun, resolution).process(res);
     }
 }
 
+//////////////
+// Painters //
+
 /** Material builder. */
-export interface Painter {
-    paint(): THREE.Material;
+interface Painter {
+    paint(): THREE.MeshStandardMaterial;
+    renderer: Renderer;
 }
 
 /** Creates material from a palette, reuses the material when the palette stays the same. */
-export class PalettePainter {
-    constructor(private renderer: Renderer) { }
-    private cache = new KeyCache<string, THREE.Material>(
-        () => paletteShader(this.renderer.palette),
-    );
-
-    paint(): THREE.Material {
-        return this.cache.value(this.renderer.paletteName);
+class PalettePainter {
+    constructor(public renderer: Renderer) { }
+    paint(): THREE.MeshStandardMaterial {
+        return paletteShader(this.renderer.palette)
     }
 }
 
+//////////////////////////////
+// Material post-processing //
+
+interface MaterialPostProcess {
+    process(mesh: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial;
+}
+
+class NoOpPostProcess {
+    process(mesh: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial { return mesh }
+}
+
+class MappedPostProcess {
+    private height = new ReusableArray();
+    constructor(private fun: NoiseFun, private resolution: number) { }
+    process(mesh: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial {
+        mesh.displacementMap = buildDisplacement(this.height, this.fun, this.resolution);
+        mesh.displacementScale = 1;
+        return mesh;
+    }
+}

@@ -12,6 +12,7 @@ export class FluentGeometry {
 
     position(cache: ReusableBuffer): this { return this.set('position', cache) }
     normal(cache: ReusableBuffer): this { return this.set('normal', cache) }
+    uv(cache: ReusableBuffer): this { return this.set('uv', cache) }
 
     index(cache: ReusableBuffer): this {
         cache.buffer.needsUpdate = true;
@@ -43,13 +44,13 @@ export class Recycler<Tag extends PropertyKey, Value, Args extends any[]> extend
     ) { super() }
 }
 
-export class KeyCache<Key, Value> {
-    private last: Key; private cached: Value;
-    constructor(public refresh: () => Value) { }
-    value(key: Key): Value {
+export class KeyCache<Key, Cached> {
+    private last: Key; private cached: Cached;
+    constructor(private build: () => Cached) { }
+    value(key: Key): Cached {
         if (key !== this.last) {
             this.last = key;
-            this.cached = this.refresh();
+            this.cached = this.build();
         }
         return this.cached;
     }

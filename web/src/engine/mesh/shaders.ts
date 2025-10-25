@@ -3,12 +3,12 @@ import { shaders } from '../../shaders/strings.js';
 import { Palette } from "../palettes.js";
 
 interface ShaderInjection { decl?: string; impl?: string; }
-export function injectInShader(
-    material: THREE.Material,
+export function injectInShader<Mat extends THREE.Material>(
+    material: Mat,
     vertex: ShaderInjection,
     fragment: ShaderInjection,
     uniforms: Record<string, any>,
-): THREE.Material {
+): Mat {
     material.onBeforeCompile = shader => {
         for (const [name, value] of Object.entries(uniforms))
             shader.uniforms[name] = { value };
@@ -33,7 +33,7 @@ export function injectInShader(
  * @param palette - The color palette used for shading.
  * @returns a material configured with custom shader logic for palette-based coloring.
  */
-export function paletteShader(palette: Palette): THREE.Material {
+export function paletteShader(palette: Palette): THREE.MeshStandardMaterial {
     //TODO: Handle texture disposal.
     const paletteTex = palette2texture(palette);
 
@@ -44,7 +44,7 @@ export function paletteShader(palette: Palette): THREE.Material {
         { decl: shaders.vs_palette_decl, impl: shaders.vs_palette_impl },
         { decl: shaders.fs_palette_decl, impl: shaders.fs_palette_impl },
         { u_palette: paletteTex, u_paletteWidth: palette.size },
-    )
+    );
 }
 
 function palette2texture(palette: Palette): THREE.DataTexture {

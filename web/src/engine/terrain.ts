@@ -16,10 +16,10 @@ class TerrainProperties {
     constructor(
         private chunks: ChunkState,
         private noise: NoiseMakerI,
-        private render: RenderState,
+        public render: RenderState,
     ) {
-        this.painter = new ReusablePainter(this.render);
         this.recomputeNoise();
+        this.painter = new ReusablePainter(this.render);
     }
 
     get height(): NoiseFun { return this._height }
@@ -44,11 +44,12 @@ class TerrainProperties {
     }
 
     mesh(coords: Coordinates, weaver: ReusableWeaver): THREE.Mesh {
+        const fun = this.heightAt(coords);
         const geometry = this.render.geometry(weaver, {
-            at: this.heightAt(coords),
+            at: fun,
             nblocks: this.nblocks,
         });
-        return new THREE.Mesh(geometry, this.painter.paint());
+        return new THREE.Mesh(geometry, this.painter.paint(fun, this.nblocks));
     }
 }
 
@@ -56,24 +57,28 @@ class Chunk {
     mesh?: THREE.Mesh;
     private weaver = new ReusableWeaver();
 
-    constructor(private coords: Coordinates, private version: number) { }
+    constructor(
+        private coords: Coordinates,
+        private version: number,
+        private props: TerrainProperties,
+    ) { }
 
-    rebuild(props: TerrainProperties, version: number): THREE.Mesh | null {
+    rebuild(version: number): THREE.Mesh | null {
         if (version === this.version) return null;
         this.version = version;
         const old = this.mesh;
 
-        this.mesh = props.mesh(this.coords, this.weaver);
+        this.mesh = this.props.mesh(this.coords, this.weaver);
         this.mesh.translateX(this.coords.x * CHUNK_UNIT);
         this.mesh.translateY(this.coords.y * CHUNK_UNIT);
         this.mesh.matrixAutoUpdate = false;
-        this.rescale(props);
+        this.rescale();
 
         return old;
     }
 
-    rescale(props: TerrainProperties) {
-        this.mesh.scale.set(props.blockSize, props.blockSize, props.verticalUnit);
+    rescale() {
+        this.mesh.scale.set(this.props.blockSize, this.props.blockSize, this.props.verticalUnit);
         this.mesh.updateMatrix();
     }
 }
@@ -112,7 +117,7 @@ export class Terrain {
      * @param chunk - The chunk whose mesh needs to be updated.
      */
     private updateMesh(chunk: Chunk, version: number) {
-        const replaced = chunk.rebuild(this.props, version);
+        const replaced = chunk.rebuild(version);
         // Removing the old mesh before adding the new one seems a bit smoother.
         this.removeMesh(replaced);
         this.meshGroup.add(chunk.mesh);
@@ -166,7 +171,7 @@ export class Terrain {
 
         this.within(this.props.loadRadius, (coords: Coordinates) => {
             const id = coords.string();
-            const chunk = inactive.get(id) || new Chunk(coords, 0);
+            const chunk = inactive.get(id) || new Chunk(coords, 0, this.props);
             this.chunks.set(id, chunk);
             inactive.delete(id);
         });
@@ -204,7 +209,7 @@ export class Terrain {
     /** Resets the scale of all loaded meshes. */
     rescaleMeshes() {
         for (const [_, chunk] of this.chunks)
-            chunk.rescale(this.props);
+            chunk.rescale();
     }
 
     private within(...args: Parameters<Coordinates['spiralSquare']>) {

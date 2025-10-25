@@ -2,16 +2,17 @@ import * as THREE from 'three';
 
 import { NoiseFun } from '../../noise/foundations.js';
 import { fillBoxData } from './box.js';
-import { fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions } from './surface.js';
+import { fillPlaneVertices, fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions } from './surface.js';
 import { FluentGeometry, Recycler, ReusableArray, ReusableBuffer } from './utils.js';
 
-export type GeometryStyle = 'Surface' | 'Box';
+export type GeometryStyle = 'Surface' | 'Box' | 'MappedSurface';
 
 /** Geometry generator that reuses allocated resources when possible. */
 export class ReusableWeaver {
     cache = new Recycler<GeometryStyle, ChunkWeaver, []>({
         Surface: () => new SurfaceWeaver(),
         Box: () => new BoxWeaver(),
+        MappedSurface: () => new MappedSurfaceWeaver(),
     });
 
     /**
@@ -30,7 +31,7 @@ export class ReusableWeaver {
 /**
  * Object building a geometry from a noise function.
  */
-export interface ChunkWeaver {
+interface ChunkWeaver {
     weave(fun: NoiseFun, resolution: number): THREE.BufferGeometry;
     //TODO: dispose(): void;
 }
@@ -59,6 +60,32 @@ class SurfaceWeaver implements ChunkWeaver {
             .position(this._position)
             .normal(this._normal)
             .index(this._index);
+
+        return this._geometry.buffer;
+    }
+}
+
+/**
+ * Weaver building a flat, continuous surface geometry ready to be used for bump mapping and
+ * displacement mapping.
+ */
+class MappedSurfaceWeaver implements ChunkWeaver {
+    _geometry = new FluentGeometry();
+
+    weave(_: NoiseFun, resolution: number): THREE.BufferGeometry {
+        const positions = new ReusableBuffer();
+        const normals = new ReusableBuffer();
+        const uvs = new ReusableBuffer();
+        fillPlaneVertices(positions, normals, uvs, resolution);
+
+        const indices = new ReusableBuffer();
+        fillSurfaceIndices(indices, resolution);
+
+        this._geometry
+            .position(positions)
+            .index(indices)
+            .normal(normals)
+            .uv(uvs);
 
         return this._geometry.buffer;
     }
