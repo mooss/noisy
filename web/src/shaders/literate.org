@@ -19,7 +19,7 @@ varying float v_z;
 
 #+name: vs_palette_impl
 #+begin_src glsl
-v_z = position.z;
+v_z = transformed.z;
 #+end_src
 
 ** Fragment

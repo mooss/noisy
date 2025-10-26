@@ -15,7 +15,7 @@ export function injectInShader<Mat extends THREE.Material>(
 
         shader.vertexShader = inject(
             vertex.decl || '', vertex.impl || '',
-            shader.vertexShader, `#include <begin_vertex>`,
+            shader.vertexShader, `#include <fog_vertex>`,
         );
 
         shader.fragmentShader = inject(
