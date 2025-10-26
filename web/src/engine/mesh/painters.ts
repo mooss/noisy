@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { NoiseFun } from '../../noise/foundations.js';
 import { Palette } from '../palettes.js';
-import { buildDisplacement } from './materials.js';
+import { fillSurfaceHeights } from './materials.js';
 import { paletteShader } from './shaders.js';
 import { Recycler, ReusableArray } from './utils.js';
 import { GeometryStyle } from './weavers.js';
@@ -72,11 +72,24 @@ class NoOpPostProcess {
 }
 
 class MappedPostProcess {
-    private height = new ReusableArray();
+    private paddedHeightCache = new ReusableArray();
+    private displacementHeightCache = new ReusableArray();
     constructor(private fun: NoiseFun, private resolution: number) { }
+
     process(mesh: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial {
-        mesh.displacementMap = buildDisplacement(this.height, this.fun, this.resolution);
+        fillSurfaceHeights(
+            this.displacementHeightCache, this.paddedHeightCache,
+            this.fun, this.resolution,
+        );
+
+        mesh.displacementMap = new THREE.DataTexture(
+            this.displacementHeightCache.array,
+            this.resolution + 1, this.resolution + 1,
+            THREE.RedFormat, THREE.FloatType,
+        );
+        mesh.displacementMap.needsUpdate = true;
         mesh.displacementScale = 1;
+
         return mesh;
     }
 }

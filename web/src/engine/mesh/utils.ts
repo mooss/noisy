@@ -1,20 +1,22 @@
 import * as THREE from 'three';
 
+interface BufferContainer { buffer: THREE.BufferAttribute }
+
 /** Fluent interface for buffer geometry manipulation. */
 export class FluentGeometry {
     buffer = new THREE.BufferGeometry();
 
-    set(name: string, cache: ReusableBuffer): this {
+    set(name: string, cache: BufferContainer): this {
         cache.buffer.needsUpdate = true;
         this.buffer.setAttribute(name, cache.buffer);
         return this;
     }
 
-    position(cache: ReusableBuffer): this { return this.set('position', cache) }
-    normal(cache: ReusableBuffer): this { return this.set('normal', cache) }
-    uv(cache: ReusableBuffer): this { return this.set('uv', cache) }
+    position(cache: BufferContainer): this { return this.set('position', cache) }
+    normal(cache: BufferContainer): this { return this.set('normal', cache) }
+    uv(cache: BufferContainer): this { return this.set('uv', cache) }
 
-    index(cache: ReusableBuffer): this {
+    index(cache: BufferContainer): this {
         cache.buffer.needsUpdate = true;
         this.buffer.setIndex(cache.buffer);
         return this;
