@@ -114,12 +114,14 @@ export function fillSurfaceIndices(indexCache: ReusableBuffer, resolution: numbe
  *
  * Performance note: reducing function calls does not work at all.
  *
- * @param normalCache - Cache for storing normal data.
- * @param heights     - The heights to work on (with 1 additional cell on every side).
- * @param resolution  - Resolution of the chunk.
+ * @param normalCache  - Cache for storing normal data.
+ * @param heights      - The heights to work on (with 1 additional cell on every side).
+ * @param resolution   - Resolution of the chunk.
+ * @param includeAlpha - Whether to include a fourth channel initialized to 0.
  */
 export function fillSurfaceNormals(
-    normalCache: ReusableBuffer, heights: Float32Array, resolution: number,
+    normalCache: ReusableArray, heights: Float32Array,
+    resolution: number, includeAlpha = false,
 ): void {
     /////////////////////////
     // Setup and utilities //
@@ -127,7 +129,8 @@ export function fillSurfaceNormals(
     const side = resolution + 1;
     const paddedSide = side + 2;
     const count = side * side;
-    const normals = normalCache.asFloat32(count, 3);
+    const stride = includeAlpha ? 4 : 3;
+    const normals = normalCache.asFloat32(count * stride);
 
     // Get the index corresponding to the given coordinates (returns -1 if out-of-bounds).
     const indexOf = (x: number, y: number): number => {
@@ -144,7 +147,7 @@ export function fillSurfaceNormals(
 
     // Accumulate normal values at a given index.
     const add = (i: number, nx: number, ny: number, nz: number) => {
-        const k = i * 3;
+        const k = i * stride;
         normals[k] += nx;
         normals[k + 1] += ny;
         normals[k + 2] += nz;
@@ -186,13 +189,14 @@ export function fillSurfaceNormals(
 
     // Normalization.
     for (let i = 0; i < count; i++) {
-        const k = i * 3;
+        const k = i * stride;
         const nx = normals[k];
         const ny = normals[k + 1];
         const nz = normals[k + 2];
-        const len = Math.hypot(nx, ny, nz);
-        normals[k] = nx / len;
-        normals[k + 1] = ny / len;
-        normals[k + 2] = nz / len;
+        const fac = 1 / Math.hypot(nx, ny, nz);
+        normals[k] = nx * fac;
+        normals[k + 1] = ny * fac;
+        normals[k + 2] = nz * fac;
+        if (includeAlpha) normals[k + 3] = 1;
     }
 }

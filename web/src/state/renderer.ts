@@ -40,17 +40,13 @@ export class RenderState extends RenderStateP {
     get verticalUnit(): number {
         return (CHUNK_UNIT / CHUNK_HEIGHT_DENOMINATOR) * this.heightMultiplier;
     }
-
-    geometry(weaver: ReusableWeaver, heights: HeightGenerator): THREE.BufferGeometry {
-        return weaver.weave(this.geometryStyle, heights.at, heights.nblocks);
-    }
 }
 register('RenderState', RenderState);
 
 export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
     const geomap: Record<string, GeometryStyle> = {
-        'Surface': 'Surface',
         'Mapped surface': 'MappedSurface',
+        'Surface': 'Surface',
         'Boxes': 'Box',
     };
     root.map(state, 'geometryStyle', geomap)

@@ -27,6 +27,7 @@ class TerrainProperties {
     get nblocks() { return this.chunks.nblocks }
     get loadRadius() { return this.chunks.loadRadius }
     get radiusType() { return this.chunks.radiusType }
+    get geometryStyle() { return this.render.geometryStyle }
 
     get verticalUnit() {
         // Prevents the verticality to be exactly zero because it messes up with shading, basically
@@ -45,10 +46,7 @@ class TerrainProperties {
 
     mesh(coords: Coordinates, weaver: ReusableWeaver): THREE.Mesh {
         const fun = this.heightAt(coords);
-        const geometry = this.render.geometry(weaver, {
-            at: fun,
-            nblocks: this.nblocks,
-        });
+        const geometry = weaver.weave(this.geometryStyle, fun, this.nblocks);
         return new THREE.Mesh(geometry, this.painter.paint(fun, this.nblocks));
     }
 }

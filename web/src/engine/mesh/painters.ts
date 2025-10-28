@@ -3,6 +3,7 @@ import { NoiseFun } from '../../noise/foundations.js';
 import { Palette } from '../palettes.js';
 import { fillSurfaceHeights } from './materials.js';
 import { paletteShader } from './shaders.js';
+import { fillSurfaceNormals } from './surface.js';
 import { Recycler, ReusableArray } from './utils.js';
 import { GeometryStyle } from './weavers.js';
 
@@ -74,6 +75,7 @@ class NoOpPostProcess {
 class MappedPostProcess {
     private paddedHeightCache = new ReusableArray();
     private displacementHeightCache = new ReusableArray();
+    private normalCache = new ReusableArray();
     constructor(private fun: NoiseFun, private resolution: number) { }
 
     process(mesh: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial {
@@ -81,6 +83,10 @@ class MappedPostProcess {
             this.displacementHeightCache, this.paddedHeightCache,
             this.fun, this.resolution,
         );
+        fillSurfaceNormals(
+            this.normalCache, this.paddedHeightCache.array as Float32Array,
+            this.resolution, true,
+        ); //NOTE: normals appear to be slightly shifted, should require some adjustment.
 
         mesh.displacementMap = new THREE.DataTexture(
             this.displacementHeightCache.array,
@@ -89,6 +95,23 @@ class MappedPostProcess {
         );
         mesh.displacementMap.needsUpdate = true;
         mesh.displacementScale = 1;
+
+        // Normal map expects normals in the [0, 1] range instead of [-1, 1].
+        const encoded = new Float32Array(this.normalCache.array);
+        for (let i = 0; i < encoded.length; i += 4) {
+            encoded[i] = (encoded[i] * 0.5) + 0.5;
+            encoded[i + 1] = (encoded[i + 1] * 0.5) + 0.5;
+            // Z can be skipped for some reason that I don't understand.
+        }
+
+        mesh.normalMap = new THREE.DataTexture(
+            encoded,
+            this.resolution + 1, this.resolution + 1,
+            THREE.RGBAFormat, THREE.FloatType,
+        );
+        mesh.normalMap.needsUpdate = true;
+        mesh.normalMapType = THREE.ObjectSpaceNormalMap;
+        mesh.normalMap.magFilter = THREE.LinearFilter;
 
         return mesh;
     }

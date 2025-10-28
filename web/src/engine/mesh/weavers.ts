@@ -42,7 +42,7 @@ interface ChunkWeaver {
 class SurfaceWeaver implements ChunkWeaver {
     _geometry = new FluentGeometry();
     _position = new ReusableBuffer();
-    _normal = new ReusableBuffer();
+    _normal = new ReusableArray();
     _index = new ReusableBuffer();
     _height = new ReusableArray();
 
@@ -58,7 +58,7 @@ class SurfaceWeaver implements ChunkWeaver {
 
         this._geometry
             .position(this._position)
-            .normal(this._normal)
+            .normal({ buffer: new THREE.BufferAttribute(this._normal.array, 3) })
             .index(this._index);
 
         return this._geometry.buffer;
@@ -71,8 +71,15 @@ class SurfaceWeaver implements ChunkWeaver {
  */
 class MappedSurfaceWeaver implements ChunkWeaver {
     _geometry = new FluentGeometry();
+    _lastResolution: number;
 
     weave(_: NoiseFun, resolution: number): THREE.BufferGeometry {
+        if (resolution !== this._lastResolution) this.rebuild(resolution);
+        return this._geometry.buffer;
+    }
+
+    private rebuild(resolution: number) {
+        this._lastResolution = resolution;
         const positions = new ReusableBuffer();
         const normals = new ReusableBuffer();
         const uvs = new ReusableBuffer();
@@ -86,8 +93,6 @@ class MappedSurfaceWeaver implements ChunkWeaver {
             .index(indices)
             .normal(normals)
             .uv(uvs);
-
-        return this._geometry.buffer;
     }
 }
 
