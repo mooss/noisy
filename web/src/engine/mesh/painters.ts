@@ -12,7 +12,6 @@ interface Renderer {
     painterStyle: PainterStyle;
     geometryStyle: GeometryStyle;
     palette: Palette;
-    paletteName: string;
 }
 
 export class ReusablePainter {

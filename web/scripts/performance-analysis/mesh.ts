@@ -1,6 +1,7 @@
+import { Mesh } from 'three';
 import { Bench, TaskResult } from 'tinybench';
-import { CachedMesher } from '../../src/engine/mesh/mesher.js';
-import { paletteShade } from '../../src/engine/mesh/shaders.js';
+import { PainterStyle, ReusablePainter } from '../../src/engine/mesh/painters.js';
+import { GeometryStyle, ReusableWeaver } from '../../src/engine/mesh/weavers.js';
 import { palettes } from '../../src/engine/palettes.js';
 import { Layered, Simplex } from '../../src/noise/algorithms.js';
 
@@ -18,15 +19,18 @@ const noise = new Layered({
     sampling: { size: 30, threshold: 2.5, fundamental: 3 },
 });
 
-const mesher = new CachedMesher();
+const painterStyle: PainterStyle = 'Palette';
+const geometryStyle: GeometryStyle = 'Surface';
+const palette = palettes['Bright terrain'];
 
-const mkmesh = (side: number) => {
-    (globalThis as any).sink = mesher.weave(
-        'Surface',
-        noise.normalised(.01, 1),
-        side,
-        paletteShade(palettes['Bright terrain']),
-    );
+const weaver = new ReusableWeaver();
+const painter = new ReusablePainter({ painterStyle, geometryStyle, palette });
+
+const mkmesh = (resolution: number) => {
+    const fun = noise.normalised(.01, 1);
+    const geometry = weaver.weave(geometryStyle, fun, resolution);
+    const material = painter.paint(fun, resolution);
+    (globalThis as any).sink = new Mesh(geometry, material);
 };
 
 function throughput(res: TaskResult) {
@@ -41,7 +45,7 @@ function throughput(res: TaskResult) {
     };
 }
 
-console.log('Throughput (iterations per second) of `createSurfaceMesh`.')
+console.log('Throughput (iterations per second) of mesh creation.')
 console.log('| Run | Mean         | Median   | Samples |');
 console.log('|-----|--------------|----------|---------|');
 

@@ -12,7 +12,6 @@ function setup() {
 function profile() {
     node --cpu-prof --cpu-prof-interval=100 --cpu-prof-dir=$TEMPDIR $TEMPDIR/mesh.js
     PROFILE=$TEMPDIR/$(ls $TEMPDIR | grep -E '.cpuprofile' | head -n1)
-    python functime.py --func createSurfaceMesh $PROFILE
 }
 
 function compile() {
