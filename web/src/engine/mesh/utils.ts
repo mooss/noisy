@@ -61,7 +61,7 @@ export class KeyCache<Key, Cached> {
 /////////////
 // Storage //
 
-type ArrayTag = 'Int8Array' | 'Uint8Array' | 'Uint16Array' | 'Uint32Array' | 'Float32Array';
+type ArrayTag = 'Int8Array' | 'Int16Array' | 'Uint8Array' | 'Uint16Array' | 'Uint32Array' | 'Float32Array';
 function tag2bytes(tag: ArrayTag): number {
     return { 'Int8Array': 1, 'Uint16Array': 2, 'Uint32Array': 4, 'Float32Array': 4 }[tag] || 0;
 }
@@ -70,9 +70,11 @@ export class ReusableArray extends Reusable<ArrayTag, THREE.TypedArray, [number]
     reusable(size: number): boolean { return this.value.length === size }
     allocators = {
         Int8Array: (size: number) => new Int8Array(size),
+        Int16Array: (size: number) => new Int16Array(size),
         Uint8Array: (size: number) => new Uint8Array(size),
         Uint16Array: (size: number) => new Uint16Array(size),
         Uint32Array: (size: number) => new Uint32Array(size),
+        Float16Array: (size: number) => new Float16Array(size),
         Float32Array: (size: number) => new Float32Array(size),
     }
 
@@ -86,7 +88,9 @@ export class ReusableArray extends Reusable<ArrayTag, THREE.TypedArray, [number]
     }
 
     asInt8(size: number): Int8Array { return this.ensure('Int8Array', size) as Int8Array }
+    asInt16(size: number): Int16Array { return this.ensure('Int16Array', size) as Int16Array }
     asUint8(size: number): Uint8Array { return this.ensure('Uint8Array', size) as Uint8Array }
+    asUint16(size: number): Uint16Array { return this.ensure('Uint16Array', size) as Uint16Array }
     get array(): THREE.TypedArray { return this.value }
 
     bytes(): number {

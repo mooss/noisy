@@ -12,6 +12,7 @@ import { ReusableWeaver } from './mesh/weavers.js';
 class TerrainProperties {
     private _height: NoiseFun;
     private painter: ReusablePainter;
+    private weaver = new ReusableWeaver();
 
     constructor(
         private chunks: ChunkState,
