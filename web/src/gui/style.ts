@@ -160,9 +160,9 @@ export class Appearance {
         border: '#aaaaaa',
         input: '#ffffff',
         inputBg: '#000000',
-        label: '#ffffff',
-        param: '#ffffff',
-        text: '#ffffff',
+        label: '#dddddd',
+        param: '#dddddd',
+        text: '#eeeeee',
     };
 
     border(color = this.colors.border) { return `2px solid ${color}` }
@@ -176,6 +176,7 @@ export class Appearance {
 
         this.button = this.mk('button', {
             ...base,
+            fontWeight: 500,
             backgroundColor: 'transparent',
             border: this.border(),
             color: this.colors.label,
@@ -200,6 +201,7 @@ export class Appearance {
 
         this.cardButton = this.mk('card-button', {
             ...base,
+            fontWeight: 500,
             padding: '0 2px',
             textAlign: 'center',
             cursor: 'pointer',
@@ -249,7 +251,7 @@ export class Appearance {
 
         this.collapsibleBar = this.mk('collapsible-bar', {
             height: '8px',
-            width: '100%',
+            margin: '2px 2px 2px 2px',
             cursor: 'pointer',
             backgroundColor: this.colors.border,
             userSelect: 'none',
@@ -311,7 +313,7 @@ export class Appearance {
         });
         this.folderSummary = (nested: boolean) => this.mk(`folder-summary-${nested ? 'nested' : 'toplevel'}`, {
             cursor: 'pointer',
-            fontWeight: 400,
+            fontWeight: 600,
             padding: '1px 0',
             marginLeft: nested ? '-6px' : '4px',
             paddingLeft: nested ? '6px' : '0',
@@ -340,7 +342,7 @@ export class Appearance {
             zIndex: '1000',
             width: '245px',
             maxHeight: '90vh',
-            backgroundColor: transparent(this.colors.background, .8),
+            backgroundColor: transparent(this.colors.background, .85),
             color: this.colors.text,
             borderRadius: '0px',
             overflowY: 'auto',
