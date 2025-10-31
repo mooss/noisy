@@ -55,6 +55,15 @@ export class KeyCache<Key, Value> {
     }
 }
 
+export function once<Value>(fun: () => Value ): () => Value {
+    let value: Value;
+    let called = false;
+    return () => {
+        if (!called) value = fun();
+        return value;
+    }
+}
+
 /////////////
 // Storage //
 

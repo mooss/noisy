@@ -19,7 +19,6 @@ class TerrainProperties {
         private render: RenderState,
     ) {
         this.painter = new ReusablePainter(this.render);
-        this.recomputeNoise();
     }
 
     get height(): NoiseFun { return this._height }

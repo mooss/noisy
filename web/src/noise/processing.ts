@@ -1,4 +1,5 @@
 import { CHUNK_HEIGHT_DENOMINATOR } from "../../config/constants.js";
+import { once } from "../engine/mesh/utils.js";
 import { fracpart, lerp, smoothunit } from "../maths/maths.js";
 import { ChunkState } from "../state/chunk.js";
 import { register } from "../state/state.js";
@@ -75,7 +76,10 @@ interface NoisyTerracingP {
 }
 export class NoisyTerracing extends NoiseWrapper<NoisyTerracingP> {
     get class(): NoiseClass { return 'NoisyTerracing' }
+
+    private ensureComputed = once(() => this.p.terracer.recompute());
     make(): NoiseFun {
+        this.ensureComputed();
         const fun = this.wrapped.make();
         const min = this.p.min; const max = this.p.max;
         if (min == 0 && max == 0) return fun;

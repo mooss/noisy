@@ -99,11 +99,6 @@ export class LayeredI<Noise extends NoiseMakerI> {
 export class Layered<Noise extends NoiseMakerI> extends NoiseMakerBase<LayeredI<Noise>> {
     get class(): NoiseClass { return 'Layered' };
 
-    constructor(params: LayeredI<Noise>) {
-        super(params);
-        this.recompute(); // Callers rely on the bounds being initialized.
-    }
-
     bounds: bounds;
     get low(): number { return this.bounds.low }
     get high(): number { return this.bounds.high }
