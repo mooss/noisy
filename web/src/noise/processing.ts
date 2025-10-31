@@ -1,5 +1,4 @@
 import { CHUNK_HEIGHT_DENOMINATOR } from "../../config/constants.js";
-import { once } from "../engine/mesh/utils.js";
 import { fracpart, lerp, smoothunit } from "../maths/maths.js";
 import { ChunkState } from "../state/chunk.js";
 import { register } from "../state/state.js";
@@ -62,38 +61,6 @@ export class VoxelTerracing extends NoiseWrapper<VoxelTerracingP> {
     }
 }
 register('VoxelTerracing', VoxelTerracing);
-
-//TIP: terracing_noisy Use a different amount of terraces in different places. \nCreates a stepped and wobbly surface that increases in wobbleliness when the difference between the minimum and the maximum of terraces increases.
-interface NoisyTerracingP {
-    //TIP: noisy_terrace_min Minimum number of terraces used in the terrain. \nMore terraces will create smoother terrain.
-    min: number;
-
-    //TIP: noisy_terrace_max Maximum number of terraces used in the terrain. \nMore terraces will create smoother terrain.
-    max: number;
-
-    //TIP: noisy_terracer Noise dictating how many terraces will be used at a given point, normalized between min and max.
-    terracer: NoiseMakerI;
-}
-export class NoisyTerracing extends NoiseWrapper<NoisyTerracingP> {
-    get class(): NoiseClass { return 'NoisyTerracing' }
-
-    private ensureComputed = once(() => this.p.terracer.recompute());
-    make(): NoiseFun {
-        this.ensureComputed();
-        const fun = this.wrapped.make();
-        const min = this.p.min; const max = this.p.max;
-        if (min == 0 && max == 0) return fun;
-
-        let interval: (x: number, y: number) => number;
-        interval = () => min;
-        if (max > min) interval = this.p.terracer.normalised(min, max);
-
-        return (x, y) => {
-            return terrace(fun(x, y), interval(x, y));
-        };
-    }
-}
-register('NoisyTerracing', NoisyTerracing);
 
 //TIP: warping Distorts the coordinates to hide straight lines in the terrain, introducing vortex-like perturbations.
 interface WarpingP {

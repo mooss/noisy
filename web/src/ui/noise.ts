@@ -64,13 +64,6 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
                 noiseUI_impl(pipe, root, cb);
             }
             return
-        case 'NoisyTerracing':
-            root.range(noise.p, 'min', 0, 100, 1)
-                .label('Min terraces').tooltip(tips.noisy_terrace_min).onInput(cb);
-            root.range(noise.p, 'max', 0, 100, 1)
-                .label('Max terraces').tooltip(tips.noisy_terrace_max).onInput(cb);
-            noiseUI_impl(noise.p.terracer, root.folder('Noise').tooltip(tips.noisy_terracer), cb);
-            return noiseUI_impl(noise.p.wrapped, root, cb);
         case 'Clustering':
             const tilef = root.folder('Clustering').tooltip(tips.clustering);
             if (!noise.p.enabled) tilef.close();

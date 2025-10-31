@@ -8,8 +8,8 @@ import { rangeMapper } from "../maths/maths.js";
 export type NoiseClass =
     // Noise functions.
     'Simplex' | 'Ridge' | 'Layered' | 'ContinentalMix'
-    // Noise processing.
-    | 'Terracing' | 'NoisyTerracing' | 'VoxelTerracing'
+    // Terracing.
+    | 'Terracing' | 'VoxelTerracing'
     // Tiling.
     | 'QuadTiling' | 'SineTiling' | 'MirroredTiling'
     // Other processing algorithms.

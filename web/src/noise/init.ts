@@ -3,7 +3,7 @@ import { clone } from "../utils/objects.js";
 import { ContinentalMix, Layered, Ridge, Simplex } from "./algorithms.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
-import { Clustering, IdentityWrapper, MirroredTiling, NoisePipeline, NoisyTerracing, PipelinePicker, QuadTiling, SineTiling, Terracing, VoxelTerracing, Warping } from "./processing.js";
+import { Clustering, IdentityWrapper, MirroredTiling, NoisePipeline, PipelinePicker, QuadTiling, SineTiling, Terracing, VoxelTerracing, Warping } from "./processing.js";
 
 export function noiseAlgorithms(chunks: ChunkState) {
     const f = {
@@ -68,19 +68,6 @@ export function noiseAlgorithms(chunks: ChunkState) {
         algorithms: {
             'Constant': new Terracing({ steps: 0 }),
             'Voxel': new VoxelTerracing({ chunks }),
-            'Noisy': new NoisyTerracing({
-                min: 40, max: 50,
-                terracer: new Layered({
-                    noise: new Simplex(c(f.sbase)),
-                    layers: {
-                        fundamental: 3,
-                        octaves: 1,
-                        persistence: .65,
-                        lacunarity: 1.5,
-                    },
-                    sampling: c(f.sampling),
-                }),
-            }),
         },
         current: 'Constant',
         tag: 'Terracing',
@@ -90,7 +77,7 @@ export function noiseAlgorithms(chunks: ChunkState) {
         algorithms: {
             'None': new IdentityWrapper({}),
             'Quad': new QuadTiling({}),
-            'Mirrored': new MirroredTiling({normalizeX: false, normalizeY: false}),
+            'Mirrored': new MirroredTiling({ normalizeX: false, normalizeY: false }),
             'Sine': new SineTiling({}),
         },
         current: 'None',
