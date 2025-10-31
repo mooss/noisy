@@ -1,79 +1,12 @@
 import * as THREE from 'three';
-import { CHUNK_UNIT } from '../../config/constants.js';
-import { Coordinates, Position } from '../maths/coordinates.js';
-import { vector2 } from '../maths/maths.js';
-import { NoiseFun, NoiseMakerI } from '../noise/foundations.js';
-import { ChunkState } from '../state/chunk.js';
-import { RenderState } from '../state/renderer.js';
-import { race } from '../utils/async.js';
-import { ReusablePainter } from './mesh/painters.js';
-import { ReusableWeaver } from './mesh/weavers.js';
-
-class TerrainProperties {
-    private _height: NoiseFun;
-    private painter: ReusablePainter;
-
-    constructor(
-        private chunks: ChunkState,
-        private noise: NoiseMakerI,
-        private render: RenderState,
-    ) {
-        this.painter = new ReusablePainter(this.render);
-    }
-
-    get height(): NoiseFun { return this._height }
-    get blockSize() { return this.chunks.blockSize }
-    get nblocks() { return this.chunks.nblocks }
-    get loadRadius() { return this.chunks.loadRadius }
-    get radiusType() { return this.chunks.radiusType }
-    get geometryStyle() { return this.render.geometryStyle }
-
-    get verticalUnit() {
-        // Prevents the verticality to be exactly zero because it messes up with shading, basically
-        // negating directional light.
-        return Math.max(this.render.verticalUnit, .0000001);
-    }
-
-    heightAt(chunkCoords: vector2): (x: number, y: number) => number {
-        return (x, y) => this.height(x + chunkCoords.x, y + chunkCoords.y);
-    }
-
-    recomputeNoise() {
-        this.noise.recompute();
-        this._height = this.noise.normalised(.01, 1);
-    }
-
-    mesh(coords: Coordinates, weaver: ReusableWeaver): THREE.Mesh {
-        const geometry = weaver.weave(this.geometryStyle, this.heightAt(coords), this.nblocks);
-        return new THREE.Mesh(geometry, this.painter.paint());
-    }
-}
-
-class Chunk {
-    mesh?: THREE.Mesh;
-    private weaver = new ReusableWeaver();
-
-    constructor(private coords: Coordinates, private version: number) { }
-
-    rebuild(props: TerrainProperties, version: number): THREE.Mesh | null {
-        if (version === this.version) return null;
-        this.version = version;
-        const old = this.mesh;
-
-        this.mesh = props.mesh(this.coords, this.weaver);
-        this.mesh.translateX(this.coords.x * CHUNK_UNIT);
-        this.mesh.translateY(this.coords.y * CHUNK_UNIT);
-        this.mesh.matrixAutoUpdate = false;
-        this.rescale(props);
-
-        return old;
-    }
-
-    rescale(props: TerrainProperties) {
-        this.mesh.scale.set(props.blockSize, props.blockSize, props.verticalUnit);
-        this.mesh.updateMatrix();
-    }
-}
+import { Coordinates, Position } from '../../maths/coordinates.js';
+import { vector2 } from '../../maths/maths.js';
+import { NoiseMakerI } from '../../noise/foundations.js';
+import { ChunkState } from '../../state/chunk.js';
+import { RenderState } from '../../state/renderer.js';
+import { race } from '../../utils/async.js';
+import { TerrainProperties } from './properties.js';
+import { Chunk } from './chunks.js';
 
 /** Dynamically manages terrain as a collection of chunks. */
 export class Terrain {

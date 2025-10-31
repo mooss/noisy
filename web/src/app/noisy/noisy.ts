@@ -4,7 +4,7 @@ import { lexon64 } from '../../encoding/codecs.js';
 import { Codec } from '../../encoding/encoding.js';
 import { encrec } from '../../encoding/self-encoder.js';
 import { Renderer } from '../../engine/renderer/renderer.js';
-import { Terrain } from '../../engine/terrain.js';
+import { Terrain } from '../../engine/terrain/terrain.js';
 import { CheckBar } from '../../gui/components/widget.js';
 import { Window } from '../../gui/components/window.js';
 import { GUI, Panel, VerticalStack } from '../../gui/gui.js';
