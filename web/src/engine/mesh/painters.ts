@@ -7,7 +7,6 @@ export type PainterStyle = 'Palette';
 interface Renderer {
     painterStyle: PainterStyle;
     palette: Palette;
-    paletteName: string;
 }
 
 export class ReusablePainter {

@@ -325,7 +325,7 @@ export class Appearance {
         });
         this.graphCanvas = this.mk('graph-canvas', {
             width: '100%',
-            height: '50px',
+            height: '100px',
             backgroundColor: this.colors.inputBg,
         });
         this.graphLabel = this.mk('graph-label', {
