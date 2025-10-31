@@ -1,12 +1,13 @@
 import * as THREE from 'three';
+import { KeyCache, Recycler } from '../../utils/reuse.js';
 import { Palette } from '../palettes.js';
 import { paletteShader } from './shaders.js';
-import { KeyCache, Recycler } from './utils.js';
 
 export type PainterStyle = 'Palette';
 interface Renderer {
     painterStyle: PainterStyle;
     palette: Palette;
+    paletteName: string;
 }
 
 export class ReusablePainter {

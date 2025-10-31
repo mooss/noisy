@@ -1,9 +1,10 @@
 import * as THREE from 'three';
 
 import { NoiseFun } from '../../noise/foundations.js';
+import { Recycler } from '../../utils/reuse.js';
 import { fillBoxData } from './box.js';
 import { fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions } from './surface.js';
-import { FluentGeometry, Recycler, ReusableArray, ReusableBuffer } from './utils.js';
+import { FluentGeometry, ReusableArray, ReusableBuffer } from './utils.js';
 
 export type GeometryStyle = 'Surface' | 'Box';
 
