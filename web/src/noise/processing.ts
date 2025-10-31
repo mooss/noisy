@@ -181,6 +181,19 @@ export class QuadTiling extends NoiseWrapper {
             return lerp(tophoz, bottomhoz, yfactor);
         }
     }
+
+    // Those high and low values were obtained experimentally, they are enough to somewhat
+    // consistently "stabilize" the height, but their reliability changes depending on the
+    // characteristics of the wrapped algorithm.
+    // Simplex is too low, whereas continental mix is too high.
+    //
+    // The only reason why they work right now is that the wrapped noises (comix, simplex and ridge)
+    // already (somewhat) guarantee being between 0 and 1.
+    // This general unreliability might be avoided by simply always statistically computing the
+    // bounds at the top level instead of trying to propagate the computations down the chain of
+    // noises.
+    get low(): number { return this.wrapped.low + .15 }
+    get high(): number { return this.wrapped.high - .1 }
 }
 register('QuadTiling', QuadTiling);
 
