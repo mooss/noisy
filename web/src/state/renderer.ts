@@ -40,10 +40,6 @@ export class RenderState extends RenderStateP {
     get verticalUnit(): number {
         return (CHUNK_UNIT / CHUNK_HEIGHT_DENOMINATOR) * this.heightMultiplier;
     }
-
-    geometry(weaver: ReusableWeaver, heights: HeightGenerator): THREE.BufferGeometry {
-        return weaver.weave(this.geometryStyle, heights.at, heights.nblocks);
-    }
 }
 register('RenderState', RenderState);
 
