@@ -1,29 +1,9 @@
 import { createNoise2D } from "simplex-noise";
 import { createLCG, highMix, mkRidger } from "../maths/rng.js";
-import { numStats } from "../maths/stats.js";
 import { register } from "../state/state.js";
 import { clone } from "../utils/objects.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
-
-//////////////
-// Sampling //
-
-interface noiseStats { low: number; high: number; }
-
-interface NoiseSamplerP {
-    // Number of points to sample on both the x and y dimensions.
-    size: number;
-    // Z-score threshold to identify data outliers.
-    threshold: number;
-}
-
-function noiseStats(gen: NoiseFun, sampling: NoiseSamplerP): noiseStats {
-    const values = [];
-    for (let x = 0; x < sampling.size; ++x)
-        for (let y = 0; y < sampling.size; ++y)
-            values.push(gen(x, y));
-    return numStats(values).outlierBounds(sampling.threshold);
-}
+import { NoiseSamplerP, bounds, computeBounds } from "./sampling.js";
 
 ///////////
 // Noise //
@@ -118,22 +98,23 @@ export class LayeredI<Noise extends NoiseMakerI> {
 }
 export class Layered<Noise extends NoiseMakerI> extends NoiseMakerBase<LayeredI<Noise>> {
     get class(): NoiseClass { return 'Layered' };
-    bounds: noiseStats;
 
     constructor(params: LayeredI<Noise>) {
         super(params);
         this.recompute(); // Callers rely on the bounds being initialized.
     }
 
+    bounds: bounds;
     get low(): number { return this.bounds.low }
     get high(): number { return this.bounds.high }
-    recompute(): void { this.bounds = noiseStats(this.sampler(), this.p.sampling) }
-    make(): NoiseFun { return layerNoise(this.p.noise.make(), this.p.layers) }
+    recompute(): void { this.bounds = computeBounds(this.sampler(), this.p.sampling) }
     private sampler(): NoiseFun {
         const layers = clone(this.p.layers);
         layers.fundamental = this.p.sampling.fundamental;
         return layerNoise(this.p.noise.make(), layers);
     }
+
+    make(): NoiseFun { return layerNoise(this.p.noise.make(), this.p.layers) }
 }
 register('Layered', Layered<any>);
 
