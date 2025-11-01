@@ -175,7 +175,7 @@ export class Registry<Type> extends CodecABC<any, any> {
  */
 class Aliaser {
     private seen = new Set();
-    private gen = mapit((x) => x.join(''), combinations(LATIN_ALPHABET));
+    private gen = mapit(combinations(LATIN_ALPHABET), (x) => x.join(''));
     aliases = new Map<any, string>();
 
     /**

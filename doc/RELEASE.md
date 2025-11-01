@@ -11,6 +11,7 @@ This is done in the project [`mooss.github.io`](https://github.com/mooss/mooss.g
 1. Use `make noisy`  (requires to setup a link to noisy).
 2. If pertinent, prepare new scene in `noisy/${version_name}/scenes` (screenshot, URL and JSON, see previous published versions).
    It's not always necessary to publish whole new scenes, old scenes can be kept if they can be recreated faithfully in the new version.
+3. Make the redirection in `//noisy/index.html` point at the released version.
 
 ## Update the [README examples](../README.md#examples-click-to-open-scene)
 

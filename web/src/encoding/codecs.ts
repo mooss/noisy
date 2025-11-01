@@ -107,7 +107,7 @@ export class Lexicon extends CodecABC<any, any> {
         const sizeSortedNodes = sortedMap(fp, ([_0, lv], [_1, rv]) => rv.size * rv.count - lv.size * lv.count);
 
         // Combinations on the alphabet (e.g. for latin alphabet [a, b, c, ..., aa, ab, ...]).
-        const combos = mapit((x) => x.join(''), combinations(alphabet));
+        const combos = mapit(combinations(alphabet), (x) => x.join(''));
 
         for (const [term] of sizeSortedNodes) {
             const compressed = combos.next().value;

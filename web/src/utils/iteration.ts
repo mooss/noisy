@@ -24,7 +24,7 @@ function* combinations_impl<T>(alphabet: Array<T>, acc: Array<T>): Generator<Arr
     }
 }
 
-export function* mapit<From, To>(fun: (x: From) => To, source: Iterable<From>): Generator<To> {
+export function* mapit<From, To>(source: Iterable<From>, fun: (x: From) => To): Generator<To> {
     for (const value of source)
         yield fun(value);
 }

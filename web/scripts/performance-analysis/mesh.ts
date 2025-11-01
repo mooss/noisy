@@ -1,6 +1,7 @@
+import * as THREE from 'three';
 import { Bench, TaskResult } from 'tinybench';
-import { CachedMesher } from '../../src/engine/mesh/mesher.js';
-import { paletteShade } from '../../src/engine/mesh/shaders.js';
+import { PainterStyle, ReusablePainter } from '../../src/engine/mesh/painters.js';
+import { ReusableWeaver } from '../../src/engine/mesh/weavers.js';
 import { palettes } from '../../src/engine/palettes.js';
 import { Layered, Simplex } from '../../src/noise/algorithms.js';
 
@@ -17,16 +18,22 @@ const noise = new Layered({
     },
     sampling: { size: 30, threshold: 2.5, fundamental: 3 },
 });
+noise.recompute();
 
-const mesher = new CachedMesher();
+const mesher = new ReusableWeaver();
+const painterStyle: PainterStyle = 'Palette';
+const paletteName = 'Bright terrain';
+const palette = palettes[paletteName];
+const painter = new ReusablePainter({ paletteName, painterStyle, palette });
 
 const mkmesh = (side: number) => {
-    (globalThis as any).sink = mesher.weave(
+    const geometry = mesher.weave(
         'Surface',
         noise.normalised(.01, 1),
         side,
-        paletteShade(palettes['Bright terrain']),
     );
+    const material = painter.paint();
+    (globalThis as any).sink = new THREE.Mesh(geometry, material);
 };
 
 function throughput(res: TaskResult) {
@@ -52,7 +59,8 @@ const b = new Bench({
 b.add('mesh128', () => mkmesh(128));
 
 for (let i = 1; i <= 5; i++) {
-    const res = b.runSync()[0].result;
+    const task = b.runSync()[0];
+    const res = task.result;
     const thp = throughput(res);
     console.log(`| ${i.toString().padStart(3)} | ${thp.mean.toString().padStart(12)} | ${thp.med.toString().padStart(8)} | ${thp.samples.toString().padStart(7)} |`);
 }
