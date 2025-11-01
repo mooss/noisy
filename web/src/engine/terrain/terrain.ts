@@ -63,6 +63,11 @@ export class Terrain {
     // Chunk updates //
 
     private updateController = new AbortController();
+    private lockUpdate(): AbortSignal {
+        this.updateController.abort();
+        this.updateController = new AbortController();
+        return this.updateController.signal;
+    }
 
     // Version to which the chunks must be updated.
     private version = 0;
@@ -75,18 +80,12 @@ export class Terrain {
      */
     async update() {
         // Register that all chunks must be reloaded.
-        // This is pertinent in case this update gets interrupted by a recenter.
+        // This is important in case this update gets interrupted by a the avatar moving to a new
+        // chunk.
         this.version++;
 
         this.props.recomputeNoise();
-        this.updateController.abort();
-        this.updateController = new AbortController();
-        const signal = this.updateController.signal;
-
-        for (const [_, chunk] of this.chunks) {
-            // Launch updates in the background.
-            race(signal, () => this.updateMesh(chunk, this.version));
-        }
+        this.updateAllChunks(this.lockUpdate());
     }
 
     /** Loads all the chunks in the load radius that are not yet loaded. */
@@ -105,14 +104,15 @@ export class Terrain {
         inactive.forEach(chunk => this.removeMesh(chunk.mesh));
         inactive.clear();
 
-        this.updateController.abort();
-        this.updateController = new AbortController();
-        const signal = this.updateController.signal;
+        // (Re)load missing or outdated chunks.
+        this.updateAllChunks(this.lockUpdate());
+    }
 
-        // (Re)load missing chunks.
-        // The pre-existing chunks will only be reloaded if they have an anterior version.
-        for (const [_, chk] of this.chunks) {
-            race(signal, () => this.updateMesh(chk, this.version));
+    // Update all the outdated chunks (those having an anterior version).
+    private async updateAllChunks(signal: AbortSignal) {
+        // const signal = this.lockUpdate();
+        for (const [_, chunk] of this.chunks) {
+            race(signal, () => this.updateMesh(chunk, this.version));
         }
     }
 
