@@ -129,6 +129,12 @@ export class Terrain {
         for (const [_, chunk] of this.chunks) {
             race(signal, () => this.updateMesh(chunk, this.version));
         }
+
+        // Free up leftover chunks once everything has been updated.
+        // This will only do something when reducing the load radius, and there is no point keeping
+        // chunks around for this niche usecase.
+        if (!signal.aborted)
+            this.chunkPool.flush();
     }
 
     private center: Coordinates = undefined;

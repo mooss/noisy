@@ -20,14 +20,20 @@ export class Chunk {
         if (version === this.version) return null;
         this.version = version;
 
+        // It should be possible to just modify the buffer attributes in place, it would require
+        // some modification in the weaver interface to signal that buffers can be reused.
+        disposeOfMesh(this.mesh);
+
         const geometry = props.weave(this.coords, this.weaver);
         const material = props.paint();
+
         const mesh = this.mesh || new THREE.Mesh();
+        this.mesh = mesh;
         mesh.geometry = geometry;
         mesh.material = material;
         mesh.matrixAutoUpdate = false;
         mesh.position.set(this.coords.x * CHUNK_UNIT, this.coords.y * CHUNK_UNIT, 0);
-        this.mesh = mesh;
+
         this.rescale(props);
     }
 
@@ -35,6 +41,11 @@ export class Chunk {
         this.mesh?.scale.set(props.blockSize, props.blockSize, props.verticalUnit);
         this.mesh?.updateMatrix();
     }
+}
+
+function disposeOfMesh(mesh?: THREE.Mesh) {
+    mesh?.geometry.dispose();
+    (mesh?.material as any)?.dispose?.();
 }
 
 ///////////
@@ -50,4 +61,6 @@ export class ChunkPool {
     }
 
     release(chunk: Chunk) { this.pool.release(chunk) }
+
+    flush() { this.pool.flush((chunk) => disposeOfMesh(chunk.mesh)) }
 }
