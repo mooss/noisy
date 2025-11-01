@@ -31,11 +31,11 @@ export class Recycler<Tag extends PropertyKey, Value, Args extends any[]> extend
 
 export class KeyCache<Key, Value> {
     private last: Key; private cached: Value;
-    constructor(public refresh: () => Value) { }
+    constructor(public build: () => Value) { }
     value(key: Key): Value {
         if (key !== this.last) {
             this.last = key;
-            this.cached = this.refresh();
+            this.cached = this.build();
         }
         return this.cached;
     }
@@ -47,5 +47,21 @@ export function once<Value>(fun: () => Value): () => Value {
     return () => {
         if (!called) cache = fun();
         return cache;
+    }
+}
+
+//////////
+// Pool //
+
+export class Pool<Value> {
+    private pool: Value[] = [];
+    constructor(private build: () => Value) { }
+    acquire(): Value { return this.pool.pop() || this.build() }
+    release(item: Value) { this.pool.push(item) }
+
+    flush(dispose: (v: Value) => void = () => { }) {
+        for (const value of this.pool)
+            dispose(value);
+        this.pool = [];
     }
 }

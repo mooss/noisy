@@ -5,8 +5,8 @@ import { NoiseMakerI } from '../../noise/foundations.js';
 import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
 import { race } from '../../utils/async.js';
+import { Chunk, ChunkPool } from './chunks.js';
 import { TerrainProperties } from './properties.js';
-import { Chunk } from './chunks.js';
 
 /** Dynamically manages terrain as a collection of chunks. */
 export class Terrain {
@@ -75,6 +75,9 @@ export class Terrain {
     // Map of the chunks that are currently loaded and displayed.
     private chunks: Map<string, Chunk> = new Map();
 
+    // Pool of reusable chunks.
+    private chunkPool = new ChunkPool();
+
     /**
      * Recomputes the height function and updates the mesh of all active chunks.
      */
@@ -91,18 +94,24 @@ export class Terrain {
     /** Loads all the chunks in the load radius that are not yet loaded. */
     async ensureLoaded() {
         const inactive = this.chunks;
+        const missing = new Set<Coordinates>();
         this.chunks = new Map<string, Chunk>();
 
         this.within(this.props.loadRadius, (coords: Coordinates) => {
             const id = coords.string();
-            const chunk = inactive.get(id) || new Chunk(coords, 0);
+            const chunk = inactive.get(id);
+            if (chunk === undefined) { missing.add(coords); return; }
             this.chunks.set(id, chunk);
             inactive.delete(id);
         });
 
-        // Remove out-of-radius chunks.
+        // Release out-of-radius chunks.
         inactive.forEach(chunk => this.removeMesh(chunk.mesh));
         inactive.clear();
+
+        // Acquire missing chunks.
+        for (const coords of missing)
+            this.chunks.set(coords.string(), this.chunkPool.acquire(coords));
 
         // (Re)load missing or outdated chunks.
         this.updateAllChunks(this.lockUpdate());
