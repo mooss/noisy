@@ -12,22 +12,28 @@ export class Chunk {
     constructor(private coords: Coordinates, private version: number) { }
     reset(coords: Coordinates) { this.coords = coords; this.version = undefined; }
 
-    rebuild(props: TerrainProperties, version: number): THREE.Mesh | null {
+    /**
+     * Rebuild the mesh in-place, reusing the previous mesh if present, creating a new one
+     * otherwise.
+     */
+    rebuild(props: TerrainProperties, version: number) {
         if (version === this.version) return null;
         this.version = version;
-        const discarded = this.mesh;
 
-        this.mesh = props.mesh(this.coords, this.weaver);
-        this.mesh.matrixAutoUpdate = false;
-        this.mesh.position.set(this.coords.x * CHUNK_UNIT, this.coords.y * CHUNK_UNIT, 0);
+        const geometry = props.weave(this.coords, this.weaver);
+        const material = props.paint();
+        const mesh = this.mesh || new THREE.Mesh();
+        mesh.geometry = geometry;
+        mesh.material = material;
+        mesh.matrixAutoUpdate = false;
+        mesh.position.set(this.coords.x * CHUNK_UNIT, this.coords.y * CHUNK_UNIT, 0);
+        this.mesh = mesh;
         this.rescale(props);
-
-        return discarded;
     }
 
     rescale(props: TerrainProperties) {
-        this.mesh.scale.set(props.blockSize, props.blockSize, props.verticalUnit);
-        this.mesh.updateMatrix();
+        this.mesh?.scale.set(props.blockSize, props.blockSize, props.verticalUnit);
+        this.mesh?.updateMatrix();
     }
 }
 

@@ -41,8 +41,9 @@ export class TerrainProperties {
         this._height = this.noise.normalised(.01, 1);
     }
 
-    mesh(coords: Coordinates, weaver: ReusableWeaver): THREE.Mesh {
-        const geometry = weaver.weave(this.geometryStyle, this.heightAt(coords), this.nblocks);
-        return new THREE.Mesh(geometry, this.painter.paint());
+    weave(coords: Coordinates, weaver: ReusableWeaver): THREE.BufferGeometry {
+        return weaver.weave(this.geometryStyle, this.heightAt(coords), this.nblocks);
     }
+
+    paint(): THREE.Material { return this.painter.paint() }
 }

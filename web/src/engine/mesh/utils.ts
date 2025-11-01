@@ -6,8 +6,8 @@ export class FluentGeometry {
     buffer = new THREE.BufferGeometry();
 
     set(name: string, cache: ReusableBuffer): this {
-        cache.buffer.needsUpdate = true;
         this.buffer.setAttribute(name, cache.buffer);
+        cache.buffer.needsUpdate = true;
         return this;
     }
 
@@ -15,8 +15,8 @@ export class FluentGeometry {
     normal(cache: ReusableBuffer): this { return this.set('normal', cache) }
 
     index(cache: ReusableBuffer): this {
-        cache.buffer.needsUpdate = true;
         this.buffer.setIndex(cache.buffer);
+        cache.buffer.needsUpdate = true;
         return this;
     }
 }

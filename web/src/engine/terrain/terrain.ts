@@ -42,21 +42,16 @@ export class Terrain {
      * @param chunk - The chunk whose mesh needs to be updated.
      */
     private updateMesh(chunk: Chunk, version: number) {
-        const replaced = chunk.rebuild(this.props, version);
-        // Removing the old mesh before adding the new one seems a bit smoother.
-        this.removeMesh(replaced);
+        chunk.rebuild(this.props, version);
         this.meshGroup.add(chunk.mesh);
     }
 
     /**
-     * Removes a mesh from the mesh group and disposes of its resources.
+     * Removes a mesh from the mesh group.
      * @param mesh - The mesh to remove.
      */
-    private removeMesh(mesh?: THREE.Mesh) {
-        if (!mesh) return;
+    private removeMesh(mesh: THREE.Mesh) {
         this.meshGroup.remove(mesh);
-        mesh.geometry?.dispose();
-        (mesh.material as any).dispose();
     }
 
     ///////////////////
@@ -88,38 +83,49 @@ export class Terrain {
         this.version++;
 
         this.props.recomputeNoise();
-        this.updateAllChunks(this.lockUpdate());
+        this.updateAllChunks();
     }
 
     /** Loads all the chunks in the load radius that are not yet loaded. */
     async ensureLoaded() {
-        const inactive = this.chunks;
-        const missing = new Set<Coordinates>();
+        const inactive = this.chunks; // Chunks that must be freed.
+        const missing = new Set<Coordinates>(); // Chunks that must be created.
         this.chunks = new Map<string, Chunk>();
 
         this.within(this.props.loadRadius, (coords: Coordinates) => {
             const id = coords.string();
             const chunk = inactive.get(id);
-            if (chunk === undefined) { missing.add(coords); return; }
+
+            if (chunk === undefined) {
+                missing.add(coords);
+                return;
+            }
+
             this.chunks.set(id, chunk);
             inactive.delete(id);
         });
 
-        // Release out-of-radius chunks.
-        inactive.forEach(chunk => this.removeMesh(chunk.mesh));
+        // Release out-of-radius chunks back into the pool so that they can be used for the new
+        // chunks.
+        inactive.forEach(chunk => {
+            this.removeMesh(chunk.mesh);
+            this.chunkPool.release(chunk);
+        });
         inactive.clear();
 
         // Acquire missing chunks.
+        // The are stored empty, the incoming async update operation (or another that will interrupt
+        // it) will take care of properly creating them.
         for (const coords of missing)
             this.chunks.set(coords.string(), this.chunkPool.acquire(coords));
 
         // (Re)load missing or outdated chunks.
-        this.updateAllChunks(this.lockUpdate());
+        this.updateAllChunks();
     }
 
     // Update all the outdated chunks (those having an anterior version).
-    private async updateAllChunks(signal: AbortSignal) {
-        // const signal = this.lockUpdate();
+    private async updateAllChunks() {
+        const signal = this.lockUpdate();
         for (const [_, chunk] of this.chunks) {
             race(signal, () => this.updateMesh(chunk, this.version));
         }
