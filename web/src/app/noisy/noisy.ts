@@ -252,7 +252,13 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
     updateAvatar(): void {
         this.terrain.centerOn(new Position(this.avatar.coords));
-        this.avatar.z = this.terrain.height(this.avatar.x, this.avatar.y) + this.state.avatar.heightOffset;
+
+        // When using pixels, the avatar is at ground level.
+        let height = 0;
+        if (this.state.render.geometryStyle !== 'Pixel')
+            height =this.terrain.height(this.avatar.x, this.avatar.y);
+
+        this.avatar.z = height + this.state.avatar.heightOffset;
         this.avatar.reposition(CHUNK_UNIT, this.state.render.verticalUnit);
         this.avatar.setScale(this.state.avatar.size);
     }

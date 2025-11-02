@@ -12,8 +12,11 @@ import { ReusableArray, ReusableBuffer } from "./utils.js";
  * @param nblocks       - Number of cells in the grid.
  */
 export function fillBoxData(
-    positionCache: ReusableBuffer, normalCache: ReusableBuffer, heightCache: ReusableArray,
-    fun: NoiseFun, nblocks: number,
+    positionCache: ReusableBuffer,
+    normalCache: ReusableBuffer,
+    heightCache: ReusableArray,
+    fun: NoiseFun,
+    nblocks: number,
 ): void {
     // The mesh from one box requires only 3 faces:
     //  - F1, the top face (dcgh).

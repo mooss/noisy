@@ -47,6 +47,7 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
     const geomap: Record<string, GeometryStyle> = {
         'Surface': 'Surface',
         'Boxes': 'Box',
+        'Pixels': 'Pixel',
     };
     root.map(state, 'geometryStyle', geomap)
         .label('Shape')

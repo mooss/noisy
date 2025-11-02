@@ -6,6 +6,7 @@ import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
 import { ReusablePainter } from '../mesh/painters.js';
 import { ReusableWeaver } from '../mesh/weavers.js';
+import { MINIMUM_HEIGHT } from '../../../config/constants.js';
 
 export class TerrainProperties {
     private _height: NoiseFun;
@@ -27,9 +28,10 @@ export class TerrainProperties {
     get geometryStyle() { return this.render.geometryStyle }
 
     get verticalUnit() {
+        if (this.render.geometryStyle === 'Pixel') return MINIMUM_HEIGHT;
         // Prevents the verticality to be exactly zero because it messes up with shading, basically
-        // negating directional light.
-        return Math.max(this.render.verticalUnit, .0000001);
+        // ignoring directional light.
+        return Math.max(this.render.verticalUnit, MINIMUM_HEIGHT);
     }
 
     heightAt(chunkCoords: vector2): (x: number, y: number) => number {

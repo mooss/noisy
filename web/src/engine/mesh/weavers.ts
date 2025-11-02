@@ -3,16 +3,18 @@ import * as THREE from 'three';
 import { NoiseFun } from '../../noise/foundations.js';
 import { Recycler } from '../../utils/reuse.js';
 import { fillBoxData } from './box.js';
+import { fillPixelData } from './pixels.js';
 import { fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions } from './surface.js';
 import { FluentGeometry, ReusableArray, ReusableBuffer } from './utils.js';
 
-export type GeometryStyle = 'Surface' | 'Box';
+export type GeometryStyle = 'Surface' | 'Box' | 'Pixel';
 
 /** Geometry generator that reuses allocated resources when possible. */
 export class ReusableWeaver {
     cache = new Recycler<GeometryStyle, ChunkWeaver, []>({
         Surface: () => new SurfaceWeaver(),
         Box: () => new BoxWeaver(),
+        Pixel: () => new PixelWeaver(),
     });
 
     /**
@@ -66,7 +68,7 @@ class SurfaceWeaver implements ChunkWeaver {
 }
 
 /**
- * Box-based, voxel-like veaver.
+ * Box-based, voxel-like weaver.
  */
 class BoxWeaver implements ChunkWeaver {
     _geometry = new FluentGeometry();
@@ -76,6 +78,26 @@ class BoxWeaver implements ChunkWeaver {
 
     weave(fun: NoiseFun, resolution: number): THREE.BufferGeometry {
         fillBoxData(this._position, this._normal, this._height, fun, resolution);
+        this._geometry
+            .position(this._position)
+            .normal(this._normal);
+
+        return this._geometry.buffer;
+    }
+}
+
+/**
+ * Pixel-based weaver (flat squares without sides).
+ * Extremely wasteful, should probably use a texture or something, but this works for now.
+ */
+class PixelWeaver implements ChunkWeaver {
+    _geometry = new FluentGeometry();
+    _position = new ReusableBuffer();
+    _normal = new ReusableBuffer();
+    _height = new ReusableArray();
+
+    weave(fun: NoiseFun, resolution: number): THREE.BufferGeometry {
+        fillPixelData(this._position, this._normal, this._height, fun, resolution);
         this._geometry
             .position(this._position)
             .normal(this._normal);
