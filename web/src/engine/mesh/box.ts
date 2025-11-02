@@ -9,14 +9,14 @@ import { ReusableArray, ReusableBuffer } from "./utils.js";
  * @param normalCache   - Cache for storing vertex normals.
  * @param heightCache   - Cache for storing height values.
  * @param fun           - The noise function to sample height values from.
- * @param nblocks       - Number of cells in the grid.
+ * @param resolution    - Number of cells in the grid.
  */
 export function fillBoxData(
     positionCache: ReusableBuffer,
     normalCache: ReusableBuffer,
     heightCache: ReusableArray,
     fun: NoiseFun,
-    nblocks: number,
+    resolution: number,
 ): void {
     // The mesh from one box requires only 3 faces:
     //  - F1, the top face (dcgh).
@@ -45,6 +45,10 @@ export function fillBoxData(
     //     ^    ⋮      ⋮
     // Down box
 
+    // The height of a box is the height in its center so the height function must be shifted by
+    // half a cell.
+    const halfcell = .5 / resolution;
+    const shiftedFun = (x: number, y: number) => fun(x + halfcell, y + halfcell);
 
     // Since each block needs the heights of the neighboring down and right blocks,
     //  - Each block needs the heights of 3 blocks to construct all its faces.
@@ -53,22 +57,22 @@ export function fillBoxData(
     //  - Some out-of-chunk heights are needed (in the right column and in the down row).
     //    Which means that the height matrix needs an additional row and column.
     const heights = heightMatrix(
-        heightCache, fun, nblocks,
+        heightCache, shiftedFun, resolution,
         { up: 0, down: 1, left: 0, right: 1 },
     );
-    const heightSide = nblocks + 1;
+    const heightSide = resolution + 1;
 
     // Each block has 3 faces made of 2 triangles with 3 vertices each.
     // This means 18 vertices per box and 18 * nblocks vertices per side.
     const verticesPerBox = 18;
     const stride = 3; // Number of components of one vertex (xyz for both positions and normals).
-    const nvertices = nblocks * nblocks * verticesPerBox;
+    const nvertices = resolution * resolution * verticesPerBox;
     const positions = positionCache.asFloat32(nvertices, stride);
     const normals = normalCache.asInt8(nvertices, stride);
 
     let idver = 0, idnor = 0;
-    for (let blockX = 0; blockX < nblocks; ++blockX) {
-        for (let blockY = 0; blockY < nblocks; ++blockY) {
+    for (let blockX = 0; blockX < resolution; ++blockX) {
+        for (let blockY = 0; blockY < resolution; ++blockY) {
             const adhx = blockX;
             const bcefgx = blockX + 1;
             const abcdey = blockY;

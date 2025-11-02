@@ -8,7 +8,7 @@ interface paddingSpec { up: number; down: number; left: number; right: number }
  *
  * @param heightCache - Cache for storing resulting height values.
  * @param fun         - The noise function to sample height values from.
- * @param resolution  - The base resolution of the height grid.
+ * @param resolution  - The resolution of the chunk.
  * @param padding     - Amount of up, down, left and right padding to add to the matrix.
  *
  * @returns the padded height matrix.
