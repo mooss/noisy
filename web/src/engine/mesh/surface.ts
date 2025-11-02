@@ -11,7 +11,7 @@ import { ReusableArray, ReusableBuffer } from './utils.js';
  * @param positionCache - Cache for storing vertex positions.
  * @param heightCache   - Cache for storing height values.
  * @param fun           - The noise function to sample height values from.
- * @param resolution    - Number of cells on one side of the grid.
+ * @param resolution    - The resolution of the chunk.
  */
 export function fillSurfacePositions(
     positionCache: ReusableBuffer,
@@ -35,8 +35,11 @@ export function fillSurfacePositions(
     let posidx = 0;
     for (let i = 0; i < verticesPerSide; i++) {
         for (let j = 0; j < verticesPerSide; j++) {
-            const height = paddedHeights[(i + 1) * paddedSize + j + 1];
-            positions[posidx++] = i; positions[posidx++] = j; positions[posidx++] = height;
+            // The +2 compensates for the padding.
+            const height = paddedHeights[(i + 1) * paddedSize + j + 2];
+            positions[posidx++] = i;
+            positions[posidx++] = j;
+            positions[posidx++] = height;
         }
     }
 }
