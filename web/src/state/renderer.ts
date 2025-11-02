@@ -30,7 +30,7 @@ class RenderStateP extends AutoAssign<RenderStateP> {
     //TIP: height_multiplier Multiplier applied to the terrain height. Set to zero to display flat terrain.
     declare heightMultiplier: number;
 
-    //TIP: render_texture Texture applied to the terrain.
+    //TIP: render_texture Texture applied to the terrain. Only compatible with the surface geometry style.
     declare texturePath: string;
 }
 

@@ -18,7 +18,10 @@ SOURCE='src/shaders/literate.org'
 DEST='src/shaders/strings.ts'
 
 mapping = '\n'.join(f'    {name}: {repr(code)},' for name, code in extract_code_blocks(SOURCE).items())
-content = f'''export const shaders = {{
+content = f'''// This file contains shader implementations extracted from //web/{SOURCE}, modifications must therefore be made there.
+// See //web/Makefile to regenerate this file.
+
+export const shaders = {{
 {mapping}
 }};
 '''

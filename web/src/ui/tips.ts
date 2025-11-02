@@ -50,5 +50,5 @@ export const tips = {
     render_painter: "How the terrain will be rendered.",
     render_palette: "Color palette of the terrain.",
     height_multiplier: "Multiplier applied to the terrain height.\nSet to zero to display flat terrain.",
-    render_texture: "Texture applied to the terrain.",
+    render_texture: "Texture applied to the terrain.\nOnly compatible with the surface geometry style.",
 }
