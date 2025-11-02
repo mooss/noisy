@@ -97,6 +97,8 @@ export function fillSurfaceNormals(
     const paddedSide = side + 2;
     const count = side * side;
     const normals = normalCache.asFloat32(count, 3);
+    // Since this array can be recycled and is used for accumulation, it's important to fill with 0.
+    normals.fill(0);
 
     // Get the index corresponding to the given coordinates (returns -1 if out-of-bounds).
     const indexOf = (x: number, y: number): number => {
