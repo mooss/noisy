@@ -13,6 +13,7 @@ export class FluentGeometry {
 
     position(cache: ReusableBuffer): this { return this.set('position', cache) }
     normal(cache: ReusableBuffer): this { return this.set('normal', cache) }
+    uv(cache: ReusableBuffer): this { return this.set('uv', cache) }
 
     index(cache: ReusableBuffer): this {
         this.buffer.setIndex(cache.buffer);

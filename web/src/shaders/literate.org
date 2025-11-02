@@ -34,8 +34,12 @@ varying float v_z;
 
 Smoothly interpolate the color from the height using the palette.
 Without this, the transition between two colors is too fast, which is particularly visible with a bicolor palette.
+
+The initial =diffuseColor= is multiplied by the color extracted from the color palette as a way to apply the texture.
+When there is no texture, the color is white, making this multiplication an assignment in this case.
+
 #+name: fs_palette_impl
 #+begin_src glsl
 vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, v_z), 0.5);
-diffuseColor.rgb = texture2D(u_palette, colorIdx).rgb;
+diffuseColor.rgb *= texture2D(u_palette, colorIdx).rgb;
 #+end_src

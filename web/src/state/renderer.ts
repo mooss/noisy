@@ -1,10 +1,8 @@
-import * as THREE from 'three';
 import { CHUNK_HEIGHT_DENOMINATOR, CHUNK_UNIT } from '../../config/constants.js';
 import { PainterStyle } from '../engine/mesh/painters.js';
-import { GeometryStyle, ReusableWeaver } from '../engine/mesh/weavers.js';
+import { GeometryStyle } from '../engine/mesh/weavers.js';
 import { Palette, palettes } from '../engine/palettes.js';
 import { Panel } from '../gui/gui.js';
-import { HeightGenerator } from '../noise/noise.js';
 import { tips } from '../ui/tips.js';
 import { AutoAssign } from '../utils/objects.js';
 import { GameCallbacks, register } from './state.js';
@@ -31,6 +29,9 @@ class RenderStateP extends AutoAssign<RenderStateP> {
 
     //TIP: height_multiplier Multiplier applied to the terrain height. Set to zero to display flat terrain.
     declare heightMultiplier: number;
+
+    //TIP: render_texture Texture applied to the terrain.
+    declare texturePath: string;
 }
 
 export class RenderState extends RenderStateP {
@@ -58,6 +59,15 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         .label('Palette')
         .onChange(cb.terrain.recompute)
         .tooltip(tips.render_palette);
+
+    const texmap: Record<string, string> = {
+        'None': '',
+        'Favicon': 'https://mooss.github.io/favicon-192x192.png',
+    }
+    root.map(state, 'texturePath', texmap)
+        .label('Texture')
+        .onChange(cb.terrain.recompute)
+        .tooltip(tips.render_texture);
 
     root.range(state.light.ambient, 'intensity', 0, 10, .2)
         .label('Ambient light')

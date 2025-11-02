@@ -21,10 +21,6 @@ export const tips = {
     terracing_constant: "Use the same amount of terraces everywhere.\n\nCreates a blocky terrain with evenly-spaced terrain.",
     terracing_steps: "Number of terraces used in the terrain.\n\nMore terraces will create a smoother terrain.",
     terracing_voxels: "Make the number of terraces proportional to the chunk resolution.\n\nCreates square blocks reminiscent of Minecraft.",
-    terracing_noisy: "Use a different amount of terraces in different places.\n\nCreates a stepped and wobbly surface that increases in wobbleliness when the difference between the minimum and the maximum of terraces increases.",
-    noisy_terrace_min: "Minimum number of terraces used in the terrain.\n\nMore terraces will create smoother terrain.",
-    noisy_terrace_max: "Maximum number of terraces used in the terrain.\n\nMore terraces will create smoother terrain.",
-    noisy_terracer: "Noise dictating how many terraces will be used at a given point, normalized between min and max.",
     warping: "Distorts the coordinates to hide straight lines in the terrain, introducing vortex-like perturbations.",
     warping_frequency: "Scale factor for the warping coordinates, dictating how dense the warping is.\n\nHigher values will make the warping effect repeat more frequently, making the effect more visible.",
     warping_strength: "How much the warping effect distorts the coordinates.\n\nHigher values will make the terrain more swirly, making the effect more visible.",
@@ -54,4 +50,5 @@ export const tips = {
     render_painter: "How the terrain will be rendered.",
     render_palette: "Color palette of the terrain.",
     height_multiplier: "Multiplier applied to the terrain height.\nSet to zero to display flat terrain.",
+    render_texture: "Texture applied to the terrain.",
 }

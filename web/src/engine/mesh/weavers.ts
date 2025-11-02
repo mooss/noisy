@@ -45,11 +45,12 @@ class SurfaceWeaver implements ChunkWeaver {
     _geometry = new FluentGeometry();
     _position = new ReusableBuffer();
     _normal = new ReusableBuffer();
+    _uv = new ReusableBuffer();
     _index = new ReusableBuffer();
     _height = new ReusableArray();
 
     weave(fun: NoiseFun, resolution: number): THREE.BufferGeometry {
-        fillSurfacePositions(this._position, this._height, fun, resolution);
+        fillSurfacePositions(this._position, this._uv, this._height, fun, resolution);
         fillSurfaceNormals(this._normal, this._height.array as Float32Array, resolution);
 
         // Indices will be the same for a given resolution and do not need to be always be
@@ -61,6 +62,7 @@ class SurfaceWeaver implements ChunkWeaver {
         this._geometry
             .position(this._position)
             .normal(this._normal)
+            .uv(this._uv)
             .index(this._index);
 
         return this._geometry.buffer;

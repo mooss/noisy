@@ -20,7 +20,8 @@ DEST='src/shaders/strings.ts'
 mapping = '\n'.join(f'    {name}: {repr(code)},' for name, code in extract_code_blocks(SOURCE).items())
 content = f'''export const shaders = {{
 {mapping}
-}};'''
+}};
+'''
 
 with open(DEST, 'w') as out:
     out.write(content)

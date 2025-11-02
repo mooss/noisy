@@ -33,14 +33,15 @@ export function injectInShader(
  * @param palette - The color palette used for shading.
  * @returns a material configured with custom shader logic for palette-based coloring.
  */
-export function paletteShader(palette: Palette): THREE.Material {
+export function paletteShader(palette: Palette, texture?: THREE.Texture): THREE.Material {
     //TODO: Handle texture disposal.
     const paletteTex = palette2texture(palette);
+    const opts = texture? {map: texture}: null;
 
     // The shader created by THREE.js contains a lot of useful things so it is simpler for now to
     // inject additional instructions rather than to write a shader from scratch.
     return injectInShader(
-        new THREE.MeshStandardMaterial(),
+        new THREE.MeshStandardMaterial(opts),
         { decl: shaders.vs_palette_decl, impl: shaders.vs_palette_impl },
         { decl: shaders.fs_palette_decl, impl: shaders.fs_palette_impl },
         { u_palette: paletteTex, u_paletteWidth: palette.size },

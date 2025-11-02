@@ -15,6 +15,7 @@ import { ReusableArray, ReusableBuffer } from './utils.js';
  */
 export function fillSurfacePositions(
     positionCache: ReusableBuffer,
+    uvCache: ReusableBuffer,
     heightCache: ReusableArray,
     fun: NoiseFun,
     resolution: number,
@@ -22,7 +23,9 @@ export function fillSurfacePositions(
     const verticesPerSide = resolution + 1;
     const nVertices = verticesPerSide * verticesPerSide;
     const positions = positionCache.asFloat32(nVertices, 3);
+    const uvs = uvCache.asFloat32(nVertices, 2);
     const paddedSize = (verticesPerSide + 2);
+    const sampling = 1 / resolution;
 
     const paddedHeights = heightMatrix(heightCache, fun, resolution, {
         up: 1, // Edge vertex for normal computation.
@@ -32,7 +35,7 @@ export function fillSurfacePositions(
     });
 
     // Vertices.
-    let posidx = 0;
+    let posidx = 0, uvidx = 0;
     for (let i = 0; i < verticesPerSide; i++) {
         for (let j = 0; j < verticesPerSide; j++) {
             // The +2 compensates for the padding.
@@ -40,6 +43,7 @@ export function fillSurfacePositions(
             positions[posidx++] = i;
             positions[posidx++] = j;
             positions[posidx++] = height;
+            uvs[uvidx++] = j * sampling; uvs[uvidx++] = i * sampling;
         }
     }
 }

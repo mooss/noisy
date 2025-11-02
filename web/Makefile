@@ -34,5 +34,5 @@ src/ui/tips.ts: src/noise/algorithms.ts src/noise/processing.ts src/ui/noise.ts 
 	sed -rn 's| *//TIP: ([^ ]+) (.*)$$|    \1: "\2",|p' $^ | sed -r 's/\. /.\\n/g' >> $@
 	echo '}' >> $@
 
-src/shaders/strings.ts: src/shaders/literate.org
+src/shaders/strings.ts: src/shaders/literate.org scripts/tangle_shaders.py
 	python3 scripts/tangle_shaders.py
