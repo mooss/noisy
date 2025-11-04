@@ -5,6 +5,7 @@ import { NoiseMakerI } from '../../noise/foundations.js';
 import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
 import { race } from '../../utils/async.js';
+import { rgbArrayToPngBlob } from '../../utils/img.js';
 import { Chunk, ChunkPool } from './chunks.js';
 import { TerrainProperties } from './properties.js';
 
@@ -19,7 +20,7 @@ export class Terrain {
      *
      * The unit is the chunk, i.e. the first chunk is within [0 <= x <= 1], [0 <= y <= 1].
      */
-    get height() { return this.props.height };
+    get height() { return this.props.heightFun };
 
     heightAt(chunkCoords: vector2) { return this.props.heightAt(chunkCoords) }
 
@@ -163,5 +164,16 @@ export class Terrain {
         if (this.props.radiusType === 'circle')
             res = Coordinates.prototype.spiralCircle;
         return res.bind(this.center)(...args);
+    }
+
+    ////////////
+    // Export //
+
+    async asTexture(): Promise<Blob> {
+        return rgbArrayToPngBlob(
+            this.props.renderToRGB(this.center),
+            this.props.width,
+            this.props.height,
+        );
     }
 }

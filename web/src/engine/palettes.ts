@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { clamp } from '../maths/maths.js';
 
 export class Palette {
     constructor(public colors: THREE.Color[]) { }
@@ -24,6 +25,33 @@ export class Palette {
             res.colors.push(...pal.colors);
         }
         return res;
+    }
+
+    /**
+     * Interpolates between colors in a palette based on a normalized value.
+     *
+     * @param colors - The color palette.
+     * @param value  - A normalized value (0-1) indicating the interpolation position.
+     *
+     * @returns The interpolated color.
+     */
+    lerp(value: number, dest = new THREE.Color()): THREE.Color {
+        if (this.colors.length === 0) {
+            dest.r = 1; dest.g = 1; dest.b = 1;
+            return dest;
+        }
+        if (this.colors.length === 1) return dest.copy(this.colors[0]);
+
+        value = clamp(value, 0, 1);
+
+        const nsegments = this.colors.length - 1;
+        // ceil and round can be interesting here.
+        const segment = Math.min(Math.floor(value * nsegments), nsegments - 1);
+        const color1 = this.colors[segment];
+        const color2 = this.colors[segment + 1];
+        const ratio = value * nsegments - segment;
+
+        return dest.copy(color1).lerp(color2, ratio);
     }
 }
 

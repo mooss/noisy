@@ -19,7 +19,7 @@ import { GameCallbacks, StateRegistry } from '../../state/state.js';
 import { noiseUI } from '../../ui/noise.js';
 import { tips } from '../../ui/tips.js';
 import { FpsWidget, Keyboard } from '../../ui/ui.js';
-import { downloadData, dragAndDrop, toClipBoard } from '../../utils/utils.js';
+import { downloadBlob, downloadData, dragAndDrop, toClipBoard } from '../../utils/utils.js';
 import { GameState, INITIAL_STATE, REFERENCE_STATE } from './init.js';
 
 const STATE_STORAGE_KEY = 'load-state';
@@ -157,6 +157,11 @@ class Game {
         actions.button('Screenshot').onClick(() => this.renderer.screenshot('noisy-screenshot.jpeg'));
         actions.button('?').onClick(() => this.welcomeWindow.show());
 
+        const actions2 = root.buttons();
+        actions2.button('Texture').onClick(() => {
+            this.terrain.asTexture().then((texture: Blob) => downloadBlob(texture, 'noisy-texture.png'))
+        });
+
         dragAndDrop((file) => {
             if (file.type === 'application/json') {
                 const reader = new FileReader();
@@ -256,7 +261,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
         // When using pixels, the avatar is at ground level.
         let height = 0;
         if (this.state.render.geometryStyle !== 'Pixel')
-            height =this.terrain.height(this.avatar.x, this.avatar.y);
+            height = this.terrain.height(this.avatar.x, this.avatar.y);
 
         this.avatar.z = height + this.state.avatar.heightOffset;
         this.avatar.reposition(CHUNK_UNIT, this.state.render.verticalUnit);

@@ -8,6 +8,10 @@ export async function toClipBoard(text: string) {
 
 export function downloadData(data: any, filename: string, options?: BlobPropertyBag): void {
     const blob = new Blob([data], options);
+    downloadBlob(blob, filename);
+}
+
+export function downloadBlob(blob: Blob, filename: string): void {
     const url = URL.createObjectURL(blob);
     downloadURL(url, filename);
     URL.revokeObjectURL(url);
