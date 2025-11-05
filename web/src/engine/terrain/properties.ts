@@ -71,13 +71,15 @@ export class TerrainProperties {
 
         const w = this.width; const h = this.height;
         const sampling = 1 / this.resolution;
+        const halfcell = sampling * .5; // Will be used to center the pixels.
         const res = new Uint8ClampedArray(w * h * 3);
         const color = new THREE.Color();
 
         let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
         for (let j = h - 1; j >= 0; --j) {
             for (let i = 0; i < w; ++i) {
-                this.render.palette.lerp(fun(i * sampling, j * sampling), color);
+                const height = fun(i * sampling + halfcell, j * sampling + halfcell);
+                this.render.palette.lerp(height, color);
                 color.convertLinearToSRGB();
                 res[idx++] = color.r * 255;
                 res[idx++] = color.g * 255;
