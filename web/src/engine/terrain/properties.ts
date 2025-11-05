@@ -78,6 +78,7 @@ export class TerrainProperties {
         for (let j = h - 1; j >= 0; --j) {
             for (let i = 0; i < w; ++i) {
                 this.render.palette.lerp(fun(i * sampling, j * sampling), color);
+                color.convertLinearToSRGB();
                 res[idx++] = color.r * 255;
                 res[idx++] = color.g * 255;
                 res[idx++] = color.b * 255;
