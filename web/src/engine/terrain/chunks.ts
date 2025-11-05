@@ -24,26 +24,28 @@ export class Chunk {
      * otherwise.
      */
     rebuild(version: number) {
+        if (version === this.version) return;
+        this.version = version;
 
         const mesh = this.mesh || new THREE.Mesh();
         this.mesh = mesh;
 
-        // It's important to make sure that the material is always up-to-date because it can become
-        // stale when uniforms change, plus painting is cheap because the painter is shared and the
-        // material is cached.
-        mesh.material = this.props.paint();
-
-        if (version !== this.version) {
-            // It should be possible to just modify the buffer attributes in place, it would require
-            // some modification in the weaver interface to signal that buffers can be reused.
-            disposeOfMesh(this.mesh);
-            mesh.geometry = this.props.weave(this.coords, this.weaver);
-        }
-        this.version = version;
+        // It should be possible to just modify the buffer attributes in place, it would require
+        // some modification in the weaver interface to signal that buffers can be reused.
+        disposeOfMesh(this.mesh);
+        mesh.geometry = this.props.weave(this.coords, this.weaver);
+        this.repaint();
 
         mesh.matrixAutoUpdate = false;
         mesh.position.set(this.coords.x * CHUNK_UNIT, this.coords.y * CHUNK_UNIT, 0);
         this.rescale();
+    }
+
+    /**
+     * Update the mesh material to the latest version.
+     */
+    repaint() {
+        this.mesh.material = this.props.paint();
     }
 
     rescale() {

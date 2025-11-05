@@ -46,8 +46,8 @@ export class Terrain {
      * Updates the mesh of a single chunk.
      * @param chunk - The chunk whose mesh needs to be updated.
      */
-    private updateMesh(chunk: Chunk, version: number) {
-        chunk.rebuild(version);
+    private updateMesh(chunk: Chunk) {
+        chunk.rebuild(this.version);
         this.meshGroup.add(chunk.mesh);
     }
 
@@ -129,7 +129,7 @@ export class Terrain {
     private async updateAllChunks() {
         const signal = this.lockUpdate();
         for (const [_, chunk] of this.chunks) {
-            race(signal, () => this.updateMesh(chunk, this.version));
+            race(signal, () => this.updateMesh(chunk));
         }
 
         // Free up leftover chunks once everything has been updated.
@@ -137,6 +137,12 @@ export class Terrain {
         // chunks around for this niche usecase.
         if (!signal.aborted)
             this.chunkPool.flush();
+
+        // When the material is being changed mid-update, it will only apply to some material so
+        // it's necessary to update them, which is a very cheap operation.
+        for (const [_, chunk] of this.chunks) {
+            race(signal, () => chunk.repaint());
+        }
     }
 
     private center: Coordinates = undefined;
