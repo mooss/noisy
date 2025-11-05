@@ -184,10 +184,17 @@ export class Terrain {
     get uniforms(): Object {
         const shader = this.props.material.userData.shader;
         if (!shader || !shader.uniforms) {
-            console.warn('Attempt to access shader uniform but no shader can be found.');
+            console.warn('Attempt to access terrain uniform but no shader can be found.');
             return {};
         }
-
         return shader.uniforms;
+    }
+
+    get texture(): THREE.Texture | null {
+        const map = this.props.material.map;
+        if (!map) {
+            console.warn('Attempt to access terrain texture but no texture can be found.');
+        }
+        return map;
     }
 }

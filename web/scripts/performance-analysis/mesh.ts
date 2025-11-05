@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { Bench, TaskResult } from 'tinybench';
-import { PainterStyle, ReusablePainter } from '../../src/engine/mesh/painters.js';
-import { GeometryStyle, ReusableWeaver } from '../../src/engine/mesh/weavers.js';
-import { palettes } from '../../src/engine/palettes.js';
+import { REFERENCE_STATE } from '../../src/app/noisy/init.js';
+import { ReusablePainter } from '../../src/engine/mesh/painters.js';
+import { ReusableWeaver } from '../../src/engine/mesh/weavers.js';
 import { Layered, Simplex } from '../../src/noise/algorithms.js';
 
 (globalThis as any).sink = 0;
@@ -20,28 +20,9 @@ const noise = new Layered({
 });
 noise.recompute();
 
-const geometryStyle: GeometryStyle = 'Surface';
-const painterStyle: PainterStyle = 'Palette';
-const paletteName = 'Bright terrain';
-const palette = palettes[paletteName];
-const colorLowShift = 0;
-const colorHighShift = 0;
-const texturePath = '';
-
-const painter = new ReusablePainter({
-    geometryStyle,
-    painterStyle,
-    paletteName,
-    palette,
-    colorLowShift,
-    colorHighShift,
-    texturePath,
-});
-
-const weaver = new ReusableWeaver({
-    geometryStyle,
-    texturePath,
-});
+const render = REFERENCE_STATE.render;
+const painter = new ReusablePainter(render);
+const weaver = new ReusableWeaver(render);
 
 const mkmesh = (side: number) => {
     const geometry = weaver.weave(

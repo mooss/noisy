@@ -291,7 +291,7 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
     }
 
     updateUniform(key: string, value: any): void {
-        this.terrain.uniforms[key] = { value, type: 'f' };
+        this.terrain.uniforms[key] = { value };
     }
 }
 

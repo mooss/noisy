@@ -32,12 +32,14 @@ export const REFERENCE_STATE = {
         paletteName: 'Bright terrain',
         colorLowShift: 0,
         colorHighShift: 0,
-        texturePath: '',
         light: {
             ambient: { intensity: 2 },
             directional: { intensity: 3 },
         },
         heightMultiplier: 1,
+        texturePath: '',
+        textureRepeat: 5,
+        textureBumpScale: 4,
     }),
     noise: null as NoiseState,
 

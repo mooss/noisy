@@ -49,8 +49,10 @@ export const tips = {
     render_geometry: "Fundamental shape the terrain is made of.",
     render_painter: "How the terrain will be rendered.",
     render_palette: "Color palette of the terrain.",
-    color_low_shift: "Adjustement to the mapping between low heights and color.\n\nHigher values will shift upwards the colors of the low heights.",
-    color_high_shift: "Adjustement to the mapping between high heights and color.\n\nHigher values will shift downwards the colors of the high heights.",
+    color_low_shift: "Adjustement to the mapping between low heights and color.\n\nHigher values will shift the colors of the low heights upwards.",
+    color_high_shift: "Adjustement to the mapping between high heights and color.\n\nHigher values will shift the colors of the high heights downwards.",
     height_multiplier: "Multiplier applied to the terrain height.\n\nSet to zero to display a flat terrain.",
     render_texture: "Texture applied to the terrain.\nOnly compatible with the surface geometry style.",
+    render_texture_repeat: "Number of time that the texture repeats on the X and Y axis.",
+    render_texture_bump_scale: "Apply the texture as a bump map.",
 }

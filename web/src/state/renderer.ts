@@ -38,6 +38,12 @@ class RenderStateP extends AutoAssign<RenderStateP> {
 
     //TIP: render_texture Texture applied to the terrain. Only compatible with the surface geometry style.
     declare texturePath: string;
+
+    //TIP: render_texture_repeat Number of time that the texture repeats on the X and Y axis.
+    declare textureRepeat: number;
+
+    //TIP: render_texture_bump_scale Apply the texture as a bump map.
+    declare textureBumpScale: number;
 }
 
 export class RenderState extends RenderStateP {
@@ -75,6 +81,16 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         .label('Texture')
         .onChange(cb.terrain.recompute)
         .tooltip(tips.render_texture);
+
+    root.range(state, 'textureRepeat', 1, 10, 1)
+        .label('Texture repeat')
+        .onInput(cb.terrain.recompute)
+        .tooltip(tips.render_texture_repeat);
+
+    root.range(state, 'textureBumpScale', 0, 20, 0.5)
+        .label('Texture bump scale')
+        .onInput(cb.terrain.recompute)
+        .tooltip(tips.render_texture_bump_scale);
 
     root.range(state, 'colorLowShift', -1, 1, .01)
         .label('Low color shift')

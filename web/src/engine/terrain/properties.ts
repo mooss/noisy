@@ -19,7 +19,7 @@ export class TerrainProperties {
      * is not an options since they are only accessible after rendering.
      * Plus it is cheaper not to rebuild.
      */
-    private cachedMaterial: THREE.Material;
+    private cachedMaterial: THREE.MeshStandardMaterial;
 
     constructor(
         private chunks: ChunkState,

@@ -13,7 +13,6 @@ function sameGeometry(left: THREE.BufferGeometry, right: THREE.BufferGeometry) {
 describe('CachedWeaver', () => {
     const mkw = (style: GeometryStyle) => new ReusableWeaver({
         geometryStyle: style,
-        texturePath: '',
     });
 
     beforeEach(() => {
