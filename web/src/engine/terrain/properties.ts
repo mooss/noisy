@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { MINIMUM_HEIGHT } from '../../../config/constants.js';
 import { Coordinates } from '../../maths/coordinates.js';
-import { vector2 } from '../../maths/maths.js';
+import { rangeMapper, vector2 } from '../../maths/maths.js';
 import { NoiseFun, NoiseMakerI } from '../../noise/foundations.js';
 import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
@@ -64,7 +64,11 @@ export class TerrainProperties {
     }
 
     renderToRGB(center: Coordinates): Uint8ClampedArray {
-        const fun = this.heightAt({ x: center.x - this.loadRadius, y: center.y - this.loadRadius });
+        // Build color-shifted height function with the top-left corner as a starting point.
+        const raw = this.heightAt({ x: center.x - this.loadRadius, y: center.y - this.loadRadius });
+        const shift = rangeMapper(0, 1, this.render.colorLowShift, 1 + this.render.colorHighShift);
+        const fun = (x: number, y: number) => shift(raw(x, y));
+
         const w = this.width; const h = this.height;
         const sampling = 1 / this.resolution;
         const res = new Uint8ClampedArray(w * h * 3);
