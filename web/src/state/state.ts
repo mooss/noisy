@@ -14,12 +14,14 @@ interface GameCallbacksI {
     updateRender(): void;
     updateCamera(): void;
     updateUniform(key: string, value: any): void;
+    repaintTerrain(): void;
 }
 export class GameCallbacks {
     constructor(private cb: GameCallbacksI) { };
     readonly terrain = {
         recompute: () => this.cb.recomputeTerrain(),
         ensureLoaded: () => this.cb.ensureTerrainLoaded(),
+        repaint: () => this.cb.repaintTerrain(),
     }
     readonly avatar = {
         update: () => this.cb.updateAvatar(),

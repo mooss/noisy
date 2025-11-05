@@ -140,6 +140,13 @@ export class Terrain {
 
         // When the material is being changed mid-update, it will only apply to some material so
         // it's necessary to update them, which is a very cheap operation.
+        this.repaint(signal);
+    }
+
+    /**
+     * Update the mesh material of all chunks.
+     */
+    async repaint(signal: AbortSignal = this.lockUpdate()) {
         for (const [_, chunk] of this.chunks) {
             race(signal, () => chunk.repaint());
         }
@@ -190,7 +197,7 @@ export class Terrain {
     get uniforms(): Object {
         const shader = this.props.material.userData.shader;
         if (!shader || !shader.uniforms) {
-            console.warn('Attempt to access terrain uniform but no shader can be found.');
+            console.debug('Attempt to access terrain uniform but no shader can be found.');
             return {};
         }
         return shader.uniforms;

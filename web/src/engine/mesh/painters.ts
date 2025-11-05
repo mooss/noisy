@@ -13,8 +13,6 @@ interface Parameters {
     colorLowShift: number;
     colorHighShift: number;
     texturePath: string;
-    textureRepeat: number;
-    textureBumpScale: number;
 }
 
 export class ReusablePainter {
@@ -48,8 +46,7 @@ export class PalettePainter {
     // When this value change, it means that the material has been invalidated and needs to be rebuilt.
     private get cacheKey(): string {
         const keys = [
-            'paletteName', 'texturePath', 'colorLowShift', 'colorHighShift', 'textureRepeat',
-            'textureBump', 'textureBumpScale',
+            'paletteName', 'texturePath', 'colorLowShift', 'colorHighShift',
         ];
         return keys
             .map((key: string) => this.params[key])
@@ -58,19 +55,11 @@ export class PalettePainter {
 
     private mkshader(): THREE.MeshStandardMaterial {
         const tex = this.loadtex(this.texturePath);
-        const res = paletteShader(
-            this.params.palette,
-            tex,
-            {
-                'u_colorLowShift': { value: this.params.colorLowShift, type: 'f' },
-                'u_colorHighShift': { value: this.params.colorHighShift, type: 'f' },
-            },
-        );
-
-        if (this.params.textureBumpScale) {
-            res.bumpMap = tex;
-            res.bumpScale = this.params.textureBumpScale;
-        }
+        const res = paletteShader(this.params.palette, {
+            'u_colorLowShift': { value: this.params.colorLowShift, type: 'f' },
+            'u_colorHighShift': { value: this.params.colorHighShift, type: 'f' },
+        });
+        res.map = tex;
 
         return res;
     }
@@ -79,13 +68,6 @@ export class PalettePainter {
         if (!path) return null;
         const tex = this.texloader.load(path);
         tex.colorSpace = THREE.SRGBColorSpace;
-
-        const rep = this.params.textureRepeat;
-        tex.repeat.x = rep;
-        tex.repeat.y = rep;
-        tex.wrapS = THREE.RepeatWrapping;
-        tex.wrapT = THREE.RepeatWrapping;
-
         return tex;
     }
 
@@ -98,4 +80,3 @@ export class PalettePainter {
         return '';
     }
 }
-

@@ -45,6 +45,7 @@ export class Chunk {
      * Update the mesh material to the latest version.
      */
     repaint() {
+        if(!this.mesh) return;
         this.mesh.material = this.props.paint();
     }
 

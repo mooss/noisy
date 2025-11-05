@@ -42,12 +42,10 @@ function injectInShader<Mat extends THREE.Material>(
  */
 export function paletteShader(
     palette: Palette,
-    texture?: THREE.Texture,
     initialUniforms?: Record<string, Uniform>,
 ): THREE.MeshStandardMaterial {
     //TODO: Handle texture disposal.
     const paletteTex = palette2texture(palette);
-    const opts = texture ? { map: texture } : null;
 
     const uniforms = {
         u_palette: { value: paletteTex },
@@ -59,7 +57,7 @@ export function paletteShader(
     // The shader created by THREE.js contains a lot of useful things so it is simpler for now to
     // inject additional instructions rather than to write a shader from scratch.
     return injectInShader(
-        new THREE.MeshStandardMaterial(opts),
+        new THREE.MeshStandardMaterial(),
         { decl: shaders.vs_palette_decl, impl: shaders.vs_palette_impl },
         { decl: shaders.fs_palette_decl, impl: shaders.fs_palette_impl },
         uniforms,

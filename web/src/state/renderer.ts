@@ -84,12 +84,12 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
 
     root.range(state, 'textureRepeat', 1, 10, 1)
         .label('Texture repeat')
-        .onInput(cb.terrain.recompute)
+        .onInput(cb.terrain.repaint)
         .tooltip(tips.render_texture_repeat);
 
     root.range(state, 'textureBumpScale', 0, 20, 0.5)
         .label('Texture bump scale')
-        .onInput(cb.terrain.recompute)
+        .onInput(cb.terrain.repaint)
         .tooltip(tips.render_texture_bump_scale);
 
     root.range(state, 'colorLowShift', -1, 1, .01)
