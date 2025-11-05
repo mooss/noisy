@@ -65,6 +65,10 @@ export class PalettePainter {
         if (!path) return null;
         const tex = this.texloader.load(path);
         tex.colorSpace = THREE.SRGBColorSpace;
+        tex.repeat.x = 3;
+        tex.repeat.y = tex.repeat.x;
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
         return tex;
     }
 

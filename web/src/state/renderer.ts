@@ -68,7 +68,8 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
 
     const texmap: Record<string, string> = {
         'None': '',
-        'Favicon': 'https://mooss.github.io/favicon-192x192.png',
+        'Cobbly': 'https://mooss.github.io/noisy/textures/cobbly.png',
+        'Foggy': 'https://mooss.github.io/noisy/textures/foggy.png',
     }
     root.map(state, 'texturePath', texmap)
         .label('Texture')
