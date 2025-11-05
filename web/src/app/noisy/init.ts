@@ -30,6 +30,8 @@ export const REFERENCE_STATE = {
         geometryStyle: 'Surface',
         painterStyle: 'Palette',
         paletteName: 'Bright terrain',
+        colorLowShift: 0,
+        colorHighShift: 0,
         texturePath: '',
         light: {
             ambient: { intensity: 2 },

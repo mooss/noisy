@@ -10,7 +10,16 @@ import { ReusableWeaver } from '../mesh/weavers.js';
 
 export class TerrainProperties {
     private _heightFun: NoiseFun;
+
+    /** Painter that will be used to create the material. */
     private painter: ReusablePainter;
+    /**
+     * Last material constructed.
+     * It is necessary when dealing with uniforms because rebuilding it when changing the uniforms
+     * is not an options since they are only accessible after rendering.
+     * Plus it is cheaper not to rebuild.
+     */
+    private cachedMaterial: THREE.Material;
 
     constructor(
         private chunks: ChunkState,
@@ -26,6 +35,8 @@ export class TerrainProperties {
     get loadRadius() { return this.chunks.loadRadius }
     get radiusType() { return this.chunks.radiusType }
     get geometryStyle() { return this.render.geometryStyle }
+    get texturePath() { return this.render.texturePath }
+    get material() { return this.cachedMaterial }
 
     get verticalUnit() {
         if (this.render.geometryStyle === 'Pixel') return MINIMUM_HEIGHT;
@@ -44,10 +55,13 @@ export class TerrainProperties {
     }
 
     weave(coords: Coordinates, weaver: ReusableWeaver): THREE.BufferGeometry {
-        return weaver.weave(this.geometryStyle, this.heightAt(coords), this.resolution);
+        return weaver.weave(this.heightAt(coords), this.resolution);
     }
 
-    paint(): THREE.Material { return this.painter.paint() }
+    paint(): THREE.Material {
+        this.cachedMaterial = this.painter.paint();
+        return this.cachedMaterial;
+    }
 
     renderToRGB(center: Coordinates): Uint8ClampedArray {
         const fun = this.heightAt({ x: center.x - this.loadRadius, y: center.y - this.loadRadius });

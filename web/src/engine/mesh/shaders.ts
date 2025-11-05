@@ -2,16 +2,21 @@ import * as THREE from 'three';
 import { shaders } from '../../shaders/strings.js';
 import { Palette } from "../palettes.js";
 
+interface Uniform {
+    value: any,
+    type?: string,
+}
+
 interface ShaderInjection { decl?: string; impl?: string; }
-export function injectInShader(
-    material: THREE.Material,
+function injectInShader<Mat extends THREE.Material>(
+    material: Mat,
     vertex: ShaderInjection,
     fragment: ShaderInjection,
-    uniforms: Record<string, any>,
-): THREE.Material {
+    uniforms: Record<string, Uniform>,
+): Mat {
     material.onBeforeCompile = shader => {
         for (const [name, value] of Object.entries(uniforms))
-            shader.uniforms[name] = { value };
+            shader.uniforms[name] = value;
 
         shader.vertexShader = inject(
             vertex.decl || '', vertex.impl || '',
@@ -22,6 +27,8 @@ export function injectInShader(
             fragment.decl || '', fragment.impl || '',
             shader.fragmentShader, '#include <color_fragment>',
         );
+
+        material.userData.shader = shader;
     };
     return material;
 }
@@ -33,14 +40,21 @@ export function injectInShader(
  * @param palette - The color palette used for shading.
  * @returns a material configured with custom shader logic for palette-based coloring.
  */
-export function paletteShader(palette: Palette, texture?: THREE.Texture): THREE.Material {
+export function paletteShader(
+    palette: Palette,
+    texture?: THREE.Texture,
+    initialUniforms?: Record<string, Uniform>,
+): THREE.MeshStandardMaterial {
     //TODO: Handle texture disposal.
     const paletteTex = palette2texture(palette);
     const opts = texture ? { map: texture } : null;
+
     const uniforms = {
-        u_palette: paletteTex,
-        u_paletteWidth: palette.size,
+        u_palette: { value: paletteTex },
+        u_paletteWidth: { value: palette.size },
     };
+    for (const [name, value] of Object.entries(initialUniforms || {}))
+        uniforms[name] = value;
 
     // The shader created by THREE.js contains a lot of useful things so it is simpler for now to
     // inject additional instructions rather than to write a shader from scratch.

@@ -13,6 +13,9 @@ import { TerrainProperties } from './properties.js';
 export class Terrain {
     private props: TerrainProperties;
 
+    // Pool of reusable chunks.
+    private chunkPool: ChunkPool;
+
     /**
      * Height generator normalised between .01 and 1.
      * The low bound is hard, the height cannot go below .01.
@@ -30,6 +33,7 @@ export class Terrain {
         render: RenderState
     ) {
         this.props = new TerrainProperties(chunks, noise, render);
+        this.chunkPool = new ChunkPool(this.props);
     }
 
     ////////////
@@ -43,7 +47,7 @@ export class Terrain {
      * @param chunk - The chunk whose mesh needs to be updated.
      */
     private updateMesh(chunk: Chunk, version: number) {
-        chunk.rebuild(this.props, version);
+        chunk.rebuild(version);
         this.meshGroup.add(chunk.mesh);
     }
 
@@ -70,9 +74,6 @@ export class Terrain {
 
     // Map of the chunks that are currently loaded and displayed.
     private chunks: Map<string, Chunk> = new Map();
-
-    // Pool of reusable chunks.
-    private chunkPool = new ChunkPool();
 
     /**
      * Recomputes the height function and updates the mesh of all active chunks.
@@ -156,7 +157,7 @@ export class Terrain {
     /** Resets the scale of all loaded meshes. */
     rescaleMeshes() {
         for (const [_, chunk] of this.chunks)
-            chunk.rescale(this.props);
+            chunk.rescale();
     }
 
     private within(...args: Parameters<Coordinates['spiralSquare']>) {
@@ -175,5 +176,18 @@ export class Terrain {
             this.props.width,
             this.props.height,
         );
+    }
+
+    /////////////
+    // Shaders //
+
+    get uniforms(): Object {
+        const shader = this.props.material.userData.shader;
+        if (!shader || !shader.uniforms) {
+            console.warn('Attempt to access shader uniform but no shader can be found.');
+            return {};
+        }
+
+        return shader.uniforms;
     }
 }

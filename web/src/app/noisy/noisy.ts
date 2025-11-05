@@ -289,6 +289,10 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
             this.renderer.lookAt(this.avatar.mesh.position);
         }
     }
+
+    updateUniform(key: string, value: any): void {
+        this.terrain.uniforms[key] = { value, type: 'f' };
+    }
 }
 
 function main(): void {

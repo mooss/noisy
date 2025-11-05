@@ -7,38 +7,47 @@ import { TerrainProperties } from './properties.js';
 
 export class Chunk {
     mesh?: THREE.Mesh;
-    private weaver = new ReusableWeaver();
+    private weaver: ReusableWeaver;
 
-    constructor(private coords: Coordinates, private version: number) { }
+    constructor(
+        private coords: Coordinates,
+        private props: TerrainProperties,
+        private version: number,
+    ) {
+        this.weaver = new ReusableWeaver(this.props);
+    }
+
     reset(coords: Coordinates) { this.coords = coords; this.version = undefined; }
 
     /**
      * Rebuild the mesh in-place, reusing the previous mesh if present, creating a new one
      * otherwise.
      */
-    rebuild(props: TerrainProperties, version: number) {
-        if (version === this.version) return null;
-        this.version = version;
-
-        // It should be possible to just modify the buffer attributes in place, it would require
-        // some modification in the weaver interface to signal that buffers can be reused.
-        disposeOfMesh(this.mesh);
-
-        const geometry = props.weave(this.coords, this.weaver);
-        const material = props.paint();
+    rebuild(version: number) {
 
         const mesh = this.mesh || new THREE.Mesh();
         this.mesh = mesh;
-        mesh.geometry = geometry;
-        mesh.material = material;
+
+        // It's important to make sure that the material is always up-to-date because it can become
+        // stale when uniforms change, plus painting is cheap because the painter is shared and the
+        // material is cached.
+        mesh.material = this.props.paint();
+
+        if (version !== this.version) {
+            // It should be possible to just modify the buffer attributes in place, it would require
+            // some modification in the weaver interface to signal that buffers can be reused.
+            disposeOfMesh(this.mesh);
+            mesh.geometry = this.props.weave(this.coords, this.weaver);
+        }
+        this.version = version;
+
         mesh.matrixAutoUpdate = false;
         mesh.position.set(this.coords.x * CHUNK_UNIT, this.coords.y * CHUNK_UNIT, 0);
-
-        this.rescale(props);
+        this.rescale();
     }
 
-    rescale(props: TerrainProperties) {
-        this.mesh?.scale.set(props.blockSize, props.blockSize, props.verticalUnit);
+    rescale() {
+        this.mesh?.scale.set(this.props.blockSize, this.props.blockSize, this.props.verticalUnit);
         this.mesh?.updateMatrix();
     }
 }
@@ -52,7 +61,9 @@ function disposeOfMesh(mesh?: THREE.Mesh) {
 // Pools //
 
 export class ChunkPool {
-    private pool = new Pool(() => new Chunk(new Coordinates(0, 0), undefined));
+    private pool = new Pool(() => new Chunk(new Coordinates(0, 0), this.props, undefined));
+
+    constructor(private props: TerrainProperties) { }
 
     acquire(coords: Coordinates): Chunk {
         const chunk = this.pool.acquire();

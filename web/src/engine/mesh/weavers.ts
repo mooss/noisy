@@ -9,6 +9,10 @@ import { FluentGeometry, ReusableArray, ReusableBuffer } from './utils.js';
 
 export type GeometryStyle = 'Surface' | 'Box' | 'Pixel';
 
+interface Parameters {
+    geometryStyle: GeometryStyle;
+}
+
 /** Geometry generator that reuses allocated resources when possible. */
 export class ReusableWeaver {
     cache = new Recycler<GeometryStyle, ChunkWeaver, []>({
@@ -16,6 +20,8 @@ export class ReusableWeaver {
         Box: () => new BoxWeaver(),
         Pixel: () => new PixelWeaver(),
     });
+
+    constructor(public params: Parameters) { }
 
     /**
      * Builds a geometry from the given noise function.
@@ -25,8 +31,8 @@ export class ReusableWeaver {
      *
      * @returns a geometry representing the chunk.
      */
-    weave(shape: GeometryStyle, fun: NoiseFun, resolution: number): THREE.BufferGeometry {
-        return this.cache.ensure(shape).weave(fun, resolution);
+    weave(fun: NoiseFun, resolution: number): THREE.BufferGeometry {
+        return this.cache.ensure(this.params.geometryStyle).weave(fun, resolution);
     }
 }
 

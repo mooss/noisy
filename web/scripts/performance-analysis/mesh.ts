@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Bench, TaskResult } from 'tinybench';
 import { PainterStyle, ReusablePainter } from '../../src/engine/mesh/painters.js';
-import { ReusableWeaver } from '../../src/engine/mesh/weavers.js';
+import { GeometryStyle, ReusableWeaver } from '../../src/engine/mesh/weavers.js';
 import { palettes } from '../../src/engine/palettes.js';
 import { Layered, Simplex } from '../../src/noise/algorithms.js';
 
@@ -20,15 +20,31 @@ const noise = new Layered({
 });
 noise.recompute();
 
-const mesher = new ReusableWeaver();
+const geometryStyle: GeometryStyle = 'Surface';
 const painterStyle: PainterStyle = 'Palette';
 const paletteName = 'Bright terrain';
 const palette = palettes[paletteName];
-const painter = new ReusablePainter({ paletteName, painterStyle, palette });
+const colorLowShift = 0;
+const colorHighShift = 0;
+const texturePath = '';
+
+const painter = new ReusablePainter({
+    geometryStyle,
+    painterStyle,
+    paletteName,
+    palette,
+    colorLowShift,
+    colorHighShift,
+    texturePath,
+});
+
+const weaver = new ReusableWeaver({
+    geometryStyle,
+    texturePath,
+});
 
 const mkmesh = (side: number) => {
-    const geometry = mesher.weave(
-        'Surface',
+    const geometry = weaver.weave(
         noise.normalised(.01, 1),
         side,
     );

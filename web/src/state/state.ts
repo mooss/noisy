@@ -13,6 +13,7 @@ interface GameCallbacksI {
     updateAvatar(): void;
     updateRender(): void;
     updateCamera(): void;
+    updateUniform(key: string, value: any): void;
 }
 export class GameCallbacks {
     constructor(private cb: GameCallbacksI) { };
@@ -25,6 +26,7 @@ export class GameCallbacks {
     }
     readonly render = {
         update: () => this.cb.updateRender(),
+        uniform: (key: string) => (value: any) => {this.cb.updateUniform(key, value)},
     }
     readonly camera = {
         update: () => this.cb.updateCamera(),

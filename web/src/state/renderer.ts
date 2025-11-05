@@ -25,9 +25,15 @@ class RenderStateP extends AutoAssign<RenderStateP> {
     //TIP: render_palette Color palette of the terrain.
     declare paletteName: string;
 
+    //TIP: color_low_shift Adjustement to the mapping between low heights and color. \nHigher values will shift the colors of the low heights upwards.
+    declare colorLowShift: number;
+
+    //TIP: color_high_shift Adjustement to the mapping between high heights and color. \nHigher values will shift the colors of the high heights downwards.
+    declare colorHighShift: number;
+
     declare light: LightConfig;
 
-    //TIP: height_multiplier Multiplier applied to the terrain height. Set to zero to display flat terrain.
+    //TIP: height_multiplier Multiplier applied to the terrain height. \nSet to zero to display a flat terrain.
     declare heightMultiplier: number;
 
     //TIP: render_texture Texture applied to the terrain. Only compatible with the surface geometry style.
@@ -69,6 +75,21 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         .onChange(cb.terrain.recompute)
         .tooltip(tips.render_texture);
 
+    root.range(state, 'colorLowShift', -1, 1, .01)
+        .label('Low color shift')
+        .onInput(cb.render.uniform('u_colorLowShift'))
+        .tooltip(tips.color_low_shift);
+
+    root.range(state, 'colorHighShift', -1, 1, .01)
+        .label('High color shift')
+        .onInput(cb.render.uniform('u_colorHighShift'))
+        .tooltip(tips.color_high_shift);
+
+    root.range(state, 'heightMultiplier', 0, 5.0, 0.02)
+        .label('Height multiplier')
+        .onInput(cb.render.update)
+        .tooltip(tips.height_multiplier);
+
     root.range(state.light.ambient, 'intensity', 0, 10, .2)
         .label('Ambient light')
         .onInput(cb.render.update)
@@ -78,9 +99,4 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         .label('Directional light')
         .onInput(cb.render.update)
         .tooltip(tips.light_directional);
-
-    root.range(state, 'heightMultiplier', 0, 5.0, 0.02)
-        .label('Height multiplier')
-        .onInput(cb.render.update)
-        .tooltip(tips.height_multiplier);
 }

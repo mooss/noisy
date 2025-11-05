@@ -49,6 +49,8 @@ export const tips = {
     render_geometry: "Fundamental shape the terrain is made of.",
     render_painter: "How the terrain will be rendered.",
     render_palette: "Color palette of the terrain.",
-    height_multiplier: "Multiplier applied to the terrain height.\nSet to zero to display flat terrain.",
+    color_low_shift: "Adjustement to the mapping between low heights and color.\n\nHigher values will shift upwards the colors of the low heights.",
+    color_high_shift: "Adjustement to the mapping between high heights and color.\n\nHigher values will shift downwards the colors of the high heights.",
+    height_multiplier: "Multiplier applied to the terrain height.\n\nSet to zero to display a flat terrain.",
     render_texture: "Texture applied to the terrain.\nOnly compatible with the surface geometry style.",
 }

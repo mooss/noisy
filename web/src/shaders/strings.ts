@@ -4,6 +4,6 @@
 export const shaders = {
     vs_palette_decl: 'varying float v_z;',
     vs_palette_impl: 'v_z = position.z;',
-    fs_palette_decl: 'uniform sampler2D u_palette;\nuniform float u_paletteWidth;\nvarying float v_z;',
-    fs_palette_impl: 'vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, v_z), 0.5);\n#ifdef USE_MAP\ndiffuseColor.rgb *= texture2D(u_palette, colorIdx).rgb;\n#else\ndiffuseColor.rgb = texture2D(u_palette, colorIdx).rgb;\n#endif',
+    fs_palette_decl: 'uniform sampler2D u_palette;\nuniform float u_paletteWidth;\nuniform float u_colorLowShift;\nuniform float u_colorHighShift;\nvarying float v_z;\n\nfloat shiftedColor() { return mix(u_colorLowShift, 1.0 + u_colorHighShift, v_z); }',
+    fs_palette_impl: 'vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, shiftedColor()), 0.5);\n#ifdef USE_MAP // Mix color and texture pattern.\ndiffuseColor.rgb *= texture2D(u_palette, colorIdx).rgb;\n#else // Use flat color.\ndiffuseColor.rgb = texture2D(u_palette, colorIdx).rgb;\n#endif',
 };
