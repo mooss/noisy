@@ -12,12 +12,12 @@ Code is injected in two points:
 Most of the magic happens in the fragment shader, where the height is used to deduce the fragment color.
 The vertex shader's role is just to forward this height.
 
-#+name: vs_palette_decl
+#+name: palette_vs_decl
 #+begin_src glsl
 varying float v_z;
 #+end_src
 
-#+name: vs_palette_impl
+#+name: palette_vs_impl
 #+begin_src glsl
 v_z = position.z;
 #+end_src
@@ -27,7 +27,7 @@ v_z = position.z;
 The one role of this fragment shader is to construct the colors from the height and the color palette.
 
 =shiftedColor= applies the =colorLowShift= and =colorHighShift= uniforms that adjusts the height to color mapping.
-#+name: fs_palette_decl
+#+name: palette_fs_decl
 #+begin_src glsl
 uniform sampler2D u_palette;
 uniform float u_paletteWidth;
@@ -46,7 +46,7 @@ This way, the results maintains the color pattern and imprints the texture upon 
 
 Textures are not supported by every geometry style, so when there are no texture (no map), a flat color is used.
 
-#+name: fs_palette_impl
+#+name: palette_fs_impl
 #+begin_src glsl
 vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, shiftedColor()), 0.5);
 #ifdef USE_MAP // Mix color and texture pattern.

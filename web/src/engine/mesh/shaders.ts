@@ -58,8 +58,8 @@ export function paletteShader(
     // inject additional instructions rather than to write a shader from scratch.
     return injectInShader(
         new THREE.MeshStandardMaterial(),
-        { decl: shaders.vs_palette_decl, impl: shaders.vs_palette_impl },
-        { decl: shaders.fs_palette_decl, impl: shaders.fs_palette_impl },
+        { decl: shaders.palette.vs.decl, impl: shaders.palette.vs.impl },
+        { decl: shaders.palette.fs.decl, impl: shaders.palette.fs.impl },
         uniforms,
     )
 }
