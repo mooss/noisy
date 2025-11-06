@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { shaders } from '../../shaders/strings.js';
 import { KeyCache, Recycler } from '../../utils/reuse.js';
 import { Palette } from '../palettes.js';
-import { injectShader } from './shaders.js';
+import { injectShader, Uniforms } from './shaders.js';
 import { palette2texture } from './textures.js';
 import { GeometryStyle } from './weavers.js';
 
@@ -42,9 +42,15 @@ export class PalettePainter {
     private cache = new KeyCache<string, THREE.MeshStandardMaterial>(
         () => this.mkshader(),
     );
+    private paletteTex = new KeyCache<string, THREE.Texture>(
+        () => palette2texture(this.params.palette)
+    );
 
     paint(): THREE.MeshStandardMaterial {
         const material = this.cache.value(this.cacheKey);
+
+        const uniforms = material.userData.shader?.uniforms;
+        if (uniforms) this.updateUniforms(uniforms);
 
         // Texture map.
         const tex = material.map;
@@ -74,16 +80,22 @@ export class PalettePainter {
     }
 
     private mkshader(): THREE.MeshStandardMaterial {
-        const palette = palette2texture(this.params.palette);
         const tex = this.loadtex(this.texturePath);
-        const res = injectShader(shaders.palette, {
+        const res = injectShader(shaders.palette, this.updateUniforms());
+        res.map = tex;
+        return res;
+    }
+
+    private updateUniforms(destination: Uniforms = {}): Uniforms {
+        const palette = this.paletteTex.value(this.params.paletteName);
+        const updates = {
             u_palette: { value: palette },
             u_paletteWidth: { value: this.params.palette.size },
             u_colorLowShift: { value: this.params.colorLowShift, type: 'f' },
             u_colorHighShift: { value: this.params.colorHighShift, type: 'f' },
-        });
-        res.map = tex;
-        return res;
+        }
+        Object.assign(destination, updates);
+        return destination;
     }
 
     private loadtex(path: string): THREE.Texture | null {

@@ -63,10 +63,12 @@ export class Terrain {
     // Chunk updates //
 
     private updateController = new AbortController();
+    private previousUpdateSignal: AbortSignal;
     private lockUpdate(): AbortSignal {
         this.updateController.abort();
         this.updateController = new AbortController();
-        return this.updateController.signal;
+        this.previousUpdateSignal = this.updateController.signal;
+        return this.previousUpdateSignal;
     }
 
     // Version to which the chunks must be updated.
@@ -146,10 +148,15 @@ export class Terrain {
     /**
      * Update the mesh material of all chunks.
      */
-    async repaint(signal?: AbortSignal) {
+    async repaint(signal = this.previousUpdateSignal) {
+        // The previous update must be taken into account.
+        // When just locking a new update, chunks that are in construction can dissapear.
+        // When repainting synchronously, this problem is fixed but there is a ton of flickering.
+        // This seems to fix the problem for some reason.
+        signal = signal || this.lockUpdate();
+
         for (const [_, chunk] of this.chunks) {
-            if (!signal) chunk.repaint()
-            else race(signal, () => chunk.repaint());
+            race(signal, () => chunk.repaint());
         }
     }
 

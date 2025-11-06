@@ -94,12 +94,12 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
 
     root.range(state, 'colorLowShift', -1, 1, .01)
         .label('Low color shift')
-        .onInput(cb.render.uniform('u_colorLowShift'))
+        .onInput(cb.terrain.repaint)
         .tooltip(tips.color_low_shift);
 
     root.range(state, 'colorHighShift', -1, 1, .01)
         .label('High color shift')
-        .onInput(cb.render.uniform('u_colorHighShift'))
+        .onInput(cb.terrain.repaint)
         .tooltip(tips.color_high_shift);
 
     root.range(state, 'heightMultiplier', 0, 5.0, 0.02)

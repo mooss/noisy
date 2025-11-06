@@ -4,6 +4,7 @@ type Uniform = {
     value: any,
     type?: string,
 }
+export type Uniforms = Record<string, Uniform>;
 type ImplDecl = {
     impl: string;
     decl: string;
@@ -31,7 +32,7 @@ function injectInShader<Mat extends THREE.Material>(
     material: Mat,
     vertex: ShaderInjection,
     fragment: ShaderInjection,
-    uniforms: Record<string, Uniform>,
+    uniforms: Uniforms,
 ): Mat {
     material.onBeforeCompile = shader => {
         for (const [name, value] of Object.entries(uniforms))
