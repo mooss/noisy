@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-type Uniform = {
+export type Uniform = {
     value: any,
     type?: string,
 }

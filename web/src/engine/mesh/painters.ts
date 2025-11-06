@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { shaders } from '../../shaders/strings.js';
 import { KeyCache, Recycler } from '../../utils/reuse.js';
 import { Palette } from '../palettes.js';
-import { injectShader, Uniforms } from './shaders.js';
+import { injectShader, Uniform, Uniforms } from './shaders.js';
 import { palette2texture } from './textures.js';
 import { GeometryStyle } from './weavers.js';
 
@@ -72,7 +72,7 @@ export class PalettePainter {
     // When this value change, it means that the material has been invalidated and needs to be rebuilt.
     private get cacheKey(): string {
         const keys = [
-            'paletteName', 'texturePath', 'colorLowShift', 'colorHighShift',
+            'texturePath',
         ];
         return keys
             .map((key: string) => this.params[key])
@@ -86,16 +86,21 @@ export class PalettePainter {
         return res;
     }
 
-    private updateUniforms(destination: Uniforms = {}): Uniforms {
+    private updateUniforms(dest: Uniforms = {}): Uniforms {
         const palette = this.paletteTex.value(this.params.paletteName);
-        const updates = {
-            u_palette: { value: palette },
-            u_paletteWidth: { value: this.params.palette.size },
-            u_colorLowShift: { value: this.params.colorLowShift, type: 'f' },
-            u_colorHighShift: { value: this.params.colorHighShift, type: 'f' },
+        const upd = (uniform: string, spec: Uniform) => {
+            if (!Object.hasOwn(dest, uniform)) {
+                dest[uniform] = spec;
+                return;
+            }
+            dest[uniform].value = spec.value;
+            dest[uniform].type = spec.type;
         }
-        Object.assign(destination, updates);
-        return destination;
+        upd('u_palette', { value: palette });
+        upd('u_paletteWidth', { value: this.params.palette.size });
+        upd('u_colorLowShift', { value: this.params.colorLowShift, type: 'f' });
+        upd('u_colorHighShift', { value: this.params.colorHighShift, type: 'f' });
+        return dest;
     }
 
     private loadtex(path: string): THREE.Texture | null {

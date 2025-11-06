@@ -69,7 +69,7 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
 
     root.array(state, 'paletteName', Object.keys(palettes))
         .label('Palette')
-        .onChange(cb.terrain.recompute)
+        .onChange(cb.terrain.repaint)
         .tooltip(tips.render_palette);
 
     const texmap: Record<string, string> = {
