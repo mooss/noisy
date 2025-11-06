@@ -1,4 +1,4 @@
-import { Panel } from '../gui/gui.js';
+import { Panel } from '../gui/panels/panel.js';
 import { vector3 } from '../maths/maths.js';
 import { tips } from '../ui/tips.js';
 import { AutoAssign } from '../utils/objects.js';

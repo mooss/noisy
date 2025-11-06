@@ -1,5 +1,5 @@
 import { StaticText } from '../gui/components/parameters.js';
-import { Panel } from '../gui/gui.js';
+import { Panel } from '../gui/panels/panel.js';
 
 class FpsCounter {
     private delta: number = 0;

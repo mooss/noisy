@@ -1,4 +1,4 @@
-import { Panel } from "../gui/gui.js";
+import { Panel } from "../gui/panels/panel.js";
 import { Layered } from "../noise/algorithms.js";
 import { AlgoPicker } from "../noise/containers.js";
 import { NoiseMakerI } from "../noise/foundations.js";

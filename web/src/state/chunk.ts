@@ -1,5 +1,5 @@
 import { CHUNK_UNIT } from "../../config/constants.js";
-import { Panel } from "../gui/gui.js";
+import { Panel } from "../gui/panels/panel.js";
 import { tips } from "../ui/tips.js";
 import { AutoAssign } from "../utils/objects.js";
 import { GameCallbacks, register } from "./state.js";

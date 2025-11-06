@@ -2,7 +2,7 @@ import { CHUNK_HEIGHT_DENOMINATOR, CHUNK_UNIT } from '../../config/constants.js'
 import { PainterStyle } from '../engine/mesh/painters.js';
 import { GeometryStyle } from '../engine/mesh/weavers.js';
 import { Palette, palettes } from '../engine/palettes.js';
-import { Panel } from '../gui/gui.js';
+import { Panel } from '../gui/panels/panel.js';
 import { tips } from '../ui/tips.js';
 import { AutoAssign } from '../utils/objects.js';
 import { GameCallbacks, register } from './state.js';
