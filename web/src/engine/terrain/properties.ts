@@ -60,7 +60,6 @@ export class TerrainProperties {
 
     paint(): THREE.Material {
         this.cachedMaterial = this.painter.paint();
-        updateMaterial(this.cachedMaterial, this.render);
         return this.cachedMaterial;
     }
 
@@ -93,20 +92,4 @@ export class TerrainProperties {
 
     get width(): number { return (1 + 2 * this.loadRadius) * this.resolution }
     get height(): number { return this.width }
-}
-
-export function updateMaterial(material: THREE.MeshStandardMaterial, params: RenderState) {
-    // Texture map.
-    const tex = material.map;
-    if (tex) {
-        const rep = params.textureRepeat;
-        tex.repeat.x = rep;
-        tex.repeat.y = rep;
-        tex.wrapS = THREE.RepeatWrapping;
-        tex.wrapT = THREE.RepeatWrapping;
-    }
-
-    // Bump map.
-    material.bumpMap = tex;
-    material.bumpScale = params.textureBumpScale;
 }

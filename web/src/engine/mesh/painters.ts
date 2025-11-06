@@ -1,7 +1,9 @@
 import * as THREE from 'three';
+import { shaders } from '../../shaders/strings.js';
 import { KeyCache, Recycler } from '../../utils/reuse.js';
 import { Palette } from '../palettes.js';
-import { paletteShader } from './shaders.js';
+import { injectShader } from './shaders.js';
+import { palette2texture } from './textures.js';
 import { GeometryStyle } from './weavers.js';
 
 export type PainterStyle = 'Palette';
@@ -13,6 +15,8 @@ interface Parameters {
     colorLowShift: number;
     colorHighShift: number;
     texturePath: string;
+    textureRepeat: number;
+    textureBumpScale: number;
 }
 
 export class ReusablePainter {
@@ -40,7 +44,23 @@ export class PalettePainter {
     );
 
     paint(): THREE.MeshStandardMaterial {
-        return this.cache.value(this.cacheKey);
+        const material = this.cache.value(this.cacheKey);
+
+        // Texture map.
+        const tex = material.map;
+        if (tex) {
+            const rep = this.params.textureRepeat;
+            tex.repeat.x = rep;
+            tex.repeat.y = rep;
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+        }
+
+        // Bump map.
+        material.bumpMap = tex;
+        material.bumpScale = this.params.textureBumpScale;
+
+        return material;
     }
 
     // When this value change, it means that the material has been invalidated and needs to be rebuilt.
@@ -54,13 +74,15 @@ export class PalettePainter {
     }
 
     private mkshader(): THREE.MeshStandardMaterial {
+        const palette = palette2texture(this.params.palette);
         const tex = this.loadtex(this.texturePath);
-        const res = paletteShader(this.params.palette, {
-            'u_colorLowShift': { value: this.params.colorLowShift, type: 'f' },
-            'u_colorHighShift': { value: this.params.colorHighShift, type: 'f' },
+        const res = injectShader(shaders.palette, {
+            u_palette: { value: palette },
+            u_paletteWidth: { value: this.params.palette.size },
+            u_colorLowShift: { value: this.params.colorLowShift, type: 'f' },
+            u_colorHighShift: { value: this.params.colorHighShift, type: 'f' },
         });
         res.map = tex;
-
         return res;
     }
 
