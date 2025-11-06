@@ -146,9 +146,10 @@ export class Terrain {
     /**
      * Update the mesh material of all chunks.
      */
-    async repaint(signal: AbortSignal = this.lockUpdate()) {
+    async repaint(signal?: AbortSignal) {
         for (const [_, chunk] of this.chunks) {
-            race(signal, () => chunk.repaint());
+            if (!signal) chunk.repaint()
+            else race(signal, () => chunk.repaint());
         }
     }
 
