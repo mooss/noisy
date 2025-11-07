@@ -12,8 +12,10 @@ export type NoiseClass =
     | 'Terracing' | 'VoxelTerracing'
     // Tiling.
     | 'QuadTiling' | 'SineTiling' | 'MirroredTiling'
+    // Transforms.
+    | 'Steepness' | 'Exponentiation'
     // Other processing algorithms.
-    | 'Warping' | 'Clustering' | 'Identity' | 'Steepness'
+    | 'Warping' | 'Clustering' | 'Identity'
     // Noise data structures.
     | 'NoisePipeline' | 'AlgoPicker' | 'PipelinePicker';
 

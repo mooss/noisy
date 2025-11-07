@@ -85,9 +85,11 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
         case 'VoxelTerracing':
             return;
         case 'Steepness':
-            const steepf = root.folder('Steepness').tooltip(tips.steepness);
-            return steepf.range(noise.p, 'factor', 0, 10, .1)
+            return root.range(noise.p, 'factor', 0, 10, .1)
                 .label('Strength').tooltip(tips.steepness_factor).onInput(cb);
+        case 'Exponentiation':
+            return root.range(noise.p, 'exponent', 0, 10, .1).
+                label('Exponent').tooltip(tips.exponentiation_exponent).onInput(cb);
         default:
     }
     console.warn('Unknow noise class in UI:', noise.class, 'recursing anyway');
@@ -112,11 +114,18 @@ const ttTiling = {
     Sine: tips.tiling_sine,
 }
 
+const ttTransform = {
+    None: tips.transform_none,
+    Steepness: tips.steepness,
+    Exponentiation: tips.exponentiation,
+}
+
 const ttTitles = {
     Tiling: tips.tiling,
     Terracing: tips.terracing,
     //TIP: height Algorithm generating the height of the terrain.
     Height: tips.height,
+    Transform: tips.transforms,
 }
 
 interface tooltiper { tooltip(tip: string): void; }
@@ -130,6 +139,7 @@ function mapUI(noise: AlgoPicker<any>, root: Panel, cb: () => void, title: strin
         Height: ttHeight,
         Tiling: ttTiling,
         Terracing: ttTerracing,
+        Transform: ttTransform,
     }[title];
 
     const pick = noise as AlgoPicker<any>;
