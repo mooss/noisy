@@ -64,17 +64,14 @@ export class PalettePainter {
 
         // Bump map.
         material.bumpMap = tex;
-        material.bumpScale = this.params.textureBumpScale;
+        material.bumpScale = this.bumpScale;
 
         return material;
     }
 
     // When this value change, it means that the material has been invalidated and needs to be rebuilt.
     private get cacheKey(): string {
-        const keys = [
-            'texturePath',
-        ];
-        return keys
+        return ['texturePath']
             .map((key: string) => this.params[key])
             .join(' !! ');
     }
@@ -117,5 +114,14 @@ export class PalettePainter {
     private get texturePath(): string {
         if (this.params.geometryStyle === 'Surface') return this.params.texturePath;
         return '';
+    }
+
+    /**
+     * Returns the bump scale when using a surface geometry style.
+     * It always returns 0 otherwise to avoid some weird shiny flickering effect.
+     */
+    private get bumpScale(): number {
+        if (this.params.geometryStyle === 'Surface') return this.params.textureBumpScale;
+        return 0;
     }
 }
