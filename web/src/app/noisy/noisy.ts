@@ -131,7 +131,8 @@ class Game {
         chunksUI(this.state.chunks, gui.folder('Chunks').tooltip(tips.chunks), this.callbacks);
         renderUI(this.state.render, gui.folder('Render'), this.callbacks);
         cameraUI(this.state.camera, gui.folder('Camera'), this.callbacks);
-        avatarUI(this.state.avatar, gui.folder('Avatar').close(), this.callbacks);
+        // Avatar UI is basically useless right now since the avatar is so minimalist.
+        // avatarUI(this.state.avatar, gui.folder('Avatar').close(), this.callbacks);
 
         const tergen = new GUI().title('Terrain Generation').collapsible();
         noiseUI(this.state.noise, tergen, this.callbacks);
