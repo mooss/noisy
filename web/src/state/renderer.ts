@@ -7,6 +7,14 @@ import { tips } from '../ui/tips.js';
 import { AutoAssign } from '../utils/objects.js';
 import { GameCallbacks, register } from './state.js';
 
+
+
+export const textures = {
+    None: '',
+    Cobbly: 'https://mooss.github.io/noisy/textures/cobbly.png',
+    Foggy: 'https://mooss.github.io/noisy/textures/foggy.png',
+};
+
 interface LightConfig {
     //TIP: light_ambient Ambient light intensity.
     ambient: { intensity: number };
@@ -63,57 +71,66 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         'Pixels': 'Pixel',
     };
     root.map(state, 'geometryStyle', geomap)
-        .label('Shape')
+        .label('Geometry')
         .onChange(cb.terrain.recompute)
         .tooltip(tips.render_geometry);
 
-    root.array(state, 'paletteName', Object.keys(palettes))
+    const deck = root.deck();
+
+    ////////////
+    // Colors //
+    const colors = deck.card('Colors');
+
+    colors.array(state, 'paletteName', Object.keys(palettes))
         .label('Palette')
         .onChange(cb.terrain.repaint)
         .tooltip(tips.render_palette);
 
-    const texmap: Record<string, string> = {
-        'None': '',
-        'Cobbly': 'https://mooss.github.io/noisy/textures/cobbly.png',
-        'Foggy': 'https://mooss.github.io/noisy/textures/foggy.png',
-    }
-    root.map(state, 'texturePath', texmap)
-        .label('Texture')
-        .onChange(cb.terrain.recompute)
-        .tooltip(tips.render_texture);
-
-    root.range(state, 'textureRepeat', 1, 10, 1)
-        .label('Texture repeat')
-        .onInput(cb.terrain.repaint)
-        .tooltip(tips.render_texture_repeat);
-
-    root.range(state, 'textureBumpScale', 0, 20, 0.5)
-        .label('Texture bump scale')
-        .onInput(cb.terrain.repaint)
-        .tooltip(tips.render_texture_bump_scale);
-
-    root.range(state, 'colorLowShift', -1, 1, .01)
+    colors.range(state, 'colorLowShift', -1, 1, .01)
         .label('Low color shift')
         .onInput(cb.terrain.repaint)
         .tooltip(tips.color_low_shift);
 
-    root.range(state, 'colorHighShift', -1, 1, .01)
+    colors.range(state, 'colorHighShift', -1, 1, .01)
         .label('High color shift')
         .onInput(cb.terrain.repaint)
         .tooltip(tips.color_high_shift);
 
-    root.range(state, 'heightMultiplier', 0, 5.0, 0.02)
-        .label('Height multiplier')
-        .onInput(cb.render.update)
-        .tooltip(tips.height_multiplier);
+    //////////////
+    // Textures //
+    const texs = deck.card('Textures');
 
-    root.range(state.light.ambient, 'intensity', 0, 10, .2)
+    texs.map(state, 'texturePath', textures)
+        .label('Texture')
+        .onChange(cb.terrain.recompute)
+        .tooltip(tips.render_texture);
+
+    texs.range(state, 'textureRepeat', 1, 10, 1)
+        .label('Repeat')
+        .onInput(cb.terrain.repaint)
+        .tooltip(tips.render_texture_repeat);
+
+    texs.range(state, 'textureBumpScale', 0, 20, 0.5)
+        .label('Texture bump scale')
+        .onInput(cb.terrain.repaint)
+        .tooltip(tips.render_texture_bump_scale);
+
+    //////////////
+    // Lighting //
+    const lighting = deck.card('Lighting & Scale');
+
+    lighting.range(state.light.ambient, 'intensity', 0, 10, .2)
         .label('Ambient light')
         .onInput(cb.render.update)
         .tooltip(tips.light_ambient);
 
-    root.range(state.light.directional, 'intensity', 0, 10, .2)
+    lighting.range(state.light.directional, 'intensity', 0, 10, .2)
         .label('Directional light')
         .onInput(cb.render.update)
         .tooltip(tips.light_directional);
+
+    lighting.range(state, 'heightMultiplier', 0, 5.0, 0.02)
+        .label('Height multiplier')
+        .onInput(cb.render.update)
+        .tooltip(tips.height_multiplier);
 }
