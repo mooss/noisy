@@ -110,8 +110,8 @@ interface ClusteringP {
 export class Clustering extends NoiseWrapper<ClusteringP> {
     get class(): NoiseClass { return 'Clustering' }
     make(): NoiseFun {
+        if (!this.p.enabled) return this.wrapped.make();
         const fun = this.wrapped.normalised(0, 1);
-        if (!this.p.enabled) return fun;
         return (x, y) => {
             const raw = fun(x, y);
             x = this.p.coorscale * x + this.p.noisescale * raw;
@@ -119,8 +119,8 @@ export class Clustering extends NoiseWrapper<ClusteringP> {
             return fun(Math.round(x), Math.round(y));
         }
     }
-    get low() { return 0; }
-    get high() { return 1; }
+    get low() { return this.p.enabled ? 0 : this.wrapped.low }
+    get high() { return this.p.enabled ? 1 : this.wrapped.high }
 }
 register('Clustering', Clustering);
 
