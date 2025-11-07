@@ -94,49 +94,49 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
     foreachEntries((_, value) => noiseUI_impl(value as NoiseMakerI, root, cb), noise);
 }
 
-// The functional nature of UI definition forces us to hardcode tooltip-deduction logic here.
-// Really highlights the need to move to a declarative UI.
-function title2tooltip(title: string): string {
-    switch (title) {
-        case 'Constant':
-            return tips.terracing_constant;
-        case 'Voxel':
-            return tips.terracing_voxels;
-        case 'Simplex':
-            return tips.simplex;
-        case 'Ridge':
-            return tips.ridge;
-        case 'Continental mix':
-            return tips.continental_mix;
-        case 'Terracing':
-            return tips.terracing;
-        case 'Tiling':
-            return tips.tiling;
-        case 'Quad':
-            return tips.tiling_quad;
-        case 'Mirrored':
-            return tips.tiling_mirrored;
-        case 'Sine':
-            return tips.tiling_sine;
-        case 'None':
-            return tips.tiling_none;
-        case 'Height':
-            //TIP: height Algorithm generating the height of the terrain.
-            return tips.height;
-    }
+const ttTerracing = {
+    Constant: tips.terracing_constant,
+    Voxel: tips.terracing_voxels,
 }
+
+const ttHeight = {
+    Simplex: tips.simplex,
+    Ridge: tips.ridge,
+    'Continental mix': tips.continental_mix,
+}
+
+const ttTiling = {
+    None: tips.tiling_none,
+    Quad: tips.tiling_quad,
+    Mirrored: tips.tiling_mirrored,
+    Sine: tips.tiling_sine,
+}
+
+const ttTitles = {
+    Tiling: tips.tiling,
+    Terracing: tips.terracing,
+    //TIP: height Algorithm generating the height of the terrain.
+    Height: tips.height,
+}
+
 interface tooltiper { tooltip(tip: string): void; }
-function addTooltip(title: string, ui: tooltiper) {
-    const tooltip = title2tooltip(title);
+function addTooltip(title: string, ui: tooltiper, tips: Record<string, string>) {
+    const tooltip = tips[title];
     if (tooltip != null) ui.tooltip(tooltip);
 }
 
 function mapUI(noise: AlgoPicker<any>, root: Panel, cb: () => void, title: string) {
+    const tips = {
+        Height: ttHeight,
+        Tiling: ttTiling,
+        Terracing: ttTerracing,
+    }[title];
+
     const pick = noise as AlgoPicker<any>;
     const algos = pick.p.algorithms;
     const fold = root.folder(title);
     const deck = fold.deck();
-    addTooltip(title, fold);
+    addTooltip(title, fold, ttTitles);
 
     for (const key in algos) {
         const card = deck.card(key);
@@ -147,7 +147,7 @@ function mapUI(noise: AlgoPicker<any>, root: Panel, cb: () => void, title: strin
         });
         const alg = algos[key];
 
-        addTooltip(key, card);
+        addTooltip(key, card, tips);
         noiseUI_impl(alg, card, cb);
     }
 }
