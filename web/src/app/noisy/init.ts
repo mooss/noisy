@@ -3,7 +3,7 @@ import { noiseAlgorithms, NoiseState } from "../../noise/init.js";
 import { AvatarState } from "../../state/avatar.js";
 import { CameraState } from "../../state/camera.js";
 import { ChunkState } from "../../state/chunk.js";
-import { RenderState } from "../../state/renderer.js";
+import { RenderState, textures } from "../../state/renderer.js";
 import { StateRegistry } from "../../state/state.js";
 
 /**
@@ -37,7 +37,7 @@ export const REFERENCE_STATE = {
             directional: { intensity: 3 },
         },
         heightMultiplier: 1,
-        texturePath: '',
+        texturePath: textures.Cobbly,
         textureRepeat: 5,
         textureBumpScale: 4,
     }),
