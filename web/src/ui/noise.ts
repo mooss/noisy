@@ -77,13 +77,17 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
         case 'MirroredTiling':
             root.bool(noise.p, 'normalizeX')
                 .label('Normalize X').tooltip(tips.tilling_mirrored_fraction_x).onInput(cb);
-            root.bool(noise.p, 'normalizeY')
+            return root.bool(noise.p, 'normalizeY')
                 .label('Normalize Y').tooltip(tips.tilling_mirrored_fraction_y).onInput(cb);
         case 'QuadTiling':
         case 'SineTiling':
         case 'Identity':
         case 'VoxelTerracing':
             return;
+        case 'Steepness':
+            const steepf = root.folder('Steepness').tooltip(tips.steepness);
+            return steepf.range(noise.p, 'factor', 0, 10, .1)
+                .label('Strength').tooltip(tips.steepness_factor).onInput(cb);
         default:
     }
     console.warn('Unknow noise class in UI:', noise.class, 'recursing anyway');

@@ -13,7 +13,7 @@ export type NoiseClass =
     // Tiling.
     | 'QuadTiling' | 'SineTiling' | 'MirroredTiling'
     // Other processing algorithms.
-    | 'Warping' | 'Clustering' | 'Identity'
+    | 'Warping' | 'Clustering' | 'Identity' | 'Steepness'
     // Noise data structures.
     | 'NoisePipeline' | 'AlgoPicker' | 'PipelinePicker';
 

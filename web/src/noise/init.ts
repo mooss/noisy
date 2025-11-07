@@ -8,6 +8,7 @@ import { NoisePipeline, PipelinePicker } from "./processing/pipeline.js";
 import { IdentityWrapper } from "./processing/processing.js";
 import { Terracing, VoxelTerracing } from "./processing/terracing.js";
 import { MirroredTiling, QuadTiling, SineTiling } from "./processing/tiling.js";
+import { Steepness } from "./processing/transform.js";
 import { Warping } from "./processing/warping.js";
 
 export function noiseAlgorithms(chunks: ChunkState) {
@@ -92,6 +93,7 @@ export function noiseAlgorithms(chunks: ChunkState) {
     const res = new NoisePipeline({
         base: map,
         pipeline: [
+            new Steepness({ factor: 1 }),
             new Clustering({
                 coorscale: 3,
                 noisescale: 2,
