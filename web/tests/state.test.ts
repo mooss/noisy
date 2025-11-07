@@ -5,7 +5,8 @@ import { ContinentalMix, Layered, Ridge, Simplex } from "../src/noise/algorithms
 import { AlgoPicker } from "../src/noise/containers.js";
 import { NoiseMakerI } from "../src/noise/foundations.js";
 import { noiseAlgorithms } from "../src/noise/init.js";
-import { NoisePipeline, Terracing } from "../src/noise/processing.js";
+import { NoisePipeline } from "../src/noise/processing/pipeline.js";
+import { Terracing } from "../src/noise/processing/terracing.js";
 import { StateRegistry } from "../src/state/state.js";
 
 describe('NoiseCodec', () => {

@@ -2,7 +2,7 @@ import { Panel } from "../gui/panels/panel.js";
 import { Layered } from "../noise/algorithms.js";
 import { AlgoPicker } from "../noise/containers.js";
 import { NoiseMakerI } from "../noise/foundations.js";
-import { PipelinePicker } from "../noise/processing.js";
+import { PipelinePicker } from "../noise/processing/pipeline.js";
 import { GameCallbacks } from "../state/state.js";
 import { tips } from "../ui/tips.js";
 import { foreachEntries } from "../utils/objects.js";
@@ -98,8 +98,6 @@ function title2tooltip(title: string): string {
             return tips.terracing_constant;
         case 'Voxel':
             return tips.terracing_voxels;
-        case 'Noisy':
-            return tips.terracing_noisy;
         case 'Simplex':
             return tips.simplex;
         case 'Ridge':
