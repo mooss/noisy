@@ -1,0 +1,203 @@
+* Versions
+
+** TODO Alpha 5 (elderberry)
+*** DONE GLSL in org-mode
+Write GLSL code blocks and make them available in a ts file (like tips)
+Maybe vendor the perl script from litlib to help with that
+*** DONE Fix the surface (and maybe box) chunks slightly shifting when increasing the resolution
+*** DONE Pixel render shape
+*** DONE Remove noisy terracing
+*** DONE Download as texture
+*** DONE Textures
+**** DONE Arbitrary texture (just get it to work)
+**** DONE Make custom textures
+*** DONE Mesh management
+**** DONE Find a way to make the disgusting async chunk loading good (maybe later...)
+**** DONE Reuse weavers in Chunk
+**** DONE Implement a chunk pool to limit reallocation when entering a new chunk
+
+
+*** TODO Slightly shift height when interpolating colors
+Simplex in shader?
+*** TODO Improve UI
+**** DONE Minimalist, dense dark and white theme
+**** DONE Dock panels on left and/or right, no margin
+**** TODO Add top bar (desktop style) with buttons
+***** TODO Make an export entry (texture, screenshot, JSON).
+**** DONE Make tabs behave similarly to buttons
+*** TODO Start setting up linter
+*** TODO Rename "blocks in a chunk" to "resolution"
+*** TODO Set more reasonable min, max and default values for noise parameters
+*** TODO Max/union noise (take the highest value of different functions)
+*** TODO Custom octaves
+For instance octave 1 nad 2 are ridge, 3 and 4 are simplex.
+Would mix well with max noise.
+
+
+** Future versions
+
+*** UI
+**** Visual difference between cards and selection cards
+Selection cards is when only the active card applies something (like with noise algos).
+Akin to a radio button.
+Should probably make one for checkboxes eventually.
+**** Declarative GUI and store it in state
+
+#+begin_src js
+{
+    'folder:a' {
+        'range:fundamental': {step: 2, min:12, max: 120},
+        'range:octaves': {step: 12, min: 654, max: 635646354},
+    },
+    'folder:b' {
+        'range:persistence': {step: 12, min: 654, max: 635646354},
+    }
+    frequency: 23,
+}
+#+end_src
+Encode them Using the same meta scheme as the others.
+Important step to allow modifying the UI in the UI (reordering, adding layers, etc).
+
+**** Floating notification
+**** GUI warnings
+**** Mobile UI
+
+*** UX
+**** Advanced mode
+By default, hide complicated parameters to make the interface less intimidating.
+**** Noise library/environment
+A dedicated panel with a mapping from names to noise, reusable.
+Should it be references, templates or both? There might be a need for both (instances/references have values and changing one will change all the others, whereas classes/templates only have default value and might need to be instanciated).
+**** Scenes/presets
+Propose different starting points that are more focused and less overwhelming (texture editor, montain range).
+
+
+*** Noise / world generation
+**** Proper clusters
+Like the clunky round+warp clustering as of elderberry but good.
+Would be a first step towards biomes.
+
+*** Performance
+**** Chunk computation in web workers
+The framerate still drops on the Steam Deck even at 128 chunk resolution.
+**** Frustrum culling
+**** LOD
+**** Consider using integers to define vertex positions
+**** Don't launch every chunk load asynchronously (use a pool)
+**** Displacement and normal mapping
+***** For surfaces
+***** For boxes
+**** Reuse meshes / buffers (*SET ASIDE FOR NOW*)
+Probably quite a lot of work.
+See =stash@{0} Work on reusing buffer geometries, needs some kind of smarter meshmanagement in terrain/mesh ; On dev/dandelion: 9fc64da Always render for the first second=
+More doable now that there is a pool implemented.
+
+
+*** Parameters
+**** Add texture filter parameter
+To change paletteTex.magFilter and paletteTex.minFilter.
+
+
+*** Rendering
+**** Fix voxel terracing when height multiplier is changed
+Make a special case somehow when changing the mult in voxel mode.
+**** Hand-roll shaders
+The injection leaves too little control and everything is clumsy and difficult to do.
+***** Break texture pattern
+https://iquilezles.org/articles/texturerepetition/
+***** Cell-shading or something cartoonish or colorful
+**** Ocean layer
+Don't use texture under the ocean line and shade the surface with waves/whatever.
+
+
+*** Features
+**** STL export
+**** Moon
+**** Real world map (nominatim)
+
+
+*** Others
+**** Better URI compression when needed
+***** Only store the diff
+***** Dict-compress whole objects, not just leaves
+It should help a lot and not be so hard.
+All paths were nothing is changed would be pruned.
+***** Custom quoteless string serialization format instead of JSON
+**** Warn when URI length is too big (2000?)
+**** Replace various callback patterns with iterators
+=Coordinates.spiralSquare= for instance.
+**** Go applet that works under Wayland
+**** Try catch the main function and display the error message
+**** Rethink low and high bounds computation
+Maybe everything should be computed at the very top of the noise chain instead of this convoluted low/high/recompute recursive chain.
+Will make things much much simpler so this is basically a must-have.
+Add a UI to change the sampling parameters and an way to tweak the bounds up/down.
+**** Chunk atomisation
+Shrink / grow chunk real size (CHUNK_UNIT but can't just tie CHUNK_UNIT to a parameter, will be more complex).
+**** Show dependencies and licences more proheminently
+
+
+*** Out of reach
+Techniques that are a bit too complex to be tackled in the short term but are worth thinking about eventually.
+**** Analytic derivative
+Time consuming, a lot of maths, probably requires to hand-write noise functions.
+
+
+* DONE Released
+
+** DONE Alpha 2 (bean)
+*** DONE Warping
+*** DONE Support arrays when encoding state
+Done but unused in the end.
+*** DONE Noise processing tower
+*** DONE Noisy terracing strategy
+*** DONE Noise processing map
+*** DONE Flat rendering
+Was just a question of putting the height multiplier at 0.
+*** DONE Only center on avatar with follow camera when the avatar actually moves
+*** DONE Store approximative position and camera in state
+*** DONE Tabulate first level of folder
+*** DONE New palettes
+Coffe stains and rainbow.
+
+
+** DONE Alpha 3 (coriander)
+*** DONE Usage advice / basic explanation
+Required information:
+ - Interaction (mouse+WASD).
+ - Documentation of parameters.
+ - Brief explanation of the project and its principles (interactive procedural generation with noise, what else?).
+*** DONE Show versatility
+ - List of screenshot of various scenes
+*** DONE Changelog
+*** DONE Update README with new screenshots
+
+
+** DONE Alpha 4 (dandelion)
+*** DONE Fix the horrible structure of noise state
+**** DONE Flatten the structure (no params and use "#meta" for the meta field)
+**** DONE Flat processing chain (not the horrible nested chains of wrappers)
+**** DONE Better Lexon64 size estimation
+*** DONE Optimize the boxes away
+
+Maybe later, should first find a way to remove the wasteful color array with something more reasonable (1d texture).
+
+Look around at the neighboring cells and only make a mesh for the pertinent faces, not the whole box.
+Probably requires to remove the hexagons, that's probably for the best.
+*** DONE Profile and optimize mesh creation
+*** DONE Asynchronous / parallel chunk rendering
+*** DONE Asynchronous radius change
+*** DONE (?) Use environment
+Define processing steps and noise algos as variables in an environment.
+Implemented as implicit aliasing encoding instead of an explicit environment.
+*** DONE Fix terraces number
+Currently 1 shows 2 terraces and so on.
+*** DONE Cubic terracing policy (voxel terracing)
+Requires env-based state, because it is necessary to know the chunk resolution, which has to be a reference.
+*** DONE Spiral chunk loading
+*** DONE Investigate negative heights (bad sampling?)
+Tweaked the sampling a bit, but this cannot fully dissapear.
+*** DONE Add some button to redisplay the welcome message
+*** DONE Use texture even for flat color (if possible)
+Maybe using a 1d texture indexed by the height would be possible, might require a dedicated shader though :/.
+
