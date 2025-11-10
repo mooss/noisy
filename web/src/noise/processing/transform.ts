@@ -43,7 +43,7 @@ export class Exponentiation extends NoiseWrapper<ExponentiationP> {
         if (!this.enabled) return this.wrapped.make();
         const fun = this.wrapped.normalised(0, 1);
         return (x, y) => {
-            return fun(x, y) ** this.p.exponent;
+            return Math.max(0, fun(x, y)) ** this.p.exponent;
         }
     }
     get low() { return this.enabled ? 0 : this.wrapped.low }
