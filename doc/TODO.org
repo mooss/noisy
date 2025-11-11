@@ -16,6 +16,7 @@ Maybe vendor the perl script from litlib to help with that
 **** DONE Reuse weavers in Chunk
 **** DONE Implement a chunk pool to limit reallocation when entering a new chunk
 *** DONE Use terrain normal to shift the color in the shader
+*** DONE Start setting up linter
 
 
 *** TODO Slightly shift height when interpolating colors
@@ -26,7 +27,6 @@ Simplex in shader?
 **** TODO Add top bar (desktop style) with buttons
 ***** TODO Make an export entry (texture, screenshot, JSON).
 **** DONE Make tabs behave similarly to buttons
-*** TODO Start setting up linter
 *** TODO Rename "blocks in a chunk" to "resolution"
 *** TODO Set more reasonable min, max and default values for noise parameters
 *** TODO Max/union noise (take the highest value of different functions)
