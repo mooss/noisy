@@ -1,4 +1,4 @@
-import { clamp } from "../../maths/maths.js";
+import { clamp, roundstep } from "../../maths/maths.js";
 import { HtmlCssElement, spawn } from "../html.js";
 import { Facet, Blawhi } from "../style.js";
 
@@ -93,7 +93,7 @@ export class RangeControl extends InputControlImpl<number, HTMLDivElement> {
             const stepValue = parseFloat(this.slider.step) || 1;
             const delta = event.deltaY > 0 ? -stepValue : stepValue;
             const newValue = clamp(
-                this.value + delta,
+                roundstep(this.value + delta, stepValue),
                 parseFloat(this.slider.min),
                 parseFloat(this.slider.max)
             );

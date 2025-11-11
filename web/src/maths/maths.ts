@@ -75,3 +75,10 @@ export function fracpart(input: number): number {
     if (input < 0) input += 1;
     return input;
 }
+
+/**
+ * Round to the nearest multiple of a number.
+ */
+export function roundstep(input: number, step: number): number {
+    return Math.round(input / step) * step;
+}
