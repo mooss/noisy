@@ -39,6 +39,9 @@ class RenderStateP extends AutoAssign<RenderStateP> {
     //TIP: color_high_shift Adjustement to the mapping between high heights and color. \nHigher values will shift the colors of the high heights downwards.
     declare colorHighShift: number;
 
+    //TIP: color_slope How much the terrain slope modifies the color. \nHigher values makes the color shift upwards in the palette when the terrain slope is more pronounced.
+    declare _colorSlope: number;
+
     declare light: LightConfig;
 
     //TIP: height_multiplier Multiplier applied to the terrain height. \nSet to zero to display a flat terrain.
@@ -60,6 +63,12 @@ export class RenderState extends RenderStateP {
 
     get verticalUnit(): number {
         return (CHUNK_UNIT / CHUNK_HEIGHT_DENOMINATOR) * this.heightMultiplier;
+    }
+
+    get colorSlope(): number {
+        // This parameter only makes sense for surface geometry because it is linked to the
+        // steepness of the terrain (and therefore only works with proper normals).
+        return this.geometryStyle === 'Surface' ? this._colorSlope : 0;
     }
 }
 register('RenderState', RenderState);
@@ -95,6 +104,11 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         .label('High color shift')
         .onInput(cb.terrain.repaint)
         .tooltip(tips.color_high_shift);
+
+    colors.range(state, '_colorSlope', 0, 5, .2)
+        .label('Color slope')
+        .onInput(cb.terrain.repaint)
+        .tooltip(tips.color_slope);
 
     //////////////
     // Textures //

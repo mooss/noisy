@@ -14,6 +14,7 @@ interface Parameters {
     palette: Palette;
     colorLowShift: number;
     colorHighShift: number;
+    colorSlope: number;
     texturePath: string;
     textureRepeat: number;
     textureBumpScale: number;
@@ -97,6 +98,7 @@ export class PalettePainter {
         upd('u_paletteWidth', { value: this.params.palette.size });
         upd('u_colorLowShift', { value: this.params.colorLowShift, type: 'f' });
         upd('u_colorHighShift', { value: this.params.colorHighShift, type: 'f' });
+        upd('u_colorSlope', {value: this.params.colorSlope, type: 'f'});
         return dest;
     }
 

@@ -15,6 +15,7 @@ Maybe vendor the perl script from litlib to help with that
 **** DONE Find a way to make the disgusting async chunk loading good (maybe later...)
 **** DONE Reuse weavers in Chunk
 **** DONE Implement a chunk pool to limit reallocation when entering a new chunk
+*** DONE Use terrain normal to shift the color in the shader
 
 
 *** TODO Slightly shift height when interpolating colors

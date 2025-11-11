@@ -32,6 +32,7 @@ export const REFERENCE_STATE = {
         paletteName: 'Bright terrain',
         colorLowShift: 0,
         colorHighShift: 0,
+        _colorSlope: 1,
         light: {
             ambient: { intensity: 2 },
             directional: { intensity: 3 },

@@ -15,28 +15,41 @@ The vertex shader's role is just to forward this height.
 #+name: palette_vs_decl
 #+begin_src glsl
 varying float v_z;
+varying vec3 v_normal;
 #+end_src
 
 #+name: palette_vs_impl
 #+begin_src glsl
 v_z = position.z;
+v_normal = normal;
 #+end_src
 
 ** Fragment
 
 The one role of this fragment shader is to construct the colors from the height and the color palette.
 
-=shiftedColor= applies the =colorLowShift= and =colorHighShift= uniforms that adjusts the height to color mapping.
+ - =shiftedColor= applies the =colorLowShift= and =colorHighShift= uniforms that adjusts the height to color mapping.
+ - =steepness= computes how vertical the terrain is at the current point.
+
 #+name: palette_fs_decl
 #+begin_src glsl
 uniform sampler2D u_palette;
 uniform float u_paletteWidth;
 uniform float u_colorLowShift;
 uniform float u_colorHighShift;
+uniform float u_colorSlope;
 varying float v_z;
+varying vec3 v_normal;
 
-float shiftedColor() { return mix(u_colorLowShift, 1.0 + u_colorHighShift, v_z); }
+float steepness() {
+  return (1.0 - v_normal.z);
+}
+float shiftedColor(float height) {
+  return mix(u_colorLowShift, 1.0 + u_colorHighShift, height);
+}
 #+end_src
+
+The height used for color purposes is modified to take into account the slope of the terrain.
 
 The color index (=colorIdx=) does some additional interpolation with =mix= to smooth out the transition between two colors.
 Otherwise the change is too fast, which is particularly visible with bicolor palettes.
@@ -48,7 +61,9 @@ Textures are not supported by every geometry style, so when there are no texture
 
 #+name: palette_fs_impl
 #+begin_src glsl
-vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, shiftedColor()), 0.5);
+float height = v_z + steepness() * u_colorSlope * 100.0;
+vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, shiftedColor(height)), 0.5);
+
 #ifdef USE_MAP // Mix color and texture pattern.
 diffuseColor.rgb *= texture2D(u_palette, colorIdx).rgb;
 #else // Use flat color.
