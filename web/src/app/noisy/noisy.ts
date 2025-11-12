@@ -124,7 +124,7 @@ class Game {
 
     setupUI(): void {
         const gui = new GUI().collapsible();
-        this.setupActions(gui);
+        this.setupActions();
         this.fps = new FpsWidget(gui);
         if (Game.ENABLE_STATS_GRAPH) this.setupStatsGraph(gui);
 
@@ -139,11 +139,8 @@ class Game {
 
         // Place the menu on top and stack the control panels vertically below.
         const guiRoot = document.querySelector('.UI') as HTMLElement;
-        const menu = new MenuBar(guiRoot);
+        this.setupMenu(guiRoot);
         new VerticalStack(guiRoot, POSITION_TOP_LEFT, gui, tergen);
-        const item = menu.item('Proof of concept')
-        item.subItem('ITEM', () => console.log('CLICK'));
-
         this.welcome();
     }
 
@@ -156,21 +153,7 @@ class Game {
         return link;
     }
 
-    setupActions(root: Panel): void {
-        const actions = root.buttons();
-        actions.button('Copy URL').onClick(() => toClipBoard(this.saveStateToUrl()));
-        actions.button('Download').onClick(() => {
-            const state = JSON.stringify(StateRegistry.encode(this.updatedState()), null, 2);
-            downloadData(state, 'noisy-savefile.json', { type: 'application/json' });
-        });
-        actions.button('Screenshot').onClick(() => this.renderer.screenshot('noisy-screenshot.jpeg'));
-        actions.button('?').onClick(() => this.welcomeWindow.show());
-
-        const actions2 = root.buttons();
-        actions2.button('Texture').onClick(() => {
-            this.terrain.asTexture().then((texture: Blob) => downloadBlob(texture, 'noisy-texture.png'))
-        });
-
+    setupActions(): void {
         dragAndDrop((file) => {
             if (file.type === 'application/json') {
                 const reader = new FileReader();
@@ -186,6 +169,22 @@ class Game {
                 console.warn(`Unsupported file type for drag and drop: ${file.type}`);
             }
         })
+    }
+
+    setupMenu(root: HTMLElement): void {
+        const menu = new MenuBar(root);
+        menu.entry('?').onClick(() => this.welcomeWindow.show());
+
+        const exprt = menu.entry('Export')
+        exprt.entry('As URL in the Clipboard').onClick(() => toClipBoard(this.saveStateToUrl()));
+        exprt.entry('As JSON').onClick(() => {
+            const state = JSON.stringify(StateRegistry.encode(this.updatedState()), null, 2);
+            downloadData(state, 'noisy-savefile.json', { type: 'application/json' });
+        });
+        exprt.entry('As JPEG Screenshot').onClick(() => this.renderer.screenshot('noisy-screenshot.jpeg'));
+        exprt.entry('As PNG Texture').onClick(() => {
+            this.terrain.asTexture().then((texture: Blob) => downloadBlob(texture, 'noisy-texture.png'))
+        });
     }
 
     setupStatsGraph(root: Panel): void {

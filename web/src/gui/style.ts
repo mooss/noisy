@@ -156,7 +156,7 @@ export class Appearance {
     windowContent: Facet;
 
     menuBar: Facet;
-    menuItem: Facet;
+    menuEntry: Facet;
     menuPanel: Facet;
 
     colors: StyleColors = {
@@ -169,7 +169,7 @@ export class Appearance {
         text: '#eeeeee',
     };
 
-    border(color = this.colors.border) { return `2px solid ${color}` }
+    border(color = this.colors.border, width = '2px') { return `${width} solid ${color}` }
 
     constructor(private prefix: string) {
         const base = {
@@ -376,13 +376,11 @@ export class Appearance {
             width: '100%',
             display: 'flex',
             backgroundColor: this.colors.inputBg,
-            borderBottom: this.border(),
-            alignItems: 'stretch',
-            justifyContent: 'space-between',
+            borderBottom: this.border(this.colors.border, '1px'),
         });
-        this.menuItem = this.mk('menu-item', {
+        this.menuEntry = this.mk('menu-entry', {
             ...base,
-            padding: '2px 4px',
+            padding: '4px 6px',
             cursor: 'pointer',
             userSelect: 'none',
             color: this.colors.label,
@@ -512,7 +510,7 @@ input[type="range"]::-moz-range-thumb {
             zIndex: '1001',
         });
 
-        this.verticalContainer = this.mk('vertical-stack', {
+        this.verticalContainer = this.mk('vertical-container', {
             position: 'fixed',
             display: 'flex',
             flexDirection: 'column',
@@ -521,7 +519,7 @@ input[type="range"]::-moz-range-thumb {
             overflowY: 'auto',
             maxHeight: '100vh',
         });
-        this.verticalChild = this.mk('vertical-container', {
+        this.verticalChild = this.mk('vertical-child', {
             position: 'relative', // Make child appear within the container.
 
             // Remove scroll bar of child element.

@@ -202,81 +202,88 @@ export class Folder extends Panel {
 // Menus //
 
 /**
- * A menu bar that contains menu items, each of which can open a panel to the right when clicked.
+ * A menu bar that contains menu entries, each of which can open a panel to the right when clicked.
  */
 export class MenuBar {
     _elt: HtmlCssElement;
-    private items: MenuItem[] = [];
+    private entries: MenuEntry[] = [];
 
     constructor(parent: HTMLElement) {
         this._elt = spawn('div', parent, Blawhi.menuBar);
     }
 
     /**
-     * Adds a new menu item to the bar.
-     * @param   label - Text to display on the item.
-     * @returns the menu item for further configuration.
+     * Adds a new entry to the menu.
+     * @param   label - Text to display on the entry.
+     * @returns the created menu entry.
      */
-    item(label: string): MenuItem {
-        const item = new MenuItem(this._elt, label);
-        this.items.push(item);
-        return item;
+    entry(label: string): MenuEntry {
+        const entry = new MenuEntry(this._elt, label);
+        this.entries.push(entry);
+        return entry;
     }
 }
 
 /**
- * An individual item in a menu bar.
+ * An individual entry in a menu bar.
  */
-export class MenuItem {
+export class MenuEntry {
     private elt: HtmlCssElement;
     private panel: MenuPanel | null = null;
+    private entryClick: (entry: MenuEntry) => void;
 
-    // Used to retract menu when there is a click outside.
-    private panelClickListener: ((e: MouseEvent) => void) | null = null;
+    // Used to retract the menu when there is a click.
+    private panelClick: ((e: MouseEvent) => void) | null = null;
 
     constructor(parent: HTMLElement, label: string) {
-        this.elt = spawn('div', parent, Blawhi.menuItem);
+        this.elt = spawn('div', parent, Blawhi.menuEntry);
         this.elt.textContent = label;
         this.elt.addEventListener('click', () => this.open());
     }
 
     /**
-     * Adds a sub-item to this menu item, which will appear in the panel when opened.
-     * @param label    - Text to display on sub-item.
-     * @param callback - The function to call when the sub-item is clicked.
-     * @returns this for chaining.
+     * Adds a sub-entry to this menu entry, which will appear in the panel when opened.
+     * @param label    - Text to display on the new entry.
+     * @returns the created entry.
      */
-    subItem(label: string, callback: () => void): this {
+    entry(label: string): MenuEntry {
         if (!this.panel) {
             // Attach the panel to the document body so hovering the panel does not
-            // trigger hover on the parent menu item.
+            // trigger hover on the parent menu entry.
             this.panel = new MenuPanel(document.body);
         }
-        this.panel.item(label, callback);
-        return this;
+        const entry = this.panel.entry(label);
+        return entry;
     }
 
     private open(): void {
-        if(!this.panel) return;
+        this.entryClick?.(this);
+
+        if (!this.panel) return;
         const rect = this.elt.getBoundingClientRect();
-        // Show the panel below the menu item (attached to the bottom), not to the right.
+        // Show the panel below the menu entry (attached to the bottom), not to the right.
         this.panel.show(rect.left, rect.bottom);
 
-        if (this.panelClickListener)
-            document.removeEventListener('click', this.panelClickListener);
+        if (this.panelClick)
+            document.removeEventListener('click', this.panelClick);
 
-        this.panelClickListener = () => {
+        this.panelClick = () => {
             this.panel?.hide();
-            document.removeEventListener('click', this.panelClickListener!);
-            this.panelClickListener = null;
+            document.removeEventListener('click', this.panelClick);
+            this.panelClick = null;
         };
 
-        setTimeout(() => document.addEventListener('click', this.panelClickListener), 0);
+        setTimeout(() => document.addEventListener('click', this.panelClick), 0);
+    }
+
+    onClick(fun: (entry: MenuEntry) => void): this {
+        this.entryClick = fun;
+        return this;
     }
 }
 
 /**
- * A panel that appears when a menu item is clicked, containing sub-items.
+ * A panel that appears when a menu entry is clicked, containing sub-entry.
  */
 export class MenuPanel {
     elt: HtmlCssElement;
@@ -289,14 +296,12 @@ export class MenuPanel {
     }
 
     /**
-     * Adds an item to the panel.
-     * @param label    - Text to display the item.
-     * @param callback - The function to call when the item is clicked.
+     * Adds an entry to the panel.
+     * @param label - Text to display in the entry.
      */
-    item(label: string, callback: () => void): void {
-        const itemElt = spawn('div', this.container, Blawhi.menuItem);
-        itemElt.textContent = label;
-        itemElt.addEventListener('click', callback);
+    entry(label: string): MenuEntry {
+        const entry = new MenuEntry(this.container, label);
+        return entry;
     }
 
     /**
@@ -307,7 +312,7 @@ export class MenuPanel {
     show(x: number, y: number): void {
         // Use fixed positioning at show-time (instead of putting position in the stylesheet) so the
         // panel is positioned relative to the viewport, doesn't alter layout, and won't cause the
-        // parent menu item to remain highlighted when the cursor is over the floating panel.
+        // parent menu entry to remain highlighted when the cursor is over the floating panel.
         this.elt.style.position = 'fixed';
         this.elt.style.left = `${x}px`;
         this.elt.style.top = `${y}px`;
