@@ -155,6 +155,10 @@ export class Appearance {
     windowCloseButton: Facet;
     windowContent: Facet;
 
+    menuBar: Facet;
+    menuItem: Facet;
+    menuPanel: Facet;
+
     colors: StyleColors = {
         background: '#000000',
         border: '#aaaaaa',
@@ -368,6 +372,43 @@ export class Appearance {
             color: this.colors.label,
         });
 
+        this.menuBar = this.mk('menu-bar', {
+            width: '100%',
+            display: 'flex',
+            backgroundColor: this.colors.inputBg,
+            borderBottom: this.border(),
+            alignItems: 'stretch',
+            justifyContent: 'space-between',
+        });
+        this.menuItem = this.mk('menu-item', {
+            ...base,
+            padding: '2px 4px',
+            cursor: 'pointer',
+            userSelect: 'none',
+            color: this.colors.label,
+            backgroundColor: 'transparent',
+            border: 'none',
+            position: 'relative',
+            '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            },
+            '&:active': {
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            },
+        });
+        this.menuPanel = this.mk('menu-panel', {
+            // Do not force absolute positioning here; the panel is positioned at show()
+            // using fixed positioning so it doesn't break layout or get attached to the
+            // parent container.
+            backgroundColor: transparent(this.colors.background, .95),
+            border: this.border(),
+            borderRadius: '0px',
+            minWidth: '150px',
+            maxWidth: '300px',
+            zIndex: '3000',
+            boxShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+        });
+
         this.numberInput = this.mk('number-input', {
             ...base,
             width: '100%',
@@ -540,4 +581,4 @@ export const Blawhi = new Appearance('blawhi');
 // Utility facets //
 
 export const POSITION_TOP_RIGHT = new Facet('position-right', { top: 0, right: 0 });
-export const POSITION_TOP_LEFT = new Facet('position-left', { left: 0, top: 0 });
+export const POSITION_TOP_LEFT = new Facet('position-left', { left: 0, top: 'auto' });

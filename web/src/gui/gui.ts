@@ -12,8 +12,8 @@ export class GUI extends Panel {
     private _title: HTMLDivElement;
 
     /** Creates a GUI instance and attach it to the document body. */
-    constructor(...appearanceOverride: Facet[]) {
-        super(document.body, clone(Blawhi.gui).merge(...appearanceOverride));
+    constructor(parent: HTMLElement = document.body, ...appearanceOverride: Facet[]) {
+        super(parent, clone(Blawhi.gui).merge(...appearanceOverride));
         this.bar = spawn('div', this._elt, Blawhi.collapsibleBar);
         this._title = spawn('div', this._elt, Blawhi.title);
     }

@@ -8,7 +8,7 @@ import { Terrain } from '../../engine/terrain/terrain.js';
 import { CheckBar } from '../../gui/components/widget.js';
 import { Window } from '../../gui/components/window.js';
 import { GUI } from '../../gui/gui.js';
-import { Panel } from '../../gui/panels/panel.js';
+import { MenuBar, Panel } from '../../gui/panels/panel.js';
 import { VerticalStack } from '../../gui/panels/vertical-stack.js';
 import { POSITION_TOP_LEFT } from '../../gui/style.js';
 import { Position } from '../../maths/coordinates.js';
@@ -136,7 +136,13 @@ class Game {
 
         const tergen = new GUI().title('Terrain Generation').collapsible();
         noiseUI(this.state.noise, tergen, this.callbacks);
-        new VerticalStack(document.body, POSITION_TOP_LEFT, gui, tergen);
+
+        // Place the menu on top and stack the control panels vertically below.
+        const guiRoot = document.querySelector('.UI') as HTMLElement;
+        const menu = new MenuBar(guiRoot);
+        new VerticalStack(guiRoot, POSITION_TOP_LEFT, gui, tergen);
+        const item = menu.item('Proof of concept')
+        item.subItem('ITEM', () => console.log('CLICK'));
 
         this.welcome();
     }
