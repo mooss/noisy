@@ -28,20 +28,20 @@ abstract class ChunkStateP extends AutoAssign<ChunkStateP> {
 export class ChunkState extends ChunkStateP {
     class(): string { return 'ChunkState' }
     set power(value: number) {
-        this.previousSize = this.nblocks;
+        this.previousSize = this.resolution;
         this._power = value;
     }
     get power(): number { return this._power }
-    get nblocks(): number { return 2 ** this.power }
-    get sampling(): number { return 1 / this.nblocks }
-    get blockSize(): number { return CHUNK_UNIT / this.nblocks }
+    get resolution(): number { return 2 ** this.power }
+    get sampling(): number { return 1 / this.resolution }
+    get blockSize(): number { return CHUNK_UNIT / this.resolution }
 }
 register('ChunkState', ChunkState);
 
 export function chunksUI(conf: ChunkState, root: Panel, cb: GameCallbacks) {
-    root.range(conf, 'power', 1, 7, 1).label('Blocks in a chunk')
+    root.range(conf, 'power', 1, 7, 1).label('Resolution')
         .onInput(cb.terrain.recompute)
-        .formatter(() => conf.nblocks)
+        .formatter(() => conf.resolution)
         .tooltip(tips.chunk_size);
 
     root.map(conf, 'radiusType', {

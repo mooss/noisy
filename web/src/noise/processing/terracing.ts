@@ -37,7 +37,7 @@ export class VoxelTerracing extends NoiseWrapper<VoxelTerracingP> {
     make(): NoiseFun {
         const fun = this.wrapped.make();
         const range = (this.high - this.low);
-        const delta = range / this.p.chunks.nblocks * CHUNK_HEIGHT_DENOMINATOR;
+        const delta = range / this.p.chunks.resolution * CHUNK_HEIGHT_DENOMINATOR;
         return (x, y) => quantize(fun(x, y), delta);
     }
 }

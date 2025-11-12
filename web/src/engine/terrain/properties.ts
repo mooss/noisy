@@ -31,7 +31,7 @@ export class TerrainProperties {
 
     get heightFun(): NoiseFun { return this._heightFun }
     get blockSize() { return this.chunks.blockSize }
-    get resolution() { return this.chunks.nblocks }
+    get resolution() { return this.chunks.resolution }
     get loadRadius() { return this.chunks.loadRadius }
     get radiusType() { return this.chunks.radiusType }
     get geometryStyle() { return this.render.geometryStyle }

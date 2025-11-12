@@ -196,9 +196,9 @@ class Game {
             const pos = this.avatar.coords;
             const heightfun = this.terrain.heightAt({ x: Math.floor(pos.x), y: Math.floor(pos.y) });
             const heights: number[] = [];
-            for (let i = 0; i < this.state.chunks.nblocks; ++i)
-                for (let j = 0; j < this.state.chunks.nblocks; ++j)
-                    heights.push(heightfun(i / this.state.chunks.nblocks, j / this.state.chunks.nblocks));
+            for (let i = 0; i < this.state.chunks.resolution; ++i)
+                for (let j = 0; j < this.state.chunks.resolution; ++j)
+                    heights.push(heightfun(i / this.state.chunks.resolution, j / this.state.chunks.resolution));
 
             heightGraph.update(heights.sort((l, r) => l - r));
 

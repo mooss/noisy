@@ -82,7 +82,6 @@ const brightMountains = new Palette([
 ]);
 
 const brightContinent: Palette = brightLow.cat(brightHills, brightMountains);
-const brightTerrain: Palette = brightSea.cat(brightLow, brightMountains);
 const paradise: Palette = brightSea.cat(brightLow, brightHills);
 
 // Interesting for the underside which can be used to seed continents.
@@ -109,38 +108,6 @@ const fantasy = new Palette([
     rgb(150, 0, 150),   // Mystic bogs/cursed lands.
     rgb(100, 50, 0),    // Dragon's mountains/volcanic rock.
     rgb(255, 255, 255), // Cloud kingdom/celestial plains.
-]);
-
-const sunset = new Palette([
-    rgb(253, 94, 83),   // Coral.
-    rgb(252, 186, 3),   // Gold.
-    rgb(129, 3, 252),   // Purple.
-    rgb(3, 248, 252)    // Teal.
-]);
-
-const rainbow = new Palette([
-    rgb(255, 0, 0),     // Red.
-    rgb(255, 165, 0),   // Orange.
-    rgb(255, 255, 0),   // Yellow.
-    rgb(0, 255, 0),     // Green.
-    rgb(0, 0, 255),     // Blue.
-    rgb(75, 0, 130),    // Indigo.
-    rgb(238, 130, 238), // Violet.
-]);
-
-const solarFlux = new Palette([
-    rgb(255, 255, 180),
-    rgb(255, 204, 0),
-    rgb(255, 102, 0),
-    rgb(255, 0, 85),
-    rgb(125, 0, 255),
-]);
-
-const neonLight = new Palette([
-    rgb(10, 10, 20),    // Near-black blue.
-    rgb(0, 255, 180),   // Neon mint.
-    rgb(255, 20, 147),  // Hot pink.
-    rgb(255, 255, 255), // White glint.
 ]);
 
 const alpineMeadow = new Palette([
@@ -191,30 +158,16 @@ const camoWoodland = new Palette([
     rgb(15, 15, 15),
 ]);
 
-const camoJungle = new Palette([
-    rgb(16, 68, 32),
-    rgb(54, 104, 32),
-    rgb(84, 120, 60),
-    rgb(90, 60, 40),
-    rgb(55, 40, 30),
-]);
-
 export const palettes: Record<string, Palette> = {
-    'Paradise': paradise,
-    'Bright terrain': brightTerrain,
-    'Bright continent': brightContinent,
-    'Fantasy': fantasy,
-    'Sunset': sunset,
-    'Black & white': blackWhite,
-    'Rainbow': rainbow,
-    'Solar flux': solarFlux,
-    'Neon light': neonLight,
-    'Alpine meadow': alpineMeadow,
-    'Orchid bloom': orchidBloom,
     'Savanna': savanna,
     'Praclarush': praclarush,
+    'Alpine meadow': alpineMeadow,
+    'Orchid bloom': orchidBloom,
+    'Fantasy': fantasy,
+    'Black & white': blackWhite,
+    'Paradise': paradise,
     'Glacier': glacier,
     'Woodland camo': camoWoodland,
-    'Jungle camo': camoJungle,
+    'Bright continent': brightContinent,
     // 'Tectonic': tectonic,
 };

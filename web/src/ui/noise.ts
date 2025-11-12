@@ -166,7 +166,7 @@ function layeredUI(layered: Layered<any>, root: Panel, cb: () => void) {
     noiseUI_impl(layered.p.noise, root, cb);
 
     const lay = layered.p.layers;
-    root.range(lay, 'fundamental', .1, 5, .1)
+    root.range(lay, 'fundamental', .05, 1, .05)
         .label('Fundamental').tooltip(tips.layers_fundamental).onInput(cb);
     root.range(lay, 'octaves', 1, 8, 1)
         .label('Octaves').tooltip(tips.layers_octaves).onInput(cb);

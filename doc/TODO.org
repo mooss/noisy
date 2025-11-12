@@ -18,21 +18,28 @@ Maybe vendor the perl script from litlib to help with that
 *** DONE Use terrain normal to shift the color in the shader
 *** DONE Start setting up linter
 
-
-*** TODO Slightly shift height when interpolating colors
-Simplex in shader?
-*** TODO Improve UI
+*** DONE Improve UI
 **** DONE Minimalist, dense dark and white theme
 **** DONE Dock panels on left and/or right, no margin
-**** TODO Add top bar (desktop style) with buttons
-***** TODO Make an export entry (texture, screenshot, JSON).
+**** DONE Add top bar (desktop style) with buttons
+***** DONE Make an export entry (texture, screenshot, JSON).
 **** DONE Make tabs behave similarly to buttons
-*** TODO Rename "blocks in a chunk" to "resolution"
-*** TODO Set more reasonable min, max and default values for noise parameters
+*** DONE Rename "blocks in a chunk" to "resolution"
+*** DONE Set more reasonable min, max and default values for noise parameters
+*** TODO Slightly shift height when interpolating colors
+Simplex in shader?
 *** TODO Max/union noise (take the highest value of different functions)
 *** TODO Custom octaves
-For instance octave 1 nad 2 are ridge, 3 and 4 are simplex.
+For instance octave 1 and 2 are ridge, 3 and 4 are simplex.
 Would mix well with max noise.
+*** TODO Proper logo
+Using the favicon as a reference.
+*** TODO Integrate together the UI with the footer added by mooss.github.io
+Or even better create the footer in noisy itself.
+*** TODO Twitter icon in footer
+*** TODO Harmonize the names of all root elements in GUI code
+All the =_elt= and similar should be renamed to =container= (will require renaming the other things already named =container=).
+*** TODO Fix the bug where the texture does not load when changing from Boxes to Surface
 
 
 ** Future versions
@@ -62,6 +69,8 @@ Important step to allow modifying the UI in the UI (reordering, adding layers, e
 **** Floating notification
 **** GUI warnings
 **** Mobile UI
+**** In mooss.github.io, link old versions to the newest one
+
 
 *** UX
 **** Advanced mode
@@ -73,10 +82,20 @@ Should it be references, templates or both? There might be a need for both (inst
 Propose different starting points that are more focused and less overwhelming (texture editor, montain range).
 
 
+*** Gameplay
+**** FPS camera
+***** Orient the avatar according to where the camera is looking
+***** Restrain camera to avoid it being inside the terrain
+
+
 *** Noise / world generation
 **** Proper clusters
 Like the clunky round+warp clustering as of elderberry but good.
 Would be a first step towards biomes.
+**** Nature assets
+***** Tree
+***** Grass
+
 
 *** Performance
 **** Chunk computation in web workers
@@ -109,6 +128,8 @@ https://iquilezles.org/articles/texturerepetition/
 ***** Cell-shading or something cartoonish or colorful
 **** Ocean layer
 Don't use texture under the ocean line and shade the surface with waves/whatever.
+**** Add a second dimension to the color palette
+Use it to specify the color of the slope.
 
 
 *** Features

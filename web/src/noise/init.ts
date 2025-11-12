@@ -16,7 +16,7 @@ export function noiseAlgorithms(chunks: ChunkState) {
         sbase: { seed: 23 },
         base: { invert: true, square: false, seed: 23 },
         layers: {
-            fundamental: .7,
+            fundamental: .3,
             octaves: 8,
             persistence: .65,
             lacunarity: 1.5,
@@ -41,17 +41,17 @@ export function noiseAlgorithms(chunks: ChunkState) {
         bass: new Layered({
             noise: new Simplex(c(f.sbase)),
             layers: {
-                fundamental: .3,
+                fundamental: .1,
                 octaves: 7,
-                persistence: .65,
-                lacunarity: 1.5,
+                persistence: .7,
+                lacunarity: 1.64,
             },
             sampling: c(f.sampling),
         }),
         treble: new Layered({
             noise: new Ridge(c(f.base)),
             layers: {
-                fundamental: .4,
+                fundamental: .2,
                 octaves: 8,
                 persistence: .65,
                 lacunarity: 1.55,
@@ -67,7 +67,7 @@ export function noiseAlgorithms(chunks: ChunkState) {
             'Ridge': ridge,
             'Continental mix': comix,
         },
-        current: 'Simplex',
+        current: 'Continental mix',
     });
 
     const terracing = new PipelinePicker({
@@ -93,10 +93,10 @@ export function noiseAlgorithms(chunks: ChunkState) {
     const transform = new PipelinePicker({
         algorithms: {
             'None': new IdentityWrapper({}),
-            'Exponentiation': new Exponentiation({ exponent: 4 }),
-            'Steepness': new Steepness({ factor: 4 }),
+            'Exponentiation': new Exponentiation({ exponent: 1.5 }),
+            'Steepness': new Steepness({ factor: 1.5 }),
         },
-        current: 'None',
+        current: 'Exponentiation',
         tag: 'Transform',
     })
 

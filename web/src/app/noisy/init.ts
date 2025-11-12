@@ -29,10 +29,10 @@ export const REFERENCE_STATE = {
     render: new RenderState({
         geometryStyle: 'Surface',
         painterStyle: 'Palette',
-        paletteName: 'Bright terrain',
+        paletteName: 'Savanna',
         colorLowShift: 0,
         colorHighShift: 0,
-        _colorSlope: 1,
+        _colorSlope: 3,
         light: {
             ambient: { intensity: 2 },
             directional: { intensity: 3 },

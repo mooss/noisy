@@ -3,7 +3,7 @@ export const CHUNK_UNIT = 256;
 
 // How much smaller the approximate maximum block height is compared to the side of a chunk
 // (CHUNK_UNIT).
-export const CHUNK_HEIGHT_DENOMINATOR = 5;
+export const CHUNK_HEIGHT_DENOMINATOR = 2;
 
 // Minimum terrain height, staying clear of 0 to avoid shading problems.
 export const MINIMUM_HEIGHT = .0000001;
