@@ -25,18 +25,28 @@ export class TerrainProperties {
         private chunks: ChunkState,
         private noise: NoiseMakerI,
         private render: RenderState,
-    ) {
-        this.painter = new ReusablePainter(this.render);
-    }
+    ) { this.painter = new ReusablePainter(this) }
+
+    // Implementation of painter parameters.
+    get geometryStyle() { return this.render.geometryStyle }
+    get painterStyle() { return this.render.painterStyle }
+    get paletteName() { return this.render.paletteName }
+    get palette() { return this.render.palette }
+    get colorLowShift() { return this.render.colorLowShift }
+    get colorHighShift() { return this.render.colorHighShift }
+    get colorSlope() { return this.render.colorSlope * this.chunks.resolution }
+    get texturePath() { return this.render.texturePath }
+    get textureRepeat() { return this.render.textureRepeat }
+    get textureBumpScale() { return this.render.textureBumpScale }
 
     get heightFun(): NoiseFun { return this._heightFun }
+
     get blockSize() { return this.chunks.blockSize }
-    get resolution() { return this.chunks.resolution }
+    get chunkPower() { return this.chunks.power }
     get loadRadius() { return this.chunks.loadRadius }
     get radiusType() { return this.chunks.radiusType }
-    get geometryStyle() { return this.render.geometryStyle }
-    get texturePath() { return this.render.texturePath }
     get material() { return this.cachedMaterial }
+    get resolution() { return this.chunks.resolution }
 
     get verticalUnit() {
         if (this.render.geometryStyle === 'Pixel') return MINIMUM_HEIGHT;

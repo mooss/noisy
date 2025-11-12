@@ -61,7 +61,7 @@ Textures are not supported by every geometry style, so when there are no texture
 
 #+name: palette_fs_impl
 #+begin_src glsl
-float height = v_z + steepness() * u_colorSlope * 100.0;
+float height = v_z + steepness() * u_colorSlope;
 vec2 colorIdx = vec2(mix(0.5 / u_paletteWidth, 1.0 - 0.5 / u_paletteWidth, shiftedColor(height)), 0.5);
 
 #ifdef USE_MAP // Mix color and texture pattern.
