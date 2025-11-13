@@ -160,14 +160,14 @@ const camoWoodland = new Palette([
 
 export const palettes: Record<string, Palette> = {
     'Savanna': savanna,
+    'Bright continent': brightContinent,
+    'Fantasy': fantasy,
     'Praclarush': praclarush,
     'Alpine meadow': alpineMeadow,
     'Orchid bloom': orchidBloom,
-    'Fantasy': fantasy,
     'Black & white': blackWhite,
     'Paradise': paradise,
     'Glacier': glacier,
     'Woodland camo': camoWoodland,
-    'Bright continent': brightContinent,
     // 'Tectonic': tectonic,
 };

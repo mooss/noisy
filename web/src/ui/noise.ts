@@ -62,9 +62,9 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
             const stacked = noise as Stacked;
             stacked.p.octaves.forEach((octave, i) => {
                 const octFold = root.folder(octave.name).tooltip(`Octave ${i + 1} configuration`);
-                octFold.range(octave, 'frequency', 0, 1, 0.1)
+                octFold.range(octave, 'frequency', 0, 10, 0.1)
                     .label('Frequency').tooltip(tips.stacked_frequency).onInput(cb);
-                octFold.range(octave, 'amplitude', 0.1, 2, 0.1)
+                octFold.range(octave, 'amplitude', 0, 100, 0)
                     .label('Amplitude').tooltip(tips.stacked_amplitude).onInput(cb);
                 noiseUI_impl(octave.noise, octFold, cb);
             });

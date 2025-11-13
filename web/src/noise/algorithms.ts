@@ -134,9 +134,14 @@ interface StackedP {
 }
 
 function stackNoise(stack: StackedP): NoiseFun {
-    const tail = stack.octaves.map(octave => {
+    const tail = stack.octaves.filter(oct => oct.frequency > 0 && oct.amplitude > 0).map(octave => {
         const frequency = octave.frequency;
-        const amplitude = octave.amplitude;
+        // Dividing by the frequency dampens the impact of high frequencies, preventing them from
+        // overwhelming the rest.
+        // It makes the interactive parameters tweaking more intuitive.
+        //TODO: Find a way to reduce the impact of very low frequencies (~.1), they make the
+        // amplitude explode too much.
+        const amplitude = octave.amplitude / frequency;
         const noise = octave.noise.make();
         return { frequency, amplitude, noise };
     });

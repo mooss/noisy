@@ -26,12 +26,12 @@ Maybe vendor the perl script from litlib to help with that
 **** DONE Make tabs behave similarly to buttons
 *** DONE Rename "blocks in a chunk" to "resolution"
 *** DONE Set more reasonable min, max and default values for noise parameters
+*** DONE Custom octaves
+For instance octave 1 and 2 are ridge, 3 and 4 are simplex.
+Would mix well with max noise.
 *** TODO Slightly shift height when interpolating colors
 Simplex in shader?
 *** TODO Max/union noise (take the highest value of different functions)
-*** TODO Custom octaves
-For instance octave 1 and 2 are ridge, 3 and 4 are simplex.
-Would mix well with max noise.
 *** TODO Proper logo
 Using the favicon as a reference.
 *** TODO Integrate together the UI with the footer added by mooss.github.io
@@ -40,6 +40,7 @@ Or even better create the footer in noisy itself.
 *** TODO Harmonize the names of all root elements in GUI code
 All the =_elt= and similar should be renamed to =container= (will require renaming the other things already named =container=).
 *** TODO Fix the bug where the texture does not load when changing from Boxes to Surface
+*** TODO Remove sampling parameters from layered noise (always use the default)
 
 
 ** Future versions

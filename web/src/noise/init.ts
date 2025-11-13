@@ -28,13 +28,13 @@ export function noiseAlgorithms(chunks: ChunkState) {
     let simplex: NoiseMakerI = new Layered({
         noise: new Simplex(c(f.sbase)),
         layers: c(f.layers),
-        sampling: DEFAULT_SAMPLING,
+        sampling: c(DEFAULT_SAMPLING),
     });
 
     const ridge = new Layered({
         noise: new Ridge(c(f.base)),
         layers: c(f.layers),
-        sampling: DEFAULT_SAMPLING,
+        sampling: c(DEFAULT_SAMPLING),
     });
 
     const comix = new ContinentalMix({
@@ -46,7 +46,7 @@ export function noiseAlgorithms(chunks: ChunkState) {
                 persistence: .7,
                 lacunarity: 1.64,
             },
-            sampling: DEFAULT_SAMPLING,
+            sampling: c(DEFAULT_SAMPLING),
         }),
         treble: new Layered({
             noise: new Ridge(c(f.base)),
@@ -56,8 +56,6 @@ export function noiseAlgorithms(chunks: ChunkState) {
                 persistence: .65,
                 lacunarity: 1.55,
             },
-            // TODO: A bit worrying, this does not work without the cloning, looks like a codec
-            // problem.
             sampling: c(DEFAULT_SAMPLING),
         }),
         threshold: { low: .28, mid: .64, high: .56 },
@@ -66,21 +64,43 @@ export function noiseAlgorithms(chunks: ChunkState) {
     const stacked = new Stacked({
         fundamental: .3,
         octaves: [{
-            name: "Broad Hills",
-            frequency: .6,
-            amplitude: .5,
-            noise: new Simplex(c({ seed: 42 })),
-        },
-        {
-            name: "Sharp Peaks",
-            frequency: .3,
-            amplitude: 1.3,
+            name: "Peaks 1",
+            frequency: .1,
+            amplitude: 94,
             noise: new Ridge(c({
                 seed: 23,
                 invert: true,
                 square: false,
             })),
-        }],
+        },
+        {
+            name: "Peaks 2",
+            frequency: .4,
+            amplitude: 82,
+            noise: new Ridge(c({
+                seed: 23,
+                invert: true,
+                square: false,
+            })),
+        },
+        {
+            name: "Hills 1",
+            frequency: .8,
+            amplitude: 85,
+            noise: new Simplex(c({ seed: 23 })),
+        },
+        {
+            name: "Hills 2",
+            frequency: 1.6,
+            amplitude: 85,
+            noise: new Simplex(c({ seed: 23 })),
+        },
+        {
+            name: "Hills 3",
+            frequency: 6,
+            amplitude: 70,
+            noise: new Simplex(c({ seed: 23 })),
+        },],
     });
 
     const map = new AlgoPicker({
@@ -88,7 +108,7 @@ export function noiseAlgorithms(chunks: ChunkState) {
             'Simplex': simplex,
             'Ridge': ridge,
             'Continental mix': comix,
-            'Stacked PoC': stacked,
+            'Cursive mountains': stacked,
         },
         current: 'Continental mix',
     });
