@@ -1,13 +1,10 @@
 import { encrec, SelfEncoded, SelfEncoder } from "../encoding/self-encoder.js";
 import { rangeMapper } from "../maths/maths.js";
 
-/////////////////
-// Noisemaking //
-
 // Noise functions, processing and data structures that can be encoded and decoded.
 export type NoiseClass =
     // Noise functions.
-    'Simplex' | 'Ridge' | 'Layered' | 'ContinentalMix'
+    'Simplex' | 'Ridge' | 'Layered' | 'ContinentalMix' | 'Stacked'
     // Terracing.
     | 'Terracing' | 'VoxelTerracing'
     // Tiling.

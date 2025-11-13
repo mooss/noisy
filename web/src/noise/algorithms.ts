@@ -1,6 +1,7 @@
 import { createNoise2D } from "simplex-noise";
 import { createLCG, highMix, mkRidger } from "../maths/rng.js";
 import { register } from "../state/state.js";
+import { enumerate } from "../utils/iteration.js";
 import { clone } from "../utils/objects.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "./foundations.js";
 import { NoiseSamplerP, bounds, computeBounds } from "./sampling.js";
@@ -112,6 +113,54 @@ export class Layered<Noise extends NoiseMakerI> extends NoiseMakerBase<LayeredI<
     make(): NoiseFun { return layerNoise(this.p.noise.make(), this.p.layers) }
 }
 register('Layered', Layered<any>);
+
+/////////////
+// Stacked //
+
+interface OctaveP {
+    // Descriptive name for this octave layer (shown in UI)
+    name: string;
+    //TIP: stacked_frequency Frequency (coordinates multiplier) of this octave. Higher values will pack the terrain features closer.
+    frequency: number;
+    //TIP: stacked_amplitude Amplitude (height multiplier) of this octave. Higher values will increase the height contribution of this octave.
+    amplitude: number;
+    noise: NoiseMakerI;
+}
+
+//TIP: stacked (advanced) Multi-octave noise where each octave has independent persistence and lacunarity. \nAllows full control over each noise octave's amplitude and frequency multipliers. Each octave can also be any kind of noise function. \nThis is functionally layered noise but with each octave individually controllable instead of being configured through persistence and lacunarity.
+interface StackedP {
+    fundamental: number;
+    octaves: Array<OctaveP>;
+}
+
+function stackNoise(stack: StackedP): NoiseFun {
+    const tail = stack.octaves.map(octave => {
+        const frequency = octave.frequency;
+        const amplitude = octave.amplitude;
+        const noise = octave.noise.make();
+        return { frequency, amplitude, noise };
+    });
+
+    return (x: number, y: number): number => {
+        let res = 0;
+        for (const [oct, { frequency, amplitude, noise }] of enumerate(tail)) {
+            // The frequency is shifted by the octave index to try and hide directional artifacts,
+            // see the layerNoise function.
+            res += noise(x * frequency + oct, y * frequency + oct + 10) * amplitude;
+        }
+        return res;
+    };
+}
+
+export class Stacked extends NoiseMakerBase<StackedP> {
+    get class(): NoiseClass { return 'Stacked' };
+    bounds: bounds;
+    get low(): number { return this.bounds.low }
+    get high(): number { return this.bounds.high }
+    recompute(): void { this.bounds = computeBounds(this.make()) }
+    make(): NoiseFun { return stackNoise(this.p) }
+}
+register('Stacked', Stacked);
 
 ///////////////
 // Noise mix //

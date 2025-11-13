@@ -10,9 +10,13 @@ export interface NoiseSamplerP {
     threshold: number;
 }
 
+// Computationally cheap sampling parameters that can extract usable statistical information about a
+// noise function.
+export const DEFAULT_SAMPLING = { size: 30, threshold: 4, fundamental: 3 };
+
 export function computeBounds(
     gen: NoiseFun,
-    sampling: NoiseSamplerP = { size: 30, threshold: 4 },
+    sampling: NoiseSamplerP = DEFAULT_SAMPLING,
 ): bounds {
     const values = [];
     for (let x = 0; x < sampling.size; ++x)
