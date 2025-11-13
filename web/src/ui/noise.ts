@@ -1,5 +1,5 @@
 import { Panel } from "../gui/panels/panel.js";
-import { Layered, Stacked } from "../noise/algorithms.js";
+import { Layered, Summed } from "../noise/algorithms.js";
 import { AlgoPicker } from "../noise/containers.js";
 import { NoiseMakerI } from "../noise/foundations.js";
 import { PipelinePicker } from "../noise/processing/pipeline.js";
@@ -58,14 +58,14 @@ function noiseUI_impl(noise: NoiseMakerI, root: Panel, cb: () => void) {
                 .label('Frequency').tooltip(tips.warping_frequency).onInput(cb);
             noiseUI_impl(noise.p.warper, wrp, cb);
             return noiseUI_impl(noise.p.wrapped, root, cb);
-        case 'Stacked':
-            const stacked = noise as Stacked;
-            stacked.p.octaves.forEach((octave, i) => {
+        case 'Summed':
+            const summed = noise as Summed;
+            summed.p.octaves.forEach((octave, i) => {
                 const octFold = root.folder(octave.name).tooltip(`Octave ${i + 1} configuration`);
                 octFold.range(octave, 'frequency', 0, 10, 0.1)
-                    .label('Frequency').tooltip(tips.stacked_frequency).onInput(cb);
+                    .label('Frequency').tooltip(tips.summed_frequency).onInput(cb);
                 octFold.range(octave, 'amplitude', 0, 100, 0)
-                    .label('Amplitude').tooltip(tips.stacked_amplitude).onInput(cb);
+                    .label('Amplitude').tooltip(tips.summed_amplitude).onInput(cb);
                 noiseUI_impl(octave.noise, octFold, cb);
             });
             return;
@@ -116,6 +116,7 @@ const ttHeight = {
     Simplex: tips.simplex,
     Ridge: tips.ridge,
     'Continental mix': tips.continental_mix,
+    'Cursive mountains': tips.summed,
 }
 
 const ttTiling = {

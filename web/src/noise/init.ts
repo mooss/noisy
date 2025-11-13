@@ -1,6 +1,6 @@
 import { ChunkState } from "../state/chunk.js";
 import { clone } from "../utils/objects.js";
-import { ContinentalMix, Layered, Ridge, Simplex, Stacked } from "./algorithms.js";
+import { ContinentalMix, Layered, Ridge, Simplex, Summed } from "./algorithms.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
 import { Clustering } from "./processing/clustering.js";
@@ -61,7 +61,7 @@ export function noiseAlgorithms(chunks: ChunkState) {
         threshold: { low: .28, mid: .64, high: .56 },
     });
 
-    const stacked = new Stacked({
+    const stacked = new Summed({
         fundamental: .3,
         octaves: [{
             name: "Peaks 1",
