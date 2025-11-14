@@ -1,6 +1,10 @@
 import { ChunkState } from "../state/chunk.js";
 import { clone } from "../utils/objects.js";
-import { ContinentalMix, Layered, Ridge, Simplex, Summed } from "./algorithms.js";
+import { ContinentalMix } from "./algorithms/comix.js";
+import { Layered } from "./algorithms/layered.js";
+import { Ridge } from "./algorithms/ridge.js";
+import { Simplex } from "./algorithms/simplex.js";
+import { Summed } from "./algorithms/summed.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
 import { Clustering } from "./processing/clustering.js";

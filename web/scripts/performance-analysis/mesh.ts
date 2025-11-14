@@ -3,7 +3,8 @@ import { Bench, TaskResult } from 'tinybench';
 import { REFERENCE_STATE } from '../../src/app/noisy/init.js';
 import { ReusablePainter } from '../../src/engine/mesh/painters.js';
 import { ReusableWeaver } from '../../src/engine/mesh/weavers.js';
-import { Layered, Simplex } from '../../src/noise/algorithms.js';
+import { Layered } from '../../src/noise/algorithms/layered.js';
+import { Simplex } from '../../src/noise/algorithms/simplex.js';
 
 (globalThis as any).sink = 0;
 

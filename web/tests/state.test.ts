@@ -1,7 +1,10 @@
 import { INITIAL_STATE, REFERENCE_STATE } from "../src/app/noisy/init.js";
 import { CodecChain, lexon64 } from "../src/encoding/codecs.js";
 import { Codec } from "../src/encoding/encoding.js";
-import { ContinentalMix, Layered, Ridge, Simplex } from "../src/noise/algorithms.js";
+import { ContinentalMix } from "../src/noise/algorithms/comix.js";
+import { Layered } from "../src/noise/algorithms/layered.js";
+import { Ridge } from "../src/noise/algorithms/ridge.js";
+import { Simplex } from "../src/noise/algorithms/simplex.js";
 import { AlgoPicker } from "../src/noise/containers.js";
 import { NoiseMakerI } from "../src/noise/foundations.js";
 import { noiseAlgorithms } from "../src/noise/init.js";

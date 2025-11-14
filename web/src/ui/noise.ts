@@ -1,5 +1,6 @@
 import { Panel } from "../gui/panels/panel.js";
-import { Layered, Summed } from "../noise/algorithms.js";
+import { Layered } from "../noise/algorithms/layered.js";
+import { Summed } from "../noise/algorithms/summed.js";
 import { AlgoPicker } from "../noise/containers.js";
 import { NoiseMakerI } from "../noise/foundations.js";
 import { PipelinePicker } from "../noise/processing/pipeline.js";
