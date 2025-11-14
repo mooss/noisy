@@ -195,12 +195,4 @@ function layeredUI(layered: Layered<any>, root: Panel, cb: () => void) {
         .label('Persistence').tooltip(tips.layers_persistence).onInput(cb);
     root.range(lay, 'lacunarity', 1, 2, .02)
         .label('Lacunarity').tooltip(tips.layers_lacunarity).onInput(cb);
-
-    // // Clutters the interface and there is rarely a need to change it.
-    // // There should be a way in the interface to toggle advanced settings.
-    // const samplingf = root.folder('Sampling').close();
-    // const sam = layered.p.sampling;
-    // samplingf.range(sam, 'size', 10, 100, 10).legend('Size').onInput(cb);
-    // samplingf.range(sam, 'threshold', 2, 3.5, .1).legend('Threshold').onInput(cb);
-    // samplingf.range(sam, 'fundamental', .1, 5, .1).legend('Fundamental').onInput(cb);
 }

@@ -22,6 +22,5 @@ export function computeBounds(
     for (let x = 0; x < sampling.size; ++x)
         for (let y = 0; y < sampling.size; ++y)
             values.push(gen(x, y));
-    // console.log(':VALUES', values);
     return numStats(values).outlierBounds(sampling.threshold);
 }

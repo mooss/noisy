@@ -1,7 +1,7 @@
 import { register } from "../../state/state.js";
 import { clone } from "../../utils/objects.js";
 import { NoiseClass, NoiseFun, NoiseMakerBase, NoiseMakerI } from "../foundations.js";
-import { bounds, computeBounds, NoiseSamplerP } from "../sampling.js";
+import { bounds, computeBounds, DEFAULT_SAMPLING } from "../sampling.js";
 
 //TIP: layered_simplex Multiple values (called octaves) of simplex noise layered on top of each other. Creates a more complex hilly terrain than plain simplex noise, with each octave adding more details.
 
@@ -45,11 +45,9 @@ function layerNoise(noise: NoiseFun, layers: LayersP): NoiseFun {
     }
 }
 
-interface LayerSamplingP extends NoiseSamplerP { fundamental: number }
 export class LayeredI<Noise extends NoiseMakerI> {
     noise: Noise;
     layers: LayersP;
-    sampling: LayerSamplingP;
 }
 export class Layered<Noise extends NoiseMakerI> extends NoiseMakerBase<LayeredI<Noise>> {
     get class(): NoiseClass { return 'Layered' };
@@ -57,10 +55,10 @@ export class Layered<Noise extends NoiseMakerI> extends NoiseMakerBase<LayeredI<
     bounds: bounds;
     get low(): number { return this.bounds.low }
     get high(): number { return this.bounds.high }
-    recompute(): void { this.bounds = computeBounds(this.sampler(), this.p.sampling) }
+    recompute(): void { this.bounds = computeBounds(this.sampler(), DEFAULT_SAMPLING) }
     private sampler(): NoiseFun {
         const layers = clone(this.p.layers);
-        layers.fundamental = this.p.sampling.fundamental;
+        layers.fundamental = DEFAULT_SAMPLING.fundamental;
         return layerNoise(this.p.noise.make(), layers);
     }
 

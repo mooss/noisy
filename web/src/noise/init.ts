@@ -14,7 +14,6 @@ import { Terracing, VoxelTerracing } from "./processing/terracing.js";
 import { MirroredTiling, QuadTiling, SineTiling } from "./processing/tiling.js";
 import { Exponentiation, Steepness } from "./processing/transform.js";
 import { Warping } from "./processing/warping.js";
-import { DEFAULT_SAMPLING } from "./sampling.js";
 
 export function noiseAlgorithms(chunks: ChunkState) {
     const f = {
@@ -32,13 +31,11 @@ export function noiseAlgorithms(chunks: ChunkState) {
     let simplex: NoiseMakerI = new Layered({
         noise: new Simplex(c(f.sbase)),
         layers: c(f.layers),
-        sampling: c(DEFAULT_SAMPLING),
     });
 
     const ridge = new Layered({
         noise: new Ridge(c(f.base)),
         layers: c(f.layers),
-        sampling: c(DEFAULT_SAMPLING),
     });
 
     const comix = new ContinentalMix({
@@ -50,7 +47,6 @@ export function noiseAlgorithms(chunks: ChunkState) {
                 persistence: .7,
                 lacunarity: 1.64,
             },
-            sampling: c(DEFAULT_SAMPLING),
         }),
         treble: new Layered({
             noise: new Ridge(c(f.base)),
@@ -60,7 +56,6 @@ export function noiseAlgorithms(chunks: ChunkState) {
                 persistence: .65,
                 lacunarity: 1.55,
             },
-            sampling: c(DEFAULT_SAMPLING),
         }),
         threshold: { low: .28, mid: .64, high: .56 },
     });
