@@ -21,6 +21,7 @@ const noise = new Layered({
 noise.recompute();
 
 const render = REFERENCE_STATE.render;
+render.texturePath = '';
 const painter = new ReusablePainter(render);
 const weaver = new ReusableWeaver(render);
 
@@ -32,6 +33,9 @@ const mkmesh = (side: number) => {
     const material = painter.paint();
     (globalThis as any).sink = new THREE.Mesh(geometry, material);
 };
+
+// Use this to troubleshoot problems with this script (Bench obscures the errors).
+console.log(':MKMESH', mkmesh(2));
 
 function throughput(res: TaskResult) {
     const mean = Math.round(res.throughput.mean).toString();
@@ -45,7 +49,7 @@ function throughput(res: TaskResult) {
     };
 }
 
-console.log('Throughput (iterations per second) of `createSurfaceMesh`.')
+console.log('Throughput (iterations per second) of surface mesh creation.')
 console.log('| Run | Mean         | Median   | Samples |');
 console.log('|-----|--------------|----------|---------|');
 
