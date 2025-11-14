@@ -42,6 +42,56 @@ All the =_elt= and similar should be renamed to =container= (will require renami
 *** TODO Fix the bug where the texture does not load when changing from Boxes to Surface
 *** TODO Remove sampling parameters from layered noise (always use the default)
 
+** TODOs from the code
+
+#+begin_src bash :results raw :wrap src text
+rg '//TODO:' ../web/src --heading -C 3 --sort path --line-number
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+../web/src/engine/mesh/painters.ts
+71-    }
+72-
+73-    // When this value change, it means that the material has been invalidated and needs to be rebuilt.
+74:    private get cacheKey(): string { //TODO: make a dedicated caching class (POP?).
+75-        return ['texturePath']
+76-            .map((key: string) => this.params[key])
+77-            .join(' !! ');
+
+../web/src/engine/mesh/weavers.ts
+41- */
+42-export interface ChunkWeaver {
+43-    weave(fun: NoiseFun, resolution: number): THREE.BufferGeometry;
+44:    //TODO: dispose(): void;
+45-}
+46-
+47-/**
+
+../web/src/engine/terrain/properties.ts
+85-        const res = new Uint8ClampedArray(w * h * 3);
+86-        const color = new THREE.Color();
+87-
+88:        let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
+89-        for (let j = h - 1; j >= 0; --j) {
+90-            for (let i = 0; i < w; ++i) {
+91-                const height = fun(i * sampling + halfcell, j * sampling + halfcell);
+
+../web/src/noise/algorithms.ts
+139-        // Dividing by the frequency dampens the impact of high frequencies, preventing them from
+140-        // overwhelming the rest.
+141-        // It makes the interactive parameters tweaking more intuitive.
+142:        //TODO: Find a way to reduce the impact of very low frequencies (~.1), they make the
+143-        // amplitude explode too much.
+144-        const amplitude = octave.amplitude / frequency;
+145-        const noise = octave.noise.make();
+
+../web/src/utils/iteration.ts
+1://TODO: use yield*.
+2-export function* combinations<T>(alphabet: Iterable<T>): Generator<Array<T>> {
+3-    const alpharray = Array.from(alphabet);
+4-    if (alpharray.length === 0) return;
+#+end_src
 
 ** Future versions
 
