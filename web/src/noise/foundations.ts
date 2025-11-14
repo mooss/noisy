@@ -4,7 +4,7 @@ import { rangeMapper } from "../maths/maths.js";
 // Noise functions, processing and data structures that can be encoded and decoded.
 export type NoiseClass =
     // Noise functions.
-    'Simplex' | 'Ridge' | 'Layered' | 'ContinentalMix' | 'Summed'
+    'Simplex' | 'Ridge' | 'Layered' | 'ContinentalMix' | 'Union'
     // Terracing.
     | 'Terracing' | 'VoxelTerracing'
     // Tiling.

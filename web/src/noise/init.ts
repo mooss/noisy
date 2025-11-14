@@ -4,7 +4,7 @@ import { ContinentalMix } from "./algorithms/comix.js";
 import { Layered } from "./algorithms/layered.js";
 import { Ridge } from "./algorithms/ridge.js";
 import { Simplex } from "./algorithms/simplex.js";
-import { Summed } from "./algorithms/summed.js";
+import { Union } from "./algorithms/union.js";
 import { AlgoPicker } from "./containers.js";
 import { NoiseMakerI } from "./foundations.js";
 import { Clustering } from "./processing/clustering.js";
@@ -65,45 +65,80 @@ export function noiseAlgorithms(chunks: ChunkState) {
         threshold: { low: .28, mid: .64, high: .56 },
     });
 
-    const stacked = new Summed({
+    const cursive = new Union({
+        operation: 'sum',
         fundamental: .3,
         octaves: [{
             name: "Peaks 1",
             frequency: .1,
             amplitude: 94,
-            noise: new Ridge(c({
+            noise: new Ridge({
                 seed: 23,
                 invert: true,
                 square: false,
-            })),
+            }),
         },
         {
             name: "Peaks 2",
             frequency: .4,
             amplitude: 82,
-            noise: new Ridge(c({
+            noise: new Ridge({
                 seed: 23,
                 invert: true,
                 square: false,
-            })),
+            }),
         },
         {
             name: "Hills 1",
             frequency: .8,
             amplitude: 85,
-            noise: new Simplex(c({ seed: 23 })),
+            noise: new Simplex({ seed: 23 }),
         },
         {
             name: "Hills 2",
             frequency: 1.6,
             amplitude: 85,
-            noise: new Simplex(c({ seed: 23 })),
+            noise: new Simplex({ seed: 23 }),
         },
         {
             name: "Hills 3",
             frequency: 6,
             amplitude: 70,
-            noise: new Simplex(c({ seed: 23 })),
+            noise: new Simplex({ seed: 23 }),
+        },],
+    });
+
+
+    const cursed = new Union({
+        operation: 'min',
+        fundamental: .3,
+        octaves: [{
+            name: "Peaks 1",
+            frequency: .4,
+            amplitude: 4,
+            noise: new Ridge({
+                seed: 23,
+                invert: true,
+                square: false,
+            }),
+        },
+        {
+            name: "Hills 1",
+            frequency: .2,
+            amplitude: 8,
+            noise: new Simplex({ seed: 23 }),
+        },
+        {
+            name: "Hills 2",
+            frequency: .3,
+            amplitude: 19,
+            noise: new Simplex({ seed: 23 }),
+        },
+        {
+            name: "Hills 3",
+            frequency: 1.5,
+            amplitude: 19,
+            noise: new Simplex({ seed: 23 }),
         },],
     });
 
@@ -112,7 +147,8 @@ export function noiseAlgorithms(chunks: ChunkState) {
             'Simplex': simplex,
             'Ridge': ridge,
             'Continental mix': comix,
-            'Cursive mountains': stacked,
+            'Cursive mountains': cursive,
+            'Cursed mountains': cursed,
         },
         current: 'Continental mix',
     });

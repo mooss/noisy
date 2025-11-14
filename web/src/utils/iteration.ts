@@ -45,7 +45,11 @@ export function* reverse<T>(container: ArrayLike<T>): Generator<T> {
 }
 
 
-/** Yield [index, value] pairs like Python’s `enumerate`. */
+/**
+ * Yield [index, value] pairs like Python’s `enumerate`.
+ * Note: this is way slower than using a native for loop and should not be used in
+ * performance-sensitive code.
+ */
 export function* enumerate<T>(iterable: Iterable<T>): Generator<[number, T]> {
     let i = 0;
     for (const value of iterable) yield [i++, value];

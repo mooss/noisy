@@ -29,9 +29,9 @@ Maybe vendor the perl script from litlib to help with that
 *** DONE Custom octaves
 For instance octave 1 and 2 are ridge, 3 and 4 are simplex.
 Would mix well with max noise.
+*** DONE Max/union noise (take the highest value of different functions)
 *** TODO Slightly shift height when interpolating colors
 Simplex in shader?
-*** TODO Max/union noise (take the highest value of different functions)
 *** TODO Proper logo
 Using the favicon as a reference.
 *** TODO Integrate together the UI with the footer added by mooss.github.io
@@ -50,15 +50,6 @@ rg '//TODO:' ../web/src --heading -C 3 --sort path --line-number
 
 #+RESULTS:
 #+begin_src text
-../web/src/engine/mesh/painters.ts
-71-    }
-72-
-73-    // When this value change, it means that the material has been invalidated and needs to be rebuilt.
-74:    private get cacheKey(): string { //TODO: make a dedicated caching class (POP?).
-75-        return ['texturePath']
-76-            .map((key: string) => this.params[key])
-77-            .join(' !! ');
-
 ../web/src/engine/mesh/weavers.ts
 41- */
 42-export interface ChunkWeaver {
@@ -77,14 +68,14 @@ rg '//TODO:' ../web/src --heading -C 3 --sort path --line-number
 90-            for (let i = 0; i < w; ++i) {
 91-                const height = fun(i * sampling + halfcell, j * sampling + halfcell);
 
-../web/src/noise/algorithms.ts
-139-        // Dividing by the frequency dampens the impact of high frequencies, preventing them from
-140-        // overwhelming the rest.
-141-        // It makes the interactive parameters tweaking more intuitive.
-142:        //TODO: Find a way to reduce the impact of very low frequencies (~.1), they make the
-143-        // amplitude explode too much.
-144-        const amplitude = octave.amplitude / frequency;
-145-        const noise = octave.noise.make();
+../web/src/noise/algorithms/union.ts
+33-            // Dividing by the frequency dampens the impact of high frequencies, preventing them from
+34-            // overwhelming the rest.
+35-            // It makes the interactive parameters tweaking more intuitive.
+36:            //TODO: Find a way to reduce the impact of very low frequencies (~.1), they make the
+37-            // amplitude explode too much.
+38-            if (stack.operation === 'sum') amplitude /= frequency;
+39-
 
 ../web/src/utils/iteration.ts
 1://TODO: use yield*.
@@ -146,7 +137,16 @@ Would be a first step towards biomes.
 **** Nature assets
 ***** Tree
 ***** Grass
-
+**** Noise combination dsl
+To have full control over noise layers combination instead of just sum/min/max of al the layers, something like:
+#+begin_src scheme
+(sum (min l1 l2 l3) l5 l5)
+#+end_src
+Beyond the mere combination, a generic noise DSL should be made, with a perfect mapping between noise DSL and noise UI.
+#+begin_src scheme
+(layered :noise (simplex :seed 23) :fundamental 1 :persistence .65 :lacunarity 1.5 :octaves 6)
+#+end_src
+A button in the UI could be used to directly edit the noise implementation.
 
 *** Performance
 **** Chunk computation in web workers
