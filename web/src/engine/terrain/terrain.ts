@@ -192,11 +192,8 @@ export class Terrain {
     // Export //
 
     async asTexture(): Promise<Blob> {
-        return rgbArrayToPngBlob(
-            this.props.renderToRGB(this.center),
-            this.props.width,
-            this.props.height,
-        );
+        const renderer = this.props.renderer(this.center);
+        return rgbArrayToPngBlob(renderer.toRGB(), renderer.width, renderer.height);
     }
 
     /////////////

@@ -73,33 +73,56 @@ export class TerrainProperties {
         return this.cachedMaterial;
     }
 
-    renderToRGB(center: Coordinates): Uint8ClampedArray {
-        // Build color-shifted height function with the top-left corner as a starting point.
-        const raw = this.heightAt({ x: center.x - this.loadRadius, y: center.y - this.loadRadius });
-        const shift = rangeMapper(0, 1, this.render.colorLowShift, 1 + this.render.colorHighShift);
-        const fun = (x: number, y: number) => shift(raw(x, y));
+    renderer(center: Coordinates): TerrainRenderer { return new TerrainRenderer(this, center) }
+}
 
-        const w = this.width; const h = this.height;
-        const sampling = 1 / this.resolution;
-        const halfcell = sampling * .5; // Will be used to center the pixels.
-        const res = new Uint8ClampedArray(w * h * 3);
+export class TerrainRenderer {
+    constructor(
+        private params: TerrainProperties,
+        private center: Coordinates,
+    ) { }
+
+    mkfun(): NoiseFun {
+        return this.params.heightAt({
+            x: this.center.x - this.params.loadRadius,
+            y: this.center.y - this.params.loadRadius,
+        });
+    }
+    get width(): number { return (1 + 2 * this.params.loadRadius) * this.params.resolution }
+    get height(): number { return this.width }
+
+    toRGB(): Uint8ClampedArray {
+        const res = new Uint8ClampedArray(this.width * this.height * 3);
         const color = new THREE.Color();
 
         let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
-        for (let j = h - 1; j >= 0; --j) {
-            for (let i = 0; i < w; ++i) {
-                const height = fun(i * sampling + halfcell, j * sampling + halfcell);
-                this.render.palette.lerp(height, color);
-                color.convertLinearToSRGB();
-                res[idx++] = color.r * 255;
-                res[idx++] = color.g * 255;
-                res[idx++] = color.b * 255;
-            }
+        for (const height of this.heightMatrix()) {
+            this.params.palette.lerp(height, color);
+            color.convertLinearToSRGB();
+            res[idx++] = color.r * 255;
+            res[idx++] = color.g * 255;
+            res[idx++] = color.b * 255;
         }
 
         return res;
     }
 
-    get width(): number { return (1 + 2 * this.loadRadius) * this.resolution }
-    get height(): number { return this.width }
+
+    private *heightMatrix(): Generator<number> {
+        // Build color-shifted height function with the top-left corner as a starting point.
+        const raw = this.mkfun();
+        const shift = rangeMapper(0, 1, this.params.colorLowShift, 1 + this.params.colorHighShift);
+        const fun = (x: number, y: number) => shift(raw(x, y));
+
+        const w = this.width;
+        const h = this.height;
+        const sampling = 1 / this.params.resolution;
+        const halfcell = sampling * .5;
+
+        for (let j = h - 1; j >= 0; --j) {
+            for (let i = 0; i < w; ++i) {
+                yield fun(i * sampling + halfcell, j * sampling + halfcell);
+            }
+        }
+    }
 }
