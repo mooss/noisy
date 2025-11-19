@@ -6,8 +6,6 @@ import { NoiseFun, NoiseMakerI } from '../../noise/foundations.js';
 import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
 import { ReusablePainter } from '../mesh/painters.js';
-import { fillSurfaceIndices } from '../mesh/surface.js';
-import { ReusableBuffer } from '../mesh/utils.js';
 import { ReusableWeaver } from '../mesh/weavers.js';
 
 export class TerrainProperties {
@@ -119,44 +117,71 @@ export class TerrainRenderer {
 
         for (let j = height - 1; j >= 0; --j) {
             for (let i = 0; i < width; ++i) {
-                yield [fun(i * sampling + halfcell, j * sampling + halfcell), i, j];
+                const x = i * sampling;
+                const y = j * sampling;
+                yield [fun(x + halfcell, y + halfcell), x, y];
             }
         }
     }
 
     toSurfaceVertices(): NumberArray {
-        // Build color-shifted height function with the top-left corner as a starting point.
-        const raw = this.mkfun();
-        const shift = rangeMapper(0, 1, this.params.colorLowShift, 1 + this.params.colorHighShift);
-        const fun = (x: number, y: number) => shift(raw(x, y));
-        const sampling = 1 / this.params.resolution;
-        const halfcell = sampling * .5;
+        const vertices: number[] = [];
+        const emit = (point: number[]) => vertices.push(point[0], point[1], point[2]);
+
+        //////////////////////
+        // Surface and base //
+        const surface: [number, number, number][] = [];
+        const base: [number, number, number][] = [];
 
         // Precompute vertex positions for the grid (width+1 × height+1).
         // 1 is added to width and height because NxN quads require N+1xN+1 vertices.
-        const positions: [number, number, number][] = [];
-        for (let j = this.height; j >= 0; --j) {
-            for (let i = 0; i <= this.width; ++i) {
-                const x = i * sampling;
-                const y = j * sampling;
-                const z = fun(x + halfcell, y + halfcell);
-                positions.push([x, y, z]);
-            }
+        for (const [z, x, y] of this.heightMatrix(this.width + 1, this.height + 1)) {
+            surface.push([x, y, z]);
+            base.push([x, y, 0]);
         }
 
-        const vertices: number[] = [];
-        const emit = (point: number[]) => vertices.push(point[0], point[1], point[2]);
-        for (let j = 0; j < this.height; ++j) {
-            for (let i = 0; i < this.width; ++i) {
-                // Each cell is 1 quad made of two triangles.
-                const a = positions[j * (this.width + 1) + i];
-                const b = positions[j * (this.width + 1) + (i + 1)];
-                const c = positions[(j + 1) * (this.width + 1) + i];
-                const d = positions[(j + 1) * (this.width + 1) + (i + 1)];
-                emit(a); emit(b); emit(c); // Triangle 1.
-                emit(b); emit(d); emit(c); // Triangle 2
+        const suba = (points: number[][]) => {
+            for (let j = 0; j < this.height; ++j) {
+                for (let i = 0; i < this.width; ++i) {
+                    const a = points[j * (this.width + 1) + i];
+                    const b = points[j * (this.width + 1) + (i + 1)];
+                    const c = points[(j + 1) * (this.width + 1) + i];
+                    const d = points[(j + 1) * (this.width + 1) + (i + 1)];
+                    emit(a); emit(b); emit(c);
+                    emit(b); emit(d); emit(c);
+                }
             }
         }
+        suba(surface); suba(base);
+
+        ///////////
+        // Edges //
+        const edge = (top1: number[], top2: number[], base1: number[], base2: number[]) => {
+            emit(top1); emit(base1); emit(base2);
+            emit(top1); emit(base2); emit(top2);
+        };
+
+        // North.
+        for (let i = 0; i < this.width; ++i)
+            edge(surface[i], surface[i + 1], base[i], base[i + 1]);
+
+        // South.
+        const offS = this.height * (this.width + 1);
+        for (let i = 0; i < this.width; ++i)
+            edge(surface[offS + i], surface[offS + i + 1], base[offS + i], base[offS + i + 1]);
+
+        // West.
+        const stride = this.width + 1;
+        for (let j = 0; j < this.height; ++j)
+            edge(surface[j * stride], surface[(j + 1) * stride],
+                base[j * stride], base[(j + 1) * stride]);
+
+        // East.
+        for (let j = 0; j < this.height; ++j)
+            edge(
+                surface[j * stride + this.width], surface[(j + 1) * stride + this.width],
+                base[j * stride + this.width], base[(j + 1) * stride + this.width],
+            );
 
         return vertices;
     }

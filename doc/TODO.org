@@ -31,14 +31,14 @@ For instance octave 1 and 2 are ridge, 3 and 4 are simplex.
 Would mix well with max noise.
 *** DONE Max/union noise (take the highest value of different functions)
 *** DONE Remove sampling parameters from layered noise (always use the default)
-*** STL export
-**** TODO Export the surface
+*** DONE STL export
+**** DONE Export the surface
 Partially done, things must still be fixed.
 ***** DONE Multiply the height
 Because the model is almost flat.
 ***** DONE Fix multi-chunks export
 There is some kind of superposition of chunks happening.
-**** TODO Make the export solid
+**** DONE Make the export solid
 To be printable, it must not be just the surface but a solid block.
 *** TODO Proper logo
 Using the favicon as a reference.
