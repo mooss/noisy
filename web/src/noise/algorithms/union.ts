@@ -26,7 +26,7 @@ function combineNoises(stack: UnionP): NoiseFun {
     const octaves = stack.octaves
         .filter(oct => oct.frequency > 0 && oct.amplitude > 0)
         .map(octave => {
-            const noise = octave.noise.make();
+        const noise = octave.noise.normalised(0, 1);
             const frequency = octave.frequency;
             let amplitude = octave.amplitude;
 
