@@ -6,7 +6,7 @@ import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
 import { race } from '../../utils/async.js';
 import { rgbArrayToPngBlob } from '../../utils/img.js';
-import { indexedToSTL } from '../../utils/stl.js';
+import { verticesToSTL } from '../../utils/stl.js';
 import { Chunk, ChunkPool } from './chunks.js';
 import { TerrainProperties } from './properties.js';
 
@@ -198,8 +198,8 @@ export class Terrain {
     }
 
     asSTL(): string {
-        const surface = this.props.renderer(this.center).toSurface();
-        return indexedToSTL(surface.vertices, surface.indices)
+        const surface = this.props.renderer(this.center).toSurfaceVertices();
+        return verticesToSTL(surface);
     }
 
     /////////////

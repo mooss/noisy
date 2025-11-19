@@ -78,11 +78,6 @@ export class TerrainProperties {
     renderer(center: Coordinates): TerrainRenderer { return new TerrainRenderer(this, center) }
 }
 
-interface Surface {
-    indices: NumberArray;
-    vertices: NumberArray;
-}
-
 export class TerrainRenderer {
     constructor(
         private params: TerrainProperties,
@@ -129,21 +124,40 @@ export class TerrainRenderer {
         }
     }
 
-    toSurface(): Surface {
-        const indices = new ReusableBuffer();
-        fillSurfaceIndices(indices, this.width);
+    toSurfaceVertices(): NumberArray {
+        // Build color-shifted height function with the top-left corner as a starting point.
+        const raw = this.mkfun();
+        const shift = rangeMapper(0, 1, this.params.colorLowShift, 1 + this.params.colorHighShift);
+        const fun = (x: number, y: number) => shift(raw(x, y));
+        const sampling = 1 / this.params.resolution;
+        const halfcell = sampling * .5;
 
-        // Adding 1 to width and height because NxN quads require N+1xN+1 vertices.
-        const width = this.width + 1, height = this.height + 1;
-
-        const vertices = new Array<number>(height * width); let vidx = 0;
-        for (const [z, x, y] of this.heightMatrix(width, height)) {
-            vertices[vidx++] = x; vertices[vidx++] = y; vertices[vidx++] = z;
+        // Precompute vertex positions for the grid (width+1 × height+1).
+        // 1 is added to width and height because NxN quads require N+1xN+1 vertices.
+        const positions: [number, number, number][] = [];
+        for (let j = this.height; j >= 0; --j) {
+            for (let i = 0; i <= this.width; ++i) {
+                const x = i * sampling;
+                const y = j * sampling;
+                const z = fun(x + halfcell, y + halfcell);
+                positions.push([x, y, z]);
+            }
         }
 
-        return {
-            indices: indices.storage.array,
-            vertices: vertices,
+        const vertices: number[] = [];
+        const emit = (point: number[]) => vertices.push(point[0], point[1], point[2]);
+        for (let j = 0; j < this.height; ++j) {
+            for (let i = 0; i < this.width; ++i) {
+                // Each cell is 1 quad made of two triangles.
+                const a = positions[j * (this.width + 1) + i];
+                const b = positions[j * (this.width + 1) + (i + 1)];
+                const c = positions[(j + 1) * (this.width + 1) + i];
+                const d = positions[(j + 1) * (this.width + 1) + (i + 1)];
+                emit(a); emit(b); emit(c); // Triangle 1.
+                emit(b); emit(d); emit(c); // Triangle 2
+            }
         }
+
+        return vertices;
     }
 }

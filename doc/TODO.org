@@ -34,9 +34,9 @@ Would mix well with max noise.
 *** STL export
 **** TODO Export the surface
 Partially done, things must still be fixed.
-***** TODO Multiply the height
+***** DONE Multiply the height
 Because the model is almost flat.
-***** TODO Fix multi-chunks export
+***** DONE Fix multi-chunks export
 There is some kind of superposition of chunks happening.
 **** TODO Make the export solid
 To be printable, it must not be just the surface but a solid block.
