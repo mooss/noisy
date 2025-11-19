@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MINIMUM_HEIGHT } from '../../../config/constants.js';
+import { CHUNK_UNIT, MINIMUM_HEIGHT } from '../../../config/constants.js';
 import { Coordinates } from '../../maths/coordinates.js';
 import { rangeMapper, vector2 } from '../../maths/maths.js';
 import { NoiseFun, NoiseMakerI } from '../../noise/foundations.js';
@@ -48,11 +48,12 @@ export class TerrainProperties {
     get material() { return this.cachedMaterial }
     get resolution() { return this.chunks.resolution }
 
+    get rawVerticalUnit() { return Math.max(this.render.verticalUnit, MINIMUM_HEIGHT) }
     get verticalUnit() {
         if (this.render.geometryStyle === 'Pixel') return MINIMUM_HEIGHT;
         // Prevents the verticality to be exactly zero because it messes up with shading, basically
         // ignoring directional light.
-        return Math.max(this.render.verticalUnit, MINIMUM_HEIGHT);
+        return this.rawVerticalUnit;
     }
 
     heightAt(chunkCoords: vector2): (x: number, y: number) => number {
@@ -124,9 +125,14 @@ export class TerrainRenderer {
         }
     }
 
-    toSurfaceVertices(): NumberArray {
+    toSolidVertices(): NumberArray {
         const vertices: number[] = [];
         const emit = (point: number[]) => vertices.push(point[0], point[1], point[2]);
+
+        // Scaling factors to produce a model proportional to the render while still
+        // being at a scale in the ballpark of what would fit in a 3d printer.
+        const horizontalScale = CHUNK_UNIT / 8;
+        const verticalScale = this.params.rawVerticalUnit / 8;
 
         //////////////////////
         // Surface and base //
@@ -135,7 +141,10 @@ export class TerrainRenderer {
 
         // Precompute vertex positions for the grid (width+1 × height+1).
         // 1 is added to width and height because NxN quads require N+1xN+1 vertices.
-        for (const [z, x, y] of this.heightMatrix(this.width + 1, this.height + 1)) {
+        for (let [z, x, y] of this.heightMatrix(this.width + 1, this.height + 1)) {
+            x *= horizontalScale;
+            y *= horizontalScale;
+            z *= verticalScale;
             surface.push([x, y, z]);
             base.push([x, y, 0]);
         }

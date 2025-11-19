@@ -198,7 +198,7 @@ export class Terrain {
     }
 
     asSTL(): string {
-        const surface = this.props.renderer(this.center).toSurfaceVertices();
+        const surface = this.props.renderer(this.center).toSolidVertices();
         return verticesToSTL(surface);
     }
 
