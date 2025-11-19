@@ -6,6 +6,8 @@ import { NoiseFun, NoiseMakerI } from '../../noise/foundations.js';
 import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
 import { ReusablePainter } from '../mesh/painters.js';
+import { fillSurfaceIndices } from '../mesh/surface.js';
+import { ReusableBuffer } from '../mesh/utils.js';
 import { ReusableWeaver } from '../mesh/weavers.js';
 
 export class TerrainProperties {
@@ -76,6 +78,11 @@ export class TerrainProperties {
     renderer(center: Coordinates): TerrainRenderer { return new TerrainRenderer(this, center) }
 }
 
+interface Surface {
+    indices: NumberArray;
+    vertices: NumberArray;
+}
+
 export class TerrainRenderer {
     constructor(
         private params: TerrainProperties,
@@ -96,7 +103,7 @@ export class TerrainRenderer {
         const color = new THREE.Color();
 
         let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
-        for (const height of this.heightMatrix()) {
+        for (const [height] of this.heightMatrix()) {
             this.params.palette.lerp(height, color);
             color.convertLinearToSRGB();
             res[idx++] = color.r * 255;
@@ -107,22 +114,36 @@ export class TerrainRenderer {
         return res;
     }
 
-
-    private *heightMatrix(): Generator<number> {
+    private *heightMatrix(width = this.width, height = this.height): Generator<[number, number, number]> {
         // Build color-shifted height function with the top-left corner as a starting point.
         const raw = this.mkfun();
         const shift = rangeMapper(0, 1, this.params.colorLowShift, 1 + this.params.colorHighShift);
         const fun = (x: number, y: number) => shift(raw(x, y));
-
-        const w = this.width;
-        const h = this.height;
         const sampling = 1 / this.params.resolution;
         const halfcell = sampling * .5;
 
-        for (let j = h - 1; j >= 0; --j) {
-            for (let i = 0; i < w; ++i) {
-                yield fun(i * sampling + halfcell, j * sampling + halfcell);
+        for (let j = height - 1; j >= 0; --j) {
+            for (let i = 0; i < width; ++i) {
+                yield [fun(i * sampling + halfcell, j * sampling + halfcell), i, j];
             }
+        }
+    }
+
+    toSurface(): Surface {
+        const indices = new ReusableBuffer();
+        fillSurfaceIndices(indices, this.width);
+
+        // Adding 1 to width and height because NxN quads require N+1xN+1 vertices.
+        const width = this.width + 1, height = this.height + 1;
+
+        const vertices = new Array<number>(height * width); let vidx = 0;
+        for (const [z, x, y] of this.heightMatrix(width, height)) {
+            vertices[vidx++] = x; vertices[vidx++] = y; vertices[vidx++] = z;
+        }
+
+        return {
+            indices: indices.storage.array,
+            vertices: vertices,
         }
     }
 }

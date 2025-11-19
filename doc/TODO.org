@@ -31,8 +31,15 @@ For instance octave 1 and 2 are ridge, 3 and 4 are simplex.
 Would mix well with max noise.
 *** DONE Max/union noise (take the highest value of different functions)
 *** DONE Remove sampling parameters from layered noise (always use the default)
-*** TODO Slightly shift height when interpolating colors
-Simplex in shader?
+*** STL export
+**** TODO Export the surface
+Partially done, things must still be fixed.
+***** TODO Multiply the height
+Because the model is almost flat.
+***** TODO Fix multi-chunks export
+There is some kind of superposition of chunks happening.
+**** TODO Make the export solid
+To be printable, it must not be just the surface but a solid block.
 *** TODO Proper logo
 Using the favicon as a reference.
 *** TODO Integrate together the UI with the footer added by mooss.github.io
@@ -136,6 +143,8 @@ The injection leaves too little control and everything is clumsy and difficult t
 ***** Break texture pattern
 https://iquilezles.org/articles/texturerepetition/
 ***** Cell-shading or something cartoonish or colorful
+***** Slightly shift height when interpolating colors
+Simplex in shader?
 **** Ocean layer
 Don't use texture under the ocean line and shade the surface with waves/whatever.
 **** Add a second dimension to the color palette
@@ -143,7 +152,6 @@ Use it to specify the color of the slope.
 
 
 *** Features
-**** STL export
 **** Moon
 **** Real world map (nominatim)
 

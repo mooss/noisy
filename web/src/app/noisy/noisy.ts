@@ -13,7 +13,6 @@ import { VerticalStack } from '../../gui/panels/vertical-stack.js';
 import { POSITION_TOP_LEFT } from '../../gui/style.js';
 import { Position } from '../../maths/coordinates.js';
 import { numStats } from '../../maths/stats.js';
-import { avatarUI } from '../../state/avatar.js';
 import { cameraUI } from '../../state/camera.js';
 import { chunksUI } from '../../state/chunk.js';
 import { renderUI } from '../../state/renderer.js';
@@ -176,15 +175,27 @@ class Game {
         menu.entry('?').onClick(() => this.welcomeWindow.show());
 
         const exprt = menu.entry('Export')
+
         exprt.entry('As URL in the Clipboard').onClick(() => toClipBoard(this.saveStateToUrl()));
+
         exprt.entry('As JSON').onClick(() => {
             const state = JSON.stringify(StateRegistry.encode(this.updatedState()), null, 2);
             downloadData(state, 'noisy-savefile.json', { type: 'application/json' });
         });
-        exprt.entry('As JPEG Screenshot').onClick(() => this.renderer.screenshot('noisy-screenshot.jpeg'));
-        exprt.entry('As PNG Texture').onClick(() => {
-            this.terrain.asTexture().then((texture: Blob) => downloadBlob(texture, 'noisy-texture.png'))
-        });
+
+        exprt.entry('As JPEG Screenshot').onClick(
+            () => this.renderer.screenshot('noisy-screenshot.jpeg'),
+        );
+
+        exprt.entry('As PNG Texture').onClick(() => this.terrain.asTexture().then(
+            (texture: Blob) => downloadBlob(texture, 'noisy-texture.png'),
+        ));
+
+        exprt.entry('As STL').onClick(() => downloadData(
+            this.terrain.asSTL(),
+            'noisy-terrain.stl',
+            { type: 'model/stl' },
+        ));
     }
 
     setupStatsGraph(root: Panel): void {
