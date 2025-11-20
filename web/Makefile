@@ -14,7 +14,7 @@ update-modules:
 	npm install --save-dev vite @types/three jest @types/jest ts-jest tinybench
 
 serve:
-	npx vite src/app/noisy
+	npx vite src/app
 
 test:
 	npx jest
