@@ -23,19 +23,23 @@ function line(from: vector2, to: vector2) {
     ctx.stroke();
 }
 
+function poly(...points: vector2[]) {
+    let p = points.shift();
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    for (p of points) ctx.lineTo(p.x, p.y);
+    ctx.closePath();
+    ctx.fill();
+}
+
 function triangle(size: number, color: string) {
     const left = { x: 0, y: 0 };
     const right = { x: size, y: 0};
     const top = { x: size * .5, y: - size * Math.cos(Math.PI / 6) };
 
     // Inside.
-    ctx.beginPath();
-    ctx.moveTo(left.x, left.y);
-    ctx.lineTo(right.x, right.y);
-    ctx.lineTo(top.x, top.y);
-    ctx.closePath();
     ctx.fillStyle = color;
-    ctx.fill();
+    poly(left, right, top);
 
     // Border.
     ctx.strokeStyle = 'black';
