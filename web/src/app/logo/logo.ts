@@ -38,21 +38,21 @@ function poly(...points: vector2[]) {
  * Draw a third of the logo.
  */
 function third(size: number, color: string) {
-    const left = { x: 0, y: 0 };
-    const right = { x: size, y: 0 };
-    const top = { x: size * .5, y: - size * Math.cos(Math.PI / 6) };
-    const bottom = { x: top.x, y: -top.y };
+    const median = size * Math.cos(Math.PI / 6);
+    const top = { x: 0, y: 0 };
+    const right = { x: median, y: size/2 };
+    const bottom = { x: 0, y: size };
+    const left = { x: -median, y: size/2 };
 
     // Solid base.
     ctx.fillStyle = color;
-    poly(left, right, top); // Top triangle.
-    poly(left, right, bottom); // Bottom triangle.
+    poly(top, right, bottom, left);
 
     // Outline.
     ctx.strokeStyle = 'black';
     ctx.lineCap = 'round';
     ctx.lineWidth = size * OUTLINE_PROPORTION;
-    line(top, right, bottom);
+    line(right, bottom, left);
 }
 
 function logo() {
@@ -61,12 +61,11 @@ function logo() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.translate(center.x, center.y);
-    ctx.rotate(Math.PI / 2); // Transform the flat-top hexagon into a pointy-top one.
     third(size, 'cyan');
     ctx.rotate(4 * Math.PI / 3);
-    third(size, 'yellow');
-    ctx.rotate(4 * Math.PI / 3);
     third(size, 'magenta');
+    ctx.rotate(4 * Math.PI / 3);
+    third(size, 'yellow');
 }
 
 window.addEventListener('resize', refresh);
