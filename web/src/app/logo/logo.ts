@@ -34,11 +34,17 @@ function poly(...points: vector2[]) {
     ctx.fill();
 }
 
+
+// Amount of radians corresponding to 1/3 of a rotation.
+const RAD_THIRD = 2 * Math.PI / 3;
+// Amount of radians corresponding to 1/12 of a rotation.
+const RAD_TWELFTH = Math.PI / 6;
+
 /**
  * Draw a third of the logo.
  */
 function third(size: number, color: string) {
-    const median = size * Math.cos(Math.PI / 6);
+    const median = size * Math.cos(RAD_TWELFTH);
     const top = { x: 0, y: 0 };
     const right = { x: median, y: size/2 };
     const bottom = { x: 0, y: size };
@@ -62,10 +68,10 @@ function logo() {
 
     ctx.translate(center.x, center.y);
     third(size, 'cyan');
-    ctx.rotate(4 * Math.PI / 3);
-    third(size, 'magenta');
-    ctx.rotate(4 * Math.PI / 3);
+    ctx.rotate(RAD_THIRD);
     third(size, 'yellow');
+    ctx.rotate(RAD_THIRD);
+    third(size, 'magenta');
 }
 
 window.addEventListener('resize', refresh);
