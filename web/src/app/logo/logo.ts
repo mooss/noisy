@@ -34,42 +34,25 @@ function poly(...points: vector2[]) {
     ctx.fill();
 }
 
-function triangle(size: number, color: string) {
-    const left = { x: 0, y: 0 };
-    const right = { x: size, y: 0 };
-    const top = { x: size * .5, y: - size * Math.cos(Math.PI / 6) };
-
-    // Inside.
-    ctx.fillStyle = color;
-    poly(left, right, top);
-
-    // Border.
-    ctx.strokeStyle = 'black';
-    ctx.lineCap = 'round';
-    ctx.lineWidth = size * OUTLINE_PROPORTION;
-    line(top, left);
-    line(top, right);
-}
-
-
 /**
  * Draw a third of the logo.
  */
 function third(size: number, color: string) {
-    ctx.save();
+    const left = { x: 0, y: 0 };
+    const right = { x: size, y: 0 };
+    const top = { x: size * .5, y: - size * Math.cos(Math.PI / 6) };
+    const bottom = { x: top.x, y: -top.y };
 
-    // Top triangle.
-    triangle(size, color);
+    // Solid base.
+    ctx.fillStyle = color;
+    poly(left, right, top); // Top triangle.
+    poly(left, right, bottom); // Bottom triangle.
 
-    // Shift to the right, superposing the new left point with the old right point.
-    ctx.translate(size, 0);
-
-    // Rotate half a turn around the left point, resulting in a triangle mirrored along the bottom
-    // line.
-    ctx.rotate(Math.PI);
-    triangle(size, color);
-
-    ctx.restore();
+    // Outline.
+    ctx.strokeStyle = 'black';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = size * OUTLINE_PROPORTION;
+    line(top, right, bottom);
 }
 
 function logo() {
