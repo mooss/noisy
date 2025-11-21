@@ -3,23 +3,14 @@ import { vector2 } from "../../maths/maths.js";
 // Amount of radians corresponding to 1/3 of a rotation.
 const RAD_THIRD = 2 * Math.PI / 3;
 
-// Amount of radians corresponding to 1/6 of a rotation.
-const RAD_SIXTH = Math.PI / 3;
-
 // Amount of radians corresponding to 1/12 of a rotation.
 const RAD_TWELFTH = Math.PI / 6;
 
-// Small number to avoid gaps between shapes.
-const NOGAP = 1;
-
-// Thickness of the outer lines.
-const OUTLINE_PROPORTION = .02;
-
-// Thickness of the inner lines.
-const INLINE_PROPORTION = .02;
+// Thickness of the lines.
+const LINE_PROPORTION = .02;
 
 // Dimensions of the beam.
-const BEAM_PROPORTION = .1;
+const BEAM_PROPORTION = .13;
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -56,7 +47,7 @@ function poly(...points: vector2[]) {
 /**
  * Draw a sixth of the logo (the bottom left triangle).
  */
-function sixth(size: number, color: string) {
+function sixth(size: number, bottomColor: string, innerColor: string) {
     ///////////////
     // Constants //
     // Vertical/horizontal size of the beams.
@@ -96,19 +87,24 @@ function sixth(size: number, color: string) {
     const mbb = { x: mba.x, y: mba.y + beamsize };
 
     //////////////////////
+    // Small inner fill //
+    ctx.fillStyle = innerColor;
+    poly(ifa, ifb, ifc);
+
+    //////////////////////
     // Inner beam lines //
     // They are drawn before the bottom fill to erase the sharp point that would otherwise appear on
     // top of it.
     ctx.strokeStyle = 'black';
     ctx.lineCap = 'round';
-    ctx.lineWidth = size * INLINE_PROPORTION;
+    ctx.lineWidth = size * LINE_PROPORTION;
 
     line(left, tole, mba);
-    line(ifc, mbb, tobo, top);
+    line(ifc, mbb, tobo, top); // The problematic line whose end must be covered.
 
     /////////////////
     // Bottom fill //
-    ctx.fillStyle = color;
+    ctx.fillStyle = bottomColor;
     poly(bfa, bfb, bfc, bottom);
 
     /////////////////
@@ -117,7 +113,7 @@ function sixth(size: number, color: string) {
     line(ifa, ifc, ifb); // Over the small inner fill.
 
     // Outline.
-    ctx.lineWidth = size * OUTLINE_PROPORTION;
+    ctx.lineWidth = size * LINE_PROPORTION;
     line(bottom, left);
 }
 
@@ -125,25 +121,26 @@ function sixth(size: number, color: string) {
  * Draw a third of the logo (the bottom rhombus, made of the bottom left triangle and its
  * horizontally mirrored sibling).
  */
-function third(size: number, color: string) {
+function third(size: number, bottomColor: string, leftColor: string, rightColor: string) {
     ctx.save();
-    sixth(size, color);
+    sixth(size, bottomColor, leftColor);
     ctx.scale(-1, 1);
-    sixth(size, color);
+    sixth(size, bottomColor, rightColor);
     ctx.restore();
 }
 
 function logo() {
     const center = { x: canvas.width / 2, y: canvas.height / 2 }
-    const size = Math.min(canvas.width, canvas.height) * (.5 - OUTLINE_PROPORTION / 2);
+    const size = Math.min(canvas.width, canvas.height) * (.5 - LINE_PROPORTION / 2);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.translate(center.x, center.y);
-    third(size, 'cyan');
+    third(size, 'cyan', 'magenta', 'yellow');
+    // return;
     ctx.rotate(RAD_THIRD);
-    third(size, 'yellow');
+    third(size, 'yellow', 'cyan', 'magenta');
     ctx.rotate(RAD_THIRD);
-    third(size, 'magenta');
+    third(size, 'magenta', 'yellow', 'cyan');
 }
 
 window.addEventListener('resize', refresh);

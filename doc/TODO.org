@@ -40,7 +40,7 @@ Because the model is almost flat.
 There is some kind of superposition of chunks happening.
 **** DONE Make the export solid
 To be printable, it must not be just the surface but a solid block.
-*** TODO Proper logo
+*** DONE Proper logo
 Using the favicon as a reference.
 *** TODO Integrate together the UI with the footer added by mooss.github.io
 Or even better create the footer in noisy itself.
@@ -48,6 +48,8 @@ Or even better create the footer in noisy itself.
 *** TODO Harmonize the names of all root elements in GUI code
 All the =_elt= and similar should be renamed to =container= (will require renaming the other things already named =container=).
 *** TODO Fix the bug where the texture does not load when changing from Boxes to Surface
+*** TODO Scenes/presets
+Propose different starting points that are more focused and less overwhelming (texture editor, montain range).
 
 
 ** Future versions
@@ -86,8 +88,6 @@ By default, hide complicated parameters to make the interface less intimidating.
 **** Noise library/environment
 A dedicated panel with a mapping from names to noise, reusable.
 Should it be references, templates or both? There might be a need for both (instances/references have values and changing one will change all the others, whereas classes/templates only have default value and might need to be instanciated).
-**** Scenes/presets
-Propose different starting points that are more focused and less overwhelming (texture editor, montain range).
 
 
 *** Gameplay
