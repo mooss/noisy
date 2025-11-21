@@ -16,25 +16,27 @@ function refresh() {
     logo();
 }
 
-function line(from: vector2, to: vector2) {
-    ctx.beginPath();
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
-    ctx.stroke();
-}
-
-function poly(...points: vector2[]) {
+function path(...points: vector2[]) {
     let p = points.shift();
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
     for (p of points) ctx.lineTo(p.x, p.y);
+}
+
+function line(...points: vector2[]) {
+    path(...points);
+    ctx.stroke();
+}
+
+function poly(...points: vector2[]) {
+    path(...points);
     ctx.closePath();
     ctx.fill();
 }
 
 function triangle(size: number, color: string) {
     const left = { x: 0, y: 0 };
-    const right = { x: size, y: 0};
+    const right = { x: size, y: 0 };
     const top = { x: size * .5, y: - size * Math.cos(Math.PI / 6) };
 
     // Inside.
