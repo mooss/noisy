@@ -79,47 +79,46 @@ function sixth(size: number, color: string) {
 
     // Middle points.
     const tole = { x: left.x / 2, y: left.y / 2 }; // Middle of top and left points.
-    const mid = { x: 0, y: size / 2 }; // Middle of the rhombus base.
+    const tobo = { x: 0, y: size / 2 }; // Middle of the top and bottom points.
 
     // Bottom fill points.
     const bfa = { x: left.x + beamed, y: left.y + beamsize / 2 };
     const bfb = { x: tole.x, y: tole.y + beamsize }
-    const bfc = { x: mid.x, y: mid.y + beamsize };
+    const bfc = { x: tobo.x, y: tobo.y + beamsize };
 
     // Small inner fill points.
     const ifa = { x: tole.x + beamed, y: tole.y - beamsize / 2 };
     const ifb = { x: top.x - beamed, y: top.y + beamsize / 2 };
-    const ifc = { x: mid.x - beamed, y: mid.y - 1.5 * beamsize };
+    const ifc = { x: tobo.x - beamed, y: tobo.y - 1.5 * beamsize };
 
     // Missing beam points.
-    const mba = { x: ifc.x, y: ifc.y + beamsize};
-    const mbb = { x: mba.x, y: mba.y + beamsize};
+    const mba = { x: ifc.x, y: ifc.y + beamsize };
+    const mbb = { x: mba.x, y: mba.y + beamsize };
 
-    ///////////////////
-    // Triangle base //
-    ctx.fillStyle = color;
-    poly(top, bottom, left);
-
-    ///////////
-    // Lines //
+    //////////////////////
+    // Inner beam lines //
+    // They are drawn before the bottom fill to erase the sharp point that would otherwise appear on
+    // top of it.
     ctx.strokeStyle = 'black';
     ctx.lineCap = 'round';
-    ctx.lineWidth = size * OUTLINE_PROPORTION;
-
-    // External line.
-    line(bottom, left);
-
     ctx.lineWidth = size * INLINE_PROPORTION;
 
-    // Bottom fill.
-    line(bfa, bfb, bfc);
-
-    // Small inner fill.
-    line(ifa, ifc, ifb);
-
-    // Missing beam lines.
     line(left, tole, mba);
-    line(ifc, mbb, mid, top);
+    line(ifc, mbb, tobo, top);
+
+    /////////////////
+    // Bottom fill //
+    ctx.fillStyle = color;
+    poly(bfa, bfb, bfc, bottom);
+
+    /////////////////
+    // Other lines //
+    line(bfa, bfb, bfc); // Over the bottom fill.
+    line(ifa, ifc, ifb); // Over the small inner fill.
+
+    // Outline.
+    ctx.lineWidth = size * OUTLINE_PROPORTION;
+    line(bottom, left);
 }
 
 /**
