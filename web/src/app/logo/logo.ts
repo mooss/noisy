@@ -57,32 +57,25 @@ function poly(...points: vector2[]) {
  * Draw a sixth of the logo (the bottom left triangle).
  */
 function sixth(size: number, color: string) {
-    ///////////////////
-    // Triangle base //
-    const median = size * Math.cos(RAD_TWELFTH);
-    const top = { x: 0, y: 0 };
-    const bottom = { x: 0, y: size };
-    const left = { x: -median, y: size / 2 };
-
-    ctx.fillStyle = color;
-    poly(top, bottom, left);
-
-    ////////////////////
-    // External lines //
-    ctx.strokeStyle = 'black';
-    ctx.lineCap = 'round';
-    ctx.lineWidth = size * OUTLINE_PROPORTION;
-    line(bottom, left);
-
-    ///////////////////////
-    // Inner line points //
+    ///////////////
+    // Constants //
     // Vertical/horizontal size of the beams.
     const beamsize = size * BEAM_PROPORTION;
+
+    // Median of the triangle.
+    const median = size * Math.cos(RAD_TWELFTH);
 
     // Median of a beam (i.e. length of the median of the triangle whole side is the beam size).
     // Used to construct a beam of the desired length when taking the "obliqueness" of the beams
     // into account.
     const beamed = beamsize * Math.cos(RAD_TWELFTH);
+
+    //////////////
+    // Vertices //
+    // Triangle vertices.
+    const top = { x: 0, y: 0 };
+    const bottom = { x: 0, y: size };
+    const left = { x: -median, y: size / 2 };
 
     // Middle points.
     const tole = { x: left.x / 2, y: left.y / 2 }; // Middle of top and left points.
@@ -98,8 +91,24 @@ function sixth(size: number, color: string) {
     const ifb = { x: top.x - beamed, y: top.y + beamsize / 2 };
     const ifc = { x: mid.x - beamed, y: mid.y - 1.5 * beamsize };
 
-    ////////////////////
-    // Internal lines //
+    // Missing beam points.
+    const mba = { x: ifc.x, y: ifc.y + beamsize};
+    const mbb = { x: mba.x, y: mba.y + beamsize};
+
+    ///////////////////
+    // Triangle base //
+    ctx.fillStyle = color;
+    poly(top, bottom, left);
+
+    ///////////
+    // Lines //
+    ctx.strokeStyle = 'black';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = size * OUTLINE_PROPORTION;
+
+    // External line.
+    line(bottom, left);
+
     ctx.lineWidth = size * INLINE_PROPORTION;
 
     // Bottom fill.
@@ -107,6 +116,10 @@ function sixth(size: number, color: string) {
 
     // Small inner fill.
     line(ifa, ifc, ifb);
+
+    // Missing beam lines.
+    line(left, tole, mba);
+    line(ifc, mbb, mid, top);
 }
 
 /**
