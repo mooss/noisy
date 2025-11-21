@@ -1,7 +1,7 @@
 import { vector2 } from "../../maths/maths.js";
 
 const NOGAP = 1; // Small number to avoid gaps between shapes.
-const OUTLINE_PROPORTION = .3; // Configurable outline thickness
+const OUTLINE_PROPORTION = .03; // Configurable outline thickness
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
@@ -24,17 +24,15 @@ function line(from: vector2, to: vector2) {
 }
 
 function triangle(size: number, color: string) {
-    const top = { x: 0, y: -size };
-    const right = { x: size * Math.cos(Math.PI / 6), y: size * Math.sin(Math.PI / 6) };
-    const left = { x: -right.x, y: right.y };
-    ctx.save();
+    const left = { x: 0, y: 0 };
+    const right = { x: size, y: 0};
+    const top = { x: size * .5, y: - size * Math.cos(Math.PI / 6) };
 
     // Inside.
     ctx.beginPath();
-    ctx.moveTo(top.x, top.y);
+    ctx.moveTo(left.x, left.y);
     ctx.lineTo(right.x, right.y);
-    ctx.stroke();
-    ctx.lineTo(left.x, left.y);
+    ctx.lineTo(top.x, top.y);
     ctx.closePath();
     ctx.fillStyle = color;
     ctx.fill();
@@ -43,8 +41,7 @@ function triangle(size: number, color: string) {
     ctx.strokeStyle = 'black';
     ctx.lineCap = 'round';
     ctx.lineWidth = size * OUTLINE_PROPORTION;
-
-    line(left, top);
+    line(top, left);
     line(top, right);
 }
 
@@ -52,23 +49,35 @@ function triangle(size: number, color: string) {
 /**
  * Draw a third of the logo.
  */
-function third(size: number, color: string, center: vector2) {
+function third(size: number, color: string) {
     ctx.save();
-    ctx.translate(center.x, center.y);
-    ctx.rotate(Math.PI / 2);
+
+    // Top triangle.
     triangle(size, color);
-    ctx.translate(0, size - NOGAP);
+
+    // Shift to the right, superposing the new left point with the old right point.
+    ctx.translate(size, 0);
+
+    // Rotate half a turn around the left point, resulting in a triangle mirrored along the bottom
+    // line.
     ctx.rotate(Math.PI);
     triangle(size, color);
+
     ctx.restore();
 }
 
 function logo() {
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const triangleSize = Math.min(canvas.width, canvas.height) * 0.22;
+    const center = { x: canvas.width / 2, y: canvas.height / 2 }
+    const size = Math.min(canvas.width, canvas.height) * (.5 - OUTLINE_PROPORTION / 2);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    third(triangleSize, 'teal', { x: centerX, y: centerY });
+
+    ctx.translate(center.x, center.y);
+    ctx.rotate(Math.PI / 2); // Transform the flat-top hexagon into a pointy-top one.
+    third(size, 'cyan');
+    ctx.rotate(4 * Math.PI / 3);
+    third(size, 'yellow');
+    ctx.rotate(4 * Math.PI / 3);
+    third(size, 'magenta');
 }
 
 window.addEventListener('resize', refresh);
