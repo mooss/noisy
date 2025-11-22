@@ -15,6 +15,9 @@ const BEAM_PROPORTION = .13;
 // Width of polygon borders to ensure overlap between fills.
 const POLYBORDER_OVERLAP = 1
 
+// Color of the internal and external lines.
+const LINE_COLOR = 'white';
+
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
@@ -125,7 +128,7 @@ function sixth(size: number, colbot: string, colmid: string, coltip: string) {
     // Lines //
 
     // Line settings.
-    ctx.strokeStyle = 'black';
+    ctx.strokeStyle = LINE_COLOR;
     ctx.lineCap = 'round';
     ctx.lineWidth = size * LINE_PROPORTION;
 
@@ -146,18 +149,39 @@ function third(size: number, pri: string, sec: string, ter: string) {
     ctx.restore();
 }
 
+function rgb(r: string, g: string, b: string) {
+    return '#' + r + g + b;
+}
+
 function logo() {
     const center = { x: canvas.width / 2, y: canvas.height / 2 }
     const size = Math.min(canvas.width, canvas.height) * (.5 - LINE_PROPORTION / 2);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    const cola = '00', colb = 'bb', colc = 'ff';
+
+    // Lime, fushia, turquoise.
+    let cyanish = rgb(cola, colb, colc);
+    let magentaish = rgb(colc, cola, colb);
+    let yellowish = rgb(colb, colc, cola);
+
+    // Orange, purple, turquoise.
+    // cyanish = rgb(cola, colb, colc);
+    // magentaish = rgb(colb, cola, colc);
+    // yellowish = rgb(colc, colb, cola);
+
+    // Cyan, magenta, yellow.
+    cyanish = 'cyan';
+    magentaish = 'magenta';
+    yellowish = 'yellow';
+
     ctx.translate(center.x, center.y);
-    third(size, 'cyan', 'magenta', 'yellow');
+    third(size, cyanish, magentaish, yellowish);
     // return;
     ctx.rotate(RAD_THIRD);
-    third(size, 'yellow', 'cyan', 'magenta');
+    third(size, yellowish, cyanish, magentaish);
     ctx.rotate(RAD_THIRD);
-    third(size, 'magenta', 'yellow', 'cyan');
+    third(size, magentaish, yellowish, cyanish);
 }
 
 window.addEventListener('resize', refresh);
