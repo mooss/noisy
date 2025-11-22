@@ -12,6 +12,9 @@ const LINE_PROPORTION = .02;
 // Dimensions of the beam.
 const BEAM_PROPORTION = .13;
 
+// Width of polygon borders to ensure overlap between fills.
+const POLYBORDER_OVERLAP = 1
+
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
@@ -34,8 +37,13 @@ function path(...points: vector2[]) {
 }
 
 function line(...points: vector2[]) {
-    path(...points);
-    ctx.stroke();
+    // Joining points two by two removes undesired pointy ends.
+    let first = points.shift();
+    for (let second of points) {
+        path(first, second);
+        first = second;
+        ctx.stroke();
+    }
 }
 
 function poly(...points: vector2[]) {
@@ -44,12 +52,24 @@ function poly(...points: vector2[]) {
     ctx.fill();
 }
 
+function polyborder(points: vector2[], color: string) {
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = POLYBORDER_OVERLAP;
+    ctx.lineJoin = 'round';
+    poly(...points);
+    ctx.stroke();
+    ctx.restore();
+}
+
 /**
  * Draw a sixth of the logo (the bottom left triangle).
  */
-function sixth(size: number, bottomColor: string, innerColor: string) {
+function sixth(size: number, colbot: string, colmid: string, coltip: string) {
     ///////////////
-    // Constants //
+    // Distances //
+
     // Vertical/horizontal size of the beams.
     const beamsize = size * BEAM_PROPORTION;
 
@@ -63,6 +83,7 @@ function sixth(size: number, bottomColor: string, innerColor: string) {
 
     //////////////
     // Vertices //
+
     // Triangle vertices.
     const top = { x: 0, y: 0 };
     const bottom = { x: 0, y: size };
@@ -77,55 +98,51 @@ function sixth(size: number, bottomColor: string, innerColor: string) {
     const bfb = { x: tole.x, y: tole.y + beamsize }
     const bfc = { x: tobo.x, y: tobo.y + beamsize };
 
-    // Small inner fill points.
-    const ifa = { x: tole.x + beamed, y: tole.y - beamsize / 2 };
-    const ifb = { x: top.x - beamed, y: top.y + beamsize / 2 };
-    const ifc = { x: tobo.x - beamed, y: tobo.y - 1.5 * beamsize };
+    // Top triangle fill points.
+    const ttfa = { x: tole.x + beamed, y: tole.y - beamsize / 2 };
+    const ttfb = { x: top.x - beamed, y: top.y + beamsize / 2 };
+    const ttfc = { x: tobo.x - beamed, y: tobo.y - 1.5 * beamsize };
 
     // Missing beam points.
-    const mba = { x: ifc.x, y: ifc.y + beamsize };
-    const mbb = { x: mba.x, y: mba.y + beamsize };
+    const mba = { x: ttfc.x, y: ttfc.y + beamsize };
 
-    //////////////////////
-    // Small inner fill //
-    ctx.fillStyle = innerColor;
-    poly(ifa, ifb, ifc);
+    ///////////
+    // Fills //
 
-    //////////////////////
-    // Inner beam lines //
-    // They are drawn before the bottom fill to erase the sharp point that would otherwise appear on
-    // top of it.
+    // Top triangle fill.
+    polyborder([ttfa, ttfb, ttfc], colmid);
+
+    // Hook fill.
+    polyborder([left, tole, mba, ttfb, top, bfc, bfb, bfa], coltip);
+
+    // Transverse fill.
+    polyborder([tole, ttfa, ttfc, mba], colbot)
+
+    // Bottom fill.
+    polyborder([bfa, bfb, bfc, bottom], colbot);
+
+    ///////////
+    // Lines //
+
+    // Line settings.
     ctx.strokeStyle = 'black';
     ctx.lineCap = 'round';
     ctx.lineWidth = size * LINE_PROPORTION;
 
-    line(left, tole, mba);
-    line(ifc, mbb, tobo, top); // The problematic line whose end must be covered.
-
-    /////////////////
-    // Bottom fill //
-    ctx.fillStyle = bottomColor;
-    poly(bfa, bfb, bfc, bottom);
-
-    /////////////////
-    // Other lines //
-    line(bfa, bfb, bfc); // Over the bottom fill.
-    line(ifa, ifc, ifb); // Over the small inner fill.
-
-    // Outline.
-    ctx.lineWidth = size * LINE_PROPORTION;
-    line(bottom, left);
+    // Outlines.
+    line(bottom, left, ttfa, ttfc, ttfb, top, bfc, bfb, bfa);
+    line(tole, mba, ttfc)
 }
 
 /**
  * Draw a third of the logo (the bottom rhombus, made of the bottom left triangle and its
  * horizontally mirrored sibling).
  */
-function third(size: number, bottomColor: string, leftColor: string, rightColor: string) {
+function third(size: number, pri: string, sec: string, ter: string) {
     ctx.save();
-    sixth(size, bottomColor, leftColor);
+    sixth(size, pri, sec, ter);
     ctx.scale(-1, 1);
-    sixth(size, bottomColor, rightColor);
+    sixth(size, pri, ter, sec);
     ctx.restore();
 }
 
