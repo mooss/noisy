@@ -79,4 +79,5 @@ make dist
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+ - Source code: MIT License - see [LICENSE](LICENSE) for details.
+ - Logo and brand assets: All rights reserved (see res/branding/LICENSE-LOGO).

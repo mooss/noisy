@@ -1,3 +1,15 @@
+/**
+ * Generates the logo of Noisy.
+
+ * Copyright (c) 2025 Félix Jamet (mooss).
+ * The Noisy logo and its variations generated here are proprietary.
+ * They are not licensed under the MIT license that applies to the source code.
+ *
+ * You may not use, reproduce, modify, or distribute these assets without prior written permission.
+ *
+ * The code generating the logo, however (this file) is MIT like the rest of the project.
+ */
+
 import { vector2 } from "../../maths/maths.js";
 
 // Amount of radians corresponding to 1/3 of a rotation.
@@ -22,7 +34,7 @@ const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
 function resize() {
-    const size = Math.min(window.innerWidth, window.innerHeight);
+    const size = 512;
     canvas.width = size;
     canvas.height = size;
 }
@@ -177,7 +189,6 @@ function logo() {
 
     ctx.translate(center.x, center.y);
     third(size, cyanish, magentaish, yellowish);
-    // return;
     ctx.rotate(RAD_THIRD);
     third(size, yellowish, cyanish, magentaish);
     ctx.rotate(RAD_THIRD);
