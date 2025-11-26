@@ -19,22 +19,31 @@ const RAD_THIRD = 2 * Math.PI / 3;
 const RAD_TWELFTH = Math.PI / 6;
 
 // Thickness of the lines.
-const LINE_PROPORTION = .02;
+const LINE_PROPORTION = .01;
 
 // Dimensions of the beam.
 const BEAM_PROPORTION = .13;
 
 // Width of polygon borders to ensure overlap between fills.
-const POLYBORDER_OVERLAP = 1
+const POLYBORDER_OVERLAP = 1;
 
 // Color of the internal and external lines.
-const LINE_COLOR = 'white';
+const LINE_COLOR = 'black';
+
+// Multiplier for slightly dim color.
+const DIM_FACTOR = .88;
+
+// Multiplier for dark color.
+const DARK_FACTOR = .8;
+
+// Multiplier for darker color.
+const DARKER_FACTOR = .6;
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
 function resize() {
-    const size = 512;
+    const size = 1024;
     canvas.width = size;
     canvas.height = size;
 }
@@ -81,7 +90,7 @@ function polyborder(points: vector2[], color: string) {
 /**
  * Draw a sixth of the logo (the bottom left triangle).
  */
-function sixth(size: number, colbot: string, colmid: string, coltip: string) {
+function sixth(size: number, colbot: string, coltip: string, colhook: string) {
     ///////////////
     // Distances //
 
@@ -125,22 +134,23 @@ function sixth(size: number, colbot: string, colmid: string, coltip: string) {
     // Fills //
 
     // Top triangle fill.
-    polyborder([ttfa, ttfb, ttfc], colmid);
+    polyborder([ttfa, ttfb, ttfc], coltip);
 
     // Hook fill.
-    polyborder([left, tole, mba, ttfb, top, bfc, bfb, bfa], coltip);
+    polyborder([left, tole, mba, ttfb, top, bfc, bfb, bfa], colmult(colhook, DARKER_FACTOR));
 
     // Transverse fill.
-    polyborder([tole, ttfa, ttfc, mba], colbot)
+    polyborder([tole, ttfa, ttfc, mba], colmult(colbot, DIM_FACTOR));
 
     // Bottom fill.
-    polyborder([bfa, bfb, bfc, bottom], colbot);
+    polyborder([bfa, bfb, bfc, bottom], colmult(colbot, DARK_FACTOR));
 
     ///////////
     // Lines //
 
     // Line settings.
     ctx.strokeStyle = LINE_COLOR;
+    // ctx.strokeStyle = 'cyan';
     ctx.lineCap = 'round';
     ctx.lineWidth = size * LINE_PROPORTION;
 
@@ -161,8 +171,21 @@ function third(size: number, pri: string, sec: string, ter: string) {
     ctx.restore();
 }
 
-function rgb(r: string, g: string, b: string) {
-    return '#' + r + g + b;
+function rgb(comp: string[]): string {
+    return '#' + comp[0] + comp[1] + comp[2];
+}
+
+// Multiply a hex color component by the given factor.
+function compmut(hex: string, factor: number): string {
+    return Math.round(parseInt(hex, 16) * factor).toString(16).padStart(2, '0');
+}
+
+// Multiply a hex color by the given factor.
+function colmult(hexcol: string, factor: number): string {
+    const r = hexcol.slice(1, 3);
+    const g = hexcol.slice(3, 5);
+    const b = hexcol.slice(5, 7);
+    return '#' + compmut(r, factor) + compmut(g, factor) + compmut(b, factor);
 }
 
 function logo() {
@@ -170,29 +193,37 @@ function logo() {
     const size = Math.min(canvas.width, canvas.height) * (.5 - LINE_PROPORTION / 2);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    const cola = '00', colb = 'bb', colc = 'ff';
+    // Color components.
+    const compa = '00', compb = 'bb', compc = 'ff';
 
     // Lime, fushia, turquoise.
-    let cyanish = rgb(cola, colb, colc);
-    let magentaish = rgb(colc, cola, colb);
-    let yellowish = rgb(colb, colc, cola);
+    let cola = [compa, compb, compc];
+    let colb = [compc, compa, compb];
+    let colc = [compb, compc, compa];
 
     // Orange, purple, turquoise.
-    // cyanish = rgb(cola, colb, colc);
-    // magentaish = rgb(colb, cola, colc);
-    // yellowish = rgb(colc, colb, cola);
+    cola = [compa, compb, compc];
+    colb = [compb, compa, compc];
+    colc = [compc, compb, compa];
+
+    colmult(rgb(colb), .5)
 
     // Cyan, magenta, yellow.
-    cyanish = 'cyan';
-    magentaish = 'magenta';
-    yellowish = 'yellow';
+    // cola = ['00', 'ff', 'ff'];
+    // colb = ['ff', '00', 'ff'];
+    // colc = ['ff', 'ff', '00'];
+
+    // Greyscale.
+    // cola = ['ff', 'ff', 'ff'];
+    // colb = ['88', '88', '88'];
+    // colc = ['00', '00', '00'];
 
     ctx.translate(center.x, center.y);
-    third(size, cyanish, magentaish, yellowish);
+    third(size, rgb(cola), rgb(colb), rgb(colc));
     ctx.rotate(RAD_THIRD);
-    third(size, yellowish, cyanish, magentaish);
+    third(size, rgb(colc), rgb(cola), rgb(colb));
     ctx.rotate(RAD_THIRD);
-    third(size, magentaish, yellowish, cyanish);
+    third(size, rgb(colb), rgb(colc), rgb(cola));
 }
 
 window.addEventListener('resize', refresh);
