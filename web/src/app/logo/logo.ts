@@ -34,16 +34,16 @@ const LINE_COLOR = 'black';
 const DIM_FACTOR = .88;
 
 // Multiplier for dark color.
-const DARK_FACTOR = .8;
+const DARK_FACTOR = .75;
 
 // Multiplier for darker color.
-const DARKER_FACTOR = .6;
+const DARKER_FACTOR = .65;
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 
 function resize() {
-    const size = 1024;
+    const size = 16384;
     canvas.width = size;
     canvas.height = size;
 }
@@ -137,16 +137,18 @@ function sixth(size: number, colbot: string, coltip: string, colhook: string) {
     polyborder([ttfa, ttfb, ttfc], coltip);
 
     // Hook fill.
-    polyborder([left, tole, mba, ttfb, top, bfc, bfb, bfa], colmult(colhook, DARKER_FACTOR));
+    polyborder([left, tole, mba, ttfb, top, bfc, bfb, bfa], colmult(colhook, DARK_FACTOR));
 
     // Transverse fill.
     polyborder([tole, ttfa, ttfc, mba], colmult(colbot, DIM_FACTOR));
 
     // Bottom fill.
-    polyborder([bfa, bfb, bfc, bottom], colmult(colbot, DARK_FACTOR));
+    polyborder([bfa, bfb, bfc, bottom], colmult(colbot, DARKER_FACTOR));
 
     ///////////
     // Lines //
+
+    return;
 
     // Line settings.
     ctx.strokeStyle = LINE_COLOR;
