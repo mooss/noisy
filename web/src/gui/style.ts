@@ -18,7 +18,6 @@ function transparent(color: string, alpha: number) {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-
 export interface CssProperties {
     [k: string]: string | number | CssProperties;
 }
@@ -123,6 +122,8 @@ export class Appearance {
     folder: (nested: boolean) => Facet;
     folderContent: (nested: boolean) => Facet;
     folderSummary: (nested: boolean) => Facet;
+
+    footer: Facet;
 
     graphBox: Facet;
     graphCanvas: Facet;
@@ -346,7 +347,7 @@ export class Appearance {
             zIndex: '1000',
             width: '245px',
             maxHeight: '90vh',
-            backgroundColor: transparent(this.colors.background, .85),
+            backgroundColor: this.colors.background,
             color: this.colors.text,
             borderRadius: '0px',
             overflowY: 'auto',
@@ -372,10 +373,22 @@ export class Appearance {
             color: this.colors.label,
         });
 
+        this.footer = this.mk('footer', {
+            padding: '6px',
+            textAlign: 'center',
+            fontSize: '12px',
+            width: '100%',
+            bottom: '0',
+            position: 'fixed',
+            color: this.colors.param,
+            backgroundColor: this.colors.background,
+            borderTop: this.border(this.colors.border, '1px'),
+        })
+
         this.menuBar = this.mk('menu-bar', {
             width: '100%',
             display: 'flex',
-            backgroundColor: this.colors.inputBg,
+            backgroundColor: this.colors.background,
             borderBottom: this.border(this.colors.border, '1px'),
         });
         this.menuEntry = this.mk('menu-entry', {
@@ -384,7 +397,7 @@ export class Appearance {
             cursor: 'pointer',
             userSelect: 'none',
             color: this.colors.label,
-            backgroundColor: 'transparent',
+            // backgroundColor: 'transparent',
             border: 'none',
             position: 'relative',
             '&:hover': {
@@ -398,7 +411,7 @@ export class Appearance {
             // Do not force absolute positioning here; the panel is positioned at show()
             // using fixed positioning so it doesn't break layout or get attached to the
             // parent container.
-            backgroundColor: transparent(this.colors.background, .95),
+            backgroundColor: this.colors.background,
             border: this.border(),
             borderRadius: '0px',
             minWidth: '150px',

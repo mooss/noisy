@@ -10,7 +10,7 @@ import { Window } from '../../gui/components/window.js';
 import { GUI } from '../../gui/gui.js';
 import { MenuBar, Panel } from '../../gui/panels/panel.js';
 import { VerticalStack } from '../../gui/panels/vertical-stack.js';
-import { POSITION_TOP_LEFT } from '../../gui/style.js';
+import { Blawhi, POSITION_TOP_LEFT } from '../../gui/style.js';
 import { Position } from '../../maths/coordinates.js';
 import { numStats } from '../../maths/stats.js';
 import { cameraUI } from '../../state/camera.js';
@@ -137,9 +137,16 @@ class Game {
         noiseUI(this.state.noise, tergen, this.callbacks);
 
         // Place the menu on top and stack the control panels vertically below.
-        const guiRoot = document.querySelector('.UI') as HTMLElement;
+        const guiRoot = document.querySelector('.dynamicUI') as HTMLElement;
         this.setupMenu(guiRoot);
-        new VerticalStack(guiRoot, POSITION_TOP_LEFT, gui, tergen);
+
+        // Object.assign(document.getElementById('footer').style, ...Blawhi.menuBar.properties);
+        new VerticalStack(guiRoot, POSITION_TOP_LEFT, gui._elt, tergen._elt);
+
+        // Style the footer like the top menu for consistency.
+        const footer = document.getElementById('footer');
+        footer.classList.add(...Blawhi.footer.classes);
+
         this.welcome();
     }
 
