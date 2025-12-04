@@ -72,6 +72,9 @@ class Game {
     /** Encoder/decoder of noise state to a URL-friendly string. */
     codec: Codec<any, string>;
 
+    private topMenu: MenuBar;
+    private guiStack: VerticalStack;
+
     start(): void {
         this.prepareState();
 
@@ -139,13 +142,15 @@ class Game {
         // Place the menu on top and stack the control panels vertically below.
         const guiRoot = document.querySelector('.dynamicUI') as HTMLElement;
         this.setupMenu(guiRoot);
-
-        // Object.assign(document.getElementById('footer').style, ...Blawhi.menuBar.properties);
-        new VerticalStack(guiRoot, POSITION_TOP_LEFT, gui._elt, tergen._elt);
+        this.guiStack = new VerticalStack(guiRoot, POSITION_TOP_LEFT, gui._elt, tergen._elt);
 
         // Style the footer like the top menu for consistency.
         const footer = document.getElementById('footer');
         footer.classList.add(...Blawhi.footer.classes);
+
+        // Make sure the GUI always fits between the top menu and the footer.
+        this.adjustStackBounds();
+        window.addEventListener('resize', () => this.adjustStackBounds());
 
         this.welcome();
     }
@@ -177,8 +182,10 @@ class Game {
         })
     }
 
-    setupMenu(root: HTMLElement): void {
+    private setupMenu(root: HTMLElement): void {
         const menu = new MenuBar(root);
+        this.topMenu = menu;
+
         menu.entry('?').onClick(() => this.welcomeWindow.show());
 
         const exprt = menu.entry('Export')
@@ -227,6 +234,23 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
 
             zScoreGraph.update(stats.zScores);
         };
+    }
+
+    private adjustStackBounds(): void {
+        if (!this.topMenu || !this.guiStack) return;
+
+        const menu = this.topMenu._elt;
+        const footer = document.getElementById('footer');
+        if (!footer) return;
+
+        const menuRect = menu.getBoundingClientRect();
+        const footerRect = footer.getBoundingClientRect();
+        const top = menuRect.bottom;
+        const bottom = window.innerHeight - footerRect.top;
+
+        this.guiStack._elt.style.top = `${top}px`;
+        this.guiStack._elt.style.bottom = `${bottom}px`;
+        this.guiStack._elt.style.maxHeight = 'none';
     }
 
     private welcomeWindow: Window;
