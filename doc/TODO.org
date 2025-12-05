@@ -46,9 +46,8 @@ Using the favicon as a reference.
 Or even better create the footer in noisy itself.
 *** DONE Twitter icon in footer
 Plus GitHub
-*** TODO Harmonize the names of all root elements in GUI code
-All the =_elt= and similar should be renamed to =container= (will require renaming the other things already named =container=).
-*** TODO Fix the bug where the texture does not load when changing from Boxes to Surface
+*** DONE Fix the bug where the texture does not load when changing from Boxes to Surface
+More specifically, it happens when loading something else than surface, switching texture and then changing to surface.
 *** TODO Scenes/presets
 Propose different starting points that are more focused and less overwhelming (texture editor, montain range).
 
@@ -115,6 +114,7 @@ Beyond the mere combination, a generic noise DSL should be made, with a perfect 
 #+end_src
 A button in the UI could be used to directly edit the noise implementation.
 
+
 *** Performance
 **** Chunk computation in web workers
 The framerate still drops on the Steam Deck even at 128 chunk resolution.
@@ -176,6 +176,8 @@ Add a UI to change the sampling parameters and an way to tweak the bounds up/dow
 **** Chunk atomisation
 Shrink / grow chunk real size (CHUNK_UNIT but can't just tie CHUNK_UNIT to a parameter, will be more complex).
 **** Show dependencies and licences more proheminently
+**** Harmonize the names of all root elements in GUI code
+All the =_elt= and similar should be renamed to =container= (will require renaming the other things already named =container=).
 
 
 *** Out of reach
@@ -202,13 +204,13 @@ rg '//TODO:' ../web/src --heading -C 3 --sort path --line-number
 47-/**
 
 ../web/src/engine/terrain/properties.ts
-85-        const res = new Uint8ClampedArray(w * h * 3);
-86-        const color = new THREE.Color();
-87-
-88:        let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
-89-        for (let j = h - 1; j >= 0; --j) {
-90-            for (let i = 0; i < w; ++i) {
-91-                const height = fun(i * sampling + halfcell, j * sampling + halfcell);
+96-        const res = new Uint8ClampedArray(this.width * this.height * 3);
+97-        const color = new THREE.Color();
+98-
+99:        let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
+100-        for (const [height] of this.heightMatrix()) {
+101-            this.params.palette.lerp(height, color);
+102-            color.convertLinearToSRGB();
 
 ../web/src/noise/algorithms/union.ts
 33-            // Dividing by the frequency dampens the impact of high frequencies, preventing them from

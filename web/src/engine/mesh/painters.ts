@@ -72,7 +72,7 @@ export class PalettePainter {
 
     // When this value change, it means that the material has been invalidated and needs to be rebuilt.
     private get cacheKey(): string {
-        return ['texturePath']
+        return ['texturePath', 'geometryStyle']
             .map((key: string) => this.params[key])
             .join(' !! ');
     }
