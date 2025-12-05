@@ -7,7 +7,7 @@ import { Ridge } from "../src/noise/algorithms/ridge.js";
 import { Simplex } from "../src/noise/algorithms/simplex.js";
 import { AlgoPicker } from "../src/noise/containers.js";
 import { NoiseMakerI } from "../src/noise/foundations.js";
-import { noiseAlgorithms } from "../src/noise/init.js";
+import { completePipeline } from "../src/noise/init.js";
 import { NoisePipeline } from "../src/noise/processing/pipeline.js";
 import { Terracing } from "../src/noise/processing/terracing.js";
 import { StateRegistry } from "../src/state/state.js";
@@ -17,7 +17,7 @@ describe('NoiseCodec', () => {
     let codec: Codec<any, string>;
 
     beforeEach(() => {
-        reference = noiseAlgorithms(REFERENCE_STATE.chunks);
+        reference = completePipeline(REFERENCE_STATE.chunks);
         codec = lexon64(StateRegistry, reference, 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ');
     });
 
@@ -84,7 +84,6 @@ describe('NoiseCodec', () => {
                     persistence: 0.5,
                     lacunarity: 2.0
                 },
-                sampling: { size: 20, threshold: 2.0, fundamental: 2 }
             });
             const decoded = codec.roundtrip(layered);
 
