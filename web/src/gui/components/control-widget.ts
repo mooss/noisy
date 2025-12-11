@@ -18,7 +18,6 @@ export class ControlWidget<PRIM> {
      * @param parent    - The parent DOM element.
      * @param target    - The target object to bind to.
      * @param property  - The property name to bind to.
-     * @param labelText - The label text.
      * @param control   - The InputControl instance to use.
      */
     constructor(
@@ -32,20 +31,32 @@ export class ControlWidget<PRIM> {
         const valueContainer = spawn('div', this.labelElt.box, Blawhi.paramValueContainer);
         valueContainer.appendChild(control.element);
 
-        ////////////////////////////
-        // Set up event listeners //
+        // Make the target property reactive: any assignment to it will update the control, not just
+        // assignments made through the UI.
+        const prop = this.property;
+        let internalValue = this.target[prop];
+        const self = this;
+        Object.defineProperty(this.target, prop, {
+            get: () => internalValue,
+            set: (newValue) => {
+                if (newValue === internalValue) return;
+                internalValue = newValue;
+                self.control.value = newValue;
+                self.control.update(newValue);
+            },
+            enumerable: true,
+            configurable: true,
+        });
+
+        // Set up event listeners.
         control.element.addEventListener('input', () => {
             const value = this.update();
             this.onInputCallback?.(value);
         });
-
         control.element.addEventListener('change', () => {
             const value = this.update();
             this.onChangeCallback?.(value);
         });
-
-        control.value = target[property]; // Initial value.
-        this.update();
     }
 
     /**
@@ -87,10 +98,14 @@ export class ControlWidget<PRIM> {
         return this;
     }
 
+    /**
+     * Reads the current value from the control and writes it to the target property.
+     * This is called automatically on user input.
+     * @returns the new value.
+     */
     private update(): PRIM {
         const value = this.control.value;
-        this.target[this.property] = value;
-        this.control.update(value);
+        this.target[this.property] = value; // triggers reactive setter
         return value;
     }
 }

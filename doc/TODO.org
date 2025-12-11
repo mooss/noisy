@@ -48,9 +48,8 @@ Or even better create the footer in noisy itself.
 Plus GitHub
 *** DONE Fix the bug where the texture does not load when changing from Boxes to Surface
 More specifically, it happens when loading something else than surface, switching texture and then changing to surface.
-*** TODO Scenes/presets
+*** DONE Scenes/presets
 Propose different starting points that are more focused and less overwhelming (texture editor, montain range).
-
 
 ** Future versions
 
@@ -204,13 +203,13 @@ rg '//TODO:' ../web/src --heading -C 3 --sort path --line-number
 47-/**
 
 ../web/src/engine/terrain/properties.ts
-96-        const res = new Uint8ClampedArray(this.width * this.height * 3);
-97-        const color = new THREE.Color();
-98-
-99:        let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
-100-        for (const [height] of this.heightMatrix()) {
-101-            this.params.palette.lerp(height, color);
-102-            color.convertLinearToSRGB();
+95-        const res = new Uint8ClampedArray(this.width * this.height * 3);
+96-        const color = new THREE.Color();
+97-
+98:        let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
+99-        for (const [height] of this.heightMatrix()) {
+100-            this.params.palette.lerp(height, color);
+101-            color.convertLinearToSRGB();
 
 ../web/src/noise/algorithms/union.ts
 33-            // Dividing by the frequency dampens the impact of high frequencies, preventing them from
