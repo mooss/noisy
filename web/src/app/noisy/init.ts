@@ -17,7 +17,7 @@ import { StateRegistry } from "../../state/state.js";
 export const REFERENCE_STATE = {
     camera: mkCamState(),
     chunks: new ChunkState({
-        _power: 7,
+        power: 7,
         loadRadius: 1,
         radiusType: 'square',
     }),

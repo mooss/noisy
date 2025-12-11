@@ -16,10 +16,10 @@ abstract class ChunkStateP extends AutoAssign<ChunkStateP> {
 
     // Power of the chunk (one side is 2^n + 1).
     //TIP: chunk_size Number of blocks in a chunk. Increasing this increases the terrain resolution but makes the terrain slower to load.
-    declare _power: number;
+    declare power: number;
 
     // The previous value of this.size.
-    declare previousSize?: number;
+    // declare previousSize?: number;
 
     // Chunks beyond this distance *plus* the load radius will be unloaded when entering a new chunk.
     // unloadRadius: number = 2;
@@ -27,11 +27,6 @@ abstract class ChunkStateP extends AutoAssign<ChunkStateP> {
 
 export class ChunkState extends ChunkStateP {
     class(): string { return 'ChunkState' }
-    set power(value: number) {
-        this.previousSize = this.resolution;
-        this._power = value;
-    }
-    get power(): number { return this._power }
     get resolution(): number { return 2 ** this.power }
     get sampling(): number { return 1 / this.resolution }
     get blockSize(): number { return CHUNK_UNIT / this.resolution }
