@@ -74,6 +74,7 @@ class Game {
 
     private topMenu: MenuBar;
     private guiStack: VerticalStack;
+    private tergen: GUI;
 
     start(): void {
         this.prepareState();
@@ -136,13 +137,13 @@ class Game {
         // Avatar UI is basically useless right now since the avatar is so minimalist.
         // avatarUI(this.state.avatar, gui.folder('Avatar').close(), this.callbacks);
 
-        const tergen = new GUI().title('Terrain Generation').collapsible();
-        noiseUI(this.state.noise, tergen, this.callbacks);
+        this.tergen = new GUI().title('Terrain Generation').collapsible();
+        noiseUI(this.state.noise, this.tergen, this.callbacks);
 
         // Place the menu on top and stack the control panels vertically below.
         const guiRoot = document.querySelector('.dynamicUI') as HTMLElement;
         this.setupMenu(guiRoot);
-        this.guiStack = new VerticalStack(guiRoot, POSITION_TOP_LEFT, gui._elt, tergen._elt);
+        this.guiStack = new VerticalStack(guiRoot, POSITION_TOP_LEFT, gui._elt, this.tergen._elt);
 
         // Style the footer like the top menu for consistency.
         const footer = document.getElementById('footer');
@@ -187,8 +188,12 @@ class Game {
         this.topMenu = menu;
 
         menu.entry('?').onClick(() => this.welcomeWindow.show());
+        this.setupExports(menu);
+        this.setupPresets(menu);
+    }
 
-        const exprt = menu.entry('Export')
+    private setupExports(menu: MenuBar): void {
+        const exprt = menu.entry('Export');
 
         exprt.entry('As URL in the Clipboard').onClick(() => toClipBoard(this.saveStateToUrl()));
 
@@ -210,6 +215,11 @@ class Game {
             'noisy-terrain.stl',
             { type: 'model/stl' },
         ));
+    }
+
+    private setupPresets(menu: MenuBar): void {
+        const presets = menu.entry('Presets');
+        presets.entry('Remove').onClick(() => this.tergen.remove());
     }
 
     setupStatsGraph(root: Panel): void {

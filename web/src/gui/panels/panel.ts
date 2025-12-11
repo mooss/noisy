@@ -23,6 +23,13 @@ export abstract class Panel {
         this._elt = spawn('div', parent, style);
     }
 
+    /**
+     * Removes this Panel and all its children from the interface.
+     */
+    remove() {
+        this._elt.remove();
+    }
+
     /** Displays a tooltip when hovering over the element. */
     abstract tooltip(text: string): this;
 
