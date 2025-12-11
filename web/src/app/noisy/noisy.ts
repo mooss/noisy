@@ -13,6 +13,7 @@ import { VerticalStack } from '../../gui/panels/vertical-stack.js';
 import { Blawhi, POSITION_TOP_LEFT } from '../../gui/style.js';
 import { Position } from '../../maths/coordinates.js';
 import { numStats } from '../../maths/stats.js';
+import { NoisePipeline } from '../../noise/processing/pipeline.js';
 import { cameraUI } from '../../state/camera.js';
 import { chunksUI } from '../../state/chunk.js';
 import { renderUI } from '../../state/renderer.js';
@@ -79,7 +80,14 @@ class Game {
     start(): void {
         this.prepareState();
 
-        this.terrain = new Terrain(this.state.chunks, this.state.noise, this.state.render);
+        this.terrain = new Terrain(
+            this.state.chunks,
+            () => {
+                this.state.noise.recompute();
+                return this.state.noise.normalised(.01, 1);
+            },
+            this.state.render,
+        );
         this.keyboard = new Keyboard();
         this.avatar = new Avatar(this.state.avatar);
 
@@ -137,8 +145,7 @@ class Game {
         // Avatar UI is basically useless right now since the avatar is so minimalist.
         // avatarUI(this.state.avatar, gui.folder('Avatar').close(), this.callbacks);
 
-        this.tergen = new GUI().title('Terrain Generation').collapsible();
-        noiseUI(this.state.noise, this.tergen, this.callbacks);
+        this.setupTergen();
 
         // Place the menu on top and stack the control panels vertically below.
         const guiRoot = document.querySelector('.dynamicUI') as HTMLElement;
@@ -154,6 +161,17 @@ class Game {
         window.addEventListener('resize', () => this.adjustStackBounds());
 
         this.welcome();
+    }
+
+    /**
+     * Registers the terrain generation UI, replacing the noise and removing the previous UI if
+     * needed.
+     */
+    setupTergen(noise: NoisePipeline = null): void {
+        if (noise) this.state.noise = noise;
+        this.tergen?.remove(); // Remove previous UI to prevent duplication.
+        this.tergen = new GUI().title('Terrain Generation').collapsible();
+        noiseUI(this.state.noise, this.tergen, this.callbacks);
     }
 
     saveStateToUrl(): string {

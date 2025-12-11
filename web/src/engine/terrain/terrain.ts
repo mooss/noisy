@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { Coordinates, Position } from '../../maths/coordinates.js';
 import { vector2 } from '../../maths/maths.js';
-import { NoiseMakerI } from '../../noise/foundations.js';
+import { NoiseFun } from '../../noise/foundations.js';
 import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
 import { race } from '../../utils/async.js';
@@ -30,10 +30,10 @@ export class Terrain {
 
     constructor(
         chunks: ChunkState,
-        noise: NoiseMakerI,
+        mkNoise: () => NoiseFun,
         render: RenderState
     ) {
-        this.props = new TerrainProperties(chunks, noise, render);
+        this.props = new TerrainProperties(chunks, mkNoise, render);
         this.chunkPool = new ChunkPool(this.props);
     }
 

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CHUNK_UNIT, MINIMUM_HEIGHT } from '../../../config/constants.js';
 import { Coordinates } from '../../maths/coordinates.js';
 import { rangeMapper, vector2 } from '../../maths/maths.js';
-import { NoiseFun, NoiseMakerI } from '../../noise/foundations.js';
+import { NoiseFun } from '../../noise/foundations.js';
 import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
 import { ReusablePainter } from '../mesh/painters.js';
@@ -23,7 +23,7 @@ export class TerrainProperties {
 
     constructor(
         private chunks: ChunkState,
-        private noise: NoiseMakerI,
+        private mkNoise: () => NoiseFun,
         private render: RenderState,
     ) { this.painter = new ReusablePainter(this) }
 
@@ -61,8 +61,7 @@ export class TerrainProperties {
     }
 
     recomputeNoise() {
-        this.noise.recompute();
-        this._heightFun = this.noise.normalised(.01, 1);
+        this._heightFun = this.mkNoise();
     }
 
     weave(coords: Coordinates, weaver: ReusableWeaver): THREE.BufferGeometry {
