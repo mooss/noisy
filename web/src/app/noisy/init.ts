@@ -18,8 +18,8 @@ export const REFERENCE_STATE = {
     camera: mkCamState(),
     chunks: new ChunkState({
         power: 7,
-        loadRadius: 1,
-        radiusType: 'square',
+        loadRadius: 2,
+        radiusType: 'circle',
     }),
     avatar: new AvatarState({
         size: 3,

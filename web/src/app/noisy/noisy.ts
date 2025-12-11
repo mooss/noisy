@@ -174,6 +174,7 @@ class Game {
         if (noise) {
             this.state.noise = noise;
             this.recomputeTerrain();
+            this.ensureTerrainLoaded();
         }
 
         const old = this.tergen;
@@ -254,6 +255,8 @@ class Game {
         const texture = (palette: string, tiling: string) => {
             this.state.render.geometryStyle = 'Pixel';
             this.state.render.paletteName = palette;
+            this.state.chunks.radiusType = 'square';
+            this.state.chunks.loadRadius = 1;
             this.state.chunks.power = 5;
             this.setupTergen(textureNoise(tiling));
         };
