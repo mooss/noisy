@@ -30,6 +30,10 @@ export abstract class Panel {
         this._elt.remove();
     }
 
+    replace(other: Panel) {
+        this._elt.replaceWith(other._elt);
+    }
+
     /** Displays a tooltip when hovering over the element. */
     abstract tooltip(text: string): this;
 

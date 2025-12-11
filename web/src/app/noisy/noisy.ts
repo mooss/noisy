@@ -13,6 +13,7 @@ import { VerticalStack } from '../../gui/panels/vertical-stack.js';
 import { Blawhi, POSITION_TOP_LEFT } from '../../gui/style.js';
 import { Position } from '../../maths/coordinates.js';
 import { numStats } from '../../maths/stats.js';
+import { comixNoise } from '../../noise/init.js';
 import { NoisePipeline } from '../../noise/processing/pipeline.js';
 import { cameraUI } from '../../state/camera.js';
 import { chunksUI } from '../../state/chunk.js';
@@ -168,10 +169,19 @@ class Game {
      * needed.
      */
     setupTergen(noise: NoisePipeline = null): void {
-        if (noise) this.state.noise = noise;
-        this.tergen?.remove(); // Remove previous UI to prevent duplication.
+        if (noise) {
+            this.state.noise = noise;
+            this.recomputeTerrain();
+        }
+
+        const old = this.tergen;
         this.tergen = new GUI().title('Terrain Generation').collapsible();
+        // Ensure the new GUI stacks correctly inside the vertical container.
+        this.tergen._elt.addFacet(Blawhi.verticalChild);
         noiseUI(this.state.noise, this.tergen, this.callbacks);
+        old?.replace(this.tergen); // Make sure the new UI appears in the right place.
+
+        if (noise) this.adjustStackBounds();
     }
 
     saveStateToUrl(): string {
@@ -237,7 +247,7 @@ class Game {
 
     private setupPresets(menu: MenuBar): void {
         const presets = menu.entry('Presets');
-        presets.entry('Remove').onClick(() => this.tergen.remove());
+        presets.entry('Continental mix').onClick(() => this.setupTergen(comixNoise()));
     }
 
     setupStatsGraph(root: Panel): void {

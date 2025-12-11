@@ -24,7 +24,7 @@ export function injectShader(
         { decl: shader.vs.decl, impl: shader.vs.impl },
         { decl: shader.fs.decl, impl: shader.fs.impl },
         uniforms,
-    )
+    );
 }
 
 interface ShaderInjection { decl?: string; impl?: string; }

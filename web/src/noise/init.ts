@@ -142,13 +142,26 @@ const allNoises = () => new AlgoPicker({
     current: 'Continental mix',
 });
 
-const terracing = (chunks: ChunkState) => new PipelinePicker({
+const slope = () => new PipelinePicker({
     algorithms: {
-        'Constant': new Terracing({ steps: 0 }),
-        'Voxel': new VoxelTerracing({ chunks }),
+        'None': new IdentityWrapper({}),
+        'Exponentiation': new Exponentiation({ exponent: 1.5 }),
+        'Steepness': new Steepness({ factor: 1.5 }),
     },
-    current: 'Constant',
-    tag: 'Terracing',
+    current: 'Exponentiation',
+    tag: 'Transform',
+});
+
+const clustering = () => new Clustering({
+    coorscale: 3,
+    noisescale: 2,
+    enabled: false,
+});
+
+const warping = () => new Warping({
+    frequency: 2.25,
+    strength: .08,
+    warper: new Simplex({ seed: 23 }),
 });
 
 const tiling = () => new PipelinePicker({
@@ -162,33 +175,31 @@ const tiling = () => new PipelinePicker({
     tag: 'Tiling',
 });
 
-const slope = () => new PipelinePicker({
+const terracing = (chunks: ChunkState) => new PipelinePicker({
     algorithms: {
-        'None': new IdentityWrapper({}),
-        'Exponentiation': new Exponentiation({ exponent: 1.5 }),
-        'Steepness': new Steepness({ factor: 1.5 }),
+        'Constant': new Terracing({ steps: 0 }),
+        'Voxel': new VoxelTerracing({ chunks }),
     },
-    current: 'Exponentiation',
-    tag: 'Transform',
-})
-
-export const completePipeline = (chunks: ChunkState) => new NoisePipeline({
-    base: allNoises(),
-    pipeline: [
-        slope(),
-        new Clustering({
-            coorscale: 3,
-            noisescale: 2,
-            enabled: false,
-        }),
-        new Warping({
-            frequency: 2.25,
-            strength: .08,
-            warper: new Simplex({ seed: 23 }),
-        }),
-        tiling(),
-        terracing(chunks),
-    ],
+    current: 'Constant',
+    tag: 'Terracing',
 });
 
-export type NoiseState = ReturnType<typeof completePipeline>;
+const allPipelines = (chunks: ChunkState) => [
+    slope(),
+    clustering(),
+    warping(),
+    tiling(),
+    terracing(chunks),
+];
+
+export const advancedNoise = (chunks: ChunkState) => new NoisePipeline({
+    base: allNoises(),
+    pipeline: allPipelines(chunks),
+});
+
+export const comixNoise = () => new NoisePipeline({
+    base: comix(),
+    pipeline: [slope()],
+});
+
+export type NoiseState = ReturnType<typeof advancedNoise>;
