@@ -33,16 +33,15 @@ export class ControlWidget<PRIM> {
 
         // Make the target property reactive: any assignment to it will update the control, not just
         // assignments made through the UI.
-        const prop = this.property;
-        let internalValue = this.target[prop];
-        const self = this;
-        Object.defineProperty(this.target, prop, {
-            get: () => internalValue,
+        let value = target[property];
+        control.value = value;
+        Object.defineProperty(target, property, {
+            get: () => value,
             set: (newValue) => {
-                if (newValue === internalValue) return;
-                internalValue = newValue;
-                self.control.value = newValue;
-                self.control.update(newValue);
+                if (newValue === value) return;
+                value = newValue;
+                control.value = newValue;
+                control.update(newValue);
             },
             enumerable: true,
             configurable: true,
@@ -57,6 +56,8 @@ export class ControlWidget<PRIM> {
             const value = this.update();
             this.onChangeCallback?.(value);
         });
+
+        control.update(control.value); // Sets the initial value in the interface.
     }
 
     /**
@@ -105,7 +106,7 @@ export class ControlWidget<PRIM> {
      */
     private update(): PRIM {
         const value = this.control.value;
-        this.target[this.property] = value; // triggers reactive setter
+        this.target[this.property] = value;
         return value;
     }
 }
