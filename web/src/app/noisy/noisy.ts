@@ -13,9 +13,8 @@ import { VerticalStack } from '../../gui/panels/vertical-stack.js';
 import { Blawhi, POSITION_TOP_LEFT } from '../../gui/style.js';
 import { Position } from '../../maths/coordinates.js';
 import { numStats } from '../../maths/stats.js';
-import { comixNoise } from '../../noise/init.js';
+import { advancedNoise, comixNoise, textureNoise } from '../../noise/init.js';
 import { NoisePipeline } from '../../noise/processing/pipeline.js';
-import { cameraUI } from '../../state/camera.js';
 import { chunksUI } from '../../state/chunk.js';
 import { renderUI } from '../../state/renderer.js';
 import { GameCallbacks, StateRegistry } from '../../state/state.js';
@@ -142,7 +141,10 @@ class Game {
 
         chunksUI(this.state.chunks, gui.folder('Chunks').tooltip(tips.chunks), this.callbacks);
         renderUI(this.state.render, gui.folder('Render'), this.callbacks);
-        cameraUI(this.state.camera, gui.folder('Camera'), this.callbacks);
+
+        // Camera UI is not very important for now because too limited.
+        // cameraUI(this.state.camera, gui.folder('Camera'), this.callbacks);
+
         // Avatar UI is basically useless right now since the avatar is so minimalist.
         // avatarUI(this.state.avatar, gui.folder('Avatar').close(), this.callbacks);
 
@@ -248,6 +250,18 @@ class Game {
     private setupPresets(menu: MenuBar): void {
         const presets = menu.entry('Presets');
         presets.entry('Continental mix').onClick(() => this.setupTergen(comixNoise()));
+
+        const texture = (palette: string, tiling: string) => {
+            this.state.render.geometryStyle = 'Pixel';
+            this.state.render.paletteName = palette;
+            this.state.chunks.power = 5;
+            this.setupTergen(textureNoise(tiling));
+        };
+        presets.entry('Texture lab').onClick(() => texture('Glacier', 'Quad'));
+        presets.entry('Wallpaper').onClick(() => texture('Praclarush', 'Mirrored'));
+
+        const advanced = advancedNoise(this.state.chunks);
+        presets.entry('Advanced mode').onClick(() => this.setupTergen(advanced));
     }
 
     setupStatsGraph(root: Panel): void {

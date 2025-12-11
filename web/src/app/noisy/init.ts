@@ -1,5 +1,5 @@
 import { CHUNK_UNIT, VERSION } from "../../../config/constants.js";
-import { advancedNoise, NoiseState } from "../../noise/init.js";
+import { comixNoise, NoiseState } from "../../noise/init.js";
 import { AvatarState } from "../../state/avatar.js";
 import { CameraState } from "../../state/camera.js";
 import { ChunkState } from "../../state/chunk.js";
@@ -48,7 +48,7 @@ export const REFERENCE_STATE = {
     version: VERSION,
 };
 
-REFERENCE_STATE.noise = advancedNoise(REFERENCE_STATE.chunks);
+REFERENCE_STATE.noise = comixNoise();
 
 export type GameState = typeof REFERENCE_STATE;
 

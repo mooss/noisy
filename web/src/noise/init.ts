@@ -168,7 +168,7 @@ const tiling = () => new PipelinePicker({
     algorithms: {
         'None': new IdentityWrapper({}),
         'Quad': new QuadTiling({}),
-        'Mirrored': new MirroredTiling({ normalizeX: false, normalizeY: false }),
+        'Mirrored': new MirroredTiling({ normalizeX: true, normalizeY: true }),
         'Sine': new SineTiling({}),
     },
     current: 'None',
@@ -199,7 +199,18 @@ export const advancedNoise = (chunks: ChunkState) => new NoisePipeline({
 
 export const comixNoise = () => new NoisePipeline({
     base: comix(),
-    pipeline: [slope()],
+    pipeline: [slope(), warping()],
 });
+
+export const textureNoise = (tilingAlgo: string) => {
+    const til = tiling();
+    til.p.current = tilingAlgo;
+    const noise = ridge();
+    noise.p.layers.fundamental = .75;
+    return new NoisePipeline({
+        base: noise,
+        pipeline: [slope(), til],
+    })
+};
 
 export type NoiseState = ReturnType<typeof advancedNoise>;
