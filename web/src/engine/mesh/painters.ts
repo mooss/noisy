@@ -18,6 +18,7 @@ interface Parameters {
     texturePath: string;
     textureRepeat: number;
     textureBumpScale: number;
+    flatShading: boolean;
 }
 
 export class ReusablePainter {
@@ -66,6 +67,7 @@ export class PalettePainter {
         // Bump map.
         material.bumpMap = tex;
         material.bumpScale = this.bumpScale;
+        material.flatShading = this.params.flatShading;
 
         return material;
     }

@@ -13,6 +13,7 @@ export class TerrainProperties {
 
     /** Painter that will be used to create the material. */
     private painter: ReusablePainter;
+
     /**
      * Last material constructed.
      * It is necessary when dealing with uniforms because rebuilding it when changing the uniforms
@@ -38,6 +39,7 @@ export class TerrainProperties {
     get texturePath() { return this.render.texturePath }
     get textureRepeat() { return this.render.textureRepeat }
     get textureBumpScale() { return this.render.textureBumpScale }
+    get flatShading() { return this.render.flatShading }
 
     get heightFun(): NoiseFun { return this._heightFun }
 

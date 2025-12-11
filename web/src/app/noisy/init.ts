@@ -41,6 +41,7 @@ export const REFERENCE_STATE = {
         texturePath: textures.Cobbly,
         textureRepeat: 5,
         textureBumpScale: 4,
+        flatShading: false,
     }),
     noise: null as NoiseState,
 

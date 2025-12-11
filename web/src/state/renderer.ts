@@ -55,6 +55,9 @@ class RenderStateP extends AutoAssign<RenderStateP> {
 
     //TIP: render_texture_bump_scale Apply the texture as a bump map.
     declare textureBumpScale: number;
+
+    //TIP: render_flat_shading Color faces with a single, uniform color. \nGives a more low-poly feeling with a faceted and angular look. \nOnly applies to surface geometry.
+    declare flatShading: boolean;
 }
 
 export class RenderState extends RenderStateP {
@@ -94,6 +97,11 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         .label('Palette')
         .onChange(cb.terrain.repaint)
         .tooltip(tips.render_palette);
+
+    colors.bool(state, 'flatShading')
+        .label('Flat shading')
+        .onInput(cb.terrain.recompute) // Should work with repaint but doesn't.
+        .tooltip(tips.render_flat_shading);
 
     colors.range(state, 'colorLowShift', -1, 1, .01)
         .label('Low color shift')

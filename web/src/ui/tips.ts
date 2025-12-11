@@ -66,4 +66,5 @@ export const tips = {
     render_texture: "Texture applied to the terrain.\nOnly compatible with the surface geometry style.",
     render_texture_repeat: "Number of time that the texture repeats on the X and Y axis.",
     render_texture_bump_scale: "Apply the texture as a bump map.",
+    render_flat_shading: "Color faces with a single, uniform color.\n\nGives a more low-poly feeling with a faceted and angular look.\n\nOnly applies to surface geometry.",
 }
