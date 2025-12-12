@@ -60,40 +60,40 @@ const cursive = () => new Union({
     fundamental: .3,
     octaves: [{
         name: "Peaks 1",
-        frequency: .1,
-        amplitude: 94,
+        frequency: 2.7,
+        amplitude: 8,
         noise: new Ridge({
-            seed: 23,
-            invert: true,
-            square: false,
+            seed: 76,
+            invert: false,
+            square: true,
         }),
     },
     {
         name: "Peaks 2",
-        frequency: .4,
-        amplitude: 82,
+        frequency: 2.9,
+        amplitude: 100,
         noise: new Ridge({
-            seed: 23,
+            seed: 34,
             invert: true,
             square: false,
         }),
     },
     {
         name: "Hills 1",
-        frequency: .8,
-        amplitude: 85,
-        noise: new Simplex({ seed: 23 }),
+        frequency: 1.7,
+        amplitude: 51,
+        noise: new Simplex({ seed: 44 }),
     },
     {
         name: "Hills 2",
-        frequency: 1.6,
-        amplitude: 85,
-        noise: new Simplex({ seed: 23 }),
+        frequency: 2.5,
+        amplitude: 50,
+        noise: new Simplex({ seed: 9 }),
     },
     {
         name: "Hills 3",
-        frequency: 6,
-        amplitude: 70,
+        frequency: 3.4,
+        amplitude: 50,
         noise: new Simplex({ seed: 23 }),
     },],
 });
@@ -205,11 +205,10 @@ export const comixNoise = () => new NoisePipeline({
 export const textureNoise = (tilingAlgo: string) => {
     const til = tiling();
     til.p.current = tilingAlgo;
-    const noise = ridge();
-    noise.p.layers.fundamental = .75;
+    const noise = cursive();
     return new NoisePipeline({
         base: noise,
-        pipeline: [slope(), til],
+        pipeline: [slope(), til, warping()],
     })
 };
 
