@@ -2,7 +2,7 @@
 
 ## Alpha 5 "elderberry" – Presets, STL export, textures and UI overhaul
 
-**Commit** `57d27f6128875597531bf3d91acfce45f0b59d16`.
+**Commit** `1706f241a7978fb034aa954f18cac1eed9a2a74f`.
 
 This release introduces a preset system, STL model export, a new logo, and a major UI redesign.
 It also adds new noise features, textures, and includes various usability enhancements.
@@ -42,7 +42,7 @@ It also adds new noise features, textures, and includes various usability enhanc
 
 ### Implementation details
 - **Refactored noise pipeline**: construction split into small, reusable functions and moved to the main scope for better UI integration.
-- **Code structure**: moves terrain-related code to its own directory and GUI panels to a dedicated subfolder.
+- **Code structure**: moves terrain-related code to its own directory and GUI panels to a dedicated subdirectory.
 - **Terrain rendering class**: moves terrain rendering logic into its own dedicated class.
 - **Noise algorithm organization**: splits noise algorithms into one file per algorithm.
 - **Chunk pooling**: implements a pool to reuse chunk meshes and reduce allocations.

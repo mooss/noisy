@@ -1,7 +1,7 @@
 # Noisy
 
 Generate and explore 3d terrain in your browser with noise algorithms.
-Try it [now](https://mooss.github.io/noisy/dandelion).
+Try it [now](https://mooss.github.io/noisy).
 
 ## Features
 

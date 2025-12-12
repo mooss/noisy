@@ -35,6 +35,8 @@ Compile noisy with `make dist` and attach the binary (`build/noisy-serve`).
 
 ## Add the commit hash to the latest changelog entry
 
+And commit the changes.
+
 ## Re-publish the website
 
 In `mooss.github.io`, use `make noisy` to recompile the latest version and don't forget to update `noisy/versions.yaml`.
