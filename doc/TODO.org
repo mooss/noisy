@@ -1,56 +1,5 @@
 * Versions
 
-** TODO Alpha 5 (elderberry)
-*** DONE GLSL in org-mode
-Write GLSL code blocks and make them available in a ts file (like tips)
-Maybe vendor the perl script from litlib to help with that
-*** DONE Fix the surface (and maybe box) chunks slightly shifting when increasing the resolution
-*** DONE Pixel render shape
-*** DONE Remove noisy terracing
-*** DONE Download as texture
-*** DONE Textures
-**** DONE Arbitrary texture (just get it to work)
-**** DONE Make custom textures
-*** DONE Mesh management
-**** DONE Find a way to make the disgusting async chunk loading good (maybe later...)
-**** DONE Reuse weavers in Chunk
-**** DONE Implement a chunk pool to limit reallocation when entering a new chunk
-*** DONE Use terrain normal to shift the color in the shader
-*** DONE Start setting up linter
-
-*** DONE Improve UI
-**** DONE Minimalist, dense dark and white theme
-**** DONE Dock panels on left and/or right, no margin
-**** DONE Add top bar (desktop style) with buttons
-***** DONE Make an export entry (texture, screenshot, JSON).
-**** DONE Make tabs behave similarly to buttons
-*** DONE Rename "blocks in a chunk" to "resolution"
-*** DONE Set more reasonable min, max and default values for noise parameters
-*** DONE Custom octaves
-For instance octave 1 and 2 are ridge, 3 and 4 are simplex.
-Would mix well with max noise.
-*** DONE Max/union noise (take the highest value of different functions)
-*** DONE Remove sampling parameters from layered noise (always use the default)
-*** DONE STL export
-**** DONE Export the surface
-Partially done, things must still be fixed.
-***** DONE Multiply the height
-Because the model is almost flat.
-***** DONE Fix multi-chunks export
-There is some kind of superposition of chunks happening.
-**** DONE Make the export solid
-To be printable, it must not be just the surface but a solid block.
-*** DONE Proper logo
-Using the favicon as a reference.
-*** DONE Integrate together the UI with the footer added by mooss.github.io
-Or even better create the footer in noisy itself.
-*** DONE Twitter icon in footer
-Plus GitHub
-*** DONE Fix the bug where the texture does not load when changing from Boxes to Surface
-More specifically, it happens when loading something else than surface, switching texture and then changing to surface.
-*** DONE Scenes/presets
-Propose different starting points that are more focused and less overwhelming (texture editor, montain range).
-
 ** Future versions
 
 *** UI
@@ -203,22 +152,22 @@ rg '//TODO:' ../web/src --heading -C 3 --sort path --line-number
 47-/**
 
 ../web/src/engine/terrain/properties.ts
-95-        const res = new Uint8ClampedArray(this.width * this.height * 3);
-96-        const color = new THREE.Color();
-97-
-98:        let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
-99-        for (const [height] of this.heightMatrix()) {
-100-            this.params.palette.lerp(height, color);
-101-            color.convertLinearToSRGB();
+97-        const res = new Uint8ClampedArray(this.width * this.height * 3);
+98-        const color = new THREE.Color();
+99-
+100:        let idx = 0; //TODO: harmonize matrix layout everywhere, this is garbage.
+101-        for (const [height] of this.heightMatrix()) {
+102-            this.params.palette.lerp(height, color);
+103-            color.convertLinearToSRGB();
 
 ../web/src/noise/algorithms/union.ts
-33-            // Dividing by the frequency dampens the impact of high frequencies, preventing them from
-34-            // overwhelming the rest.
-35-            // It makes the interactive parameters tweaking more intuitive.
-36:            //TODO: Find a way to reduce the impact of very low frequencies (~.1), they make the
-37-            // amplitude explode too much.
-38-            if (stack.operation === 'sum') amplitude /= frequency;
-39-
+31-        // Dividing by the frequency dampens the impact of high frequencies, preventing them from
+32-        // overwhelming the rest.
+33-        // It makes the interactive parameters tweaking more intuitive.
+34:        //TODO: Find a way to reduce the impact of very low frequencies (~.1), they make the
+35-        // amplitude explode too much.
+36-        if (stack.operation === 'sum') amplitude /= frequency;
+37-
 
 ../web/src/utils/iteration.ts
 1://TODO: use yield*.
@@ -286,4 +235,55 @@ Tweaked the sampling a bit, but this cannot fully dissapear.
 *** DONE Add some button to redisplay the welcome message
 *** DONE Use texture even for flat color (if possible)
 Maybe using a 1d texture indexed by the height would be possible, might require a dedicated shader though :/.
+
+** DONE Alpha 5 (elderberry)
+*** DONE GLSL in org-mode
+Write GLSL code blocks and make them available in a ts file (like tips)
+Maybe vendor the perl script from litlib to help with that
+*** DONE Fix the surface (and maybe box) chunks slightly shifting when increasing the resolution
+*** DONE Pixel render shape
+*** DONE Remove noisy terracing
+*** DONE Download as texture
+*** DONE Textures
+**** DONE Arbitrary texture (just get it to work)
+**** DONE Make custom textures
+*** DONE Mesh management
+**** DONE Find a way to make the disgusting async chunk loading good (maybe later...)
+**** DONE Reuse weavers in Chunk
+**** DONE Implement a chunk pool to limit reallocation when entering a new chunk
+*** DONE Use terrain normal to shift the color in the shader
+*** DONE Start setting up linter
+
+*** DONE Improve UI
+**** DONE Minimalist, dense dark and white theme
+**** DONE Dock panels on left and/or right, no margin
+**** DONE Add top bar (desktop style) with buttons
+***** DONE Make an export entry (texture, screenshot, JSON).
+**** DONE Make tabs behave similarly to buttons
+*** DONE Rename "blocks in a chunk" to "resolution"
+*** DONE Set more reasonable min, max and default values for noise parameters
+*** DONE Custom octaves
+For instance octave 1 and 2 are ridge, 3 and 4 are simplex.
+Would mix well with max noise.
+*** DONE Max/union noise (take the highest value of different functions)
+*** DONE Remove sampling parameters from layered noise (always use the default)
+*** DONE STL export
+**** DONE Export the surface
+Partially done, things must still be fixed.
+***** DONE Multiply the height
+Because the model is almost flat.
+***** DONE Fix multi-chunks export
+There is some kind of superposition of chunks happening.
+**** DONE Make the export solid
+To be printable, it must not be just the surface but a solid block.
+*** DONE Proper logo
+Using the favicon as a reference.
+*** DONE Integrate together the UI with the footer added by mooss.github.io
+Or even better create the footer in noisy itself.
+*** DONE Twitter icon in footer
+Plus GitHub
+*** DONE Fix the bug where the texture does not load when changing from Boxes to Surface
+More specifically, it happens when loading something else than surface, switching texture and then changing to surface.
+*** DONE Scenes/presets
+Propose different starting points that are more focused and less overwhelming (texture editor, montain range).
 

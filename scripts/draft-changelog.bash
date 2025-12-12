@@ -12,7 +12,22 @@ Do not repeat the original changelog, only write what is new.
 EOF
 }
 
+function complete() {
+    echo "The changelog for Elderberry is already mostly done, as can be seen in CHANGELOG.md, only look for and report the important things that are not yet written. Do not repeat what is already written."
+}
+
+function commit-log() {
+    git log master..HEAD
+}
+
+function patch-log() {
+    git log master..HEAD --patch
+}
+
 OUT=CHANGELOG-DRAFT.md
-git log master..HEAD --patch | jenai -o "$(prompt)" --file CHANGELOG.md --model openrouter:z-ai/glm-4.6 --tee $OUT
+model=qwen/qwen3-235b-a22b-2507 # Context: 262k
+model=deepseek/deepseek-v3.2 # Context: 163,840
+model=moonshotai/kimi-k2-0905 # Context: 262k
+commit-log | jenai -o "$(prompt)\n$(complete)" --file CHANGELOG.md doc/TODO.org --model openrouter:$model --tee $OUT
 cat $OUT | xclip -selection secondary
 echo "Saved in $OUT and copied to clipboard"

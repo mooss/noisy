@@ -1,5 +1,58 @@
 # CHANGELOG
 
+## Alpha 5 "elderberry" – Presets, STL export, textures and UI overhaul
+
+**Commit** `57d27f6128875597531bf3d91acfce45f0b59d16`.
+
+This release introduces a preset system, STL model export, a new logo, and a major UI redesign.
+It also adds new noise features, textures, and includes various usability enhancements.
+
+### Core engine & world model
+- **Union noise**: replaces summed noise with a generic combination noise supporting sum, min, and max operations for octaves.
+- **Cursive and cursed noise**: new noise function implemented with union noise.
+
+### Rendering pipeline
+- **Flat shading toggle**: adds an option to switch between flat and smooth shading.
+- **Textures**: applies textures to the surface geometry with bump mapping support.
+- **Slope-based terrain coloration**: shift the color palette depending on the slope angle.
+- **Exponentiation and steepness noise transformation**: a new processing step to scale noise values, making more dramatic terrain features.
+- **Pixel geometry style**: a new geometry style that displays height as individual pixels.
+
+### UI
+- **UI redesign**: adopts a minimalist black and white theme, docks panels to the left.
+- **Menu system**: adds a top menu bar to handle more operations and declutter the side panels.
+- **Preset system**: adds a menu to load and save terrain configurations, with several built-in presets (e.g., continental mix, texture lab).
+- **Default preset**: The "Continental mix" preset is now used by default, with the old default moved to the "Advanced mode" preset.
+- **Rendering deck**: groups UI rendering options under a deck of cards for better organization.
+- **Updated welcome message**: refreshes the introductory text.
+- **Footer integration**: ensures the GUI does not display over the site footer and integrates logos (Noisy, GitHub, X).
+- **Disable avatar and camera UI**: removes the mostly useless avatar and camera control panel.
+- **New logo**: a custom-designed hexacube logo, with proper licensing clarification.
+- **Changed noise values**: sets the min, max and default noise values to be bit more sensible.
+
+### Storage & sharing
+- **STL export**: exports the terrain as a solid 3D model (STL format) for 3D printing, with proper height scaling.
+- **Texture export**: adds a button to download the terrain as a texture image, with color shifting applied.
+- **State encoding improvements**: uses implicit aliasing for more compact and flexible state representation.
+- **Removed sampling parameters**: replaces them with the default parameters which have proven to work well.
+
+### Bug fixes
+- **Centered pixel and box geometry**: shifts height sampling to the center of cells instead of the corner.
+- **Value rounding in range widget**: rounds to the nearest step to prevent floating-point display issues.
+
+### Implementation details
+- **Refactored noise pipeline**: construction split into small, reusable functions and moved to the main scope for better UI integration.
+- **Code structure**: moves terrain-related code to its own directory and GUI panels to a dedicated subfolder.
+- **Terrain rendering class**: moves terrain rendering logic into its own dedicated class.
+- **Noise algorithm organization**: splits noise algorithms into one file per algorithm.
+- **Chunk pooling**: implements a pool to reuse chunk meshes and reduce allocations.
+- **Material painter system**: introduces a reusable painter to create and cache materials.
+- **Shader organization**: writes shaders within an Org file for better documentation and maintenance.
+- **Reusable utilities**: adds `Reusable` and `Recycler` classes to simplify recycling logic.
+- **Linter setup**: adds a basic code linter.
+- **Remove noisy terracing**: removes the confusing and quite ugly noisy terracing post-processing step.
+- **Clean up chunk loading**: replaces the arcane chunk-loading machinery with something more bearable.
+
 ## Alpha 4 "dandelion" - Mesh creation performance and tiling
 
 **Commit** `9a2ddc5bf71d300bd9e72bde86d7b12f4672eb0a`.
