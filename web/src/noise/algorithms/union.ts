@@ -23,30 +23,30 @@ interface UnionP {
 }
 
 function combineNoises(stack: UnionP): NoiseFun {
-    const octaves = stack.octaves
-        .filter(oct => oct.frequency > 0 && oct.amplitude > 0)
-        .map(octave => {
+    const octaves = stack.octaves.map((octave, offset) => {
         const noise = octave.noise.normalised(0, 1);
-            const frequency = octave.frequency;
-            let amplitude = octave.amplitude;
+        const frequency = octave.frequency;
+        let amplitude = octave.amplitude;
 
-            // Dividing by the frequency dampens the impact of high frequencies, preventing them from
-            // overwhelming the rest.
-            // It makes the interactive parameters tweaking more intuitive.
-            //TODO: Find a way to reduce the impact of very low frequencies (~.1), they make the
-            // amplitude explode too much.
-            if (stack.operation === 'sum') amplitude /= frequency;
+        // Dividing by the frequency dampens the impact of high frequencies, preventing them from
+        // overwhelming the rest.
+        // It makes the interactive parameters tweaking more intuitive.
+        //TODO: Find a way to reduce the impact of very low frequencies (~.1), they make the
+        // amplitude explode too much.
+        if (stack.operation === 'sum') amplitude /= frequency;
 
-            return { frequency, amplitude, noise };
-        });
+        // The offset is used later to shift frequency.
+        // It is built before filtering to keep the noise consistent when an octave is disabled.
+        return { frequency, amplitude, noise, offset };
+    }).filter(oct => oct.frequency > 0 && oct.amplitude > 0);
 
     const acc = new Array<number>(octaves.length).fill(0);
     return (x: number, y: number): number => {
         for (let oct = 0; oct < octaves.length; ++oct) {
-            const { frequency, amplitude, noise } = octaves[oct];
+            const { frequency, amplitude, noise, offset } = octaves[oct];
             // The frequency is shifted by the octave index to try and hide directional artifacts,
             // see the layerNoise function.
-            acc[oct] = noise(x * frequency + oct, y * frequency + oct + 10) * amplitude;
+            acc[oct] = noise(x * frequency + offset, y * frequency + offset + 10) * amplitude;
         }
 
         switch (stack.operation) {
