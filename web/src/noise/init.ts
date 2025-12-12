@@ -202,13 +202,12 @@ export const comixNoise = () => new NoisePipeline({
     pipeline: [slope(), warping()],
 });
 
-export const textureNoise = (tilingAlgo: string) => {
+export const textureNoise = (chunks: ChunkState, tilingAlgo: string) => {
     const til = tiling();
     til.p.current = tilingAlgo;
-    const noise = cursive();
     return new NoisePipeline({
-        base: noise,
-        pipeline: [slope(), til, warping()],
+        base: cursive(),
+        pipeline: [slope(), warping(), til, terracing(chunks)],
     })
 };
 

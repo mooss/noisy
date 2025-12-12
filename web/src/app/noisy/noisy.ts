@@ -258,7 +258,7 @@ class Game {
             this.state.chunks.radiusType = 'square';
             this.state.chunks.loadRadius = 1;
             this.state.chunks.power = 5;
-            this.setupTergen(textureNoise(tiling));
+            this.setupTergen(textureNoise(this.state.chunks, tiling));
         };
         presets.entry('Texture lab').onClick(() => texture('Glacier', 'Quad'));
         presets.entry('Wallpaper').onClick(() => texture('Praclarush', 'Mirrored'));
