@@ -26,11 +26,11 @@ import { GameState, INITIAL_STATE, REFERENCE_STATE } from './init.js';
 
 const STATE_STORAGE_KEY = 'load-state';
 const DONT_SHOW_WELCOME_STORAGE_KEY = VERSION.storageKey('dont-show-welcome');
-const smallcaps = 'style="font-variant: small-caps;"';
 const welcomeMessage = `
-Welcome to Noisy, the procedural terrain sandbox.<br/>
+Welcome to Noisy, a procedural generation sandbox.<br/>
 <br/>
 The goal of this project is to create and navigate interesting procedurally-generated terrain.<br/>
+It can also create textures.<br/>
 You can create your own terrain by tweaking the parameters available in the control panels.
 
 <h3>Controls</h3>
@@ -43,20 +43,17 @@ You can create your own terrain by tweaking the parameters available in the cont
 
 <h3>Overview of the UI</h3>
 <ul>
-  <li><strong>Terrain Generation</strong> - Mix different noise types to create varied landscapes</li>
-
-  <li><strong>Buttons</strong>
+  <li><strong>Menu Bar</strong>
     <ul>
-      <li><strong ${smallcaps}>Copy URL</strong> - Save the terrain as a shareable URL and copy it to the clipboard</li>
-      <li><strong ${smallcaps}>Download</strong> - Download the terrain as a JSON file</li>
-      <li><strong ${smallcaps}>Screenshot</strong> - Download a JPEG screenshot of the terrain</li>
+      <li><strong>?</strong> - Show this welcome screen</li>
+      <li><strong>Save</strong> - Save the terrain as a shareable URL, a JSON save file, a screenshot, a texture or an STL file</li>
+      <li><strong>Load</strong> - Load pre-defined scenes</li>
     </ul>
   </li>
 
   <li><strong>Chunks</strong> - Control how much terrain is rendered around the avatar</li>
   <li><strong>Render</strong> - Adjust how the terrain is rendered</li>
-  <li><strong>Camera</strong> - Switch between free camera movement and following the avatar</li>
-  <li><strong>Avatar</strong> - Tweak the red sphere representing the avatar</li>
+  <li><strong>Terrain Generation</strong> - Mix different noise types to create varied landscapes and textures</li>
 </ul>`;
 
 class Game {
@@ -219,38 +216,38 @@ class Game {
         this.topMenu = menu;
 
         menu.entry('?').onClick(() => this.welcomeWindow.show());
-        this.setupExports(menu);
-        this.setupPresets(menu);
+        this.setupSaves(menu);
+        this.setupLoads(menu);
     }
 
-    private setupExports(menu: MenuBar): void {
-        const exprt = menu.entry('Export');
+    private setupSaves(menu: MenuBar): void {
+        const saves = menu.entry('Save');
 
-        exprt.entry('As URL in the Clipboard').onClick(() => toClipBoard(this.saveStateToUrl()));
+        saves.entry('As URL in the Clipboard').onClick(() => toClipBoard(this.saveStateToUrl()));
 
-        exprt.entry('As JSON').onClick(() => {
+        saves.entry('As JSON').onClick(() => {
             const state = JSON.stringify(StateRegistry.encode(this.updatedState()), null, 2);
             downloadData(state, 'noisy-savefile.json', { type: 'application/json' });
         });
 
-        exprt.entry('As JPEG Screenshot').onClick(
+        saves.entry('As JPEG Screenshot').onClick(
             () => this.renderer.screenshot('noisy-screenshot.jpeg'),
         );
 
-        exprt.entry('As PNG Texture').onClick(() => this.terrain.asTexture().then(
+        saves.entry('As PNG Texture').onClick(() => this.terrain.asTexture().then(
             (texture: Blob) => downloadBlob(texture, 'noisy-texture.png'),
         ));
 
-        exprt.entry('As STL').onClick(() => downloadData(
+        saves.entry('As STL').onClick(() => downloadData(
             this.terrain.asSTL(),
             'noisy-terrain.stl',
             { type: 'model/stl' },
         ));
     }
 
-    private setupPresets(menu: MenuBar): void {
-        const presets = menu.entry('Presets');
-        presets.entry('Continental mix').onClick(() => this.setupTergen(comixNoise()));
+    private setupLoads(menu: MenuBar): void {
+        const loads = menu.entry('Load');
+        loads.entry('Continental mix').onClick(() => this.setupTergen(comixNoise()));
 
         const texture = (palette: string, tiling: string) => {
             this.state.render.geometryStyle = 'Pixel';
@@ -260,11 +257,11 @@ class Game {
             this.state.chunks.power = 5;
             this.setupTergen(textureNoise(this.state.chunks, tiling));
         };
-        presets.entry('Texture lab').onClick(() => texture('Glacier', 'Quad'));
-        presets.entry('Wallpaper').onClick(() => texture('Praclarush', 'Mirrored'));
+        loads.entry('Texture lab').onClick(() => texture('Glacier', 'Quad'));
+        loads.entry('Wallpaper').onClick(() => texture('Praclarush', 'Mirrored'));
 
         const advanced = advancedNoise(this.state.chunks);
-        presets.entry('Advanced mode').onClick(() => this.setupTergen(advanced));
+        loads.entry('Advanced mode').onClick(() => this.setupTergen(advanced));
     }
 
     setupStatsGraph(root: Panel): void {
