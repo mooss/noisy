@@ -95,6 +95,13 @@ class Game {
         this.setupUI();
         this.recomputeTerrain();
         this.updateAvatar();
+
+        // Center camera on avatar to prevent a sudden jerk when moving for the first time, but only
+        // when the default scene is loaded (to preserve the focus point when loading a scene).
+        if (this.state.camera.cameraMode === 'Follow' && window.location.search == '') {
+            this.updateCamera();
+        }
+
         this.startAnimationLoop();
     }
 
