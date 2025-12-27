@@ -11,8 +11,8 @@ export const MINIMUM_HEIGHT = .0000001;
 export const LATIN_ALPHABET = 'abcdefghijklmnopqrstuwvxyzABCDEFGHIJKLMNOPQRSTUWVXYZ';
 
 export const VERSION_PERIOD = 'alpha';
-export const VERSION_NUMBER = '5';
-export const VERSION_NAME = 'elderberry';
+export const VERSION_NUMBER = '6';
+export const VERSION_NAME = 'flax';
 
 export class Version {
     constructor(public period: string, public number: string, public name: string) { }
