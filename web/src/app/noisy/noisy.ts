@@ -1,8 +1,5 @@
 import { CHUNK_UNIT, LATIN_ALPHABET, VERSION } from '../../../config/constants.js';
 import { Avatar } from '../../avatar/avatar.js';
-import { lexon64 } from '../../encoding/codecs.js';
-import { Codec } from '../../encoding/encoding.js';
-import { encrec } from '../../encoding/self-encoder.js';
 import { Renderer } from '../../engine/renderer/renderer.js';
 import { Terrain } from '../../engine/terrain/terrain.js';
 import { CheckBar } from '../../gui/components/widget.js';
@@ -17,6 +14,7 @@ import { advancedNoise, comixNoise, textureNoise } from '../../noise/init.js';
 import { NoisePipeline } from '../../noise/processing/pipeline.js';
 import { chunksUI } from '../../state/chunk.js';
 import { renderUI } from '../../state/renderer.js';
+import { TEMP_STORAGE_KEY, StateManager } from '../../state/state-manager.js';
 import { GameCallbacks, StateRegistry } from '../../state/state.js';
 import { noiseUI } from '../../ui/noise.js';
 import { tips } from '../../ui/tips.js';
@@ -24,7 +22,6 @@ import { FpsWidget, Keyboard } from '../../ui/ui.js';
 import { downloadBlob, downloadData, dragAndDrop, toClipBoard } from '../../utils/utils.js';
 import { GameState, INITIAL_STATE, REFERENCE_STATE } from './init.js';
 
-const STATE_STORAGE_KEY = 'load-state';
 const DONT_SHOW_WELCOME_STORAGE_KEY = VERSION.storageKey('dont-show-welcome');
 const welcomeMessage = `
 Welcome to Noisy, a procedural generation sandbox.<br/>
@@ -67,14 +64,19 @@ class Game {
     readonly callbacks = new GameCallbacks(this);
     state: GameState = INITIAL_STATE;
 
-    /** Encoder/decoder of noise state to a URL-friendly string. */
-    codec: Codec<any, string>;
+    private stateManager: StateManager<GameState>;
 
     private topMenu: MenuBar;
     private guiStack: VerticalStack;
     private tergen: GUI;
 
     start(): void {
+        this.stateManager = new StateManager(
+            StateRegistry,
+            REFERENCE_STATE,
+            LATIN_ALPHABET,
+            TEMP_STORAGE_KEY
+        );
         this.prepareState();
 
         this.terrain = new Terrain(
@@ -107,21 +109,20 @@ class Game {
 
     /** Create the noise codec and potentially load state from session storage or GET parameters. */
     prepareState(): void {
-        const encodedRef = encrec(REFERENCE_STATE);
-        this.codec = lexon64(StateRegistry, encodedRef, LATIN_ALPHABET);
-
-        const reload = sessionStorage.getItem(STATE_STORAGE_KEY);
-        if (reload) {
-            sessionStorage.removeItem(STATE_STORAGE_KEY);
-            this.state = StateRegistry.decode(JSON.parse(reload));
+        const sessionState = this.stateManager.loadFromSession();
+        if (sessionState) {
+            this.state = sessionState;
             this.saveStateToUrl();
             return;
         }
 
         const encoded = new URLSearchParams(window.location.search).get('q');
         if (encoded?.length > 0) {
-            this.state = this.codec.decode(encoded);
+            this.state = this.stateManager.decodeFromURL(encoded);
+            return;
         }
+
+        this.state = INITIAL_STATE;
     }
 
     /**
@@ -193,7 +194,7 @@ class Game {
 
     saveStateToUrl(): string {
         const url = new URL(window.location.href);
-        url.search = '?q=' + this.codec.encode(this.updatedState());
+        url.search = '?q=' + this.stateManager.encodeToURL(this.updatedState());
         const link = encodeURI(url.toString());
         // Update the URL bar to enshrine the current state into the page.
         window.history.pushState({ path: link }, '', link);
@@ -207,7 +208,7 @@ class Game {
                 reader.onload = (e) => {
                     const res = e.target?.result;
                     if (typeof res === 'string') {
-                        sessionStorage.setItem(STATE_STORAGE_KEY, res);
+                        sessionStorage.setItem(TEMP_STORAGE_KEY, res);
                         window.location.reload();
                     }
                 };
@@ -232,10 +233,7 @@ class Game {
 
         saves.entry('As URL in the Clipboard').onClick(() => toClipBoard(this.saveStateToUrl()));
 
-        saves.entry('As JSON').onClick(() => {
-            const state = JSON.stringify(StateRegistry.encode(this.updatedState()), null, 2);
-            downloadData(state, 'noisy-savefile.json', { type: 'application/json' });
-        });
+        saves.entry('As JSON').onClick(() => this.stateManager.saveToFile(this.updatedState()));
 
         saves.entry('As JPEG Screenshot').onClick(
             () => this.renderer.screenshot('noisy-screenshot.jpeg'),
