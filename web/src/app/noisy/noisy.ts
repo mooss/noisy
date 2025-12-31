@@ -75,7 +75,7 @@ class Game {
             StateRegistry,
             REFERENCE_STATE,
             LATIN_ALPHABET,
-            TEMP_STORAGE_KEY
+            TEMP_STORAGE_KEY,
         );
         this.prepareState();
 

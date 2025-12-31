@@ -1,6 +1,7 @@
-import { Registry } from "../encoding/self-encoder.js";
+import { eventBus } from "../core/event-bus.js";
 import { lexon64 } from "../encoding/codecs.js";
 import { Codec } from "../encoding/encoding.js";
+import { Registry } from "../encoding/self-encoder.js";
 import { downloadData } from "../utils/utils.js";
 
 /**
@@ -11,10 +12,10 @@ export const TEMP_STORAGE_KEY = 'temp-load-state';
 /**
  * Manages serialization, deserialization, and persistence of game state.
  *
- * @template T The type of the game state.
+ * @template STATE - The type of the game state.
  */
-export class StateManager<T> {
-    private codec: Codec<T, string>;
+export class StateManager<STATE> {
+    private codec: Codec<STATE, string>;
     private storageKey: string;
 
     /**
@@ -25,7 +26,7 @@ export class StateManager<T> {
      */
     constructor(
         private registry: Registry<any>,
-        reference: T,
+        reference: STATE,
         alphabet: string,
         storageKey: string = TEMP_STORAGE_KEY,
     ) {
@@ -36,21 +37,21 @@ export class StateManager<T> {
     /**
      * Encodes the given state into a URL-safe string.
      */
-    encodeToURL(state: T): string {
-        return this.codec.encode(state);
-    }
+    encodeToURL(state: STATE): string { return this.codec.encode(state) }
 
     /**
      * Decodes a URL-safe string into a state object.
      */
-    decodeFromURL(encoded: string): T {
-        return this.codec.decode(encoded);
+    decodeFromURL(encoded: string): STATE {
+        const state = this.codec.decode(encoded);
+        eventBus.emit('state:changed', { state });
+        return state;
     }
 
     /**
      * Saves the state to sessionStorage as a JSON string (registry-encoded).
      */
-    saveToSession(state: T): void {
+    saveToSession(state: STATE): void {
         const encoded = this.registry.encode(state);
         sessionStorage.setItem(this.storageKey, JSON.stringify(encoded));
     }
@@ -60,13 +61,14 @@ export class StateManager<T> {
      *
      * @returns the decoded state, or `null` if not found or invalid.
      */
-    loadFromSession(): T | null {
+    loadFromSession(): STATE | null {
         const stored = sessionStorage.getItem(this.storageKey);
         if (!stored) return null;
         try {
             const data = JSON.parse(stored);
             const state = this.registry.decode(data);
             sessionStorage.removeItem(this.storageKey);
+            eventBus.emit('state:changed', { state });
             return state;
         } catch (e) {
             console.error('Failed to load state from session storage', e);
@@ -78,9 +80,9 @@ export class StateManager<T> {
      * Saves the state as a JSON file (registry-encoded) and triggers a download.
      *
      * @param state    - The state to save.
-     * @param filename - Name of the file (default: 'noisy-savefile.json').
+     * @param filename - Name of the file.
      */
-    saveToFile(state: T, filename: string = 'noisy-savefile.json'): void {
+    saveToFile(state: STATE, filename: string = 'noisy-savefile.json'): void {
         const data = JSON.stringify(this.registry.encode(state), null, 2);
         downloadData(data, filename, { type: 'application/json' });
     }
