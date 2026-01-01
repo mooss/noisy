@@ -1,20 +1,19 @@
-import { CHUNK_UNIT, LATIN_ALPHABET, VERSION } from '../../../config/constants.js';
+import { CHUNK_UNIT, LATIN_ALPHABET } from '../../../config/constants.js';
 import { Avatar } from '../../avatar/avatar.js';
 import { Renderer } from '../../engine/renderer/renderer.js';
 import { Terrain } from '../../engine/terrain/terrain.js';
-import { CheckBar } from '../../gui/components/widget.js';
-import { Window } from '../../gui/components/window.js';
 import { GUI } from '../../gui/gui.js';
 import { MenuBar, Panel } from '../../gui/panels/panel.js';
 import { VerticalStack } from '../../gui/panels/vertical-stack.js';
 import { Blawhi, POSITION_TOP_LEFT } from '../../gui/style.js';
+import { UIManager } from '../../gui/ui-manager.js';
 import { Position } from '../../maths/coordinates.js';
 import { numStats } from '../../maths/stats.js';
 import { advancedNoise, comixNoise, textureNoise } from '../../noise/init.js';
 import { NoisePipeline } from '../../noise/processing/pipeline.js';
 import { chunksUI } from '../../state/chunk.js';
 import { renderUI } from '../../state/renderer.js';
-import { TEMP_STORAGE_KEY, StateManager } from '../../state/state-manager.js';
+import { StateManager, TEMP_STORAGE_KEY } from '../../state/state-manager.js';
 import { GameCallbacks, StateRegistry } from '../../state/state.js';
 import { noiseUI } from '../../ui/noise.js';
 import { tips } from '../../ui/tips.js';
@@ -22,36 +21,6 @@ import { FpsWidget, Keyboard } from '../../ui/ui.js';
 import { downloadBlob, downloadData, dragAndDrop, toClipBoard } from '../../utils/utils.js';
 import { GameState, INITIAL_STATE, REFERENCE_STATE } from './init.js';
 
-const DONT_SHOW_WELCOME_STORAGE_KEY = VERSION.storageKey('dont-show-welcome');
-const welcomeMessage = `
-Welcome to Noisy, a procedural generation sandbox.<br/>
-<br/>
-The goal of this project is to create and navigate interesting procedurally-generated terrain.<br/>
-It can also create textures.<br/>
-You can create your own terrain by tweaking the parameters available in the control panels.
-
-<h3>Controls</h3>
-<ul>
-  <li><strong>WASD</strong> to move</li>
-  <li><strong>Mouse wheel</strong> to zoom</li>
-  <li><strong>Left click + mouse</strong> to pan around the map</li>
-  <li><strong>Right click + mouse</strong> to rotate the camera</li>
-</ul>
-
-<h3>Overview of the UI</h3>
-<ul>
-  <li><strong>Menu Bar</strong>
-    <ul>
-      <li><strong>?</strong> - Show this welcome screen</li>
-      <li><strong>Save</strong> - Save the terrain as a shareable URL, a JSON save file, a screenshot, a texture or an STL file</li>
-      <li><strong>Load</strong> - Load pre-defined scenes</li>
-    </ul>
-  </li>
-
-  <li><strong>Chunks</strong> - Control how much terrain is rendered around the avatar</li>
-  <li><strong>Render</strong> - Adjust how the terrain is rendered</li>
-  <li><strong>Terrain Generation</strong> - Mix different noise types to create varied landscapes and textures</li>
-</ul>`;
 
 class Game {
     static ENABLE_STATS_GRAPH = false;
@@ -69,6 +38,7 @@ class Game {
     private topMenu: MenuBar;
     private guiStack: VerticalStack;
     private tergen: GUI;
+    private uiManager = new UIManager();
 
     start(): void {
         this.stateManager = new StateManager(
@@ -141,16 +111,17 @@ class Game {
         const guiRoot = document.querySelector('.dynamicUI') as HTMLElement;
         this.setupMenu(guiRoot);
         this.guiStack = new VerticalStack(guiRoot, POSITION_TOP_LEFT, gui._elt, this.tergen._elt);
+        this.uiManager.registerLayout(this.topMenu, this.guiStack);
 
         // Style the footer like the top menu for consistency.
         const footer = document.getElementById('footer');
         footer.classList.add(...Blawhi.footer.classes);
 
         // Make sure the GUI always fits between the top menu and the footer.
-        this.adjustStackBounds();
-        window.addEventListener('resize', () => this.adjustStackBounds());
+        this.uiManager.adjustStackBounds();
+        window.addEventListener('resize', () => this.uiManager.adjustStackBounds());
 
-        this.welcome();
+        this.uiManager.showWelcome();
     }
 
     /**
@@ -171,7 +142,7 @@ class Game {
         noiseUI(this.state.noise, this.tergen, this.callbacks);
         old?.replace(this.tergen); // Make sure the new UI appears in the right place.
 
-        if (noise) this.adjustStackBounds();
+        if (noise) this.uiManager.adjustStackBounds();
     }
 
 
@@ -197,7 +168,7 @@ class Game {
         const menu = new MenuBar(root);
         this.topMenu = menu;
 
-        menu.entry('?').onClick(() => this.welcomeWindow.show());
+        menu.entry('?').onClick(() => this.uiManager.showWelcome());
         this.setupSaves(menu);
         this.setupLoads(menu);
     }
@@ -269,37 +240,6 @@ min: ${min.toFixed(2)}, max: ${max.toFixed(2)}`);
         };
     }
 
-    private adjustStackBounds(): void {
-        if (!this.topMenu || !this.guiStack) return;
-
-        const menu = this.topMenu._elt;
-        const footer = document.getElementById('footer');
-        if (!footer) return;
-
-        const menuRect = menu.getBoundingClientRect();
-        const footerRect = footer.getBoundingClientRect();
-        const top = menuRect.bottom;
-        const bottom = window.innerHeight - footerRect.top;
-
-        this.guiStack._elt.style.top = `${top}px`;
-        this.guiStack._elt.style.bottom = `${bottom}px`;
-        this.guiStack._elt.style.maxHeight = 'none';
-    }
-
-    private welcomeWindow: Window;
-    welcome(): void {
-        this.welcomeWindow = new Window(`Noisy ${VERSION.string()}`, welcomeMessage);
-        const check = new CheckBar(this.welcomeWindow.container, (checked: boolean) => {
-            if (checked)
-                localStorage.setItem(DONT_SHOW_WELCOME_STORAGE_KEY, 'true');
-            this.welcomeWindow.hide();
-            check.hide();
-        }, "Don't show again", 'Close');
-        if (localStorage.getItem(DONT_SHOW_WELCOME_STORAGE_KEY) === 'true') {
-            this.welcomeWindow.hide();
-            check.hide();
-        }
-    }
 
     ///////////////
     // Game loop //
