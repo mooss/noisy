@@ -77,7 +77,7 @@ class Game {
             LATIN_ALPHABET,
             TEMP_STORAGE_KEY,
         );
-        this.prepareState();
+        this.state = this.stateManager.loadInitialState(INITIAL_STATE);
 
         this.terrain = new Terrain(
             this.state.chunks,
@@ -105,24 +105,6 @@ class Game {
         }
 
         this.startAnimationLoop();
-    }
-
-    /** Create the noise codec and potentially load state from session storage or GET parameters. */
-    prepareState(): void {
-        const sessionState = this.stateManager.loadFromSession();
-        if (sessionState) {
-            this.state = sessionState;
-            this.saveStateToUrl();
-            return;
-        }
-
-        const encoded = new URLSearchParams(window.location.search).get('q');
-        if (encoded?.length > 0) {
-            this.state = this.stateManager.decodeFromURL(encoded);
-            return;
-        }
-
-        this.state = INITIAL_STATE;
     }
 
     /**
@@ -192,14 +174,6 @@ class Game {
         if (noise) this.adjustStackBounds();
     }
 
-    saveStateToUrl(): string {
-        const url = new URL(window.location.href);
-        url.search = '?q=' + this.stateManager.encodeToURL(this.updatedState());
-        const link = encodeURI(url.toString());
-        // Update the URL bar to enshrine the current state into the page.
-        window.history.pushState({ path: link }, '', link);
-        return link;
-    }
 
     setupActions(): void {
         dragAndDrop((file) => {
@@ -231,7 +205,9 @@ class Game {
     private setupSaves(menu: MenuBar): void {
         const saves = menu.entry('Save');
 
-        saves.entry('As URL in the Clipboard').onClick(() => toClipBoard(this.saveStateToUrl()));
+        saves.entry('As URL in the Clipboard').onClick(() => {
+            toClipBoard(this.stateManager.saveStateToUrl(this.updatedState()));
+        });
 
         saves.entry('As JSON').onClick(() => this.stateManager.saveToFile(this.updatedState()));
 

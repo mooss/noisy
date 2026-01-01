@@ -77,6 +77,41 @@ export class StateManager<STATE> {
     }
 
     /**
+     * Loads the initial state from session storage or URL parameters, falling back to the given
+     * default.
+     *
+     * @param defaultState - The state to return if no stored state is found.
+     */
+    loadInitialState(defaultState: STATE): STATE {
+        const sessionState = this.loadFromSession();
+        if (sessionState) {
+            this.saveStateToUrl(sessionState);
+            return sessionState;
+        }
+
+        const encoded = new URLSearchParams(window.location.search).get('q');
+        if (encoded?.length > 0) {
+            return this.decodeFromURL(encoded);
+        }
+
+        return defaultState;
+    }
+
+    /**
+     * Saves the given state to the URL and updates the browser history.
+     * Returns the full URL with the encoded state.
+     *
+     * @param state - The state to encode and push to the URL.
+     */
+    saveStateToUrl(state: STATE): string {
+        const url = new URL(window.location.href);
+        url.search = '?q=' + this.encodeToURL(state);
+        const link = encodeURI(url.toString());
+        window.history.pushState({ path: link }, '', link);
+        return link;
+    }
+
+    /**
      * Saves the state as a JSON file (registry-encoded) and triggers a download.
      *
      * @param state    - The state to save.
