@@ -76,7 +76,7 @@ export interface GameEvents {
     'terrain:updated': { chunkId: string };
     'avatar:moved': { position: vector3 };
     'camera:updated': { position: vector3; target: vector3 };
-    'ui:action': { action: string; data: any };
+    'ui:action': { action: string; data?: any };
     'state:changed': { state: any }; // Use any to avoid circular dependencies; can be refined later.
     'asset:loaded': { key: string; asset: any };
     'input:keydown': { key: string };

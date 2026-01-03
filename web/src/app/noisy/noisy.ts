@@ -1,8 +1,10 @@
 import { CHUNK_UNIT, LATIN_ALPHABET } from '../../../config/constants.js';
 import { Avatar } from '../../avatar/avatar.js';
+import { eventBus } from '../../core/event-bus.js';
 import { Renderer } from '../../engine/renderer/renderer.js';
 import { Terrain } from '../../engine/terrain/terrain.js';
 import { GUI } from '../../gui/gui.js';
+import { MenuSystem } from '../../gui/menu-system.js';
 import { MenuBar, Panel } from '../../gui/panels/panel.js';
 import { VerticalStack } from '../../gui/panels/vertical-stack.js';
 import { Blawhi, POSITION_TOP_LEFT } from '../../gui/style.js';
@@ -165,55 +167,67 @@ class Game {
     }
 
     private setupMenu(root: HTMLElement): void {
-        const menu = new MenuBar(root);
-        this.topMenu = menu;
+        const menuSystem = new MenuSystem(root);
+        this.topMenu = menuSystem.getMenuBar();
 
-        menu.entry('?').onClick(() => this.uiManager.showWelcome());
-        this.setupSaves(menu);
-        this.setupLoads(menu);
-    }
-
-    private setupSaves(menu: MenuBar): void {
-        const saves = menu.entry('Save');
-
-        saves.entry('As URL in the Clipboard').onClick(() => {
-            toClipBoard(this.stateManager.saveStateToUrl(this.updatedState()));
+        eventBus.on('ui:action', ({ action, data }) => {
+            switch (action) {
+                case 'show-welcome':
+                    this.uiManager.showWelcome();
+                    break;
+                case 'save-url-clipboard':
+                    toClipBoard(this.stateManager.saveStateToUrl(this.updatedState()));
+                    break;
+                case 'save-json':
+                    this.stateManager.saveToFile(this.updatedState());
+                    break;
+                case 'save-screenshot-jpeg':
+                    this.renderer.screenshot('noisy-screenshot.jpeg');
+                    break;
+                case 'save-texture-png':
+                    this.terrain.asTexture().then(
+                        (texture: Blob) => downloadBlob(texture, 'noisy-texture.png'),
+                    );
+                    break;
+                case 'save-stl':
+                    downloadData(
+                        this.terrain.asSTL(),
+                        'noisy-terrain.stl',
+                        { type: 'model/stl' },
+                    );
+                    break;
+                case 'load-scene':
+                    this.handleLoadScene(data);
+                    break;
+            }
         });
-
-        saves.entry('As JSON').onClick(() => this.stateManager.saveToFile(this.updatedState()));
-
-        saves.entry('As JPEG Screenshot').onClick(
-            () => this.renderer.screenshot('noisy-screenshot.jpeg'),
-        );
-
-        saves.entry('As PNG Texture').onClick(() => this.terrain.asTexture().then(
-            (texture: Blob) => downloadBlob(texture, 'noisy-texture.png'),
-        ));
-
-        saves.entry('As STL').onClick(() => downloadData(
-            this.terrain.asSTL(),
-            'noisy-terrain.stl',
-            { type: 'model/stl' },
-        ));
     }
 
-    private setupLoads(menu: MenuBar): void {
-        const loads = menu.entry('Load');
-        loads.entry('Continental mix').onClick(() => this.setupTergen(comixNoise()));
-
-        const texture = (palette: string, tiling: string) => {
-            this.state.render.geometryStyle = 'Pixel';
-            this.state.render.paletteName = palette;
-            this.state.chunks.radiusType = 'square';
-            this.state.chunks.loadRadius = 1;
-            this.state.chunks.power = 5;
-            this.setupTergen(textureNoise(this.state.chunks, tiling));
-        };
-        loads.entry('Texture lab').onClick(() => texture('Glacier', 'Quad'));
-        loads.entry('Wallpaper').onClick(() => texture('Praclarush', 'Mirrored'));
-
-        const advanced = advancedNoise(this.state.chunks);
-        loads.entry('Advanced mode').onClick(() => this.setupTergen(advanced));
+    private handleLoadScene(data: any): void {
+        switch (data.type) {
+            case 'continental-mix':
+                this.setupTergen(comixNoise());
+                break;
+            case 'texture-lab':
+                this.state.render.geometryStyle = 'Pixel';
+                this.state.render.paletteName = data.palette;
+                this.state.chunks.radiusType = 'square';
+                this.state.chunks.loadRadius = 1;
+                this.state.chunks.power = 5;
+                this.setupTergen(textureNoise(this.state.chunks, data.tiling));
+                break;
+            case 'wallpaper':
+                this.state.render.geometryStyle = 'Pixel';
+                this.state.render.paletteName = data.palette;
+                this.state.chunks.radiusType = 'square';
+                this.state.chunks.loadRadius = 1;
+                this.state.chunks.power = 5;
+                this.setupTergen(textureNoise(this.state.chunks, data.tiling));
+                break;
+            case 'advanced-mode':
+                this.setupTergen(advancedNoise(this.state.chunks));
+                break;
+        }
     }
 
     setupStatsGraph(root: Panel): void {
