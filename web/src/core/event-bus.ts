@@ -56,6 +56,17 @@ export class EventBus<T extends EventMap> {
     }
 
     /**
+     * Convenience function returning a lambda event emitter calling all subscribed listeners.
+     * Useful to register a callback in the UI.
+     *
+     * @param event   - Event name.
+     * @param payload - Data to pass to listeners.
+     */
+    emitLambda<K extends keyof T>(event: K, payload: T[K]): () => void {
+        return () => { this.emit(event, payload) };
+    }
+
+    /**
      * Subscribe to an event only once.
      * @param event    - Event name.
      * @param listener - Callback function.
