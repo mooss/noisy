@@ -36,8 +36,8 @@ export function fillHexData(
     const HEX_WIDTH = Math.sqrt(3) * R; // ≈0.8660254.
     const VSTEP = HEX_HEIGHT * 0.75;    // Vertical distance between rows (0.75).
 
-    // Each hexagon face is made of 6 triangles (18 vertices total).
-    const verticesPerHex = 18;
+    // Each hexagon face is made of 4 triangles (12 vertices total).
+    const verticesPerHex = 12;
     const stride = 3;
     const nvertices = resolution * resolution * verticesPerHex;
     const positions = positionCache.asFloat32(nvertices, stride);
@@ -56,27 +56,28 @@ export function fillHexData(
             const cy = by * VSTEP;
             const cz = heights[bx * resolution + by];
 
-            // 6-triangles loop.
-            for (let i = 0; i < 6; ++i) {
-                const v0 = offs[i];
-                const v1 = offs[(i + 1) % 6];
+            // Emit 4 triangles that cover the hexagon using only its outer vertices (triangle fan
+            // using vertex 0 as the fan origin).
+            for (let i = 0; i < 4; ++i) {
+                const vB = offs[i + 1];
+                const vC = offs[i + 2];
 
-                // Centre.
-                positions[posIdx++] = cx;
-                positions[posIdx++] = cy;
+                // Vertex A (fan origin).
+                positions[posIdx++] = cx + offs[0].x;
+                positions[posIdx++] = cy + offs[0].y;
                 positions[posIdx++] = cz;
 
-                // Outer 1.
-                positions[posIdx++] = cx + v0.x;
-                positions[posIdx++] = cy + v0.y;
+                // Vertex B.
+                positions[posIdx++] = cx + vB.x;
+                positions[posIdx++] = cy + vB.y;
                 positions[posIdx++] = cz;
 
-                // Outer 2.
-                positions[posIdx++] = cx + v1.x;
-                positions[posIdx++] = cy + v1.y;
+                // Vertex C.
+                positions[posIdx++] = cx + vC.x;
+                positions[posIdx++] = cy + vC.y;
                 positions[posIdx++] = cz;
 
-                // Upward normals.
+                // Upward normals for everyone.
                 normals[norIdx++] = 0; normals[norIdx++] = 0; normals[norIdx++] = 1;
                 normals[norIdx++] = 0; normals[norIdx++] = 0; normals[norIdx++] = 1;
                 normals[norIdx++] = 0; normals[norIdx++] = 0; normals[norIdx++] = 1;
