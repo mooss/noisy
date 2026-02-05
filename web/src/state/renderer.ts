@@ -81,6 +81,7 @@ export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
         'Surface': 'Surface',
         'Boxes': 'Box',
         'Pixels': 'Pixel',
+        'Hexagons': 'Hex',
     };
     root.map(state, 'geometryStyle', geomap)
         .label('Geometry')

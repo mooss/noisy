@@ -4,10 +4,11 @@ import { NoiseFun } from '../../noise/foundations.js';
 import { Recycler } from '../../utils/reuse.js';
 import { fillBoxData } from './box.js';
 import { fillPixelData } from './pixels.js';
+import { fillHexData } from './hexagons.js';
 import { fillSurfaceIndices, fillSurfaceNormals, fillSurfacePositions } from './surface.js';
 import { FluentGeometry, ReusableArray, ReusableBuffer } from './utils.js';
 
-export type GeometryStyle = 'Surface' | 'Box' | 'Pixel';
+export type GeometryStyle = 'Surface' | 'Box' | 'Pixel' | 'Hex';
 
 interface Parameters {
     geometryStyle: GeometryStyle;
@@ -19,6 +20,7 @@ export class ReusableWeaver {
         Surface: () => new SurfaceWeaver(),
         Box: () => new BoxWeaver(),
         Pixel: () => new PixelWeaver(),
+        Hex: () => new HexWeaver(),
     });
 
     constructor(public params: Parameters) { }
@@ -106,6 +108,25 @@ class PixelWeaver implements ChunkWeaver {
 
     weave(fun: NoiseFun, resolution: number): THREE.BufferGeometry {
         fillPixelData(this._position, this._normal, this._height, fun, resolution);
+        this._geometry
+            .position(this._position)
+            .normal(this._normal);
+
+        return this._geometry.buffer;
+    }
+}
+
+/**
+ * Hexagon-based weaver (flat hexagons, no side faces).
+ */
+class HexWeaver implements ChunkWeaver {
+    _geometry = new FluentGeometry();
+    _position = new ReusableBuffer();
+    _normal = new ReusableBuffer();
+    _height = new ReusableArray();
+
+    weave(fun: NoiseFun, resolution: number): THREE.BufferGeometry {
+        fillHexData(this._position, this._normal, this._height, fun, resolution);
         this._geometry
             .position(this._position)
             .normal(this._normal);
