@@ -30,11 +30,12 @@ export function fillHexData(
         { up: 0, down: 0, left: 0, right: 0 },
     );
 
-    // Geometry constants for a pointy top regular hexagon with radius = 0.5.
-    const R = 0.5;                      // Distance from centre to any vertex.
-    const HEX_HEIGHT = 2 * R;           // = 1 (unit).
-    const HEX_WIDTH = Math.sqrt(3) * R; // ≈0.8660254.
-    const VSTEP = HEX_HEIGHT * 0.75;    // Vertical distance between rows (0.75).
+    // Geometry constants for a pointy top regular hexagon covering exactly 1 unit of distance
+    // horizontally.
+    const R = 1 / Math.sqrt(3);
+    const HEX_HEIGHT = 2 * R;
+    const HEX_WIDTH = 1; // = Math.sqrt(3) * R
+    const VSTEP = HEX_HEIGHT * 0.75; // Vertical distance between rows.
 
     // Each hexagon face is made of 4 triangles (12 vertices total).
     const verticesPerHex = 12;
