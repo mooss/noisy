@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { CHUNK_UNIT } from '../../../config/constants.js';
 import { Coordinates } from '../../maths/coordinates.js';
 import { Pool } from '../../utils/reuse.js';
+import { HEX_CELL_VSTEP } from '../mesh/hexagons.js';
 import { ReusableWeaver } from '../mesh/weavers.js';
 import { TerrainProperties } from './properties.js';
 
@@ -37,7 +38,17 @@ export class Chunk {
         this.repaint();
 
         mesh.matrixAutoUpdate = false;
-        mesh.position.set(this.coords.x * CHUNK_UNIT, this.coords.y * CHUNK_UNIT, 0);
+
+        let xpos = this.coords.x * CHUNK_UNIT;
+        let ypos = this.coords.y * CHUNK_UNIT;
+
+        if (this.props.geometryStyle === 'Hex') {
+            // Hexagons do not fill the whole vertical space and need to be adjusted.
+            ypos *= HEX_CELL_VSTEP;
+        }
+
+        mesh.position.set(xpos, ypos, 0);
+
         this.rescale();
     }
 
@@ -45,7 +56,7 @@ export class Chunk {
      * Update the mesh material to the latest version.
      */
     repaint() {
-        if(!this.mesh) return;
+        if (!this.mesh) return;
         this.mesh.material = this.props.paint();
     }
 

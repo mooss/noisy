@@ -2,6 +2,14 @@ import { NoiseFun } from "../../noise/foundations.js";
 import { heightMatrix } from "./foundations.js";
 import { ReusableArray, ReusableBuffer } from "./utils.js";
 
+
+// Geometry constants for a pointy top regular hexagon covering exactly 1 unit of distance
+// horizontally.
+export const HEX_CELL_RADIUS = 1 / Math.sqrt(3);
+export const HEX_CELL_HEIGHT = 2 * HEX_CELL_RADIUS;
+export const HEX_CELL_WIDTH = 1; // = Math.sqrt(3) * R
+export const HEX_CELL_VSTEP = HEX_CELL_HEIGHT * 0.75; // Vertical distance between rows.
+
 /**
  * Fills the position and normal buffers for a hexagon-based mesh.
  *
@@ -30,13 +38,6 @@ export function fillHexData(
         { up: 0, down: 0, left: 0, right: 0 },
     );
 
-    // Geometry constants for a pointy top regular hexagon covering exactly 1 unit of distance
-    // horizontally.
-    const R = 1 / Math.sqrt(3);
-    const HEX_HEIGHT = 2 * R;
-    const HEX_WIDTH = 1; // = Math.sqrt(3) * R
-    const VSTEP = HEX_HEIGHT * 0.75; // Vertical distance between rows.
-
     // Each hexagon face is made of 4 triangles (12 vertices total).
     const verticesPerHex = 12;
     const stride = 3;
@@ -46,15 +47,18 @@ export function fillHexData(
 
     // Precompute the offsets of each vertex of the hexagon.
     const angles = [0, 1, 2, 3, 4, 5].map(i => Math.PI / 3 * i + Math.PI / 6);
-    const offs = angles.map(a => ({ x: Math.cos(a) * R, y: Math.sin(a) * R }));
+    const offs = angles.map(a => ({
+        x: Math.cos(a) * HEX_CELL_RADIUS,
+        y: Math.sin(a) * HEX_CELL_RADIUS,
+    }));
 
     let posIdx = 0;
     let norIdx = 0;
     for (let bx = 0; bx < resolution; ++bx) {
         for (let by = 0; by < resolution; ++by) {
             // Hexagon center.
-            const cx = bx * HEX_WIDTH + (by % 2) * (HEX_WIDTH / 2);
-            const cy = by * VSTEP;
+            const cx = bx * HEX_CELL_WIDTH + (by % 2) * (HEX_CELL_WIDTH / 2);
+            const cy = by * HEX_CELL_VSTEP;
             const cz = heights[bx * resolution + by];
 
             // Emit 4 triangles that cover the hexagon using only its outer vertices (triangle fan
