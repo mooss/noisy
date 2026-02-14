@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { CHUNK_UNIT, MINIMUM_HEIGHT } from '../../../config/constants.js';
-import { Coordinates } from '../../maths/coordinates.js';
+import { Coordinates, Position } from '../../maths/coordinates.js';
 import { rangeMapper, vector2 } from '../../maths/maths.js';
 import { NoiseFun } from '../../noise/foundations.js';
 import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
+import { clone } from '../../utils/objects.js';
 import { HEX_CELL_VSTEP } from '../mesh/hexagons.js';
 import { ReusablePainter } from '../mesh/painters.js';
 import { ReusableWeaver } from '../mesh/weavers.js';
@@ -86,6 +87,13 @@ export class TerrainProperties {
     }
 
     renderer(center: Coordinates): TerrainRenderer { return new TerrainRenderer(this, center) }
+
+    // Converts a world position to chunk coordinates.
+    chunkCoordinates(pos: Position): Coordinates {
+        pos = clone(pos);
+        if (this.render.geometryStyle == 'Hex') pos.y /= HEX_CELL_VSTEP;
+        return pos.toChunk();
+    }
 }
 
 export class TerrainRenderer {

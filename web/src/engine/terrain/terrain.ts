@@ -167,7 +167,7 @@ export class Terrain {
      * Loads the blocks within range of worldPosition and unloads the blocks outside its range.
      */
     centerOn(worldPosition: Position) {
-        const chunkCoords = worldPosition.toChunk();
+        const chunkCoords = this.props.chunkCoordinates(worldPosition);
         if (this.center != undefined && chunkCoords.equals(this.center)) return;
         this.center = chunkCoords;
         this.ensureLoaded();
