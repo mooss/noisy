@@ -5,6 +5,7 @@ import { rangeMapper, vector2 } from '../../maths/maths.js';
 import { NoiseFun } from '../../noise/foundations.js';
 import { ChunkState } from '../../state/chunk.js';
 import { RenderState } from '../../state/renderer.js';
+import { HEX_CELL_VSTEP } from '../mesh/hexagons.js';
 import { ReusablePainter } from '../mesh/painters.js';
 import { ReusableWeaver } from '../mesh/weavers.js';
 
@@ -50,16 +51,25 @@ export class TerrainProperties {
     get material() { return this.cachedMaterial }
     get resolution() { return this.chunks.resolution }
 
-    get rawVerticalUnit() { return Math.max(this.render.verticalUnit, MINIMUM_HEIGHT) }
-    get verticalUnit() {
-        if (this.render.geometryStyle === 'Pixel') return MINIMUM_HEIGHT;
+    get rawVerticalUnit() {
         // Prevents the verticality to be exactly zero because it messes up with shading, basically
         // ignoring directional light.
+        return Math.max(this.render.verticalUnit, MINIMUM_HEIGHT);
+    }
+
+    get verticalUnit() {
+        if (this.render.geometryStyle === 'Pixel') return MINIMUM_HEIGHT;
         return this.rawVerticalUnit;
     }
 
     heightAt(chunkCoords: vector2): (x: number, y: number) => number {
-        return (x, y) => this.heightFun(x + chunkCoords.x, y + chunkCoords.y);
+        if (this.render.geometryStyle !== 'Hex')
+            return (x, y) => this.heightFun(chunkCoords.x + x, chunkCoords.y + y);
+
+        return (x, y) => {
+            // Account for the different vertical scaling of hexagon grids.
+            return this.heightFun(chunkCoords.x + x, (chunkCoords.y + y) * HEX_CELL_VSTEP);
+        };
     }
 
     recomputeNoise() {
