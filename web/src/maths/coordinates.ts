@@ -18,27 +18,6 @@ export class Coordinates {
     constructor(x: number, y: number) { this.x = x; this.y = y; }
 
     /**
-     * Convert global block coordinates to the coordinates of the chunk containing them.
-     * @param nblocks - The number of blocks in a chunk.
-     * @returns The chunk coordinates.
-     */
-    toChunk(nblocks: number): Coordinates {
-        return new Coordinates(Math.floor(this.x / nblocks), Math.floor(this.y / nblocks));
-    }
-
-    /**
-     * Convert global block coordinates to local block coordinates within their chunk.
-     * @param nblocks - The number of blocks in a chunk.
-     * @returns The local coordinates.
-     */
-    toLocal(nblocks: number): Coordinates {
-        return new Coordinates(
-            ((this.x % nblocks) + nblocks) % nblocks,
-            ((this.y % nblocks) + nblocks) % nblocks,
-        );
-    }
-
-    /**
      * Iterates in spiral around the current point, staying within the specified square radius.
      * Assumes integer coordinates.
      *
