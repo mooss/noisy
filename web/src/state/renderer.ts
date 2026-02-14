@@ -79,9 +79,9 @@ register('RenderState', RenderState);
 export function renderUI(state: RenderState, root: Panel, cb: GameCallbacks) {
     const geomap: Record<string, GeometryStyle> = {
         'Surface': 'Surface',
+        'Hexagons': 'Hex',
         'Boxes': 'Box',
         'Pixels': 'Pixel',
-        'Hexagons': 'Hex',
     };
     root.map(state, 'geometryStyle', geomap)
         .label('Geometry')
